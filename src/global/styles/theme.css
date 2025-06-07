@@ -1,0 +1,30 @@
+/* 這個檔案不會被 shadcn 覆蓋 */
+
+/* 客製化主題 1 */
+.custom-neon {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --primary: #ff0080;
+  --primary-foreground: #000000;
+  --secondary: #00ff80;
+  --secondary-foreground: #000000;
+  --accent: #8000ff;
+  --accent-foreground: #ffffff;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --border: #404040;
+  --input: #262626;
+  --ring: #ff0080;
+}
+
+/* 客製化主題 2 */
+.custom-ocean {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #0ea5e9;
+  --primary-foreground: #ffffff;
+  --secondary: #06b6d4;
+  --secondary-foreground: #ffffff;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+}
