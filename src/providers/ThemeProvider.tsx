@@ -1,6 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
 import { Theme, getThemeClassAttribute } from "@/global/types/theme.type";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext<
   [Theme, React.Dispatch<React.SetStateAction<Theme>>] | undefined
@@ -11,7 +11,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("Dark");
 
   useEffect(() => {
-    console.log(theme);
     document.documentElement.classList.remove(
       getThemeClassAttribute(prevTheme)
     );

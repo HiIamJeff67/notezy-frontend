@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": ["typescript", "node", "npm", "html", "css", "bash"],
+  "languageSettings": [
+    {
+      "languageId": "typescript,typescriptreact,javascript,javascriptreact",
+      "dictionaries": ["typescript", "node", "npm"]
+    }
+  ],
+  "words": [
+    "Notezy",
+    "notezy",
+    "nextjs",
+    "tailwindcss",
+    "vercel",
+    "eslint",
+    "prettier"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".next/**",
+    "dist/**",
+    "build/**",
+    ".git/**",
+    "*.min.*",
+    "package-lock.json",
+    "yarn.lock"
+  ]
+}
