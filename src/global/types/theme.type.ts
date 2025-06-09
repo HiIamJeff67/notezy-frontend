@@ -1,15 +1,12 @@
-export const AllThemes = ["Light", "Dark", "System", "Ocean", "Neon"] as const;
-
-export type Theme = (typeof AllThemes)[number];
-
-const themeClassAttributeMap: ReThreeCord<Theme, string> = {
-  Light: "light",
-  Dark: "dark",
-  System: "dark",
-  Ocean: "custom-ocean",
-  Neon: "custom-neon",
+export type Theme = {
+  id: string;
+  name: string;
+  authorName: string;
+  authorAvatarURL: string;
+  version: string;
+  downloadURL: string;
+  isDefault: boolean; // if it is not default, then we need the client to download it using downloadURL
+  isLoaded: boolean; // using by individual users
+  updatedAt: Date;
+  createdAt: Date;
 };
-
-export function getThemeClassAttribute(theme: Theme): string {
-  return themeClassAttributeMap[theme];
-}

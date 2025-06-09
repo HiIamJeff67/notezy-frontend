@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useTheme } from "@/providers/ThemeProvider";
 import { useEffect, useRef, useState } from "react";
 
 const DisplayText = {
@@ -10,14 +11,19 @@ const DisplayText = {
   content: "A More Humanized AI-Driven Note-Taking Application",
 };
 
-const Home = () => {
+const HomPage = () => {
   const [displayTopic, setDisplayTopic] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const router = useAppRouter();
+  const { switchTheme } = useTheme();
 
   const navigateToDocumentPage = () => {
     router.push("documents");
+  };
+
+  const navigateToLoginPage = () => {
+    router.push("login");
   };
 
   const clearAllTimers = function () {
@@ -137,9 +143,22 @@ const Home = () => {
               >
                 View Docs
               </Button>
-              <Button variant="default" className="cursor-pointer font-bold">
+              <Button
+                variant="default"
+                className="cursor-pointer font-bold"
+                onClick={navigateToLoginPage}
+              >
                 Get Started
               </Button>
+              {/* <Button
+                variant="secondary"
+                className="cursor-pointer font-bold"
+                onClick={() =>
+                  switchTheme("9663dc5f-1980-4ca4-b1e5-54c63dcd3ff8")
+                }
+              >
+                Switch Theme
+              </Button> */}
             </div>
           </div>
         </div>
@@ -148,4 +167,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomPage;

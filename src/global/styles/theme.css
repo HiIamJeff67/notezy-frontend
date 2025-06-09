@@ -1,4 +1,4 @@
-.custom-neon {
+.neon {
   --background: #0a0a0a;
   --foreground: #ffffff;
   --primary: #ff0080;
@@ -14,7 +14,7 @@
   --ring: #ff0080;
 }
 
-.custom-ocean {
+.ocean {
   --background: #0f172a;
   --foreground: #f1f5f9;
   --primary: #0ea5e9;
