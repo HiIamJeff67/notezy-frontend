@@ -2,7 +2,7 @@ export const AllThemes = ["Light", "Dark", "System", "Ocean", "Neon"] as const;
 
 export type Theme = (typeof AllThemes)[number];
 
-const themeClassAttributeMap: Record<Theme, string> = {
+const themeClassAttributeMap: ReThreeCord<Theme, string> = {
   Light: "light",
   Dark: "dark",
   System: "dark",

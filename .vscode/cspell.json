@@ -15,7 +15,8 @@
     "tailwindcss",
     "vercel",
     "eslint",
-    "prettier"
+    "prettier",
+    "drei"
   ],
   "ignorePaths": [
     "node_modules/**",

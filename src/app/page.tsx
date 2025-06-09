@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useEffect, useRef, useState } from "react";
 
 const DisplayText = {
@@ -9,10 +10,15 @@ const DisplayText = {
   content: "A More Humanized AI-Driven Note-Taking Application",
 };
 
-const Introduction = () => {
+const Home = () => {
   const [displayTopic, setDisplayTopic] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
   const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const router = useAppRouter();
+
+  const navigateToDocumentPage = () => {
+    router.push("documents");
+  };
 
   const clearAllTimers = function () {
     timersRef.current.forEach(timer => clearTimeout(timer));
@@ -124,7 +130,11 @@ const Introduction = () => {
               </p>
             </div>
             <div className="flex items-center justify-center gap-6 mt-4">
-              <Button variant="secondary" className="cursor-pointer font-bold">
+              <Button
+                variant="secondary"
+                className="cursor-pointer font-bold"
+                onClick={navigateToDocumentPage}
+              >
                 View Docs
               </Button>
               <Button variant="default" className="cursor-pointer font-bold">
@@ -138,4 +148,4 @@ const Introduction = () => {
   );
 };
 
-export default Introduction;
+export default Home;
