@@ -1,19 +1,21 @@
 "use client";
 import { Theme } from "@/global/types/theme.type";
 import { useThemeStore } from "@/hooks/useThemeStore";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 type ThemeContextType = {
   currentTheme: Theme | null;
   availableThemes: Theme[];
   switchTheme: (themeId: string) => Promise<boolean>;
   loadingThemes: Set<string>;
-  addTheme: (theme: Theme) => void;
-  removeTheme: (themeId: string) => void;
+  addThemeFromStore: (theme: Theme) => void;
+  removeThemeFromStore: (themeId: string) => void;
   isThemeLoading: (themeId: string) => boolean;
 };
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextType | undefined>(
+  undefined
+);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState<Theme | null>(null);
@@ -69,8 +71,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     availableThemes: themeStore.availableThemes,
     switchTheme: switchTheme,
     loadingThemes: themeStore.loadingThemes,
-    addTheme: themeStore.addTheme,
-    removeTheme: themeStore.removeTheme,
+    addThemeFromStore: themeStore.addTheme,
+    removeThemeFromStore: themeStore.removeTheme,
     isThemeLoading: themeStore.isThemeLoading,
   };
 
@@ -79,10 +81,4 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = () => {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
 };

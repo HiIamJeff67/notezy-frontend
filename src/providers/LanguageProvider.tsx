@@ -6,7 +6,7 @@ import {
 } from "@/global/constants/availableLanguages.constant";
 import { translations } from "@/global/translations/index";
 import { Language } from "@/global/types/language.type";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {
   language: Language;
@@ -15,7 +15,7 @@ interface LanguageContextType {
   t: (key: string) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(
+export const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
@@ -58,10 +58,4 @@ export const LanguageProvider = ({
       {children}
     </LanguageContext.Provider>
   );
-};
-
-export const useLanguage = () => {
-  const ctx = useContext(LanguageContext);
-  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");
-  return ctx;
 };

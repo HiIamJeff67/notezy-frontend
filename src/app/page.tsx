@@ -8,9 +8,7 @@ import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
 import { HTMLElementPosition } from "@/global/types/htmlElementPosition.type";
 import { Language } from "@/global/types/language.type";
-import { useAppRouter } from "@/hooks/useAppRouter";
-import { useLanguage } from "@/providers/LanguageProvider";
-import { useLoading } from "@/providers/LoadingProvider";
+import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const HomPage = () => {
