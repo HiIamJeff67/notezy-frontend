@@ -1,35 +1,45 @@
 "use client";
 
+import DropdownMenu from "@/components/DropDownMenu";
+import { DocumentIcon } from "@/components/icons/DocumentIcon";
+import { LanguageIcon } from "@/components/icons/LanguageIcon";
+import { NoteIcon } from "@/components/icons/NoteIcon";
 import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
+import { HTMLElementPosition } from "@/global/types/htmlElementPosition.type";
+import { Language } from "@/global/types/language.type";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { useTheme } from "@/providers/ThemeProvider";
-import { useEffect, useRef, useState } from "react";
-
-const DisplayText = {
-  topic: "Notezy",
-  content: "A More Humanized AI-Driven Note-Taking Application",
-};
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useLoading } from "@/providers/LoadingProvider";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const HomPage = () => {
-  const [displayTopic, setDisplayTopic] = useState<boolean>(true);
+  const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
-  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const [displayLanguageMenu, setDisplayLanguageMenu] =
+    useState<boolean>(false);
+  const [languageButtonPosition, setLanguageButtonPosition] =
+    useState<HTMLElementPosition>({ top: 0, right: 0 });
   const router = useAppRouter();
-  const { switchTheme } = useTheme();
+  const languageManager = useLanguage();
+  const { setIsLoading } = useLoading();
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const languageButtonRef = useRef<HTMLButtonElement>(null);
 
-  const navigateToDocumentPage = () => {
-    router.push("documents");
+  const updateLanguageButtonPosition = () => {
+    if (languageButtonRef.current) {
+      const rect = languageButtonRef.current.getBoundingClientRect();
+      setLanguageButtonPosition({
+        top: rect.bottom,
+        right: window.innerWidth - rect.right,
+      });
+    }
   };
 
-  const navigateToLoginPage = () => {
-    router.push("login");
-  };
-
-  const clearAllTimers = function () {
+  const clearAllTimers = useCallback(() => {
     timersRef.current.forEach(timer => clearTimeout(timer));
     timersRef.current = [];
-  };
+  }, []);
 
   const typeWriter = (text: string, isErasing: boolean) => {
     const chars = text.split("");
@@ -54,25 +64,25 @@ const HomPage = () => {
     timersRef.current.push(timer);
   };
 
-  const startCycle = () => {
+  const startCycle = useCallback(() => {
     clearAllTimers();
 
-    // displaying the topic
-    setDisplayTopic(true);
-    typeWriter(DisplayText.topic, false);
+    // displaying the mainTitle
+    setDisplayTitle(true);
+    typeWriter(languageManager.t("homePage.mainTitle"), false);
 
-    // erasing the topic
+    // erasing the mainTitle
     const erasingTopicTimer = setTimeout(() => {
-      typeWriter(DisplayText.topic, true);
+      typeWriter(languageManager.t("homePage.mainTitle"), true);
 
-      // displaying the content
+      // displaying the secondaryTitle
       const displayingContentTimer = setTimeout(() => {
-        setDisplayTopic(false);
-        typeWriter(DisplayText.content, false);
+        setDisplayTitle(false);
+        typeWriter(languageManager.t("homePage.secondaryTitle"), false);
 
-        // erasing the content
+        // erasing the secondaryTitle
         const erasingContentTimer = setTimeout(() => {
-          typeWriter(DisplayText.content, true);
+          typeWriter(languageManager.t("homePage.secondaryTitle"), true);
 
           // restart the entire loop
           const restartTimer = setTimeout(() => {
@@ -89,77 +99,96 @@ const HomPage = () => {
     }, 4000); // time during the process of displaying the topic
 
     timersRef.current.push(erasingTopicTimer);
-  };
+  }, []);
 
   useEffect(() => {
+    setIsLoading(false);
     startCycle();
     return () => clearAllTimers();
   }, []);
 
   return (
-    <div>
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
               linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), 
               linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
             `,
-            backgroundSize: "20px 20px",
+          backgroundSize: "20px 20px",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, transparent 0%, transparent 30%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 70%, black 100%)`,
+        }}
+      />
+      <div>
+        <Button
+          variant="secondary"
+          className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-10 h-10 p-0"
+          onClick={() => {
+            updateLanguageButtonPosition();
+            setDisplayLanguageMenu(prev => !prev);
           }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(135deg, transparent 0%, transparent 30%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 70%, black 100%)`,
+        >
+          <LanguageIcon size={28} />
+        </Button>
+        <DropdownMenu
+          isOpen={displayLanguageMenu}
+          onClose={() => {
+            setDisplayLanguageMenu(false);
           }}
+          changeablePosition={languageButtonPosition}
+          options={languageManager.availableLanguages}
+          currentOption={languageManager.language}
+          setCurrentOption={option =>
+            languageManager.setLanguage(option as Language)
+          }
+          menuSize={{ width: 210, height: 230 }}
+          menuClassName="mt-4 mr-4"
+          optionClassName="h-12"
         />
-        <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
-          <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">
-            <div className="min-h-[160px] flex flex-col items-center justify-center">
-              <div
-                className={`
+      </div>
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+        <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">
+          <div className="min-h-[160px] flex flex-col items-center justify-center">
+            <div
+              className={`
                   ${
-                    displayTopic
+                    displayTitle
                       ? "max-w-[400px] text-6xl"
                       : "max-w-[600px] text-4xl"
                   } 
                    font-bold pb-2 leading-tight text-center
                 `}
-              >
-                {currentText}
-                <span className="animate-pulse text-white">|</span>
-              </div>
-              <p className="text-lg opacity-80">
-                Your digital note-taking companion
-              </p>
+            >
+              {currentText}
+              <span className="animate-pulse text-white">|</span>
             </div>
-            <div className="flex items-center justify-center gap-6 mt-4">
-              <Button
-                variant="secondary"
-                className="cursor-pointer font-bold"
-                onClick={navigateToDocumentPage}
-              >
-                View Docs
-              </Button>
-              <Button
-                variant="default"
-                className="cursor-pointer font-bold"
-                onClick={navigateToLoginPage}
-              >
-                Get Started
-              </Button>
-              {/* <Button
-                variant="secondary"
-                className="cursor-pointer font-bold"
-                onClick={() =>
-                  switchTheme("9663dc5f-1980-4ca4-b1e5-54c63dcd3ff8")
-                }
-              >
-                Switch Theme
-              </Button> */}
-            </div>
+            <p className="text-lg opacity-80">
+              {languageManager.t("homePage.subtitle")}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-6 mt-4">
+            <Button
+              variant="secondary"
+              className="cursor-pointer font-bold"
+              onClick={() => router.push("documents")}
+            >
+              <DocumentIcon size={18} />
+              {languageManager.t("homePage.viewDocs")}
+            </Button>
+            <Button
+              variant="default"
+              className="cursor-pointer font-bold"
+              onClick={() => router.push("login")}
+            >
+              <NoteIcon size={18} />
+              {languageManager.t("homePage.getStarted")}
+            </Button>
           </div>
         </div>
       </div>

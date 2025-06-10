@@ -1,8 +1,12 @@
-export const AllLanguages = [
-  "English",
-  "TraditionalChinese",
-  "SimpleChinese",
-  "Japanese",
-];
+export type LanguageKey =
+  | "English"
+  | "TraditionalChinese"
+  | "SimpleChinese"
+  | "Japanese"
+  | "Korean";
 
-export type Language = (typeof AllLanguages)[number];
+export type Language = {
+  key: LanguageKey;
+  nativeName: string;
+  code: string;
+};

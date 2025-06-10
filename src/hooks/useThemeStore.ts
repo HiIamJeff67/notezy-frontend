@@ -1,4 +1,4 @@
-import { DefaultThemes } from "@/global/constants/defaultThemes.constants";
+import { DefaultThemes } from "@/global/constants/defaultThemes.constant";
 import { Theme } from "@/global/types/theme.type";
 import { useCallback, useState } from "react";
 

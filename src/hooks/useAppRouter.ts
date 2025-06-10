@@ -1,6 +1,6 @@
 "use client";
 
-import { DevelopmentBaseURL } from "@/global/constants/urlRoutes.constants";
+import { DevelopmentBaseURL } from "@/global/constants/urlRoutes.constant";
 import { useRouter } from "next/navigation";
 
 export const useAppRouter = () => {
