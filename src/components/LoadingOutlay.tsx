@@ -1,6 +1,6 @@
 "use client";
 
-import { useLoading } from "@/providers/LoadingProvider";
+import { useLoading } from "@/hooks";
 import { useEffect } from "react";
 
 const LoadingOverlay = () => {
