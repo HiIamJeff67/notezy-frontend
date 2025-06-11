@@ -6,11 +6,12 @@ import {
 } from "@/global/constants/availableLanguages.constant";
 import { translations } from "@/global/translations/index";
 import { Language } from "@/global/types/language.type";
+import { useLocalStorage } from "@/hooks";
 import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+  currentLanguage: Language;
+  setCurrentLanguage: (lang: Language) => void;
   availableLanguages: Language[];
   t: (key: string) => string;
 }
@@ -24,19 +25,27 @@ export const LanguageProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [language, setLanguage] = useState<Language>(LanguageKeyMap["English"]);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(
+    LanguageKeyMap["English"]
+  );
+  const localStorageManager = useLocalStorage();
+
+  useEffect(() => {
+    const savedLanguage = localStorageManager.getItemByKey("language");
+    if (savedLanguage !== null) setCurrentLanguage(savedLanguage);
+  }, []);
 
   // update the HTML lang attribute
   useEffect(() => {
-    const langCode = language.code;
-
+    localStorageManager.setItem("language", currentLanguage);
+    const langCode = currentLanguage.code;
     document.documentElement.lang = langCode;
-  }, [language]);
+  }, [currentLanguage]);
 
   // translating function
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: any = translations[language.key];
+    let value: any = translations[currentLanguage.key];
 
     for (const k of keys) {
       value = value?.[k];
@@ -47,8 +56,8 @@ export const LanguageProvider = ({
   };
 
   const contextValue: LanguageContextType = {
-    language: language,
-    setLanguage: setLanguage,
+    currentLanguage: currentLanguage,
+    setCurrentLanguage: setCurrentLanguage,
     availableLanguages: Languages,
     t: t,
   };

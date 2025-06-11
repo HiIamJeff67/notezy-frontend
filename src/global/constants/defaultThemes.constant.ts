@@ -53,6 +53,10 @@ export const DefaultOceanTheme: Theme = {
   createdAt: new Date("2025-06-09T08:26:27.347Z"),
 };
 
+// only setup the default themes here for initial use,
+// if more themes are required, the user can view the theme store
+// and add the themes from it by using useThemeStore.addTheme()
+// with passing a theme data which is extracted from the database(see the backend)
 export const DefaultThemes = [
   DefaultDarkTheme,
   DefaultLightTheme,

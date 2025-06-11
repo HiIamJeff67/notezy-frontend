@@ -1,0 +1,98 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes buttonGlow {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.status-indicator {
+  animation: pulse 2s infinite;
+}
+
+.button-glow {
+  transition: left 0.5s ease;
+}
+
+.access-button:hover .button-glow {
+  animation: buttonGlow 0.5s ease;
+}
+
+/* Custom gradients that Tailwind can't handle */
+.panel-gradient {
+  background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+}
+
+.panel-texture::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(139, 69, 19, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(139, 69, 19, 0.08) 0%,
+      transparent 40%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.02) 35%,
+      transparent 40%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 60%,
+      rgba(255, 255, 255, 0.03) 65%,
+      transparent 70%
+    );
+  pointer-events: none;
+}
+
+.panel-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.input-gradient {
+  background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+}
+
+.button-gradient {
+  background: linear-gradient(145deg, #1a4d1a, #0f3a0f);
+}
+
+.button-gradient:hover {
+  background: linear-gradient(145deg, #1a5d1a, #0f4a0f);
+}
+
+.screw-gradient {
+  background: radial-gradient(circle, #3a3a3a 30%, #1a1a1a 70%);
+}

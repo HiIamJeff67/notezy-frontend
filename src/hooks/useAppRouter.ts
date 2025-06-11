@@ -7,7 +7,7 @@ export const useAppRouter = () => {
   const router = useRouter();
   const BaseURL = DevelopmentBaseURL;
   const prevPaths: string[] = [BaseURL];
-  var currentPathIndex: number = -1;
+  let currentPathIndex: number = -1;
 
   const _getDestination = function (path: string): string {
     return path.startsWith("/") ? BaseURL + path : BaseURL + "/" + path;

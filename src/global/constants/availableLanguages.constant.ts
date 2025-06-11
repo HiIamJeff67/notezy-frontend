@@ -8,6 +8,7 @@ export const LanguageKeys: LanguageKey[] = [
   "Korean",
 ];
 
+// since the support languages are not large, we can just build their map here
 export const LanguageKeyMap: Record<LanguageKey, Language> = {
   English: {
     key: "English",

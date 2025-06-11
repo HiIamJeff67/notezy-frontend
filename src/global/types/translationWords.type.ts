@@ -27,9 +27,16 @@ export interface TranslationWords {
     login: string;
     register: string;
     logout: string;
+    account: string;
+    name: string;
     email: string;
     password: string;
+    confirmPassword: string;
     forgotPassword: string;
+    haveNotRegisterAnAccount: string;
+    alreadyHaveAnAccount: string;
+    authenticationPanelSubtitle: string;
+    oopsIForgotMyAccount: string;
   };
   themes: {
     dark: string;

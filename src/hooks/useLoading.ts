@@ -1,3 +1,5 @@
+"use client";
+
 import { LoadingContext } from "@/providers/LoadingProvider";
 import { useContext } from "react";
 

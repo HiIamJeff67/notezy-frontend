@@ -1,5 +1,7 @@
 "use client";
+import { DefaultDarkTheme } from "@/global/constants/defaultThemes.constant";
 import { Theme } from "@/global/types/theme.type";
+import { useLocalStorage } from "@/hooks";
 import { useThemeStore } from "@/hooks/useThemeStore";
 import React, { createContext, useEffect, useState } from "react";
 
@@ -18,25 +20,40 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 );
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultDarkTheme);
   const [prevThemeCSSClassName, setPrevThemeCSSClassName] =
     useState<string>("");
+  const localStorageManager = useLocalStorage();
 
   const themeStore = useThemeStore();
 
   // initialize the default theme
   useEffect(() => {
-    const defaultTheme = themeStore.availableThemes.find(
-      t => t.id === "ae29bb37-d4ba-4826-bf56-9074e23ea65b" // Default Dark
-    );
-    if (defaultTheme && !currentTheme) {
-      setCurrentTheme(defaultTheme);
+    const savedTheme = localStorageManager.getItemByKey("theme");
+    if (savedTheme === null) {
+      setCurrentTheme(DefaultDarkTheme);
+      localStorageManager.setItem("theme", DefaultDarkTheme);
+      return;
     }
-  }, [themeStore.availableThemes, currentTheme]);
+
+    const isThemeExists = themeStore.availableThemes.find(
+      t => t.id === savedTheme.id
+    );
+
+    if (!isThemeExists) {
+      setCurrentTheme(DefaultDarkTheme);
+      localStorageManager.setItem("theme", DefaultDarkTheme);
+      return;
+    }
+
+    setCurrentTheme(savedTheme);
+  }, []);
 
   // while switch the theme, also update the DOM
   useEffect(() => {
     if (!currentTheme) return;
+
+    localStorageManager.setItem("theme", currentTheme);
 
     if (prevThemeCSSClassName) {
       document.documentElement.classList.remove(prevThemeCSSClassName);

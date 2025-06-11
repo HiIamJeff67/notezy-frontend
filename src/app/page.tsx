@@ -1,6 +1,7 @@
 "use client";
 
 import DropdownMenu from "@/components/DropDownMenu";
+import GridBlackBackground from "@/components/GridBackground";
 import { DocumentIcon } from "@/components/icons/DocumentIcon";
 import { LanguageIcon } from "@/components/icons/LanguageIcon";
 import { NoteIcon } from "@/components/icons/NoteIcon";
@@ -11,6 +12,11 @@ import { Language } from "@/global/types/language.type";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const DisplayTitle = {
+  mainTitle: "Notezy",
+  secondaryTitle: "A More Humanized AI-Driven Note-Taking Application",
+};
+
 const HomPage = () => {
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
@@ -20,11 +26,11 @@ const HomPage = () => {
     useState<HTMLElementPosition>({ top: 0, right: 0 });
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const { setIsLoading } = useLoading();
+  const loadingManager = useLoading();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const languageButtonRef = useRef<HTMLButtonElement>(null);
 
-  const updateLanguageButtonPosition = () => {
+  const updateLanguageButtonPosition = function () {
     if (languageButtonRef.current) {
       const rect = languageButtonRef.current.getBoundingClientRect();
       setLanguageButtonPosition({
@@ -39,7 +45,7 @@ const HomPage = () => {
     timersRef.current = [];
   }, []);
 
-  const typeWriter = (text: string, isErasing: boolean) => {
+  const typeWriter = function (text: string, isErasing: boolean) {
     const chars = text.split("");
     let currentIndex = isErasing ? chars.length : 0;
 
@@ -67,20 +73,20 @@ const HomPage = () => {
 
     // displaying the mainTitle
     setDisplayTitle(true);
-    typeWriter(languageManager.t("homePage.mainTitle"), false);
+    typeWriter(DisplayTitle.mainTitle, false);
 
     // erasing the mainTitle
     const erasingTopicTimer = setTimeout(() => {
-      typeWriter(languageManager.t("homePage.mainTitle"), true);
+      typeWriter(DisplayTitle.mainTitle, true);
 
       // displaying the secondaryTitle
       const displayingContentTimer = setTimeout(() => {
         setDisplayTitle(false);
-        typeWriter(languageManager.t("homePage.secondaryTitle"), false);
+        typeWriter(DisplayTitle.secondaryTitle, false);
 
         // erasing the secondaryTitle
         const erasingContentTimer = setTimeout(() => {
-          typeWriter(languageManager.t("homePage.secondaryTitle"), true);
+          typeWriter(DisplayTitle.secondaryTitle, true);
 
           // restart the entire loop
           const restartTimer = setTimeout(() => {
@@ -100,68 +106,55 @@ const HomPage = () => {
   }, []);
 
   useEffect(() => {
-    setIsLoading(false);
+    loadingManager.setIsLoading(false);
     startCycle();
     return () => clearAllTimers();
   }, []);
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), 
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-            `,
-          backgroundSize: "20px 20px",
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, transparent 0%, transparent 30%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 70%, black 100%)`,
-        }}
-      />
+    <GridBlackBackground>
       <div>
-        <Button
-          variant="secondary"
-          className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-10 h-10 p-0"
-          onClick={() => {
-            updateLanguageButtonPosition();
-            setDisplayLanguageMenu(prev => !prev);
-          }}
-        >
-          <LanguageIcon size={28} />
-        </Button>
-        <DropdownMenu
-          isOpen={displayLanguageMenu}
-          onClose={() => {
-            setDisplayLanguageMenu(false);
-          }}
-          changeablePosition={languageButtonPosition}
-          options={languageManager.availableLanguages}
-          currentOption={languageManager.language}
-          setCurrentOption={option =>
-            languageManager.setLanguage(option as Language)
-          }
-          menuSize={{ width: 210, height: 230 }}
-          menuClassName="mt-4 mr-4"
-          optionClassName="h-12"
-        />
+        {displayLanguageMenu ? (
+          <DropdownMenu
+            isOpen={displayLanguageMenu}
+            onClose={() => {
+              setDisplayLanguageMenu(false);
+            }}
+            changeablePosition={languageButtonPosition}
+            options={languageManager.availableLanguages}
+            currentOption={languageManager.currentLanguage}
+            setCurrentOption={option =>
+              languageManager.setCurrentLanguage(option as Language)
+            }
+            menuSize={{ width: 210, height: 230 }}
+            menuClassName="mt-4 mr-4"
+            optionClassName="h-12"
+          />
+        ) : (
+          <Button
+            variant="secondary"
+            className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-10 h-10 p-0"
+            onClick={() => {
+              updateLanguageButtonPosition();
+              setDisplayLanguageMenu(prev => !prev);
+            }}
+          >
+            <LanguageIcon size={28} />
+          </Button>
+        )}
       </div>
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">
           <div className="min-h-[160px] flex flex-col items-center justify-center">
             <div
               className={`
-                  ${
-                    displayTitle
-                      ? "max-w-[400px] text-6xl"
-                      : "max-w-[600px] text-4xl"
-                  } 
-                   font-bold pb-2 leading-tight text-center
-                `}
+                    ${
+                      displayTitle
+                        ? "max-w-[400px] text-6xl"
+                        : "max-w-[600px] text-4xl"
+                    } 
+                    font-bold pb-2 leading-tight text-center
+                  `}
             >
               {currentText}
               <span className="animate-pulse text-white">|</span>
@@ -174,7 +167,10 @@ const HomPage = () => {
             <Button
               variant="secondary"
               className="cursor-pointer font-bold"
-              onClick={() => router.push("documents")}
+              onClick={() => {
+                loadingManager.setIsLoading(true);
+                router.push("documents");
+              }}
             >
               <DocumentIcon size={18} />
               {languageManager.t("homePage.viewDocs")}
@@ -182,7 +178,10 @@ const HomPage = () => {
             <Button
               variant="default"
               className="cursor-pointer font-bold"
-              onClick={() => router.push("login")}
+              onClick={() => {
+                loadingManager.setIsLoading(true);
+                router.push("login");
+              }}
             >
               <NoteIcon size={18} />
               {languageManager.t("homePage.getStarted")}
@@ -190,7 +189,7 @@ const HomPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </GridBlackBackground>
   );
 };
 
