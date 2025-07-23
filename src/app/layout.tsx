@@ -3,6 +3,7 @@ import "@/global/styles/theme.css";
 import { LanguageProvider, LoadingProvider, ThemeProvider } from "@/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
             <ThemeProvider>
               <LoadingOverlay />
               {children}
+              <Toaster position="top-center" />
             </ThemeProvider>
           </LanguageProvider>
         </LoadingProvider>

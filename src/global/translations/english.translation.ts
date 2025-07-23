@@ -39,6 +39,12 @@ export const EnglishTranslationWords: TranslationWords = {
     alreadyHaveAnAccount: "Already have an account?",
     authenticationPanelSubtitle: "Authentication panel for",
     oopsIForgotMyAccount: "Oops! I forgot my account..",
+    pleaseInputValidName:
+      "Please input a valid name which should be alphanumeric and at least 8 characters",
+    pleaseInputValidEmail: "Please input a valid email",
+    pleaseInputStrongPassword: "Please input a strong password",
+    pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
+      "Please make sure the password and confirm password are the same",
   },
   themes: {
     dark: "Dark",

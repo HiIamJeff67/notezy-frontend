@@ -24,3 +24,19 @@
   --accent: #10b981;
   --accent-foreground: #ffffff;
 }
+
+.product-standard {
+  --background: #111111; /* 幾乎純黑，提升對比 */
+  --foreground: #ffffff; /* 純白字體 */
+  --primary: #b48a5a; /* 木頭色（溫暖的棕色） */
+  --primary-foreground: #ffffff; /* 木頭色上的白字 */
+  --secondary: #4caf50; /* 綠植的綠色 */
+  --secondary-foreground: #ffffff; /* 綠色上的白字 */
+  --accent: #7e5c3e; /* 深一點的木頭色作為強調 */
+  --accent-foreground: #ffffff;
+  --muted: #22201a; /* 木頭色系的深色，作為 muted 背景 */
+  --muted-foreground: #a3a3a3;
+  --border: #3a2f23; /* 木頭色系的邊框 */
+  --input: #22201a;
+  --ring: #4caf50; /* 綠色作為 focus ring */
+}

@@ -95,7 +95,13 @@ const AuthPanel = ({
             {subtitle ?? `Authentication panel for ${toCamelCase(title)}`}
           </div>
 
-          <form onSubmit={onSubmit} className="flex flex-col gap-6">
+          <form
+            onSubmit={async e => {
+              e.preventDefault();
+              await onSubmit();
+            }}
+            className="flex flex-col gap-6"
+          >
             {inputs.map((input, index) => (
               <div key={index} className="flex flex-col gap-2">
                 <label
@@ -163,7 +169,7 @@ const AuthPanel = ({
                   <button
                     type="button"
                     onClick={switchButton.onClick}
-                    className="relative inline-block px-3 py-1 ml-1
+                    className="relative inline-block px-3 py-1 ml-1 mt-2
                     font-mono text-xs font-bold tracking-wider uppercase
                     text-green-400 cursor-pointer
                     border border-green-400/30 rounded

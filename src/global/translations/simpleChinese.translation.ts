@@ -39,6 +39,10 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     alreadyHaveAnAccount: "已经有账号了？",
     authenticationPanelSubtitle: "身份验证面板",
     oopsIForgotMyAccount: "糟了! 我忘记我的账号了..",
+    pleaseInputValidName: "请输入有效的名称，需包含字母和数字且至少8个字符",
+    pleaseInputValidEmail: "请输入有效的电子邮件",
+    pleaseInputStrongPassword: "请输入一个强密码",
+    pleaseMakeSurePasswordAndConfirmPasswordAreMatch: "请确保密码和确认密码",
   },
   themes: {
     dark: "深色",

@@ -7,6 +7,7 @@ import { LanguageIcon } from "@/components/icons/LanguageIcon";
 import { NoteIcon } from "@/components/icons/NoteIcon";
 import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
+import { tKey } from "@/global/translations";
 import { HTMLElementPosition } from "@/global/types/htmlElementPosition.type";
 import { Language } from "@/global/types/language.type";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
@@ -160,7 +161,7 @@ const HomPage = () => {
               <span className="animate-pulse text-white">|</span>
             </div>
             <p className="text-lg opacity-80">
-              {languageManager.t("homePage.subtitle")}
+              {languageManager.t(tKey.homePage.subtitle)}
             </p>
           </div>
           <div className="flex items-center justify-center gap-6 mt-4">
@@ -173,7 +174,7 @@ const HomPage = () => {
               }}
             >
               <DocumentIcon size={18} />
-              {languageManager.t("homePage.viewDocs")}
+              {languageManager.t(tKey.homePage.viewDocs)}
             </Button>
             <Button
               variant="default"
@@ -184,7 +185,7 @@ const HomPage = () => {
               }}
             >
               <NoteIcon size={18} />
-              {languageManager.t("homePage.getStarted")}
+              {languageManager.t(tKey.homePage.getStarted)}
             </Button>
           </div>
         </div>

@@ -183,22 +183,33 @@ const DropdownMenu = ({
 
   if (!isOpen) return null;
 
+  // ...existing code...
   return (
     <div
       ref={menuRef}
-      className={`${menuClassName} p-0 bg-black/90 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg overflow-hidden`}
+      className={`
+        ${menuClassName}
+        p-0
+        bg-[var(--background)]
+        backdrop-blur-sm
+        border
+        border-[var(--border)]
+        rounded-lg
+        shadow-lg
+        overflow-hidden
+      `}
       style={getAnimatedStyles()}
     >
       {/* only display the options while the menu is completely opened */}
       {(animationStage === "open" || animationStage === "closing-y") && (
         <div
           className={`
-          p-2 transition-opacity duration-200 
-          ${animationStage === "open" ? "opacity-100" : "opacity-0"}
-          overflow-y-auto overflow-x-hidden
-          hide-scrollbar
-          flex flex-col items-center gap-2
-        `}
+            p-2 transition-opacity duration-200 
+            ${animationStage === "open" ? "opacity-100" : "opacity-0"}
+            overflow-y-auto overflow-x-hidden
+            hide-scrollbar
+            flex flex-col items-center gap-2
+          `}
           style={{
             maxHeight: `${menuSize.height - 16}px`,
           }}
@@ -210,8 +221,11 @@ const DropdownMenu = ({
               onClick={() => handleSelectOption(option)}
               className={`
                 ${optionClassName}
-                w-full px-4 py-3 text-left text-white hover:bg-white/20 flex items-center gap-3 rounded-md transition-all duration-200 cursor-pointer
-                ${currentOption === option ? "bg-white/10" : ""}
+                w-full px-4 py-3 text-left
+                text-[var(--foreground)]
+                hover:bg-[var(--muted)]
+                flex items-center gap-3 rounded-md transition-all duration-200 cursor-pointer border-1
+                ${currentOption === option ? "bg-[var(--muted)]" : ""}
               `}
               style={{
                 // separate the animation
@@ -225,7 +239,7 @@ const DropdownMenu = ({
             >
               <span className="flex-1">{option.nativeName}</span>
               {currentOption === option && (
-                <span className="text-blue-400 text-sm">✓</span>
+                <span className="text-[var(--secondary)]-400 text-sm">✓</span>
               )}
             </Button>
           ))}

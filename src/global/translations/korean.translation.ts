@@ -39,6 +39,12 @@ export const KoreanTranslationWords: TranslationWords = {
     alreadyHaveAnAccount: "이미 계정이 있으신가요？",
     authenticationPanelSubtitle: "인증 패널",
     oopsIForgotMyAccount: "앗! 제 계정을 잊어버렸어요..",
+    pleaseInputValidName:
+      "유효한 이름을 입력해 주세요. 영문자와 숫자를 포함하며 최소 8자여야 합니다.",
+    pleaseInputValidEmail: "유효한 이메일을 입력해 주세요.",
+    pleaseInputStrongPassword: "강력한 비밀번호를",
+    pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
+      "비밀번호와 비밀번호 확인이 일치하는지 확인해 주세요.",
   },
   themes: {
     dark: "다크",

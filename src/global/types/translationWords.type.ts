@@ -37,6 +37,10 @@ export interface TranslationWords {
     alreadyHaveAnAccount: string;
     authenticationPanelSubtitle: string;
     oopsIForgotMyAccount: string;
+    pleaseInputValidName: string;
+    pleaseInputValidEmail: string;
+    pleaseInputStrongPassword: string;
+    pleaseMakeSurePasswordAndConfirmPasswordAreMatch: string;
   };
   themes: {
     dark: string;

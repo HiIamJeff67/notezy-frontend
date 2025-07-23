@@ -39,6 +39,12 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     alreadyHaveAnAccount: "已經有帳號了？",
     authenticationPanelSubtitle: "身份驗證面板",
     oopsIForgotMyAccount: "糟了! 我忘記我的帳號了..",
+    pleaseInputValidName:
+      "請輸入有效的名稱，須包含英文字母和數字並且至少 8 個字元",
+    pleaseInputValidEmail: "請輸入有效的電子郵件",
+    pleaseInputStrongPassword: "請輸入一組強密碼",
+    pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
+      "請確保密碼跟確認密碼一致",
   },
   themes: {
     dark: "深色",
