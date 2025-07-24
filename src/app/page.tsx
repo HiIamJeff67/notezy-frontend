@@ -7,10 +7,11 @@ import { LanguageIcon } from "@/components/icons/LanguageIcon";
 import { NoteIcon } from "@/components/icons/NoteIcon";
 import { Button } from "@/components/ui/button";
 import "@/global/styles/animation.css";
-import { tKey } from "@/global/translations";
-import { HTMLElementPosition } from "@/global/types/htmlElementPosition.type";
-import { Language } from "@/global/types/language.type";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { WebURLPathDictionary } from "@/shared/constants/url.constant";
+import { tKey } from "@/shared/translations";
+import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
+import { Language } from "@/shared/types/language.type";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -170,7 +171,7 @@ const HomPage = () => {
               className="cursor-pointer font-bold"
               onClick={() => {
                 loadingManager.setIsLoading(true);
-                router.push("documents");
+                router.push(WebURLPathDictionary.documents);
               }}
             >
               <DocumentIcon size={18} />
@@ -181,7 +182,7 @@ const HomPage = () => {
               className="cursor-pointer font-bold"
               onClick={() => {
                 loadingManager.setIsLoading(true);
-                router.push("login");
+                router.push(WebURLPathDictionary.login);
               }}
             >
               <NoteIcon size={18} />

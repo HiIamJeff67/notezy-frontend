@@ -1,9 +1,9 @@
 "use client";
 
 import "@/global/styles/scrollbar.css";
-import { DropdownOptionType } from "@/global/types/dropdownOptionType.type";
-import { ElementSize } from "@/global/types/elementSize.type";
-import { HTMLElementPosition } from "@/global/types/htmlElementPosition.type";
+import { DropdownOptionType } from "@/shared/types/dropdownOptionType.type";
+import { ElementSize } from "@/shared/types/elementSize.type";
+import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 

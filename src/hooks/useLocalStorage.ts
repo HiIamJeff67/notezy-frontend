@@ -1,7 +1,7 @@
 "use client";
 
-import { LocalStoragePrefix } from "@/global/constants/defaultLocalStorage.constant";
-import { StorageItem } from "@/global/types/localStorage.type";
+import { LocalStoragePrefix } from "@/shared/constants/defaultLocalStorage.constant";
+import { StorageItem } from "@/shared/types/localStorage.type";
 
 export const useLocalStorage = () => {
   // check if the local storage is available or not,

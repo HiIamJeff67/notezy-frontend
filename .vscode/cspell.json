@@ -16,7 +16,9 @@
     "vercel",
     "eslint",
     "prettier",
-    "drei"
+    "drei",
+    "NANP",
+    "APIURL"
   ],
   "ignorePaths": [
     "node_modules/**",

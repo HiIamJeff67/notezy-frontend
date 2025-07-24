@@ -1,12 +1,12 @@
 "use client";
 
+import { useLocalStorage } from "@/hooks";
 import {
   LanguageKeyMap,
   Languages,
-} from "@/global/constants/availableLanguages.constant";
-import { translations } from "@/global/translations/index";
-import { Language } from "@/global/types/language.type";
-import { useLocalStorage } from "@/hooks";
+} from "@/shared/constants/availableLanguages.constant";
+import { translations } from "@/shared/translations/index";
+import { Language } from "@/shared/types/language.type";
 import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {

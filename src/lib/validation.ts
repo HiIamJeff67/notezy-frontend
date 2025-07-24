@@ -1,0 +1,76 @@
+/**
+ * ### Check if the given name is valid or not for Notezy API
+ * @param name string
+ * @returns a boolean value to indicate if given name is valid or not
+ * @description A valid name is:
+ * - contain at least 1 english letter(no matter upper case or lower case)
+ * - contain at least 1 digit (0 - 9)
+ * - its length should be at least 6 characters
+ * - its length should be at most 16 characters
+ * @example test123, or Test123, or TEST123
+ */
+export const isValidName = function (name: string): boolean {
+  const trimName: string = name.replaceAll(" ", "");
+  if (trimName === "") return false;
+  if (trimName.length < 6 || trimName.length > 16) return false;
+
+  let hasEnglishLetter = false,
+    hasDigit = false;
+
+  Array.from(name).forEach(l => {
+    if (/[a-zA-Z]/.test(l)) hasEnglishLetter = true;
+    else if (/[0-9]/.test(l)) hasDigit = true;
+    if (hasEnglishLetter && hasDigit) return true;
+  });
+
+  return hasEnglishLetter && hasDigit;
+};
+
+/**
+ * ### Check if the given email is valid or not for Notezy API
+ * @param email string
+ * @returns a boolean value to indicate if the given email is valid or not
+ * @description A valid email is:
+ * - contain exactly 1 '@' sign
+ * - contain exactly 1 '.' sign after the '@' sign
+ * - contain any characters before '@' sign, between '@' sign and '.' sign, and after '.' sign
+ * @example example123@email.com
+ */
+export const isValidEmail = function (email: string): boolean {
+  const trimEmail: string = email.replaceAll(" ", "");
+  return trimEmail !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+/**
+ * ### Check if the given password is valid or not for Notezy API
+ * @param password string
+ * @returns a boolean value to indicate if the given password is valid or not
+ * @description A valid password is:
+ * - contain at least 1 upper case english letter
+ * - contain at least 1 lower case english letter
+ * - contain at least 1 digit
+ * - contain no empty space
+ * - its length should be at least 8 characters
+ * - its length should be at most 1024 characters
+ * @example Test1234!
+ */
+export const isValidPassword = function (password: string): boolean {
+  if (password.length < 8 || password.length > 1024) return false;
+
+  let hasUpperCaseLetter: boolean = false,
+    hasLowerCaseLetter: boolean = false,
+    hasDigit: boolean = false,
+    hasSpecialCharacter: boolean = false;
+
+  Array.from(password).forEach(l => {
+    if (/[ ]/.test(l)) return false;
+    else if (/[a-z]/.test(l)) hasLowerCaseLetter = true;
+    else if (/[A-Z]/.test(l)) hasUpperCaseLetter = true;
+    else if (/[0-9]/.test(l)) hasDigit = true;
+    else if (/[`~!@#$%^&*()-_+=]/.test(l)) hasSpecialCharacter = true;
+  });
+
+  return (
+    hasUpperCaseLetter && hasLowerCaseLetter && hasDigit && hasSpecialCharacter
+  );
+};

@@ -2,8 +2,9 @@
 
 import AuthPanel from "@/components/AuthPanel";
 import GridBlackBackground from "@/components/GridBackground";
-import { tKey } from "@/global/translations";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { WebURLPathDictionary } from "@/shared/constants/url.constant";
+import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
 
 const LoginPage = () => {
@@ -57,7 +58,7 @@ const LoginPage = () => {
               title: languageManager.t(tKey.auth.register),
               onClick: () => {
                 loadingManager.setIsLoading(true);
-                router.push("/register");
+                router.push(WebURLPathDictionary.register);
               },
             },
             {

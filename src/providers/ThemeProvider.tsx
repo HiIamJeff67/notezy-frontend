@@ -1,8 +1,8 @@
 "use client";
-import { DefaultDarkTheme } from "@/global/constants/defaultThemes.constant";
-import { Theme } from "@/global/types/theme.type";
 import { useLocalStorage } from "@/hooks";
 import { useThemeStore } from "@/hooks/useThemeStore";
+import { DefaultDarkTheme } from "@/shared/constants/defaultThemes.constant";
+import { Theme } from "@/shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
 
 type ThemeContextType = {

@@ -3,10 +3,14 @@
 import { Register } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBlackBackground from "@/components/GridBackground";
-import { tKey } from "@/global/translations";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { useUserData } from "@/hooks/useUserData";
+import { handleAndLogCaughtError } from "@/lib/handleCaughtError";
+import { isValidEmail, isValidName, isValidPassword } from "@/lib/validation";
+
+import { WebURLPathDictionary } from "@/shared/constants/url.constant";
+import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -16,85 +20,56 @@ const RegisterPage = () => {
   const loadingManager = useLoading();
   const router = useAppRouter();
   const languageManager = useLanguage();
+  const userDataManager = useUserData();
 
   useEffect(() => {
     loadingManager.setIsLoading(false);
   }, []);
 
-  const isValidName = function (name: string): boolean {
-    const trimName: string = name.replaceAll(" ", "");
-    if (trimName === "") return false;
-
-    let hasEnglishLetter = false,
-      hasDigit = false;
-
-    Array.from(name).forEach(l => {
-      if (/[a-zA-Z]/.test(l)) hasEnglishLetter = true;
-      else if (/[0-9]/.test(l)) hasDigit = true;
-      if (hasEnglishLetter && hasDigit) return true;
-    });
-
-    return hasEnglishLetter && hasDigit;
-  };
-
-  const isValidEmail = function (email: string): boolean {
-    const trimEmail: string = email.replaceAll(" ", "");
-    return trimEmail !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const isValidPassword = function (password: string): boolean {
-    if (password.length < 8) return false;
-
-    let hasUpperCaseLetter: boolean = false,
-      hasLowerCaseLetter: boolean = false,
-      hasDigit: boolean = false,
-      hasSpecialCharacter: boolean = false;
-
-    Array.from(password).forEach(l => {
-      if (/[ ]/.test(l)) return false;
-      else if (/[a-z]/.test(l)) hasLowerCaseLetter = true;
-      else if (/[A-Z]/.test(l)) hasUpperCaseLetter = true;
-      else if (/[0-9]/.test(l)) hasDigit = true;
-      else if (/[`~!@#$%^&*()-_+=]/.test(l)) hasSpecialCharacter = true;
-    });
-
-    return (
-      hasUpperCaseLetter &&
-      hasLowerCaseLetter &&
-      hasDigit &&
-      hasSpecialCharacter
-    );
-  };
-
   const handlingRegisterSubmit = async function (): Promise<void> {
-    if (!isValidName(name)) {
-      toast.error(languageManager.t(tKey.auth.pleaseInputValidName));
-      return;
-    } else if (!isValidEmail(email)) {
-      toast.error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-      return;
-    } else if (password !== confirmPassword) {
-      toast.error(
-        languageManager.t(
-          tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-        )
-      );
-      return;
-    } else if (!isValidPassword(password)) {
-      toast.error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
+    try {
+      if (!isValidName(name)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidName));
+        return;
+      } else if (!isValidEmail(email)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+        return;
+      } else if (password !== confirmPassword) {
+        throw new Error(
+          languageManager.t(
+            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+          )
+        );
+        return;
+      } else if (!isValidPassword(password)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
+        return;
+      }
+
+      const userAgent = navigator.userAgent;
+      const response = await Register({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          name: name,
+          email: email,
+          password: password,
+        },
+      });
+      // if there's any error, it will be caught by the below catch block
+      // since we don't wrap the try-catch block in Register()
+
+      console.log(response);
+
+      /* storing user data and navigate to dashboard */
+
+      // run api /getMe to get the user data cache
+      // and then store it in the userDataManager
+    } catch (error) {
+      handleAndLogCaughtError(error);
       return;
     }
-
-    const userAgent = navigator.userAgent;
-    const response = await Register({
-      name: name,
-      email: email,
-      password: password,
-      userAgent: userAgent,
-    });
-    console.log(response);
-
-    /* storing user data and navigate to dashboard */
   };
 
   return (
@@ -145,7 +120,7 @@ const RegisterPage = () => {
               title: languageManager.t(tKey.auth.login),
               onClick: () => {
                 loadingManager.setIsLoading(true);
-                router.push("/login");
+                router.push(WebURLPathDictionary.login);
               },
             },
           ]}

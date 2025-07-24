@@ -1,6 +1,11 @@
 import LoadingOverlay from "@/components/LoadingOutlay";
 import "@/global/styles/theme.css";
-import { LanguageProvider, LoadingProvider, ThemeProvider } from "@/providers";
+import {
+  LanguageProvider,
+  LoadingProvider,
+  ThemeProvider,
+  UserDataProvider,
+} from "@/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
@@ -32,9 +37,11 @@ export default function RootLayout({
         <LoadingProvider>
           <LanguageProvider>
             <ThemeProvider>
-              <LoadingOverlay />
-              {children}
-              <Toaster position="top-center" />
+              <UserDataProvider>
+                <Toaster position="top-center" />
+                <LoadingOverlay />
+                {children}
+              </UserDataProvider>
             </ThemeProvider>
           </LanguageProvider>
         </LoadingProvider>

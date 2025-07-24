@@ -1,58 +1,36 @@
 "use client";
 
-import { DevelopmentBaseURL } from "@/global/constants/urlRoutes.constant";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useRef } from "react";
 
 export const useAppRouter = () => {
   const router = useRouter();
-  const BaseURL = DevelopmentBaseURL;
-  const prevPaths: string[] = [BaseURL];
-  let currentPathIndex: number = -1;
+  const pathname = usePathname();
+  const prevPathsRef = useRef<string[]>([]);
 
-  const _getDestination = function (path: string): string {
-    return path.startsWith("/") ? BaseURL + path : BaseURL + "/" + path;
-  };
+  if (
+    typeof window !== "undefined" &&
+    prevPathsRef.current[prevPathsRef.current.length - 1] !== pathname
+  ) {
+    prevPathsRef.current.push(pathname);
+  }
 
   const appRouter = {
     push: (path: string) => {
-      const destination = _getDestination(path);
-      prevPaths.push(destination);
-      router.push(destination);
-      currentPathIndex++;
+      // use router.push() directly, let Next.js handle the base path
+      router.push(path.startsWith("/") ? path : "/" + path);
     },
-
     replace: (path: string) => {
-      const destination = _getDestination(path);
-      prevPaths.length = 0; // clear the prevPaths
-      currentPathIndex = -1; // reset the pointer of prevPaths
-      router.replace(destination);
+      router.replace(path.startsWith("/") ? path : "/" + path);
     },
-
     back: (steps: number = 1) => {
-      if (steps <= 0) return;
-
-      while (currentPathIndex >= 0 && steps > 0) {
-        router.back();
-        currentPathIndex--;
-        steps--;
-      }
+      while (steps-- > 0) router.back();
     },
-
     forward: (steps: number = 1) => {
-      if (steps <= 0) return;
-
-      while (currentPathIndex < prevPaths.length - 1 && steps > 0) {
-        router.forward();
-        currentPathIndex++;
-        steps--;
-      }
+      while (steps-- > 0) router.forward();
     },
-
     refresh: () => router.refresh(),
-
-    getPrevPaths: (): string[] => {
-      return prevPaths;
-    },
+    getPrevPaths: (): string[] => [...prevPathsRef.current],
   };
 
   return appRouter;

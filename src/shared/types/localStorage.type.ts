@@ -1,5 +1,5 @@
-import { Language } from "@/global/types/language.type";
-import { Theme } from "@/global/types/theme.type";
+import { Language } from "@/shared/types/language.type";
+import { Theme } from "@/shared/types/theme.type";
 
 export interface StorageItem {
   theme: Theme | null; // the theme of the current user

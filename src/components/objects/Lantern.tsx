@@ -1,4 +1,4 @@
-import { ThreeCord } from "@/global/types/threeCord.type";
+import { ThreeCord } from "@/shared/types/threeCord.type";
 import { Float } from "@react-three/drei";
 import { useRef } from "react";
 import * as THREE from "three";
