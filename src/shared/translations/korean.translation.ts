@@ -52,4 +52,17 @@ export const KoreanTranslationWords: TranslationWords = {
     neon: "네온",
     ocean: "오션",
   },
+  error: {
+    encounterUnknownError: "알 수 없는 오류가 발생했습니다",
+    apiError: {
+      failedToRegister:
+        "회원가입에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      failedToLogin:
+        "로그인에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      failedToLogout:
+        "로그아웃에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      failedToGetUser:
+        "사용자 정보를 가져오지 못했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+    },
+  },
 };

@@ -52,4 +52,17 @@ export const JapaneseTranslationWords: TranslationWords = {
     neon: "ネオン",
     ocean: "オーシャン",
   },
+  error: {
+    encounterUnknownError: "不明なエラーが発生しました",
+    apiError: {
+      failedToRegister:
+        "登録に失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
+      failedToLogin:
+        "ログインに失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
+      failedToLogout:
+        "ログアウトに失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
+      failedToGetUser:
+        "ユーザー情報の取得に失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
+    },
+  },
 };

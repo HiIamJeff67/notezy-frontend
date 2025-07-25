@@ -48,4 +48,13 @@ export interface TranslationWords {
     neon: string;
     ocean: string;
   };
+  error: {
+    encounterUnknownError: string;
+    apiError: {
+      failedToRegister: string;
+      failedToLogin: string;
+      failedToLogout: string;
+      failedToGetUser: string;
+    };
+  };
 }

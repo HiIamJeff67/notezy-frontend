@@ -50,4 +50,13 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     neon: "霓虹",
     ocean: "海洋",
   },
+  error: {
+    encounterUnknownError: "遇到未知错误",
+    apiError: {
+      failedToRegister: "注册失败，请稍后再试或联系我们",
+      failedToLogin: "登录失败，请稍后再试或联系我们",
+      failedToLogout: "登出失败，请稍后再试或联系我们",
+      failedToGetUser: "获取用户信息失败，请稍后再试或联系我们",
+    },
+  },
 };

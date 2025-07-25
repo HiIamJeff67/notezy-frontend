@@ -1,6 +1,7 @@
 "use client";
 
 import { Register } from "@/api/auth.api";
+import { GetMe } from "@/api/user.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBlackBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
@@ -27,27 +28,25 @@ const RegisterPage = () => {
   }, []);
 
   const handlingRegisterSubmit = async function (): Promise<void> {
+    loadingManager.setIsLoading(true);
+
     try {
       if (!isValidName(name)) {
         throw new Error(languageManager.t(tKey.auth.pleaseInputValidName));
-        return;
       } else if (!isValidEmail(email)) {
         throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-        return;
       } else if (password !== confirmPassword) {
         throw new Error(
           languageManager.t(
             tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
           )
         );
-        return;
       } else if (!isValidPassword(password)) {
         throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
-        return;
       }
 
       const userAgent = navigator.userAgent;
-      const response = await Register({
+      const responseOfRegister = await Register({
         header: {
           userAgent: userAgent,
         },
@@ -57,18 +56,33 @@ const RegisterPage = () => {
           password: password,
         },
       });
-      // if there's any error, it will be caught by the below catch block
-      // since we don't wrap the try-catch block in Register()
+      if (responseOfRegister === null) {
+        throw new Error(
+          languageManager.t(tKey.error.apiError.failedToRegister)
+        );
+      }
 
-      console.log(response);
-
-      /* storing user data and navigate to dashboard */
-
-      // run api /getMe to get the user data cache
-      // and then store it in the userDataManager
+      const responseOfGetMe = await GetMe({
+        header: {
+          userAgent: userAgent,
+          authorization: undefined,
+        },
+        body: {},
+      });
+      if (
+        responseOfGetMe === null ||
+        responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
+      ) {
+        router.push(WebURLPathDictionary.login);
+        throw new Error(languageManager.t(tKey.error.apiError.failedToGetUser));
+      }
+      userDataManager.setUserData(responseOfGetMe.data);
+      router.push(WebURLPathDictionary.dashboard);
     } catch (error) {
       handleAndLogCaughtError(error);
-      return;
+      setPassword("");
+      setConfirmPassword("");
+      loadingManager.setIsLoading(false);
     }
   };
 

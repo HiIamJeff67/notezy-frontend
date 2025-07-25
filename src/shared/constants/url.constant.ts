@@ -50,4 +50,5 @@ export const WebURLPathDictionary = {
   register: "register",
   login: "login",
   documents: "documents",
+  dashboard: "dashboard",
 };

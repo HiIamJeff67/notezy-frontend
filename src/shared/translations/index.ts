@@ -65,4 +65,13 @@ export const tKey: TranslationWords = {
     neon: "themes.neon",
     ocean: "themes.ocean",
   },
+  error: {
+    encounterUnknownError: "error.encounterUnknownError",
+    apiError: {
+      failedToRegister: "error.apiError.failedToRegister",
+      failedToLogin: "error.apiError.failedToLogin",
+      failedToLogout: "error.apiError.failedToLogout",
+      failedToGetUser: "error.apiError.failedToGetUser",
+    },
+  },
 } as const;

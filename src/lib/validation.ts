@@ -5,6 +5,7 @@
  * @description A valid name is:
  * - contain at least 1 english letter(no matter upper case or lower case)
  * - contain at least 1 digit (0 - 9)
+ * - contain no other characters such as signs, special characters
  * - its length should be at least 6 characters
  * - its length should be at most 16 characters
  * @example test123, or Test123, or TEST123
@@ -15,15 +16,19 @@ export const isValidName = function (name: string): boolean {
   if (trimName.length < 6 || trimName.length > 16) return false;
 
   let hasEnglishLetter = false,
-    hasDigit = false;
+    hasDigit = false,
+    hasOtherCharacters = false;
 
   Array.from(name).forEach(l => {
     if (/[a-zA-Z]/.test(l)) hasEnglishLetter = true;
     else if (/[0-9]/.test(l)) hasDigit = true;
-    if (hasEnglishLetter && hasDigit) return true;
+    else {
+      hasOtherCharacters = true;
+      return;
+    }
   });
 
-  return hasEnglishLetter && hasDigit;
+  return hasEnglishLetter && hasDigit && !hasOtherCharacters;
 };
 
 /**
@@ -57,20 +62,27 @@ export const isValidEmail = function (email: string): boolean {
 export const isValidPassword = function (password: string): boolean {
   if (password.length < 8 || password.length > 1024) return false;
 
-  let hasUpperCaseLetter: boolean = false,
+  let hasEmptySpace: boolean = false,
+    hasUpperCaseLetter: boolean = false,
     hasLowerCaseLetter: boolean = false,
     hasDigit: boolean = false,
     hasSpecialCharacter: boolean = false;
 
   Array.from(password).forEach(l => {
-    if (/[ ]/.test(l)) return false;
-    else if (/[a-z]/.test(l)) hasLowerCaseLetter = true;
+    if (/[ ]/.test(l)) {
+      hasEmptySpace = true;
+      return;
+    } else if (/[a-z]/.test(l)) hasLowerCaseLetter = true;
     else if (/[A-Z]/.test(l)) hasUpperCaseLetter = true;
     else if (/[0-9]/.test(l)) hasDigit = true;
     else if (/[`~!@#$%^&*()-_+=]/.test(l)) hasSpecialCharacter = true;
   });
 
   return (
-    hasUpperCaseLetter && hasLowerCaseLetter && hasDigit && hasSpecialCharacter
+    !hasEmptySpace &&
+    hasUpperCaseLetter &&
+    hasLowerCaseLetter &&
+    hasDigit &&
+    hasSpecialCharacter
   );
 };

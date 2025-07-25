@@ -52,4 +52,17 @@ export const EnglishTranslationWords: TranslationWords = {
     neon: "Neon",
     ocean: "Ocean",
   },
+  error: {
+    encounterUnknownError: "Encounter an unknown error",
+    apiError: {
+      failedToRegister:
+        "Failed to register, please wait for a second or contact with us",
+      failedToLogin:
+        "Failed to login, please wait for a second or contact with us",
+      failedToLogout:
+        "Failed to logout, please wait for a second or contact with us",
+      failedToGetUser:
+        "Failed to get user, please wait for a second or contact with us",
+    },
+  },
 };
