@@ -1,6 +1,8 @@
-export type Theme = {
-  id: string;
-  name: string;
+import { DropdownOptionType } from "./dropdownOptionType.type";
+
+export interface Theme extends DropdownOptionType {
+  // id: string;
+  // name: string;
   authorName: string;
   authorAvatarURL: string;
   version: string;
@@ -9,4 +11,4 @@ export type Theme = {
   isLoaded: boolean; // using by individual users
   updatedAt: Date;
   createdAt: Date;
-};
+}

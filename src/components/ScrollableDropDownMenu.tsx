@@ -1,23 +1,20 @@
 "use client";
 
-import "@/global/styles/scrollbar.css";
-import { DropdownOptionType } from "@/shared/types/dropdownOptionType.type";
+import { ComponentProps } from "@/shared/types/component.type";
 import { ElementSize } from "@/shared/types/elementSize.type";
 import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "./ui/button";
 
-interface DropdownMenuProps {
+import "@/global/styles/animation.css";
+import "@/global/styles/scrollbar.css";
+
+interface ScrollableDropDownMenuProps extends ComponentProps {
+  children: React.ReactNode;
+  containerClassName?: string;
   isOpen: boolean;
-  onClose: () => void;
+  setIsOpen: (status: boolean) => void;
   changeablePosition: HTMLElementPosition;
-  options: DropdownOptionType[];
-  currentOption: DropdownOptionType;
-  setCurrentOption: (option: DropdownOptionType) => void;
-  menuSize?: ElementSize;
   buttonSize?: ElementSize;
-  menuClassName?: string;
-  optionClassName?: string;
   onCloseTimeout?: number;
 }
 
@@ -30,19 +27,17 @@ type AnimationStage =
   | "closing-x"
   | "closed";
 
-const DropdownMenu = ({
+const ScrollableDropDownMenu = ({
+  size,
+  className = "",
+  containerClassName = "",
+  children,
   isOpen,
-  onClose,
+  setIsOpen,
   changeablePosition,
-  options,
-  currentOption,
-  setCurrentOption,
-  menuSize = { width: 200, height: 200 },
   buttonSize = { width: 40, height: 40 },
-  menuClassName,
-  optionClassName,
-  onCloseTimeout,
-}: DropdownMenuProps) => {
+  onCloseTimeout = 0,
+}: ScrollableDropDownMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [animationStage, setAnimationStage] = useState<AnimationStage>("idle");
   const [isClosing, setIsClosing] = useState(false);
@@ -100,22 +95,13 @@ const DropdownMenu = ({
       const closeXTimer = setTimeout(() => {
         setAnimationStage("closed");
         setIsClosing(false);
-        onClose();
+        setIsOpen(false);
       }, 150);
 
       return () => clearTimeout(closeXTimer);
     }, 200);
 
     return () => clearTimeout(closeYTimer);
-  };
-
-  const handleSelectOption = (selectedOption: DropdownOptionType) => {
-    setCurrentOption(selectedOption);
-
-    // more delay so the user can see the option they chosen
-    setTimeout(() => {
-      handleClose();
-    }, onCloseTimeout ?? 150);
   };
 
   // calculate the animation styles
@@ -141,7 +127,7 @@ const DropdownMenu = ({
       case "expanding-y":
         return {
           ...baseStyles,
-          width: `${menuSize.width}px`,
+          width: `${size.width}px`,
           height: `${buttonSize.height}px`,
           transition: "height 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           animation: "expandY 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards",
@@ -150,15 +136,15 @@ const DropdownMenu = ({
       case "open":
         return {
           ...baseStyles,
-          width: `${menuSize.width}px`,
-          height: `${menuSize.height}px`,
+          width: `${size.width}px`,
+          height: `${size.height}px`,
         };
 
       case "closing-y":
         return {
           ...baseStyles,
-          width: `${menuSize.width}px`,
-          height: `${menuSize.height}px`,
+          width: `${size.width}px`,
+          height: `${size.height}px`,
           transition: "height 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           animation: "collapseY 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         };
@@ -166,7 +152,7 @@ const DropdownMenu = ({
       case "closing-x":
         return {
           ...baseStyles,
-          width: `${menuSize.width}px`,
+          width: `${size.width}px`,
           height: `${buttonSize.height}px`,
           transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           animation: "collapseX 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards",
@@ -181,72 +167,58 @@ const DropdownMenu = ({
     }
   };
 
+  const childrenProps = {
+    animationStage,
+    isAnimating: animationStage !== "open" && animationStage !== "idle",
+    handleClose: () => {
+      if (onCloseTimeout > 0) {
+        setTimeout(() => {
+          handleClose();
+        }, onCloseTimeout);
+      } else {
+        handleClose();
+      }
+    },
+    menuSize: size,
+  };
+
   if (!isOpen) return null;
 
-  // ...existing code...
   return (
     <div
       ref={menuRef}
       className={`
-        ${menuClassName}
         p-0
         bg-[var(--background)]
         backdrop-blur-sm
-        border
-        border-[var(--border)]
         rounded-lg
         shadow-lg
         overflow-hidden
+        ${className}
       `}
       style={getAnimatedStyles()}
     >
-      {/* only display the options while the menu is completely opened */}
       {(animationStage === "open" || animationStage === "closing-y") && (
         <div
           className={`
-            p-2 transition-opacity duration-200 
+            transition-opacity duration-200 
             ${animationStage === "open" ? "opacity-100" : "opacity-0"}
             overflow-y-auto overflow-x-hidden
             hide-scrollbar
-            flex flex-col items-center gap-2
+            ${containerClassName}
           `}
           style={{
-            maxHeight: `${menuSize.height - 16}px`,
+            maxHeight: `${size.height - 16}px`,
           }}
         >
-          {options.map((option, index) => (
-            <Button
-              key={option.key}
-              variant="ghost"
-              onClick={() => handleSelectOption(option)}
-              className={`
-                ${optionClassName}
-                w-full px-4 py-3 text-left
-                text-[var(--foreground)]
-                hover:bg-[var(--muted)]
-                flex items-center gap-3 rounded-md transition-all duration-200 cursor-pointer border-1
-                ${currentOption === option ? "bg-[var(--muted)]" : ""}
-              `}
-              style={{
-                // separate the animation
-                transitionDelay: `${index * 30}ms`,
-                transform:
-                  animationStage === "open"
-                    ? "translateY(0)"
-                    : "translateY(-10px)",
-                opacity: animationStage === "open" ? 1 : 0,
-              }}
-            >
-              <span className="flex-1">{option.nativeName}</span>
-              {currentOption === option && (
-                <span className="text-[var(--secondary)]-400 text-sm">✓</span>
-              )}
-            </Button>
-          ))}
+          {/* if children is a function, passing the animation props, else render directly */}
+          {typeof children === "function"
+            ? (children as any)(childrenProps)
+            : children}
         </div>
       )}
     </div>
   );
 };
 
-export default DropdownMenu;
+export default ScrollableDropDownMenu;

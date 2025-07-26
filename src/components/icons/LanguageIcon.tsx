@@ -1,10 +1,6 @@
 import { IconProps } from "@/shared/types/iconProps.type";
 
-export const LanguageIcon = ({
-  size = 24,
-  className = "",
-  ...props
-}: IconProps) => (
+const LanguageIcon = ({ size = 24, className = "", ...props }: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -23,3 +19,5 @@ export const LanguageIcon = ({
     />
   </svg>
 );
+
+export default LanguageIcon;

@@ -1,13 +1,19 @@
 "use client";
 
-import DropdownMenu from "@/components/DropDownMenu";
+import DropdownTextMenu from "@/components/DropDownTextMenu";
 import GridBlackBackground from "@/components/GridBackground";
-import { DocumentIcon } from "@/components/icons/DocumentIcon";
-import { LanguageIcon } from "@/components/icons/LanguageIcon";
-import { NoteIcon } from "@/components/icons/NoteIcon";
+import DocumentIcon from "@/components/icons/DocumentIcon";
+import LanguageIcon from "@/components/icons/LanguageIcon";
+import MoonIcon from "@/components/icons/MoonIcon";
+import NoteIcon from "@/components/icons/NoteIcon";
+import SunIcon from "@/components/icons/SunIcon";
 import { Button } from "@/components/ui/button";
-import "@/global/styles/animation.css";
-import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
+import {
+  DefaultDarkTheme,
+  DefaultLightTheme,
+  DefaultStandardTheme,
+} from "@/shared/constants/defaultThemes.constant";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
 import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
@@ -27,8 +33,9 @@ const HomPage = () => {
   const [languageButtonPosition, setLanguageButtonPosition] =
     useState<HTMLElementPosition>({ top: 0, right: 0 });
   const router = useAppRouter();
-  const languageManager = useLanguage();
   const loadingManager = useLoading();
+  const languageManager = useLanguage();
+  const themeManager = useTheme();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const languageButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -39,6 +46,51 @@ const HomPage = () => {
         top: rect.bottom,
         right: window.innerWidth - rect.right,
       });
+    }
+  };
+
+  const renderThemeButton = () => {
+    const currentThemeId = themeManager.currentTheme?.id;
+    const buttonClassName =
+      "cursor-pointer font-bold z-20 absolute right-12 top-0 mt-4 mr-4 rounded-full w-8 h-8 p-0 flex items-center justify-center";
+
+    switch (currentThemeId) {
+      case DefaultStandardTheme.id:
+        return (
+          <Button
+            variant="default"
+            className={buttonClassName}
+            onClick={() => {
+              themeManager.switchCurrentTheme(DefaultDarkTheme.id);
+            }}
+          >
+            <span>N</span>
+          </Button>
+        );
+      case DefaultDarkTheme.id:
+        return (
+          <Button
+            variant="default"
+            className={buttonClassName}
+            onClick={() => {
+              themeManager.switchCurrentTheme(DefaultLightTheme.id);
+            }}
+          >
+            <MoonIcon size={28} />
+          </Button>
+        );
+      case DefaultLightTheme.id:
+        return (
+          <Button
+            variant="default"
+            className={buttonClassName}
+            onClick={() => {
+              themeManager.switchCurrentTheme(DefaultStandardTheme.id);
+            }}
+          >
+            <SunIcon size={28} />
+          </Button>
+        );
     }
   };
 
@@ -117,7 +169,7 @@ const HomPage = () => {
     <GridBlackBackground>
       <div>
         {displayLanguageMenu ? (
-          <DropdownMenu
+          <DropdownTextMenu
             isOpen={displayLanguageMenu}
             onClose={() => {
               setDisplayLanguageMenu(false);
@@ -129,13 +181,14 @@ const HomPage = () => {
               languageManager.setCurrentLanguage(option as Language)
             }
             menuSize={{ width: 210, height: 230 }}
-            menuClassName="mt-4 mr-4"
+            menuClassName="m-2"
             optionClassName="h-12"
           />
         ) : (
           <Button
-            variant="secondary"
-            className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-10 h-10 p-0"
+            ref={languageButtonRef}
+            variant="default"
+            className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-8 h-8 p-0"
             onClick={() => {
               updateLanguageButtonPosition();
               setDisplayLanguageMenu(prev => !prev);
@@ -144,6 +197,7 @@ const HomPage = () => {
             <LanguageIcon size={28} />
           </Button>
         )}
+        {renderThemeButton()}
       </div>
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">

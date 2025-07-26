@@ -1,38 +1,37 @@
 "use client";
 import { useLocalStorage } from "@/hooks";
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { DefaultDarkTheme } from "@/shared/constants/defaultThemes.constant";
+import { DefaultStandardTheme } from "@/shared/constants/defaultThemes.constant";
 import { Theme } from "@/shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
 
-type ThemeContextType = {
-  currentTheme: Theme | null;
+interface ThemeContextType {
+  currentTheme: Theme;
+  switchCurrentTheme: (themeId: string) => Promise<boolean>;
   availableThemes: Theme[];
-  switchTheme: (themeId: string) => Promise<boolean>;
   loadingThemes: Set<string>;
   addThemeFromStore: (theme: Theme) => void;
   removeThemeFromStore: (themeId: string) => void;
   isThemeLoading: (themeId: string) => boolean;
-};
+}
 
 export const ThemeContext = createContext<ThemeContextType | undefined>(
   undefined
 );
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultDarkTheme);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultStandardTheme);
   const [prevThemeCSSClassName, setPrevThemeCSSClassName] =
     useState<string>("");
   const localStorageManager = useLocalStorage();
-
   const themeStore = useThemeStore();
 
   // initialize the default theme
   useEffect(() => {
     const savedTheme = localStorageManager.getItemByKey("theme");
     if (savedTheme === null) {
-      setCurrentTheme(DefaultDarkTheme);
-      localStorageManager.setItem("theme", DefaultDarkTheme);
+      setCurrentTheme(DefaultStandardTheme);
+      localStorageManager.setItem("theme", DefaultStandardTheme);
       return;
     }
 
@@ -41,8 +40,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     if (!isThemeExists) {
-      setCurrentTheme(DefaultDarkTheme);
-      localStorageManager.setItem("theme", DefaultDarkTheme);
+      setCurrentTheme(DefaultStandardTheme);
+      localStorageManager.setItem("theme", DefaultStandardTheme);
       return;
     }
 
@@ -69,7 +68,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     setPrevThemeCSSClassName(themeCSSClassName);
   }, [currentTheme, prevThemeCSSClassName]);
 
-  const switchTheme = async (themeId: string): Promise<boolean> => {
+  const switchCurrentTheme = async (themeId: string): Promise<boolean> => {
     const theme = themeStore.availableThemes.find(t => t.id === themeId);
     if (!theme) return false;
 
@@ -85,8 +84,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   const contextValue: ThemeContextType = {
     currentTheme: currentTheme,
+    switchCurrentTheme: switchCurrentTheme,
     availableThemes: themeStore.availableThemes,
-    switchTheme: switchTheme,
     loadingThemes: themeStore.loadingThemes,
     addThemeFromStore: themeStore.addTheme,
     removeThemeFromStore: themeStore.removeTheme,

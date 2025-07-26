@@ -29,7 +29,9 @@ const LoginPage = () => {
       <div>
         <AuthPanel
           title={languageManager.t(tKey.auth.login)}
-          subtitle={languageManager.t(tKey.auth.authenticationPanelSubtitle)}
+          subtitle={`${languageManager.t(
+            tKey.auth.authenticationPanelSubtitle
+          )} ${languageManager.t(tKey.auth.login)}`}
           inputs={[
             {
               title: languageManager.t(tKey.auth.account),

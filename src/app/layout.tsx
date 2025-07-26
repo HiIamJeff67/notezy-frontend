@@ -1,5 +1,4 @@
 import LoadingOverlay from "@/components/LoadingOutlay";
-import "@/global/styles/theme.css";
 import {
   LanguageProvider,
   LoadingProvider,

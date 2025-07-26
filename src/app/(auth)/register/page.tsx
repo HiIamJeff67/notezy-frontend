@@ -91,7 +91,9 @@ const RegisterPage = () => {
       <div>
         <AuthPanel
           title={languageManager.t(tKey.auth.register)}
-          subtitle={languageManager.t(tKey.auth.authenticationPanelSubtitle)}
+          subtitle={`${languageManager.t(
+            tKey.auth.authenticationPanelSubtitle
+          )} ${languageManager.t(tKey.auth.register)}`}
           inputs={[
             {
               title: languageManager.t(tKey.auth.name),

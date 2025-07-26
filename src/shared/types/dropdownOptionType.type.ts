@@ -1,5 +1,4 @@
 export interface DropdownOptionType {
-  key: string;
-  code?: any;
-  nativeName: string;
+  id: string;
+  name: string;
 }

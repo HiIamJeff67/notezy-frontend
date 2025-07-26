@@ -2,7 +2,6 @@
 
 import "@/global/styles/panel.css";
 import { toCamelCase } from "@/lib/stringCaseConversions";
-import { useState } from "react";
 
 interface AuthPanelInput {
   title: string;
@@ -40,8 +39,6 @@ const AuthPanel = ({
   statusDetail,
   isLoading = false,
 }: AuthPanelProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div className="flex justify-center items-center min-h-screen p-8">
       <div
@@ -50,21 +47,9 @@ const AuthPanel = ({
           panel-gradient panel-texture panel-shine
           shadow-[0_25px_50px_rgba(0,0,0,0.8),0_10px_25px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.1),inset_0_-1px_2px_rgba(0,0,0,0.5)]
           transform transition-all duration-300 ease-out
-          ${
-            isHovered
-              ? "shadow-[0_30px_60px_rgba(0,0,0,0.9),0_15px_35px_rgba(0,0,0,0.7),inset_0_1px_3px_rgba(255,255,255,0.15),inset_0_-1px_3px_rgba(0,0,0,0.6)] translate-y-[-4px]"
-              : ""
-          }
           perspective-1000 rotate-x-[5deg] translate-z-0
           ${isLoading ? "pointer-events-none opacity-75" : ""}
         `}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          transform: isHovered
-            ? "perspective(1000px) rotateX(2deg) translateZ(10px) translateY(-4px)"
-            : "perspective(1000px) rotateX(5deg) translateZ(0)",
-        }}
       >
         {/* Corner Screws */}
         {[
@@ -83,7 +68,7 @@ const AuthPanel = ({
         ))}
 
         {/* Panel Content */}
-        <div className="relative z-5">
+        <div className="relative z-5 select-none">
           <h2
             className="font-mono text-2xl font-bold text-green-400 text-center mb-2 tracking-[2px]"
             style={{ textShadow: "0 0 10px rgba(0, 255, 136, 0.3)" }}
@@ -92,7 +77,9 @@ const AuthPanel = ({
           </h2>
 
           <div className="font-mono text-xs text-gray-500 text-center mb-8 tracking-wider">
-            {subtitle ?? `Authentication panel for ${toCamelCase(title)}`}
+            {subtitle
+              ? subtitle
+              : `Authentication panel for ${toCamelCase(title)}`}
           </div>
 
           <form
@@ -106,7 +93,7 @@ const AuthPanel = ({
               <div key={index} className="flex flex-col gap-2">
                 <label
                   htmlFor={`input-${index}`}
-                  className="font-mono text-base text-green-400 tracking-wider font-bold"
+                  className="font-mono text-base text-green-400 tracking-wider font-bold select-none"
                 >
                   {input.title}
                 </label>

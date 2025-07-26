@@ -10,9 +10,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "var(--color-primary)",
-        secondary: "var(--color-secondary)",
-        accent: "var(--color-accent)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        primary: "var(--primary)",
+        primaryForeground: "var(--primary-foreground)",
+        secondary: "var(--secondary)",
+        secondaryForeground: "var(--secondary-foreground)",
+        accent: "var(--accent)",
+        accentForeground: "var(--accent-foreground)",
+        muted: "var(--muted)",
+        mutedForeground: "var(--muted-foreground)",
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
       },
     },
   },
