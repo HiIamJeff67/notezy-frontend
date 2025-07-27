@@ -2,6 +2,7 @@ import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@/shared/constants/url.constant";
+import { tKey } from "@/shared/translations";
 import { NotezyRequest, NotezyResponse } from "./form.api";
 
 /* ========================= Register ========================= */
@@ -25,29 +26,32 @@ export interface RegisterResponse extends NotezyResponse {
 
 export async function Register(
   request: RegisterRequest
-): Promise<RegisterResponse | null> {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": request.header.userAgent,
-        },
-        body: JSON.stringify(request.body),
-        credentials: "include",
-      }
-    );
-
-    const data = (await response.json()) as RegisterResponse;
-    if (data.exception !== null) {
-      throw new Error(data.exception.message);
+): Promise<RegisterResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
     }
-    return data;
-  } catch (error) {
-    return null;
+  );
+
+  const data = (await response.json()) as RegisterResponse;
+  if (data.exception !== null) {
+    switch (data.exception.reason) {
+      case "DuplicateName":
+        throw new Error(tKey.error.apiError.register.duplicateName);
+      case "DuplicateEmail":
+        throw new Error(tKey.error.apiError.register.duplicateEmail);
+      default:
+        throw new Error(data.exception.message);
+    }
   }
+  return data;
 }
 
 /* ========================= Login ========================= */
@@ -68,31 +72,25 @@ export interface LoginResponse extends NotezyResponse {
   };
 }
 
-export async function Login(
-  request: LoginRequest
-): Promise<LoginResponse | null> {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": request.header.userAgent,
-        },
-        body: JSON.stringify(request.body),
-        credentials: "include",
-      }
-    );
-
-    const data = (await response.json()) as LoginResponse;
-    if (data.exception !== null) {
-      throw new Error(data.exception.message);
+export async function Login(request: LoginRequest): Promise<LoginResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
     }
-    return data;
-  } catch (error) {
-    return null;
+  );
+
+  const data = (await response.json()) as LoginResponse;
+  if (data.exception !== null) {
+    throw new Error(data.exception.message);
   }
+  return data;
 }
 
 /* ========================= Logout ========================= */
@@ -109,31 +107,25 @@ export interface LogoutResponse extends NotezyResponse {
   };
 }
 
-export async function Logout(
-  request: LogoutRequest
-): Promise<LogoutResponse | null> {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": request.header.userAgent,
-          ...(request.header.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-        },
-        credentials: "include",
-      }
-    );
-
-    const data = (await response.json()) as LogoutResponse;
-    if (data.exception !== null) {
-      throw new Error(data.exception.message);
+export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      credentials: "include",
     }
-    return data;
-  } catch (error) {
-    return null;
+  );
+
+  const data = (await response.json()) as LogoutResponse;
+  if (data.exception !== null) {
+    throw new Error(data.exception.message);
   }
+  return data;
 }

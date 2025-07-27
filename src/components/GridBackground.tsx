@@ -2,7 +2,7 @@ import React from "react";
 
 const GridBlackBackground = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-full w-full bg-black relative overflow-hidden">
       <div
         className="absolute inset-0"
         style={{

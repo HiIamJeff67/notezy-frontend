@@ -1,3 +1,4 @@
+import { tKey } from "../translations";
 import { Language, LanguageKey } from "../types/language.type";
 
 export const LanguageKeys: LanguageKey[] = [
@@ -11,37 +12,32 @@ export const LanguageKeys: LanguageKey[] = [
 // since the support languages are not large, we can just build their map here
 export const LanguageKeyMap: Record<LanguageKey, Language> = {
   English: {
-    id: "language-english",
     key: "English",
-    name: "English",
+    translationKey: tKey.languages.english,
     nativeName: "English",
     code: "en",
   },
   TraditionalChinese: {
-    id: "language-traditional-chinese",
     key: "TraditionalChinese",
-    name: "Traditional Chinese",
+    translationKey: tKey.languages.traditionalChinese,
     nativeName: "繁體中文",
     code: "zh-TW",
   },
   SimpleChinese: {
-    id: "language-simple-chinese",
     key: "SimpleChinese",
-    name: "Simple Chinese",
+    translationKey: tKey.languages.simpleChinese,
     nativeName: "简体中文",
     code: "zh-CN",
   },
   Japanese: {
-    id: "language-japanese",
     key: "Japanese",
-    name: "Japanese",
+    translationKey: tKey.languages.japanese,
     nativeName: "日本語",
     code: "ja",
   },
   Korean: {
-    id: "language-korean",
     key: "Korean",
-    name: "Korean",
+    translationKey: tKey.languages.korean,
     nativeName: "한국어",
     code: "ko",
   },

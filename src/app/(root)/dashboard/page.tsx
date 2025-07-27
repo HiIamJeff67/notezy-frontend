@@ -1,131 +1,127 @@
 "use client";
 
-import HorizontalBar from "@/components/HorizontalBar";
+import { AppSidebar } from "@/components/AppSidebar";
 import AvatarIcon from "@/components/icons/AvatarIcon";
+import BellIcon from "@/components/icons/BellIcon";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
-import ScrollableDropDownMenu from "@/components/ScrollableDropDownMenu";
-import SideBar from "@/components/SideBar";
-import { Button } from "@/components/ui/button";
-import { useLoading, useTheme } from "@/hooks";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { useAppRouter, useLoading, useTheme } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
-import { useEffect, useRef, useState } from "react";
+import { WebURLPathDictionary } from "@/shared/constants/url.constant";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const DashboardPage = () => {
-  const [displayAvailableThemes, setDisplayAvailableThemes] =
-    useState<boolean>(false);
-  const [availableThemesButtonPosition, setAvailableThemesButtonPosition] =
-    useState<HTMLElementPosition>({ top: 0, right: 0 });
-  const [displayUserDetails, setDisplayUserDetails] = useState<boolean>(false);
-  const [userDetailsButtonPosition, setUserDetailsButtonPosition] =
-    useState<HTMLElementPosition>({ top: 0, right: 0 });
+  const router = useAppRouter();
   const loadingManager = useLoading();
   const userDataManager = useUserData();
   const themeManager = useTheme();
-  const availableThemesButtonRef = useRef<HTMLButtonElement>(null);
-  const userDetailsButtonRef = useRef<HTMLButtonElement>(null);
-
-  const updateAvailableThemesButtonPosition = function () {
-    if (availableThemesButtonRef.current) {
-      const rect = availableThemesButtonRef.current.getBoundingClientRect();
-      setAvailableThemesButtonPosition({
-        top: rect.bottom,
-        right: window.innerWidth - rect.right,
-      });
-    }
-  };
-
-  const updateUserDetailsButtonPosition = function () {
-    if (userDetailsButtonRef.current) {
-      const rect = userDetailsButtonRef.current.getBoundingClientRect();
-      setUserDetailsButtonPosition({
-        top: rect.bottom,
-        right: window.innerWidth - rect.right,
-      });
-    }
-  };
+  const sidebarManager = useSidebar();
 
   useEffect(() => {
+    if (userDataManager.userData === null) {
+      toast.error(
+        "Your account has been logged out, please try to log in again."
+      );
+
+      router.push(WebURLPathDictionary.login);
+      return;
+    }
     loadingManager.setIsLoading(false);
     console.log(userDataManager.userData);
   }, []);
 
   return (
     <div>
-      <SideBar />
-      {displayAvailableThemes && (
-        <ScrollableDropDownMenu
-          size={{ width: 210, height: 230 }}
-          className="bg-popover border-border border-1 rounded-sm shadow-lg p-2 m-1"
-          containerClassName="flex flex-col items-center gap-2 pb-1"
-          isOpen={displayAvailableThemes}
-          setIsOpen={status => setDisplayAvailableThemes(status)}
-          changeablePosition={availableThemesButtonPosition}
-        >
-          {themeManager.availableThemes.map((option, _) => (
-            <Button
-              key={option.id}
-              variant="ghost"
-              onClick={() => themeManager.switchCurrentTheme(option.id)}
-              className={`
-                w-full h-12 px-4 py-3 text-left
-                bg-muted border-border border-1
-                hover:bg-muted-foreground
-                flex items-center gap-3 rounded-md transition-all duration-200 cursor-pointer
-                ${themeManager.currentTheme === option ? "bg-muted" : ""}
-              `}
-            >
-              <span className="flex-1 text-foreground">{option.name}</span>
-              {themeManager.currentTheme === option && (
-                <span className="text-secondary-400 text-sm">✓</span>
-              )}
-            </Button>
-          ))}
-        </ScrollableDropDownMenu>
+      <AppSidebar />
+      {!sidebarManager.open && (
+        <SidebarTrigger className="fixed top-2 left-2" />
       )}
-      {displayUserDetails && (
-        <ScrollableDropDownMenu
-          size={{ width: 210, height: 230 }}
-          className="bg-popover border-border border-1 rounded-sm p-2 m-1"
-          containerClassName="flex flex-col items-center gap-2 pb-1"
-          isOpen={displayUserDetails}
-          setIsOpen={status => setDisplayUserDetails(status)}
-          changeablePosition={userDetailsButtonPosition}
-        >
-          <></>
-        </ScrollableDropDownMenu>
-      )}
-      <HorizontalBar
-        width={180}
-        height={40}
-        className="fixed top-0 right-0 m-2 bg-secondary border-border border-1 shader-lg"
-      >
-        <Button
-          ref={availableThemesButtonRef}
-          variant="default"
-          className="cursor-pointer font-bold z-20 right-0 top-0 rounded-full w-10 h-7 p-0"
-          onClick={() => {
-            updateAvailableThemesButtonPosition();
-            setDisplayAvailableThemes(prev => !prev);
-          }}
-        >
-          <ColorPaletteIcon />
-        </Button>
-        <Button
-          ref={userDetailsButtonRef}
-          variant="default"
-          className="
-          w-7 h-7 rounded-full p-0 m-0
-          border-2 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-500 ease-in-out
-          "
-          onClick={() => {
-            updateUserDetailsButtonPosition();
-            setDisplayUserDetails(prev => !prev);
-          }}
-        >
-          <AvatarIcon avatarURL="" size={28} />
-        </Button>
-      </HorizontalBar>
+      <div className="fixed top-2 right-2 z-50">
+        <Menubar className="bg-secondary border-border border shadow-lg h-8">
+          <MenubarMenu>
+            <MenubarTrigger className="px-3 py-2 w-11 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+              <ColorPaletteIcon size={24} className="" />
+            </MenubarTrigger>
+            <MenubarContent className="w-56 bg-popover border-border">
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                Choose Theme
+              </div>
+              <MenubarSeparator />
+              {themeManager.availableThemes.map(theme => (
+                <MenubarItem
+                  key={theme.id}
+                  onClick={() => themeManager.switchCurrentTheme(theme.id)}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <span>{theme.name}</span>
+                  {themeManager.currentTheme === theme && (
+                    <span className="text-accent text-sm">✓</span>
+                  )}
+                </MenubarItem>
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="px-3 py-2 w-10 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+              <BellIcon size={24} className="" />
+            </MenubarTrigger>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="px-2 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+              <AvatarIcon avatarURL="" size={20} />
+            </MenubarTrigger>
+            <MenubarContent className="w-64 bg-popover border-border">
+              <div className="flex items-center space-x-3 px-3 py-3">
+                <AvatarIcon avatarURL="" size={48} />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground">
+                    {userDataManager.userData?.name || "User Name"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {userDataManager.userData?.email || "user@example.com"}
+                  </span>
+                </div>
+              </div>
+
+              <MenubarSeparator />
+
+              <MenubarItem className="cursor-pointer">
+                <span>Account Settings</span>
+              </MenubarItem>
+
+              <MenubarItem className="cursor-pointer">
+                <span>Preferences</span>
+              </MenubarItem>
+
+              <MenubarSeparator />
+
+              <MenubarItem className="cursor-pointer">
+                <span>Switch Account</span>
+              </MenubarItem>
+
+              <MenubarItem
+                className="cursor-pointer text-destructive focus:text-destructive"
+                onClick={() => {
+                  console.log("Logout clicked");
+                }}
+              >
+                <span>Sign Out</span>
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+      </div>
     </div>
   );
 };

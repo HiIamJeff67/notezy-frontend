@@ -56,11 +56,6 @@ const RegisterPage = () => {
           password: password,
         },
       });
-      if (responseOfRegister === null) {
-        throw new Error(
-          languageManager.t(tKey.error.apiError.failedToRegister)
-        );
-      }
 
       const responseOfGetMe = await GetMe({
         header: {
@@ -70,15 +65,21 @@ const RegisterPage = () => {
         body: {},
       });
       if (
-        responseOfGetMe === null ||
         responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
       ) {
         router.push(WebURLPathDictionary.login);
-        throw new Error(languageManager.t(tKey.error.apiError.failedToGetUser));
+        throw new Error(
+          languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
+        );
       }
       userDataManager.setUserData(responseOfGetMe.data);
       router.push(WebURLPathDictionary.dashboard);
     } catch (error) {
+      if (error instanceof Error) {
+        error.message = languageManager.t(error.message);
+      } else if (typeof error === "string") {
+        error = languageManager.t(error);
+      }
       handleAndLogCaughtError(error);
       setPassword("");
       setConfirmPassword("");

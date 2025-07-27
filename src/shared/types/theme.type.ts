@@ -1,8 +1,7 @@
-import { DropdownOptionType } from "./dropdownOptionType.type";
-
-export interface Theme extends DropdownOptionType {
-  // id: string;
-  // name: string;
+export interface Theme {
+  id: string;
+  name: string;
+  translationKey: string;
   authorName: string;
   authorAvatarURL: string;
   version: string;

@@ -1,23 +1,22 @@
 "use client";
 
-import DropdownTextMenu from "@/components/DropDownTextMenu";
 import GridBlackBackground from "@/components/GridBackground";
+import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
 import DocumentIcon from "@/components/icons/DocumentIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";
-import MoonIcon from "@/components/icons/MoonIcon";
 import NoteIcon from "@/components/icons/NoteIcon";
-import SunIcon from "@/components/icons/SunIcon";
 import { Button } from "@/components/ui/button";
-import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import {
-  DefaultDarkTheme,
-  DefaultLightTheme,
-  DefaultStandardTheme,
-} from "@/shared/constants/defaultThemes.constant";
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
-import { HTMLElementPosition } from "@/shared/types/htmlElementPosition.type";
-import { Language } from "@/shared/types/language.type";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -25,74 +24,14 @@ const DisplayTitle = {
   secondaryTitle: "A More Humanized AI-Driven Note-Taking Application",
 };
 
-const HomPage = () => {
+const HomePage = () => {
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
-  const [displayLanguageMenu, setDisplayLanguageMenu] =
-    useState<boolean>(false);
-  const [languageButtonPosition, setLanguageButtonPosition] =
-    useState<HTMLElementPosition>({ top: 0, right: 0 });
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const themeManager = useTheme();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
-  const languageButtonRef = useRef<HTMLButtonElement>(null);
-
-  const updateLanguageButtonPosition = function () {
-    if (languageButtonRef.current) {
-      const rect = languageButtonRef.current.getBoundingClientRect();
-      setLanguageButtonPosition({
-        top: rect.bottom,
-        right: window.innerWidth - rect.right,
-      });
-    }
-  };
-
-  const renderThemeButton = () => {
-    const currentThemeId = themeManager.currentTheme?.id;
-    const buttonClassName =
-      "cursor-pointer font-bold z-20 absolute right-12 top-0 mt-4 mr-4 rounded-full w-8 h-8 p-0 flex items-center justify-center";
-
-    switch (currentThemeId) {
-      case DefaultStandardTheme.id:
-        return (
-          <Button
-            variant="default"
-            className={buttonClassName}
-            onClick={() => {
-              themeManager.switchCurrentTheme(DefaultDarkTheme.id);
-            }}
-          >
-            <span>N</span>
-          </Button>
-        );
-      case DefaultDarkTheme.id:
-        return (
-          <Button
-            variant="default"
-            className={buttonClassName}
-            onClick={() => {
-              themeManager.switchCurrentTheme(DefaultLightTheme.id);
-            }}
-          >
-            <MoonIcon size={28} />
-          </Button>
-        );
-      case DefaultLightTheme.id:
-        return (
-          <Button
-            variant="default"
-            className={buttonClassName}
-            onClick={() => {
-              themeManager.switchCurrentTheme(DefaultStandardTheme.id);
-            }}
-          >
-            <SunIcon size={28} />
-          </Button>
-        );
-    }
-  };
 
   const clearAllTimers = useCallback(() => {
     timersRef.current.forEach(timer => clearTimeout(timer));
@@ -145,16 +84,16 @@ const HomPage = () => {
           // restart the entire loop
           const restartTimer = setTimeout(() => {
             startCycle();
-          }, 3500); // time during the process of erasing the content
+          }, 3500);
 
           timersRef.current.push(restartTimer);
-        }, 3500); // time during the process of displaying the content
+        }, 3500);
 
         timersRef.current.push(erasingContentTimer);
-      }, 1000); // time during the process of erasing the topic
+      }, 1000);
 
       timersRef.current.push(displayingContentTimer);
-    }, 4000); // time during the process of displaying the topic
+    }, 4000);
 
     timersRef.current.push(erasingTopicTimer);
   }, []);
@@ -167,50 +106,72 @@ const HomPage = () => {
 
   return (
     <GridBlackBackground>
-      <div>
-        {displayLanguageMenu ? (
-          <DropdownTextMenu
-            isOpen={displayLanguageMenu}
-            onClose={() => {
-              setDisplayLanguageMenu(false);
-            }}
-            changeablePosition={languageButtonPosition}
-            options={languageManager.availableLanguages}
-            currentOption={languageManager.currentLanguage}
-            setCurrentOption={option =>
-              languageManager.setCurrentLanguage(option as Language)
-            }
-            menuSize={{ width: 210, height: 230 }}
-            menuClassName="m-2"
-            optionClassName="h-12"
-          />
-        ) : (
-          <Button
-            ref={languageButtonRef}
-            variant="default"
-            className="cursor-pointer font-bold z-20 absolute right-0 top-0 mt-4 mr-4 rounded-full w-8 h-8 p-0"
-            onClick={() => {
-              updateLanguageButtonPosition();
-              setDisplayLanguageMenu(prev => !prev);
-            }}
-          >
-            <LanguageIcon size={28} />
-          </Button>
-        )}
-        {renderThemeButton()}
+      <div className="fixed top-2 right-2 z-50">
+        <Menubar className="bg-secondary border-border border shadow-lg">
+          <MenubarMenu>
+            <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+              <LanguageIcon size={16} className="mr-2" />
+              <span className="text-sm font-medium">Language</span>
+            </MenubarTrigger>
+            <MenubarContent className="w-56 bg-popover border-border">
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                Choose Language
+              </div>
+              <MenubarSeparator />
+              {languageManager.availableLanguages.map(language => (
+                <MenubarItem
+                  key={language.key}
+                  onClick={() => languageManager.setCurrentLanguage(language)}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <span>{languageManager.t(language.translationKey)}</span>
+                  {languageManager.currentLanguage === language && (
+                    <span className="text-accent text-sm">✓</span>
+                  )}
+                </MenubarItem>
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground">
+              <ColorPaletteIcon size={16} className="mr-2" />
+              <span className="text-sm font-medium">Theme</span>
+            </MenubarTrigger>
+            <MenubarContent className="w-56 bg-popover border-border">
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                Choose Theme
+              </div>
+              <MenubarSeparator />
+              {themeManager.availableThemes.map(theme => (
+                <MenubarItem
+                  key={theme.id}
+                  onClick={() => themeManager.switchCurrentTheme(theme.id)}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <span>{languageManager.t(theme.translationKey)}</span>
+                  {themeManager.currentTheme === theme && (
+                    <span className="text-accent text-sm">✓</span>
+                  )}
+                </MenubarItem>
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
       </div>
+
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">
           <div className="min-h-[160px] flex flex-col items-center justify-center">
             <div
               className={`
-                    ${
-                      displayTitle
-                        ? "max-w-[400px] text-6xl"
-                        : "max-w-[600px] text-4xl"
-                    } 
-                    font-bold pb-2 leading-tight text-center
-                  `}
+                ${
+                  displayTitle
+                    ? "max-w-[400px] text-6xl"
+                    : "max-w-[600px] text-4xl"
+                } 
+                font-bold pb-2 leading-tight text-center
+              `}
             >
               {currentText}
               <span className="animate-pulse text-white">|</span>
@@ -222,7 +183,7 @@ const HomPage = () => {
           <div className="flex items-center justify-center gap-6 mt-4">
             <Button
               variant="secondary"
-              className="cursor-pointer font-bold"
+              className="cursor-pointer font-bold hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
               onClick={() => {
                 loadingManager.setIsLoading(true);
                 router.push(WebURLPathDictionary.documents);
@@ -233,7 +194,7 @@ const HomPage = () => {
             </Button>
             <Button
               variant="default"
-              className="cursor-pointer font-bold"
+              className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
               onClick={() => {
                 loadingManager.setIsLoading(true);
                 router.push(WebURLPathDictionary.login);
@@ -249,4 +210,4 @@ const HomPage = () => {
   );
 };
 
-export default HomPage;
+export default HomePage;

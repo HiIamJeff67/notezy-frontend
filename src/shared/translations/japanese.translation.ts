@@ -47,22 +47,43 @@ export const JapaneseTranslationWords: TranslationWords = {
       "パスワードと確認用パスワードが一致していることを確認してください。",
   },
   themes: {
-    dark: "ダーク",
-    light: "ライト",
-    neon: "ネオン",
-    ocean: "オーシャン",
+    defaultDark: "デフォルトダーク",
+    defaultLight: "デフォルトライト",
+    defaultNeon: "デフォルトネオン",
+    defaultOcean: "デフォルトオーシャン",
+    defaultStandard: "デフォルトスタンダード",
+  },
+  languages: {
+    english: "英語",
+    traditionalChinese: "繁体字中国語",
+    simpleChinese: "簡体字中国語",
+    japanese: "日本語",
+    korean: "韓国語",
   },
   error: {
     encounterUnknownError: "不明なエラーが発生しました",
     apiError: {
-      failedToRegister:
-        "登録に失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
-      failedToLogin:
-        "ログインに失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
-      failedToLogout:
-        "ログアウトに失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
-      failedToGetUser:
-        "ユーザー情報の取得に失敗しました。しばらくしてから再度お試しください、またはお問い合わせください",
+      register: {
+        failedToRegister:
+          "登録に失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
+        duplicateName:
+          "この名前は既に登録されています。別の名前を選択してください",
+        duplicateEmail:
+          "このメールアドレスは既に登録されています。別のメールアドレスを選択してください",
+      },
+      login: {
+        failedToLogin:
+          "ログインに失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
+        wrongPassword: "パスワードが間違っています。再度お試しください",
+      },
+      logout: {
+        failedToLogout:
+          "ログアウトに失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
+      },
+      getUser: {
+        failedToGetUser:
+          "ユーザー情報の取得に失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
+      },
     },
   },
 };

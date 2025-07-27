@@ -45,18 +45,37 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: "请确保密码和确认密码",
   },
   themes: {
-    dark: "深色",
-    light: "浅色",
-    neon: "霓虹",
-    ocean: "海洋",
+    defaultDark: "默认深色",
+    defaultLight: "默认浅色",
+    defaultNeon: "默认霓虹",
+    defaultOcean: "默认海洋",
+    defaultStandard: "默认标准",
+  },
+  languages: {
+    english: "英语",
+    traditionalChinese: "繁体中文",
+    simpleChinese: "简体中文",
+    japanese: "日语",
+    korean: "韩语",
   },
   error: {
     encounterUnknownError: "遇到未知错误",
     apiError: {
-      failedToRegister: "注册失败，请稍后再试或联系我们",
-      failedToLogin: "登录失败，请稍后再试或联系我们",
-      failedToLogout: "登出失败，请稍后再试或联系我们",
-      failedToGetUser: "获取用户信息失败，请稍后再试或联系我们",
+      register: {
+        failedToRegister: "注册失败，请稍后再试或联系我们",
+        duplicateName: "此名称已被注册，请选择其他名称",
+        duplicateEmail: "此电子邮箱已被注册，请选择其他邮箱",
+      },
+      login: {
+        failedToLogin: "登录失败，请稍后再试或联系我们",
+        wrongPassword: "密码错误，请重新输",
+      },
+      logout: {
+        failedToLogout: "登出失败，请稍后再试或联系我们",
+      },
+      getUser: {
+        failedToGetUser: "获取用户资料失败，请稍后再试或联系我们",
+      },
     },
   },
 };

@@ -47,18 +47,37 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
       "請確保密碼跟確認密碼一致",
   },
   themes: {
-    dark: "深色",
-    light: "淺色",
-    neon: "霓虹",
-    ocean: "海洋",
+    defaultDark: "預設深色",
+    defaultLight: "預設淺色",
+    defaultNeon: "預設霓虹",
+    defaultOcean: "預設海洋",
+    defaultStandard: "預設標準",
+  },
+  languages: {
+    english: "英文",
+    traditionalChinese: "繁體中文",
+    simpleChinese: "簡體中文",
+    japanese: "日文",
+    korean: "韓文",
   },
   error: {
     encounterUnknownError: "遇到未知錯誤",
     apiError: {
-      failedToRegister: "註冊失敗，請稍候再試或聯絡我們",
-      failedToLogin: "登入失敗，請稍候再試或聯絡我們",
-      failedToLogout: "登出失敗，請稍候再試或聯絡我們",
-      failedToGetUser: "取得使用者資料失敗，請稍候再試或聯絡我們",
+      register: {
+        failedToRegister: "註冊失敗，請稍後再試或聯繫我們",
+        duplicateName: "此名稱已被註冊，請選擇其他名稱",
+        duplicateEmail: "此電子信箱已被註冊，請選擇其他信箱",
+      },
+      login: {
+        failedToLogin: "登入失敗，請稍後再試或聯繫我們",
+        wrongPassword: "密碼錯誤，請重新輸入",
+      },
+      logout: {
+        failedToLogout: "登出失敗，請稍後再試或聯繫我們",
+      },
+      getUser: {
+        failedToGetUser: "取得用戶資料失敗，請稍後再試或聯繫我們",
+      },
     },
   },
 };

@@ -1,4 +1,5 @@
 import LoadingOverlay from "@/components/LoadingOutlay";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import {
   LanguageProvider,
   LoadingProvider,
@@ -37,9 +38,11 @@ export default function RootLayout({
           <LanguageProvider>
             <ThemeProvider>
               <UserDataProvider>
-                <Toaster position="top-center" />
-                <LoadingOverlay />
-                {children}
+                <SidebarProvider>
+                  <Toaster position="top-center" />
+                  <LoadingOverlay />
+                  {children}
+                </SidebarProvider>
               </UserDataProvider>
             </ThemeProvider>
           </LanguageProvider>

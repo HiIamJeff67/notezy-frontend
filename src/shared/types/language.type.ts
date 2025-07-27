@@ -1,5 +1,3 @@
-import { DropdownOptionType } from "./dropdownOptionType.type";
-
 export type LanguageKey =
   | "English"
   | "TraditionalChinese"
@@ -7,8 +5,9 @@ export type LanguageKey =
   | "Japanese"
   | "Korean";
 
-export interface Language extends DropdownOptionType {
+export interface Language {
   key: LanguageKey;
+  translationKey: string;
   nativeName: string;
   code: string;
 }

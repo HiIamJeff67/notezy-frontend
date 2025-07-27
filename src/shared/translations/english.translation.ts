@@ -47,22 +47,43 @@ export const EnglishTranslationWords: TranslationWords = {
       "Please make sure the password and confirm password are the same",
   },
   themes: {
-    dark: "Dark",
-    light: "Light",
-    neon: "Neon",
-    ocean: "Ocean",
+    defaultDark: "Default Dark",
+    defaultLight: "Default Light",
+    defaultNeon: "Default Neon",
+    defaultOcean: "Default Ocean",
+    defaultStandard: "Default Standard",
+  },
+  languages: {
+    english: "English",
+    traditionalChinese: "Traditional Chinese",
+    simpleChinese: "Simple Chinese",
+    japanese: "Japanese",
+    korean: "Korean",
   },
   error: {
     encounterUnknownError: "Encounter an unknown error",
     apiError: {
-      failedToRegister:
-        "Failed to register, please wait for a second or contact with us",
-      failedToLogin:
-        "Failed to login, please wait for a second or contact with us",
-      failedToLogout:
-        "Failed to logout, please wait for a second or contact with us",
-      failedToGetUser:
-        "Failed to get user, please wait for a second or contact with us",
+      register: {
+        failedToRegister:
+          "Failed to register, please wait for a second or contact with us",
+        duplicateName:
+          "This name has already been registered, please choose another one",
+        duplicateEmail:
+          "This email has already been registered, please choose another one",
+      },
+      login: {
+        failedToLogin:
+          "Failed to login, please wait for a second or contact with us",
+        wrongPassword: "Wrong password, please try again",
+      },
+      logout: {
+        failedToLogout:
+          "Failed to logout, please wait for a second or contact with us",
+      },
+      getUser: {
+        failedToGetUser:
+          "Failed to get user, please wait for a second or contact with us",
+      },
     },
   },
 };

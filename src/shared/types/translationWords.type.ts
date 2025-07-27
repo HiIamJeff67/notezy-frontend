@@ -43,18 +43,37 @@ export interface TranslationWords {
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: string;
   };
   themes: {
-    dark: string;
-    light: string;
-    neon: string;
-    ocean: string;
+    defaultDark: string;
+    defaultLight: string;
+    defaultNeon: string;
+    defaultOcean: string;
+    defaultStandard: string;
+  };
+  languages: {
+    english: string;
+    traditionalChinese: string;
+    simpleChinese: string;
+    japanese: string;
+    korean: string;
   };
   error: {
     encounterUnknownError: string;
     apiError: {
-      failedToRegister: string;
-      failedToLogin: string;
-      failedToLogout: string;
-      failedToGetUser: string;
+      register: {
+        failedToRegister: string;
+        duplicateName: string;
+        duplicateEmail: string;
+      };
+      login: {
+        failedToLogin: string;
+        wrongPassword: string;
+      };
+      logout: {
+        failedToLogout: string;
+      };
+      getUser: {
+        failedToGetUser: string;
+      };
     };
   };
 }

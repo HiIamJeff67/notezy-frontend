@@ -47,22 +47,43 @@ export const KoreanTranslationWords: TranslationWords = {
       "비밀번호와 비밀번호 확인이 일치하는지 확인해 주세요.",
   },
   themes: {
-    dark: "다크",
-    light: "라이트",
-    neon: "네온",
-    ocean: "오션",
+    defaultDark: "기본 다크",
+    defaultLight: "기본 라이트",
+    defaultNeon: "기본 네온",
+    defaultOcean: "기본 오션",
+    defaultStandard: "기본 스탠다드",
+  },
+  languages: {
+    english: "영어",
+    traditionalChinese: "번체 중국어",
+    simpleChinese: "간체 중국어",
+    japanese: "일본어",
+    korean: "한국어",
   },
   error: {
     encounterUnknownError: "알 수 없는 오류가 발생했습니다",
     apiError: {
-      failedToRegister:
-        "회원가입에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
-      failedToLogin:
-        "로그인에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
-      failedToLogout:
-        "로그아웃에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
-      failedToGetUser:
-        "사용자 정보를 가져오지 못했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      register: {
+        failedToRegister:
+          "등록에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+        duplicateName:
+          "이 이름은 이미 등록되어 있습니다. 다른 이름을 선택해 주세요",
+        duplicateEmail:
+          "이 이메일은 이미 등록되어 있습니다. 다른 이메일을 선택해 주세요",
+      },
+      login: {
+        failedToLogin:
+          "로그인에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+        wrongPassword: "비밀번호가 틀렸습니다. 다시 시도해 주세요",
+      },
+      logout: {
+        failedToLogout:
+          "로그아웃에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      },
+      getUser: {
+        failedToGetUser:
+          "사용자 정보 가져오기에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
+      },
     },
   },
 };

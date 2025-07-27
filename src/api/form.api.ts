@@ -1,10 +1,11 @@
 export interface NotezyException {
   code: number;
+  reason: string;
   prefix: string;
   message: string;
   status: number;
   details: string;
-  error: string;
+  error: any;
 }
 
 export interface NotezyRequest {

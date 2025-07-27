@@ -60,18 +60,37 @@ export const tKey: TranslationWords = {
       "auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch",
   },
   themes: {
-    dark: "themes.dark",
-    light: "themes.light",
-    neon: "themes.neon",
-    ocean: "themes.ocean",
+    defaultDark: "themes.defaultDark",
+    defaultLight: "themes.defaultLight",
+    defaultNeon: "themes.defaultNeon",
+    defaultOcean: "themes.defaultOcean",
+    defaultStandard: "themes.defaultStandard",
+  },
+  languages: {
+    english: "languages.english",
+    traditionalChinese: "languages.traditionalChinese",
+    simpleChinese: "languages.simpleChinese",
+    japanese: "languages.japanese",
+    korean: "languages.korean",
   },
   error: {
     encounterUnknownError: "error.encounterUnknownError",
     apiError: {
-      failedToRegister: "error.apiError.failedToRegister",
-      failedToLogin: "error.apiError.failedToLogin",
-      failedToLogout: "error.apiError.failedToLogout",
-      failedToGetUser: "error.apiError.failedToGetUser",
+      register: {
+        failedToRegister: "error.apiError.register.failedToRegister",
+        duplicateName: "error.apiError.register.duplicateName",
+        duplicateEmail: "error.apiError.register.duplicateEmail",
+      },
+      login: {
+        failedToLogin: "error.apiError.failedToLogin",
+        wrongPassword: "error.apiError.login.wrongPassword",
+      },
+      logout: {
+        failedToLogout: "error.apiError.failedToLogout",
+      },
+      getUser: {
+        failedToGetUser: "error.apiError.failedToGetUser",
+      },
     },
   },
 } as const;
