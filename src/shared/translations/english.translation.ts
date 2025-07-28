@@ -1,6 +1,9 @@
 import { TranslationWords } from "../types/translationWords.type";
 
 export const EnglishTranslationWords: TranslationWords = {
+  syntax: {
+    separator: " ",
+  },
   common: {
     loading: "Loading...",
     error: "Error",
@@ -10,6 +13,7 @@ export const EnglishTranslationWords: TranslationWords = {
     save: "Save",
     delete: "Delete",
     edit: "Edit",
+    choose: "Choose",
   },
   navigation: {
     home: "Home",
@@ -47,6 +51,7 @@ export const EnglishTranslationWords: TranslationWords = {
       "Please make sure the password and confirm password are the same",
   },
   themes: {
+    theme: "Theme",
     defaultDark: "Default Dark",
     defaultLight: "Default Light",
     defaultNeon: "Default Neon",
@@ -54,6 +59,7 @@ export const EnglishTranslationWords: TranslationWords = {
     defaultStandard: "Default Standard",
   },
   languages: {
+    language: "Language",
     english: "English",
     traditionalChinese: "Traditional Chinese",
     simpleChinese: "Simple Chinese",

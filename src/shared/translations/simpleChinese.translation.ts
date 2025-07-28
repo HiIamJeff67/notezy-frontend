@@ -1,6 +1,9 @@
 import { TranslationWords } from "../types/translationWords.type";
 
 export const SimpleChineseTranslationWords: TranslationWords = {
+  syntax: {
+    separator: "",
+  },
   common: {
     loading: "加载中...",
     error: "错误",
@@ -10,6 +13,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     save: "保存",
     delete: "删除",
     edit: "编辑",
+    choose: "选择",
   },
   navigation: {
     home: "首页",
@@ -45,6 +49,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: "请确保密码和确认密码",
   },
   themes: {
+    theme: "主题",
     defaultDark: "默认深色",
     defaultLight: "默认浅色",
     defaultNeon: "默认霓虹",
@@ -52,6 +57,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     defaultStandard: "默认标准",
   },
   languages: {
+    language: "语言",
     english: "英语",
     traditionalChinese: "繁体中文",
     simpleChinese: "简体中文",

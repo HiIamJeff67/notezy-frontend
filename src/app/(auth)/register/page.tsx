@@ -14,14 +14,15 @@ import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
 
 const RegisterPage = () => {
+  const router = useAppRouter();
+  const loadingManager = useLoading();
+  const languageManager = useLanguage();
+  const userDataManager = useUserData();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const loadingManager = useLoading();
-  const router = useAppRouter();
-  const languageManager = useLanguage();
-  const userDataManager = useUserData();
 
   useEffect(() => {
     loadingManager.setIsLoading(false);

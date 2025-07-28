@@ -52,7 +52,7 @@ export const LanguageProvider = ({
       if (value === undefined) break;
     }
 
-    return value || key; // if we can't find it, then return the original one
+    return value ?? key; // if we can't find it, then return the original one
   };
 
   const contextValue: LanguageContextType = {

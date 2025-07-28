@@ -25,12 +25,12 @@ const DisplayTitle = {
 };
 
 const HomePage = () => {
-  const [displayTitle, setDisplayTitle] = useState<boolean>(true);
-  const [currentText, setCurrentText] = useState("");
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const themeManager = useTheme();
+  const [displayTitle, setDisplayTitle] = useState<boolean>(true);
+  const [currentText, setCurrentText] = useState("");
   const timersRef = useRef<NodeJS.Timeout[]>([]);
 
   const clearAllTimers = useCallback(() => {
@@ -111,11 +111,15 @@ const HomePage = () => {
           <MenubarMenu>
             <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
               <LanguageIcon size={16} className="mr-2" />
-              <span className="text-sm font-medium">Language</span>
+              <span className="text-sm font-medium">
+                {languageManager.t(tKey.languages.language)}
+              </span>
             </MenubarTrigger>
             <MenubarContent className="w-56 bg-popover border-border">
               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Choose Language
+                {`${languageManager.t(tKey.common.choose)}${languageManager.t(
+                  tKey.syntax.separator
+                )}${languageManager.t(tKey.languages.language)}`}
               </div>
               <MenubarSeparator />
               {languageManager.availableLanguages.map(language => (
@@ -136,11 +140,15 @@ const HomePage = () => {
           <MenubarMenu>
             <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground">
               <ColorPaletteIcon size={16} className="mr-2" />
-              <span className="text-sm font-medium">Theme</span>
+              <span className="text-sm font-medium">
+                {languageManager.t(tKey.themes.theme)}
+              </span>
             </MenubarTrigger>
             <MenubarContent className="w-56 bg-popover border-border">
               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Choose Theme
+                {`${languageManager.t(tKey.common.choose)}${languageManager.t(
+                  tKey.syntax.separator
+                )}${languageManager.t(tKey.themes.theme)}`}
               </div>
               <MenubarSeparator />
               {themeManager.availableThemes.map(theme => (

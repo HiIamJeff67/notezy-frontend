@@ -15,6 +15,9 @@ export const translations: Record<LanguageKey, TranslationWords> = {
 };
 
 export const tKey: TranslationWords = {
+  syntax: {
+    separator: "syntax.separator",
+  },
   common: {
     loading: "common.loading",
     error: "common.error",
@@ -24,6 +27,7 @@ export const tKey: TranslationWords = {
     save: "common.save",
     delete: "common.delete",
     edit: "common.edit",
+    choose: "common.choose",
   },
   navigation: {
     home: "navigation.home",
@@ -60,6 +64,7 @@ export const tKey: TranslationWords = {
       "auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch",
   },
   themes: {
+    theme: "themes.theme",
     defaultDark: "themes.defaultDark",
     defaultLight: "themes.defaultLight",
     defaultNeon: "themes.defaultNeon",
@@ -67,6 +72,7 @@ export const tKey: TranslationWords = {
     defaultStandard: "themes.defaultStandard",
   },
   languages: {
+    language: "languages.language",
     english: "languages.english",
     traditionalChinese: "languages.traditionalChinese",
     simpleChinese: "languages.simpleChinese",
@@ -82,14 +88,14 @@ export const tKey: TranslationWords = {
         duplicateEmail: "error.apiError.register.duplicateEmail",
       },
       login: {
-        failedToLogin: "error.apiError.failedToLogin",
+        failedToLogin: "error.apiError.login.failedToLogin",
         wrongPassword: "error.apiError.login.wrongPassword",
       },
       logout: {
-        failedToLogout: "error.apiError.failedToLogout",
+        failedToLogout: "error.apiError.logout.failedToLogout",
       },
       getUser: {
-        failedToGetUser: "error.apiError.failedToGetUser",
+        failedToGetUser: "error.apiError.getUser.failedToGetUser",
       },
     },
   },

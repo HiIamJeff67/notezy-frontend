@@ -1,9 +1,11 @@
 "use client";
 
+import { GetMe } from "@/api/user.api";
 import { AppSidebar } from "@/components/AppSidebar";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import BellIcon from "@/components/icons/BellIcon";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
+import PreferencesPanel from "@/components/PreferencesPanel";
 import {
   Menubar,
   MenubarContent,
@@ -13,28 +15,49 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useAppRouter, useLoading, useTheme } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { useEffect } from "react";
+import { tKey } from "@/shared/translations";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const DashboardPage = () => {
   const router = useAppRouter();
   const loadingManager = useLoading();
+  const languageManager = useLanguage();
   const userDataManager = useUserData();
   const themeManager = useTheme();
   const sidebarManager = useSidebar();
 
-  useEffect(() => {
-    if (userDataManager.userData === null) {
-      toast.error(
-        "Your account has been logged out, please try to log in again."
-      );
+  const [displayPreferencesPanel, setDisplayPreferencesPanel] =
+    useState<boolean>(false);
 
-      router.push(WebURLPathDictionary.login);
-      return;
+  useEffect(() => {
+    console.log(userDataManager.userData);
+    if (userDataManager.userData === null) {
+      const tryGetUser = async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          const responseOfGetMe = await GetMe({
+            header: {
+              userAgent: userAgent,
+              authorization: undefined,
+            },
+            body: {},
+          });
+          userDataManager.setUserData(responseOfGetMe.data);
+        } catch {
+          toast.error(
+            "Your account has been logged out, please try to log in again."
+          );
+          router.push(WebURLPathDictionary.login);
+        }
+      };
+
+      tryGetUser();
     }
+
     loadingManager.setIsLoading(false);
     console.log(userDataManager.userData);
   }, []);
@@ -45,6 +68,12 @@ const DashboardPage = () => {
       {!sidebarManager.open && (
         <SidebarTrigger className="fixed top-2 left-2" />
       )}
+
+      <PreferencesPanel
+        isOpen={displayPreferencesPanel}
+        onClose={() => setDisplayPreferencesPanel(false)}
+      />
+
       <div className="fixed top-2 right-2 z-50">
         <Menubar className="bg-secondary border-border border shadow-lg h-8">
           <MenubarMenu>
@@ -53,7 +82,9 @@ const DashboardPage = () => {
             </MenubarTrigger>
             <MenubarContent className="w-56 bg-popover border-border">
               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Choose Theme
+                {`${languageManager.t(tKey.common.choose)}${languageManager.t(
+                  tKey.syntax.separator
+                )}${languageManager.t(tKey.themes.theme)}`}
               </div>
               <MenubarSeparator />
               {themeManager.availableThemes.map(theme => (
@@ -62,7 +93,7 @@ const DashboardPage = () => {
                   onClick={() => themeManager.switchCurrentTheme(theme.id)}
                   className="flex items-center justify-between cursor-pointer"
                 >
-                  <span>{theme.name}</span>
+                  <span>{languageManager.t(theme.translationKey)}</span>
                   {themeManager.currentTheme === theme && (
                     <span className="text-accent text-sm">✓</span>
                   )}
@@ -93,30 +124,27 @@ const DashboardPage = () => {
                   </span>
                 </div>
               </div>
-
               <MenubarSeparator />
-
               <MenubarItem className="cursor-pointer">
                 <span>Account Settings</span>
               </MenubarItem>
-
-              <MenubarItem className="cursor-pointer">
+              <MenubarItem
+                className="cursor-pointer"
+                onClick={() => setDisplayPreferencesPanel(true)}
+              >
                 <span>Preferences</span>
               </MenubarItem>
-
               <MenubarSeparator />
-
               <MenubarItem className="cursor-pointer">
                 <span>Switch Account</span>
               </MenubarItem>
-
               <MenubarItem
                 className="cursor-pointer text-destructive focus:text-destructive"
                 onClick={() => {
                   console.log("Logout clicked");
                 }}
               >
-                <span>Sign Out</span>
+                <span>Log Out</span>
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>

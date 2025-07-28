@@ -1,6 +1,9 @@
 import { TranslationWords } from "../types/translationWords.type";
 
 export const TraditionalChineseTranslationWords: TranslationWords = {
+  syntax: {
+    separator: "",
+  },
   common: {
     loading: "載入中...",
     error: "錯誤",
@@ -10,6 +13,7 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     save: "儲存",
     delete: "刪除",
     edit: "編輯",
+    choose: "選擇",
   },
   navigation: {
     home: "首頁",
@@ -47,6 +51,8 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
       "請確保密碼跟確認密碼一致",
   },
   themes: {
+    theme: "主題",
+
     defaultDark: "預設深色",
     defaultLight: "預設淺色",
     defaultNeon: "預設霓虹",
@@ -54,6 +60,7 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     defaultStandard: "預設標準",
   },
   languages: {
+    language: "語言",
     english: "英文",
     traditionalChinese: "繁體中文",
     simpleChinese: "簡體中文",

@@ -12,19 +12,20 @@ import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
 
 const LoginPage = () => {
-  const [account, setAccount] = useState("");
-  const [password, setPassword] = useState("");
-  const loadingManager = useLoading();
   const router = useAppRouter();
+  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
+
+  const [account, setAccount] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     loadingManager.setIsLoading(false);
   }, []);
 
   const handlingLoginSubmit = async function (): Promise<void> {
-    const userAgent = navigator.userAgent;
+    loadingManager.setIsLoading(true);
 
     try {
       const userAgent = navigator.userAgent;
@@ -48,7 +49,6 @@ const LoginPage = () => {
       if (
         responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
       ) {
-        router.push(WebURLPathDictionary.login);
         throw new Error(
           languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
         );

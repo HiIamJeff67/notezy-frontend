@@ -1,6 +1,9 @@
 import { TranslationWords } from "../types/translationWords.type";
 
 export const KoreanTranslationWords: TranslationWords = {
+  syntax: {
+    separator: "",
+  },
   common: {
     loading: "로딩 중...",
     error: "오류",
@@ -10,6 +13,7 @@ export const KoreanTranslationWords: TranslationWords = {
     save: "저장",
     delete: "삭제",
     edit: "편집",
+    choose: "선택하다",
   },
   navigation: {
     home: "홈",
@@ -47,6 +51,7 @@ export const KoreanTranslationWords: TranslationWords = {
       "비밀번호와 비밀번호 확인이 일치하는지 확인해 주세요.",
   },
   themes: {
+    theme: "테마",
     defaultDark: "기본 다크",
     defaultLight: "기본 라이트",
     defaultNeon: "기본 네온",
@@ -54,6 +59,7 @@ export const KoreanTranslationWords: TranslationWords = {
     defaultStandard: "기본 스탠다드",
   },
   languages: {
+    language: "언어",
     english: "영어",
     traditionalChinese: "번체 중국어",
     simpleChinese: "간체 중국어",

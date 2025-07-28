@@ -1,6 +1,9 @@
 import { TranslationWords } from "../types/translationWords.type";
 
 export const JapaneseTranslationWords: TranslationWords = {
+  syntax: {
+    separator: "",
+  },
   common: {
     loading: "読み込み中...",
     error: "エラー",
@@ -10,6 +13,7 @@ export const JapaneseTranslationWords: TranslationWords = {
     save: "保存",
     delete: "削除",
     edit: "編集",
+    choose: "選択",
   },
   navigation: {
     home: "ホーム",
@@ -47,6 +51,7 @@ export const JapaneseTranslationWords: TranslationWords = {
       "パスワードと確認用パスワードが一致していることを確認してください。",
   },
   themes: {
+    theme: "テーマ",
     defaultDark: "デフォルトダーク",
     defaultLight: "デフォルトライト",
     defaultNeon: "デフォルトネオン",
@@ -54,6 +59,7 @@ export const JapaneseTranslationWords: TranslationWords = {
     defaultStandard: "デフォルトスタンダード",
   },
   languages: {
+    language: "言語",
     english: "英語",
     traditionalChinese: "繁体字中国語",
     simpleChinese: "簡体字中国語",

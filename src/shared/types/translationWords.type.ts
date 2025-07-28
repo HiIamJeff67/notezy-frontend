@@ -1,4 +1,7 @@
 export interface TranslationWords {
+  syntax: {
+    separator: string;
+  };
   common: {
     loading: string;
     error: string;
@@ -8,6 +11,7 @@ export interface TranslationWords {
     save: string;
     delete: string;
     edit: string;
+    choose: string;
   };
   navigation: {
     home: string;
@@ -43,6 +47,7 @@ export interface TranslationWords {
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: string;
   };
   themes: {
+    theme: string;
     defaultDark: string;
     defaultLight: string;
     defaultNeon: string;
@@ -50,6 +55,7 @@ export interface TranslationWords {
     defaultStandard: string;
   };
   languages: {
+    language: string;
     english: string;
     traditionalChinese: string;
     simpleChinese: string;
