@@ -32,12 +32,15 @@ export const EnglishTranslationWords: TranslationWords = {
   auth: {
     login: "Login",
     register: "Register",
+    switchAccount: "Switch Account",
     logout: "Logout",
     account: "Account",
     name: "Name",
     email: "Email",
     password: "Password",
     confirmPassword: "Confirm Password",
+    userRole: "User Role",
+    userPlan: "User Plan",
     forgotPassword: "Forgot Password?",
     haveNotRegisterAnAccount: "Haven't register an account?",
     alreadyHaveAnAccount: "Already have an account?",
@@ -68,6 +71,9 @@ export const EnglishTranslationWords: TranslationWords = {
   },
   error: {
     encounterUnknownError: "Encounter an unknown error",
+    urlNotFound: "URL not found",
+    unauthorized: "Unauthorized",
+    permissionDeniedDueTo: "Permission denied due to:",
     apiError: {
       register: {
         failedToRegister:
@@ -91,5 +97,9 @@ export const EnglishTranslationWords: TranslationWords = {
           "Failed to get user, please wait for a second or contact with us",
       },
     },
+  },
+  settings: {
+    accountSettings: "Account Settings",
+    preferences: "Preferences",
   },
 };

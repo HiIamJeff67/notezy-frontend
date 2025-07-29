@@ -32,12 +32,15 @@ export const KoreanTranslationWords: TranslationWords = {
   auth: {
     login: "로그인",
     register: "회원가입",
+    switchAccount: "계정 전환",
     logout: "로그아웃",
     account: "계정",
     name: "이름",
     email: "이메일",
     password: "비밀번호",
     confirmPassword: "비밀번호 확인",
+    userRole: "사용자 역할",
+    userPlan: "사용자 플랜",
     forgotPassword: "비밀번호를 잊으셨나요?",
     haveNotRegisterAnAccount: "아직 계정을 등록하지 않으셨나요？",
     alreadyHaveAnAccount: "이미 계정이 있으신가요？",
@@ -68,6 +71,9 @@ export const KoreanTranslationWords: TranslationWords = {
   },
   error: {
     encounterUnknownError: "알 수 없는 오류가 발생했습니다",
+    urlNotFound: "URL을 찾을 수 없습니다",
+    unauthorized: "권한 없음",
+    permissionDeniedDueTo: "다음 이유로 권한이 거부되었습니다:",
     apiError: {
       register: {
         failedToRegister:
@@ -91,5 +97,9 @@ export const KoreanTranslationWords: TranslationWords = {
           "사용자 정보 가져오기에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
       },
     },
+  },
+  settings: {
+    accountSettings: "계정 설정",
+    preferences: "환경설정",
   },
 };

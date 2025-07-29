@@ -1,3 +1,4 @@
+import { isJsonResponse } from "@/lib/isJsonContext";
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
@@ -39,6 +40,10 @@ export async function Register(
       credentials: "include",
     }
   );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
 
   const data = (await response.json()) as RegisterResponse;
   if (data.exception !== null) {
@@ -86,9 +91,19 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
     }
   );
 
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
   const data = (await response.json()) as LoginResponse;
   if (data.exception !== null) {
-    throw new Error(data.exception.message);
+    console.log(data.exception.reason);
+    switch (data.exception.reason) {
+      case "NotFound":
+        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+      default:
+        throw new Error(data.exception.message);
+    }
   }
   return data;
 }
@@ -122,6 +137,10 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
       credentials: "include",
     }
   );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
 
   const data = (await response.json()) as LogoutResponse;
   if (data.exception !== null) {

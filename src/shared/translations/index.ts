@@ -46,12 +46,15 @@ export const tKey: TranslationWords = {
   auth: {
     login: "auth.login",
     register: "auth.register",
+    switchAccount: "auth.switchAccount",
     logout: "auth.logout",
     account: "auth.account",
     name: "auth.name",
     email: "auth.email",
     password: "auth.password",
     confirmPassword: "auth.confirmPassword",
+    userRole: "auth.userRole",
+    userPlan: "auth.userPlan",
     forgotPassword: "auth.forgotPassword",
     haveNotRegisterAnAccount: "auth.haveNotRegisterAnAccount",
     alreadyHaveAnAccount: "auth.alreadyHaveAnAccount",
@@ -81,6 +84,9 @@ export const tKey: TranslationWords = {
   },
   error: {
     encounterUnknownError: "error.encounterUnknownError",
+    urlNotFound: "error.urlNotFound",
+    unauthorized: "error.unauthorized",
+    permissionDeniedDueTo: "error.permissionDeniedDueTo",
     apiError: {
       register: {
         failedToRegister: "error.apiError.register.failedToRegister",
@@ -98,5 +104,9 @@ export const tKey: TranslationWords = {
         failedToGetUser: "error.apiError.getUser.failedToGetUser",
       },
     },
+  },
+  settings: {
+    accountSettings: "settings.accountSettings",
+    preferences: "settings.preferences",
   },
 } as const;

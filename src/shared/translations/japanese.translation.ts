@@ -32,12 +32,15 @@ export const JapaneseTranslationWords: TranslationWords = {
   auth: {
     login: "ログイン",
     register: "登録",
+    switchAccount: "アカウントを切り替える",
     logout: "ログアウト",
     account: "アカウント",
     name: "名前",
     email: "メール",
     password: "パスワード",
     confirmPassword: "パスワード確認",
+    userRole: "ユーザーの役割",
+    userPlan: "ユーザープラン",
     forgotPassword: "パスワードを忘れた？",
     haveNotRegisterAnAccount: "まだアカウントを登録していませんか？",
     alreadyHaveAnAccount: "すでにアカウントをお持ちですか？",
@@ -68,6 +71,9 @@ export const JapaneseTranslationWords: TranslationWords = {
   },
   error: {
     encounterUnknownError: "不明なエラーが発生しました",
+    urlNotFound: "URLが見つかりません",
+    unauthorized: "認証されていません",
+    permissionDeniedDueTo: "次の理由で許可されません:",
     apiError: {
       register: {
         failedToRegister:
@@ -91,5 +97,9 @@ export const JapaneseTranslationWords: TranslationWords = {
           "ユーザー情報の取得に失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
       },
     },
+  },
+  settings: {
+    accountSettings: "アカウント設定",
+    preferences: "設定",
   },
 };

@@ -126,17 +126,17 @@ const DashboardPage = () => {
               </div>
               <MenubarSeparator />
               <MenubarItem className="cursor-pointer">
-                <span>Account Settings</span>
+                <span>{languageManager.t(tKey.settings.accountSettings)}</span>
               </MenubarItem>
               <MenubarItem
                 className="cursor-pointer"
                 onClick={() => setDisplayPreferencesPanel(true)}
               >
-                <span>Preferences</span>
+                <span>{languageManager.t(tKey.settings.preferences)}</span>
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem className="cursor-pointer">
-                <span>Switch Account</span>
+                <span>{languageManager.t(tKey.auth.switchAccount)}</span>
               </MenubarItem>
               <MenubarItem
                 className="cursor-pointer text-destructive focus:text-destructive"
@@ -144,7 +144,7 @@ const DashboardPage = () => {
                   console.log("Logout clicked");
                 }}
               >
-                <span>Log Out</span>
+                <span>{languageManager.t(tKey.auth.logout)}</span>
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>

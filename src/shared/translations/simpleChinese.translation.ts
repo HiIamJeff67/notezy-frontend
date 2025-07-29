@@ -32,12 +32,15 @@ export const SimpleChineseTranslationWords: TranslationWords = {
   auth: {
     login: "登录",
     register: "注册",
+    switchAccount: "切换账号",
     logout: "登出",
     account: "账号",
     name: "姓名",
     email: "邮箱",
     password: "密码",
     confirmPassword: "确认密码",
+    userRole: "用户角色",
+    userPlan: "用户方案",
     forgotPassword: "忘记密码？",
     haveNotRegisterAnAccount: "还没有注册账号？",
     alreadyHaveAnAccount: "已经有账号了？",
@@ -66,6 +69,9 @@ export const SimpleChineseTranslationWords: TranslationWords = {
   },
   error: {
     encounterUnknownError: "遇到未知错误",
+    urlNotFound: "找不到网址",
+    unauthorized: "未授权",
+    permissionDeniedDueTo: "权限不足，因为:",
     apiError: {
       register: {
         failedToRegister: "注册失败，请稍后再试或联系我们",
@@ -83,5 +89,9 @@ export const SimpleChineseTranslationWords: TranslationWords = {
         failedToGetUser: "获取用户资料失败，请稍后再试或联系我们",
       },
     },
+  },
+  settings: {
+    accountSettings: "账号设置",
+    preferences: "偏好设置",
   },
 };

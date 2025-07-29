@@ -32,12 +32,15 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
   auth: {
     login: "登入",
     register: "註冊",
+    switchAccount: "切換帳號",
     logout: "登出",
     account: "帳號",
     name: "名稱",
     email: "電子郵件",
     password: "密碼",
     confirmPassword: "確認密碼",
+    userRole: "使用者角色",
+    userPlan: "使用者方案",
     forgotPassword: "忘記密碼？",
     haveNotRegisterAnAccount: "還沒有註冊帳號？",
     alreadyHaveAnAccount: "已經有帳號了？",
@@ -69,6 +72,9 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
   },
   error: {
     encounterUnknownError: "遇到未知錯誤",
+    urlNotFound: "找不到網址",
+    unauthorized: "未授權",
+    permissionDeniedDueTo: "權限不足，因為:",
     apiError: {
       register: {
         failedToRegister: "註冊失敗，請稍後再試或聯繫我們",
@@ -86,5 +92,9 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
         failedToGetUser: "取得用戶資料失敗，請稍後再試或聯繫我們",
       },
     },
+  },
+  settings: {
+    accountSettings: "帳號設定",
+    preferences: "偏好設定",
   },
 };

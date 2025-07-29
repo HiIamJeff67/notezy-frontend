@@ -30,12 +30,15 @@ export interface TranslationWords {
   auth: {
     login: string;
     register: string;
+    switchAccount: string;
     logout: string;
     account: string;
     name: string;
     email: string;
     password: string;
     confirmPassword: string;
+    userRole: string;
+    userPlan: string;
     forgotPassword: string;
     haveNotRegisterAnAccount: string;
     alreadyHaveAnAccount: string;
@@ -64,6 +67,9 @@ export interface TranslationWords {
   };
   error: {
     encounterUnknownError: string;
+    urlNotFound: string;
+    unauthorized: string;
+    permissionDeniedDueTo: string;
     apiError: {
       register: {
         failedToRegister: string;
@@ -79,7 +85,12 @@ export interface TranslationWords {
       };
       getUser: {
         failedToGetUser: string;
+        // notFound: string;
       };
     };
+  };
+  settings: {
+    accountSettings: string;
+    preferences: string;
   };
 }

@@ -409,9 +409,9 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[85vh] p-0 gap-0 overflow-hidden">
-        <div className="flex h-full">
-          <div className="w-40 bg-muted/30 border-r flex flex-col">
+      <DialogContent className="min-w-3/5 max-h-[85vh] p-0 gap-0 overflow-hidden">
+        <div className="flex w-full h-full">
+          <div className="w-3/10 bg-muted/30 border-r flex flex-col">
             <DialogHeader className="p-6 pb-4">
               <DialogTitle className="text-xl font-semibold">
                 偏好設置
@@ -443,7 +443,7 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
           </div>
 
           {/* 主要內容區域 - 移除重複的關閉按鈕，增加寬度 */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-7/10">
             <div className="flex-1 overflow-y-auto p-8">
               {renderPageContent()}
             </div>
