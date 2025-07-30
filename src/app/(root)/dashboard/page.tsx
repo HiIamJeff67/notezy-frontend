@@ -1,6 +1,6 @@
 "use client";
 
-import { GetMe } from "@/api/user.api";
+import { GetUserData } from "@/api/user.api";
 import { AppSidebar } from "@/components/AppSidebar";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import BellIcon from "@/components/icons/BellIcon";
@@ -39,7 +39,7 @@ const DashboardPage = () => {
       const tryGetUser = async () => {
         try {
           const userAgent = navigator.userAgent;
-          const responseOfGetMe = await GetMe({
+          const responseOfGetMe = await GetUserData({
             header: {
               userAgent: userAgent,
               authorization: undefined,

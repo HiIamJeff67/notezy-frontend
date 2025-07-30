@@ -92,5 +92,18 @@ export interface TranslationWords {
   settings: {
     accountSettings: string;
     preferences: string;
+    // accountSetting: {};
+    // preference: {
+    //   appearance: {
+    //     fontSize: string;
+    //     compactMode: string;
+    //     enableAnimation: string;
+    //     interfaceLanguage: string;
+    //   };
+    //   privacy: {
+    //     publicProfile: {}
+    //     usageStates: {}
+    //   }
+    // };
   };
 }

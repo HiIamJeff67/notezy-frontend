@@ -1,7 +1,7 @@
 "use client";
 
 import { Register } from "@/api/auth.api";
-import { GetMe } from "@/api/user.api";
+import { GetUserData } from "@/api/user.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBlackBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
@@ -58,7 +58,7 @@ const RegisterPage = () => {
         },
       });
 
-      const responseOfGetMe = await GetMe({
+      const responseOfGetMe = await GetUserData({
         header: {
           userAgent: userAgent,
           authorization: undefined,

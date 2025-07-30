@@ -29,7 +29,13 @@ export const APIURLPathDictionary = {
     logout: "auth/logout",
   },
   user: {
+    getUserData: "user/getUserData",
     getMe: "user/getMe",
+    updateMe: "user/updateMe",
+  },
+  userInfo: {
+    getMyInfo: "userInfo/getMyInfo",
+    updateMyInfo: "userInfo/updateMyInfo",
   },
 };
 
