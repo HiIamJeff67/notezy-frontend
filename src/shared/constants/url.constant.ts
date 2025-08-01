@@ -53,8 +53,14 @@ export const WebTestBaseURL = WebTestNamespace + "/" + WebTestVersion;
 export const CurrentWebBaseURL = WebDevelopmentBaseURL;
 
 export const WebURLPathDictionary = {
-  register: "register",
-  login: "login",
-  documents: "documents",
-  dashboard: "dashboard",
+  home: "",
+  auth: {
+    register: "register",
+    login: "login",
+    forgetPassword: "forgetPassword",
+  },
+  root: {
+    documents: "documents",
+    dashboard: "dashboard",
+  },
 };

@@ -13,7 +13,7 @@ import { NotezyRequest, NotezyResponse } from "./form.api";
 export interface GetMyInfoRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
 }
 
@@ -43,18 +43,18 @@ export async function GetMyInfo(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as GetMyInfoResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as GetMyInfoResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }
 
 /* ============================== UpdateMyInfo ============================== */
 export interface UpdateMyInfoRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
   body: PartialUpdate<{
     coverBackgroundURL: string;
@@ -96,9 +96,9 @@ export async function UpdateMyInfo(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as UpdateMyInfoResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as UpdateMyInfoResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }

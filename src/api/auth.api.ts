@@ -45,18 +45,18 @@ export async function Register(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as RegisterResponse;
-  if (data.exception !== null) {
-    switch (data.exception.reason) {
+  const jsonResponse = (await response.json()) as RegisterResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    switch (jsonResponse.exception.reason) {
       case "DuplicateName":
         throw new Error(tKey.error.apiError.register.duplicateName);
       case "DuplicateEmail":
         throw new Error(tKey.error.apiError.register.duplicateEmail);
       default:
-        throw new Error(data.exception.message);
+        throw new Error(jsonResponse.exception.message);
     }
   }
-  return data;
+  return jsonResponse;
 }
 
 /* ========================= Login ========================= */
@@ -95,24 +95,23 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as LoginResponse;
-  if (data.exception !== null) {
-    console.log(data.exception.reason);
-    switch (data.exception.reason) {
+  const jsonResponse = (await response.json()) as LoginResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    switch (jsonResponse.exception.reason) {
       case "NotFound":
         throw new Error(tKey.error.apiError.getUser.failedToGetUser);
       default:
-        throw new Error(data.exception.message);
+        throw new Error(jsonResponse.exception.message);
     }
   }
-  return data;
+  return jsonResponse;
 }
 
 /* ========================= Logout ========================= */
 export interface LogoutRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
 }
 
@@ -142,9 +141,9 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as LogoutResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as LogoutResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }

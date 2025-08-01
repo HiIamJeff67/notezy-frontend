@@ -12,6 +12,7 @@ export interface TranslationWords {
     delete: string;
     edit: string;
     choose: string;
+    send: string;
   };
   navigation: {
     home: string;
@@ -30,6 +31,7 @@ export interface TranslationWords {
   auth: {
     login: string;
     register: string;
+    resetPassword: string;
     switchAccount: string;
     logout: string;
     account: string;
@@ -37,9 +39,12 @@ export interface TranslationWords {
     email: string;
     password: string;
     confirmPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+    authCode: string;
     userRole: string;
     userPlan: string;
-    forgotPassword: string;
+    forgetPassword: string;
     haveNotRegisterAnAccount: string;
     alreadyHaveAnAccount: string;
     authenticationPanelSubtitle: string;

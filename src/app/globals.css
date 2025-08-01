@@ -50,39 +50,15 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --switch-thumb: var(--background);
 }
+
+/* ============================== Default Themes ============================== */
+/* 
+Note: We will always apply one of the default themes
+since both of them offer some default colors in ShadCN component
+*/
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -116,144 +92,139 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --switch-thumb: oklch(0.985 0 0);
 }
 
 .light {
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(0.95 0 0); /* 淺灰卡片 (與 dark card 相反) */
-  --card-foreground: oklch(
-    0.145 0 0
-  ); /* 深色字 (與 dark card-foreground 相反) */
-  --popover: oklch(0.95 0 0); /* 淺灰彈出層 */
-  --popover-foreground: oklch(0.145 0 0); /* 深色字 */
-  --primary: oklch(0.205 0 0); /* 深色主色 (與 dark primary-foreground 相同) */
-  --primary-foreground: oklch(0.985 0 0); /* 白色前景 (與 dark primary 相反) */
-  --secondary: oklch(0.85 0 0); /* 淺灰輔色 (與 dark secondary 相反) */
-  --secondary-foreground: oklch(
-    0.145 0 0
-  ); /* 深色前景 (與 dark secondary-foreground 相反) */
-  --muted: oklch(0.85 0 0); /* 淺灰靜音色 */
-  --muted-foreground: oklch(
-    0.4 0 0
-  ); /* 中灰前景 (與 dark muted-foreground 相反) */
-  --accent: oklch(0.85 0 0); /* 淺灰強調色 */
-  --accent-foreground: oklch(0.145 0 0); /* 深色前景 */
-  --destructive: oklch(0.577 0.245 27.325); /* 警告紅色 (保持一致) */
-  --destructive-foreground: oklch(0.985 0 0); /* 白色前景 */
-  --border: oklch(0.9 0 0); /* 淺灰邊框 (與 dark border 透明度相反) */
-  --input: oklch(0.95 0 0); /* 淺灰輸入框 */
-  --ring: oklch(0.556 0 0); /* 焦點環保持一致 */
-  --chart-1: oklch(0.6 0.243 264.376); /* 調整亮度但保持色相 */
-  --chart-2: oklch(0.5 0.17 162.48); /* 調整亮度但保持色相 */
-  --chart-3: oklch(0.4 0.188 70.08); /* 調整亮度但保持色相 */
-  --chart-4: oklch(0.5 0.265 303.9); /* 調整亮度但保持色相 */
-  --chart-5: oklch(0.45 0.246 16.439); /* 調整亮度但保持色相 */
-  --sidebar: oklch(0.95 0 0); /* 淺色側邊欄 */
-  --sidebar-foreground: oklch(0.145 0 0); /* 深色前景 */
-  --sidebar-primary: oklch(0.6 0.243 264.376); /* 側邊欄主色 */
-  --sidebar-primary-foreground: oklch(0.985 0 0); /* 白色前景 */
-  --sidebar-accent: oklch(0.85 0 0); /* 側邊欄強調色 */
-  --sidebar-accent-foreground: oklch(0.145 0 0); /* 深色前景 */
-  --sidebar-border: oklch(0.9 0 0); /* 側邊欄邊框 */
-  --sidebar-ring: oklch(0.556 0 0); /* 側邊欄焦點環 */
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(0.98 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.93 0 0);
+  --muted-foreground: oklch(0.4 0 0);
+  --accent: oklch(0.85 0 0);
+  --accent-foreground: oklch(0.15 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.8 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.6 0.243 264.376);
+  --chart-2: oklch(0.5 0.17 162.48);
+  --chart-3: oklch(0.4 0.188 70.08);
+  --chart-4: oklch(0.5 0.265 303.9);
+  --chart-5: oklch(0.45 0.246 16.439);
+  --sidebar: oklch(0.95 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.6 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.85 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.9 0 0);
+  --sidebar-ring: oklch(0.556 0 0);
+  --switch-thumb: oklch(0.15 0 0);
 }
-/* Standard 主題 - 低調木質感，深色基調 */
+
+/* ============================== Customized Themes ============================== */
+
 .standard {
-  --background: oklch(0.08 0 0); /* 深黑背景 */
-  --foreground: oklch(0.9 0 0); /* 柔和白色前景 */
-  --card: oklch(0.12 0 0); /* 深灰卡片 */
-  --card-foreground: oklch(0.9 0 0); /* 柔和白字 */
-  --popover: oklch(0.12 0 0); /* 深灰彈出層 */
-  --popover-foreground: oklch(0.9 0 0); /* 柔和白字 */
-  --primary: oklch(0.4 0.06 45); /* 非常低調的深木色 */
-  --primary-foreground: oklch(0.9 0 0); /* 柔和白色前景 */
-  --secondary: oklch(0.18 0 0); /* 深灰輔色 */
-  --secondary-foreground: oklch(0.8 0 0); /* 輔色前景 */
-  --muted: oklch(0.15 0 0); /* 靜音色 */
-  --muted-foreground: oklch(0.6 0 0); /* 靜音前景 */
-  --accent: oklch(0.35 0.04 45); /* 極低調的木色強調 */
-  --accent-foreground: oklch(0.9 0 0); /* 強調前景白色 */
-  --destructive: oklch(0.45 0.12 20); /* 低調的深紅色 */
-  --destructive-foreground: oklch(0.9 0 0); /* 警告前景白色 */
-  --border: oklch(0.25 0.02 45); /* 極淡木色邊框 */
-  --input: oklch(0.15 0.02 45); /* 輸入框背景 */
-  --ring: oklch(0.4 0.06 45); /* 焦點環 */
-  --sidebar: oklch(0.1 0 0); /* 側邊欄背景 */
-  --sidebar-foreground: oklch(0.9 0 0); /* 側邊欄前景 */
-  --sidebar-primary: oklch(0.4 0.06 45); /* 側邊欄主色 */
-  --sidebar-primary-foreground: oklch(0.9 0 0); /* 側邊欄主色前景 */
-  --sidebar-accent: oklch(0.35 0.04 45); /* 側邊欄強調色 */
-  --sidebar-accent-foreground: oklch(0.9 0 0); /* 側邊欄強調前景 */
-  --sidebar-border: oklch(0.2 0 0); /* 側邊欄邊框 */
-  --sidebar-ring: oklch(0.4 0.06 45); /* 側邊欄焦點環 */
+  --primary: oklch(0.4 0.06 45);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.25 0.02 45);
+  --accent-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.4 0.06 45);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.35 0.04 45);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.4 0.06 45);
+  --switch-thumb: oklch(0.985 0 0);
 }
 
-/* Neon 主題 - "Carbon" 碳纖維質感 */
 .neon {
-  --background: oklch(0.06 0.015 260); /* 極深的紫藍背景 */
-  --foreground: oklch(0.88 0.02 200); /* 微冷調白色前景 */
-  --card: oklch(0.11 0.02 250); /* 深紫灰卡片 */
-  --card-foreground: oklch(0.88 0.02 200); /* 微冷調白字 */
-  --popover: oklch(0.12 0.025 240); /* 深藍紫彈出層 */
-  --popover-foreground: oklch(0.88 0.02 200); /* 微冷調白字 */
-  --primary: oklch(0.35 0.08 280); /* 低調深紫色 */
-  --primary-foreground: oklch(0.92 0.02 200); /* 主色前景 */
-  --secondary: oklch(0.16 0.015 240); /* 深藍灰輔色 */
-  --secondary-foreground: oklch(0.82 0.02 200); /* 輔色前景 */
-  --muted: oklch(0.14 0.02 250); /* 靜音紫灰色 */
-  --muted-foreground: oklch(0.58 0.025 220); /* 靜音前景帶微藍 */
-  --accent: oklch(0.28 0.06 200); /* 低調青色強調 */
-  --accent-foreground: oklch(0.92 0.02 200); /* 強調前景 */
-  --destructive: oklch(0.42 0.1 15); /* 低調深紅橙 */
-  --destructive-foreground: oklch(0.92 0.02 200); /* 警告前景 */
-  --border: oklch(0.2 0.03 240); /* 淡藍紫邊框 */
-  --input: oklch(0.13 0.025 250); /* 輸入框背景 */
-  --ring: oklch(0.4 0.08 280); /* 紫色焦點環 */
-  --sidebar: oklch(0.08 0.02 270); /* 側邊欄背景 */
-  --sidebar-foreground: oklch(0.88 0.02 200); /* 側邊欄前景 */
-  --sidebar-primary: oklch(0.35 0.08 280); /* 側邊欄主色 */
-  --sidebar-primary-foreground: oklch(0.92 0.02 200); /* 側邊欄主色前景 */
-  --sidebar-accent: oklch(0.28 0.06 200); /* 側邊欄強調色 */
-  --sidebar-accent-foreground: oklch(0.92 0.02 200); /* 側邊欄強調前景 */
-  --sidebar-border: oklch(0.18 0.025 250); /* 側邊欄邊框 */
-  --sidebar-ring: oklch(0.4 0.08 280); /* 側邊欄焦點環 */
+  --primary: oklch(0.35 0.08 280);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.22 0.04 200);
+  --accent-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.35 0.08 280);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.28 0.06 200);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.4 0.08 280);
+  --switch-thumb: oklch(0.985 0 0);
 }
 
-/* Ocean 主題 - "Slate" 石板質感 */
 .ocean {
-  --background: oklch(0.06 0 0); /* 深石板背景 */
-  --foreground: oklch(0.88 0 0); /* 柔和白色前景 */
-  --card: oklch(0.11 0 0); /* 深灰卡片 */
-  --card-foreground: oklch(0.88 0 0); /* 柔和白字 */
-  --popover: oklch(0.11 0 0); /* 深灰彈出層 */
-  --popover-foreground: oklch(0.88 0 0); /* 柔和白字 */
-  --primary: oklch(0.35 0.04 220); /* 低調深藍灰 */
-  --primary-foreground: oklch(0.9 0 0); /* 主色前景 */
-  --secondary: oklch(0.16 0 0); /* 深灰輔色 */
-  --secondary-foreground: oklch(0.8 0 0); /* 輔色前景 */
-  --muted: oklch(0.13 0 0); /* 靜音色 */
-  --muted-foreground: oklch(0.58 0 0); /* 靜音前景 */
-  --accent: oklch(0.32 0.03 200); /* 低調青灰強調 */
-  --accent-foreground: oklch(0.9 0 0); /* 強調前景 */
-  --destructive: oklch(0.42 0.1 18); /* 低調深紅 */
-  --destructive-foreground: oklch(0.9 0 0); /* 警告前景 */
-  --border: oklch(0.22 0.02 220); /* 淡藍灰邊框 */
-  --input: oklch(0.14 0.02 220); /* 輸入框背景 */
-  --ring: oklch(0.35 0.04 220); /* 焦點環 */
-  --sidebar: oklch(0.09 0 0); /* 側邊欄背景 */
-  --sidebar-foreground: oklch(0.88 0 0); /* 側邊欄前景 */
-  --sidebar-primary: oklch(0.35 0.04 220); /* 側邊欄主色 */
-  --sidebar-primary-foreground: oklch(0.9 0 0); /* 側邊欄主色前景 */
-  --sidebar-accent: oklch(0.32 0.03 200); /* 側邊欄強調色 */
-  --sidebar-accent-foreground: oklch(0.9 0 0); /* 側邊欄強調前景 */
-  --sidebar-border: oklch(0.17 0 0); /* 側邊欄邊框 */
-  --sidebar-ring: oklch(0.35 0.04 220); /* 側邊欄焦點環 */
+  --primary: oklch(0.35 0.04 220);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.18 0.01 200);
+  --accent-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.35 0.04 220);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.32 0.03 200);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.35 0.04 220);
+  --switch-thumb: oklch(0.985 0 0);
 }
+
+/* ==================== Global Scrollbar Styles ==================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted); /* 跟隨主題 muted 色 */
+  border-radius: 4px;
+  border: 2px solid var(--background); /* 讓 thumb 更有層次 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent); /* 滑鼠移上時用 accent 色 */
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) var(--background);
+}
+
+/* ==================== Switch Styles ==================== */
+
+[data-slot="switch"][data-state="unchecked"] > span {
+  background: var(--switch-thumb) !important;
+}
+
+[data-slot="switch"][data-state="checked"] > span {
+  background: var(--primary-foreground) !important;
+}
+
+/* ============================== Styles for All Input Fields with Type of "number" ============================== */
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ==================== Base Styles ==================== */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* since the caret is everywhere in ShadCN component, so we make it transparent */
+    /* once you need a caret in some component such as input box, then you should specified the caret-color */
+    caret-color: transparent;
   }
   body {
     @apply bg-background text-foreground;

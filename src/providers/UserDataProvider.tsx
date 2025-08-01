@@ -1,5 +1,6 @@
 "use client";
 
+import { Logout } from "@/api/auth.api";
 import { UserData } from "@/shared/types/userData.type";
 import React, { createContext, useState } from "react";
 import toast from "react-hot-toast";
@@ -35,10 +36,14 @@ export const UserDataProvider = ({
     return true;
   };
 
-  const logout = () => {
-    /* may run the API to further completely logout the current user */
-    toast.success("Logout successfully");
+  const logout = async () => {
+    const userAgent = navigator.userAgent;
+    // logout without showing error if there is one
+    await Logout({
+      header: { userAgent: userAgent },
+    });
     setUserData(null);
+    toast.success("Logout successfully, see you next time ~");
   };
 
   const contextValue: UserDataContextType = {

@@ -21,8 +21,7 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultStandardTheme);
-  const [prevThemeCSSClassName, setPrevThemeCSSClassName] =
-    useState<string>("");
+  const [prevTheme, setPrevTheme] = useState<Theme | null>(null);
   const localStorageManager = useLocalStorage();
   const themeStore = useThemeStore();
 
@@ -54,19 +53,26 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     localStorageManager.setItem("theme", currentTheme);
 
-    if (prevThemeCSSClassName) {
+    if (prevTheme !== null) {
+      const prevDefaultThemeCSSClassName = !prevTheme.isDark ? "light" : "dark";
+      const prevThemeCSSClassName = prevTheme.isDefault
+        ? prevTheme.name.split(" ")[1].toLowerCase()
+        : prevTheme.id;
+      document.documentElement.classList.remove(prevDefaultThemeCSSClassName);
       document.documentElement.classList.remove(prevThemeCSSClassName);
     }
 
+    const defaultThemeCSSClassName = !currentTheme.isDark ? "light" : "dark";
     // get the css class name, and make sure we convert it to correct name if the theme is a default theme
     // do this conversion here to not disturb other lower logics
     const themeCSSClassName = currentTheme.isDefault
       ? currentTheme.name.split(" ")[1].toLowerCase()
       : currentTheme.id;
+    document.documentElement.classList.add(defaultThemeCSSClassName);
     document.documentElement.classList.add(themeCSSClassName);
 
-    setPrevThemeCSSClassName(themeCSSClassName);
-  }, [currentTheme, prevThemeCSSClassName]);
+    setPrevTheme(currentTheme);
+  }, [currentTheme]); // not sure prevTheme should be added or not
 
   const switchCurrentTheme = async (themeId: string): Promise<boolean> => {
     const theme = themeStore.availableThemes.find(t => t.id === themeId);

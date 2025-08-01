@@ -3,7 +3,7 @@
 import { Login } from "@/api/auth.api";
 import { GetUserData } from "@/api/user.api";
 import AuthPanel from "@/components/AuthPanel";
-import GridBlackBackground from "@/components/GridBackground";
+import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { handleAndLogCaughtError } from "@/lib/handleCaughtError";
@@ -24,7 +24,7 @@ const LoginPage = () => {
     loadingManager.setIsLoading(false);
   }, []);
 
-  const handlingLoginSubmit = async function (): Promise<void> {
+  const handlingLoginOnSubmit = async function (): Promise<void> {
     loadingManager.setIsLoading(true);
 
     try {
@@ -42,7 +42,6 @@ const LoginPage = () => {
       const responseOfGetMe = await GetUserData({
         header: {
           userAgent: userAgent,
-          authorization: undefined,
         },
         body: {},
       });
@@ -54,7 +53,7 @@ const LoginPage = () => {
         );
       }
       userDataManager.setUserData(responseOfGetMe.data);
-      router.push(WebURLPathDictionary.dashboard);
+      router.push(WebURLPathDictionary.root.dashboard);
     } catch (error) {
       if (error instanceof Error) {
         error.message = languageManager.t(error.message);
@@ -68,55 +67,54 @@ const LoginPage = () => {
   };
 
   return (
-    <GridBlackBackground>
-      <div>
-        <AuthPanel
-          title={languageManager.t(tKey.auth.login)}
-          subtitle={`${languageManager.t(
-            tKey.auth.authenticationPanelSubtitle
-          )} ${languageManager.t(tKey.auth.login)}`}
-          inputs={[
-            {
-              title: languageManager.t(tKey.auth.account),
-              placeholder: "ex. example123@email.com or myName123",
-              type: "text",
-              value: account,
-              onChange: setAccount,
-              required: true,
+    <GridBackground>
+      <AuthPanel
+        title={languageManager.t(tKey.auth.login)}
+        subtitle={`${languageManager.t(
+          tKey.auth.authenticationPanelSubtitle
+        )} ${languageManager.t(tKey.auth.login)}`}
+        inputs={[
+          {
+            title: languageManager.t(tKey.auth.account),
+            placeholder: "ex. example123@email.com or myName123",
+            type: "text",
+            value: account,
+            onChange: setAccount,
+            required: true,
+          },
+          {
+            title: languageManager.t(tKey.auth.password),
+            placeholder: "ex. example-password123(&@#$",
+            type: "password",
+            value: password,
+            onChange: setPassword,
+            required: true,
+          },
+        ]}
+        submitButtonText={languageManager.t(tKey.auth.login)}
+        onSubmit={handlingLoginOnSubmit}
+        switchButtons={[
+          {
+            description: languageManager.t(tKey.auth.haveNotRegisterAnAccount),
+            title: languageManager.t(tKey.auth.register),
+            onClick: () => {
+              loadingManager.setIsLoading(true);
+              router.push(WebURLPathDictionary.auth.register);
             },
-            {
-              title: languageManager.t(tKey.auth.password),
-              placeholder: "ex. example-password123(&@#$",
-              type: "password",
-              value: password,
-              onChange: setPassword,
-              required: true,
+          },
+          {
+            description: languageManager.t(tKey.auth.oopsIForgotMyAccount),
+            title: languageManager.t(tKey.auth.resetPassword),
+            onClick: () => {
+              loadingManager.setIsLoading(true);
+              router.push(WebURLPathDictionary.auth.forgetPassword);
             },
-          ]}
-          submitButtonText={languageManager.t(tKey.auth.login)}
-          onSubmit={handlingLoginSubmit}
-          switchButtons={[
-            {
-              description: languageManager.t(
-                tKey.auth.haveNotRegisterAnAccount
-              ),
-              title: languageManager.t(tKey.auth.register),
-              onClick: () => {
-                loadingManager.setIsLoading(true);
-                router.push(WebURLPathDictionary.register);
-              },
-            },
-            {
-              description: languageManager.t(tKey.auth.oopsIForgotMyAccount),
-              title: languageManager.t(tKey.auth.forgotPassword),
-              onClick: () => {},
-            },
-          ]}
-          statusDetail={"System Ready"}
-          isLoading={loadingManager.isLoading}
-        />
-      </div>
-    </GridBlackBackground>
+          },
+        ]}
+        statusDetail={"System Ready"}
+        isLoading={loadingManager.isLoading}
+      />
+    </GridBackground>
   );
 };
 

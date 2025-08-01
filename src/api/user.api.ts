@@ -13,7 +13,7 @@ import { NotezyRequest, NotezyResponse } from "./form.api";
 export interface GetUserDataRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
 }
 
@@ -54,7 +54,7 @@ export async function GetUserData(
 export interface GetMeRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
 }
 
@@ -82,18 +82,18 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as GetMeResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as GetMeResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }
 
 /* ============================== UpdateMe ============================== */
 export interface UpdateMeRequest extends NotezyRequest {
   header: {
     userAgent: string;
-    authorization: string | undefined;
+    authorization?: string;
   };
   body: PartialUpdate<{
     displayName?: string;
@@ -130,9 +130,9 @@ export async function UpdateMe(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as UpdateMeResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as UpdateMeResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }

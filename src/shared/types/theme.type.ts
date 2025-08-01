@@ -1,6 +1,7 @@
 export interface Theme {
   id: string;
   name: string;
+  isDark: boolean;
   translationKey: string;
   authorName: string;
   authorAvatarURL: string;

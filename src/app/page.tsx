@@ -169,7 +169,7 @@ const HomePage = () => {
       </div>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
-        <div className="text-white text-center select-none flex flex-col items-center justify-center gap-0">
+        <div className="text-foreground text-center select-none flex flex-col items-center justify-center gap-0">
           <div className="min-h-[160px] flex flex-col items-center justify-center">
             <div
               className={`
@@ -194,7 +194,7 @@ const HomePage = () => {
               className="cursor-pointer font-bold hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
               onClick={() => {
                 loadingManager.setIsLoading(true);
-                router.push(WebURLPathDictionary.documents);
+                router.push(WebURLPathDictionary.root.documents);
               }}
             >
               <DocumentIcon size={18} />
@@ -205,7 +205,7 @@ const HomePage = () => {
               className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
               onClick={() => {
                 loadingManager.setIsLoading(true);
-                router.push(WebURLPathDictionary.login);
+                router.push(WebURLPathDictionary.auth.login);
               }}
             >
               <NoteIcon size={18} />

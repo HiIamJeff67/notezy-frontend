@@ -1,9 +1,6 @@
 import { Collapsible } from "@/components/ui/collapsible";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -11,15 +8,12 @@ import {
 export function AppSidebar() {
   return (
     <Collapsible>
-      <Sidebar>
+      <Sidebar className="block">
         <SidebarHeader className="flex flex-row justify-end">
-          <SidebarTrigger className="" />
+          <SidebarTrigger />
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup />
-          <SidebarGroup />
-        </SidebarContent>
-        <SidebarFooter />
+        {/* <SidebarContent></SidebarContent> */}
+        {/* <SidebarFooter /> */}
       </Sidebar>
     </Collapsible>
   );

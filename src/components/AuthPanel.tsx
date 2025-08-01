@@ -1,6 +1,7 @@
 "use client";
 
 import "@/global/styles/panel.css";
+import { useTheme } from "@/hooks";
 import { toCamelCase } from "@/lib/stringCaseConversions";
 
 interface AuthPanelInput {
@@ -10,6 +11,11 @@ interface AuthPanelInput {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  rightButton?: {
+    description: string;
+    onClick: () => Promise<void> | void;
+    disabled?: boolean;
+  };
 }
 
 interface AuthSwitchButton {
@@ -39,13 +45,18 @@ const AuthPanel = ({
   statusDetail,
   isLoading = false,
 }: AuthPanelProps) => {
+  const themeManager = useTheme();
+
   return (
     <div className="flex justify-center items-center min-h-screen p-8">
       <div
         className={`
           relative w-[450px] px-10 py-12 rounded-lg overflow-hidden
-          panel-gradient panel-texture panel-shine
-          shadow-[0_25px_50px_rgba(0,0,0,0.8),0_10px_25px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.1),inset_0_-1px_2px_rgba(0,0,0,0.5)]
+          ${
+            themeManager.currentTheme.isDark
+              ? "panel-gradient panel-texture panel-shine shadow-[0_25px_50px_rgba(0,0,0,0.8),0_10px_25px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.1),inset_0_-1px_2px_rgba(0,0,0,0.5)]"
+              : "bg-[rgba(100,100,100,0.5)] shadow-[0_8px_32px_rgba(0,0,0,0.45),0_1.5px_4px_rgba(0,0,0,0.10)]"
+          }
           transform transition-all duration-300 ease-out
           perspective-1000 rotate-x-[5deg] translate-z-0
           ${isLoading ? "pointer-events-none opacity-75" : ""}
@@ -70,13 +81,27 @@ const AuthPanel = ({
         {/* Panel Content */}
         <div className="relative z-5 select-none">
           <h2
-            className="font-mono text-2xl font-bold text-green-400 text-center mb-2 tracking-[2px]"
-            style={{ textShadow: "0 0 10px rgba(0, 255, 136, 0.3)" }}
+            className={`font-mono text-2xl font-bold ${
+              themeManager.currentTheme.isDark
+                ? "text-green-400"
+                : "text-green-600"
+            } text-center mb-2 tracking-[2px]`}
+            style={{
+              textShadow: themeManager.currentTheme.isDark
+                ? "0 0 10px rgba(0, 255, 136, 0.3)"
+                : "none",
+            }}
           >
             {title}
           </h2>
 
-          <div className="font-mono text-xs text-gray-500 text-center mb-8 tracking-wider">
+          <div
+            className={`font-mono text-xs ${
+              themeManager.currentTheme.isDark
+                ? "text-gray-500"
+                : "text-gray-700"
+            } text-center mb-8 tracking-wider`}
+          >
             {subtitle
               ? subtitle
               : `Authentication panel for ${toCamelCase(title)}`}
@@ -93,27 +118,63 @@ const AuthPanel = ({
               <div key={index} className="flex flex-col gap-2">
                 <label
                   htmlFor={`input-${index}`}
-                  className="font-mono text-base text-green-400 tracking-wider font-bold select-none"
+                  className={`font-mono text-base tracking-wider font-bold select-none ${
+                    themeManager.currentTheme.isDark
+                      ? "text-green-400"
+                      : "text-green-600"
+                  }`}
                 >
                   {input.title}
                 </label>
-                <input
-                  type={input.type || "text"}
-                  id={`input-${index}`}
-                  value={input.value}
-                  onChange={e => input.onChange(e.target.value)}
-                  required={input.required !== false}
-                  disabled={isLoading}
-                  className="
-                    input-gradient border border-gray-700 rounded px-4 py-3 text-white 
-                    font-mono text-sm transition-all duration-300
-                    shadow-[inset_0_2px_4px_rgba(0,0,0,0.5),0_1px_2px_rgba(0,0,0,0.3)]
-                    focus:outline-none focus:border-green-400 focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.5),0_0_10px_rgba(0,255,136,0.2)]
-                    placeholder:text-gray-600 placeholder:italic
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                  "
-                  placeholder={input.placeholder}
-                />
+                <div className="relative flex justify-between item-center">
+                  <input
+                    type={input.type || "text"}
+                    id={`input-${index}`}
+                    value={input.value}
+                    onChange={e => input.onChange(e.target.value)}
+                    required={input.required !== false}
+                    disabled={isLoading}
+                    className={`
+                      w-full
+                      font-semibold border rounded px-4 py-3 font-mono text-sm transition-all duration-300
+                      shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.03)]
+                      focus:outline-none focus:border-green-400
+                      placeholder:text-gray-600 placeholder:italic placeholder:font-normal
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      ${
+                        themeManager.currentTheme.isDark
+                          ? "bg-[#181818] text-white border-gray-700"
+                          : "bg-[rgba(255,255,255,0.45)] backdrop-blur-sm text-foreground border-gray-300"
+                      }
+                    `}
+                    style={{
+                      caretColor: "var(--foreground)",
+                    }}
+                    placeholder={input.placeholder}
+                  />
+                  {input.rightButton && (
+                    <button
+                      type="button"
+                      className={`
+                        absolute right-0 top-1/2 px-3 py-1 -translate-y-1/2 rounded
+                        button-gradient border border-green-400
+                        text-green-400 font-mono text-xs font-bold
+                        transition-all duration-300 max-w-2/5 h-4/5 mr-1
+                        hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] 
+                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none
+                        ${
+                          input.rightButton.disabled || isLoading
+                            ? "opacity-60 cursor-not-allowed"
+                            : ""
+                        }
+                      `}
+                      disabled={input.rightButton.disabled || isLoading}
+                      onClick={input.rightButton.onClick}
+                    >
+                      {input.rightButton.description}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
 
@@ -135,7 +196,7 @@ const AuthPanel = ({
                 <div
                   className="
                   absolute top-0 left-[-100%] w-full h-full 
-                  bg-gradient-to-r from-transparent via-[rgba(0,255,136,0.2)] to-transparent
+                  bg-gradient-to-r from-transparent via-[rgba(0,255,136,0.3)] to-transparent
                   button-glow
                 "
                 ></div>
@@ -148,7 +209,11 @@ const AuthPanel = ({
               {switchButtons.map((switchButton, index) => (
                 <div
                   key={index}
-                  className="mt-2 mb-2 text-center font-mono text-xs text-gray-500 tracking-wider"
+                  className={`mt-2 mb-2 text-center font-mono text-xs ${
+                    themeManager.currentTheme.isDark
+                      ? "text-gray-500"
+                      : "text-gray-700"
+                  } tracking-wider`}
                 >
                   <span className="mr-2 select-none">
                     {switchButton.description}
@@ -208,7 +273,13 @@ const AuthPanel = ({
           )}
 
           {statusDetail && statusDetail !== "" && (
-            <div className="flex items-center justify-center gap-2 mt-8 font-mono text-xs text-gray-500">
+            <div
+              className={`flex items-center justify-center gap-2 mt-8 font-mono text-xs ${
+                themeManager.currentTheme.isDark
+                  ? "text-gray-500"
+                  : "text-gray-700"
+              }`}
+            >
               <div
                 className={`
               w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,255,136,0.5)]

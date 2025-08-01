@@ -4,17 +4,17 @@ export interface NotezyException {
   prefix: string;
   message: string;
   status: number;
-  details: string;
-  error: any;
+  details: any;
+  error: Error;
 }
 
 export interface NotezyRequest {
-  header: any;
-  body: any;
+  header?: any;
+  body?: any;
 }
 
 export interface NotezyResponse {
   success: boolean;
   data: any; // a map from string to string with GIN form
-  exception: NotezyException;
+  exception: NotezyException | null;
 }
