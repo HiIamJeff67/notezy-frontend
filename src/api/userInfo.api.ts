@@ -7,7 +7,7 @@ import { Country, UserGender } from "@/shared/enums";
 import { tKey } from "@/shared/translations";
 import { PartialUpdate } from "@/shared/types/partialUpdate.type";
 import { PrivateUserInfo } from "@/shared/types/user.type";
-import { NotezyRequest, NotezyResponse } from "./form.api";
+import { NotezyRequest, NotezyResponse } from "./forms.api";
 
 /* ============================== GetMyInfo ============================== */
 export interface GetMyInfoRequest extends NotezyRequest {

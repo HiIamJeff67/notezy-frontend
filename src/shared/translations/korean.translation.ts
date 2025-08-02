@@ -54,6 +54,8 @@ export const KoreanTranslationWords: TranslationWords = {
     pleaseInputValidName:
       "유효한 이름을 입력해 주세요. 영문자와 숫자를 포함하며 최소 8자여야 합니다.",
     pleaseInputValidEmail: "유효한 이메일을 입력해 주세요.",
+    pleaseInputValidAccount:
+      "유효한 계정을 입력해 주세요. 이름 또는 이메일이어야 합니다",
     pleaseInputStrongPassword: "강력한 비밀번호를",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "비밀번호와 비밀번호 확인이 일치하는지 확인해 주세요.",

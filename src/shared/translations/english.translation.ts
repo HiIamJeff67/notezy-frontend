@@ -54,6 +54,8 @@ export const EnglishTranslationWords: TranslationWords = {
     pleaseInputValidName:
       "Please input a valid name which should be alphanumeric and at least 8 characters",
     pleaseInputValidEmail: "Please input a valid email",
+    pleaseInputValidAccount:
+      "Please input a valid account which should be either a name or an email",
     pleaseInputStrongPassword: "Please input a strong password",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "Please make sure the password and confirm password are the same",

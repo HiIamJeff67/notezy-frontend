@@ -53,6 +53,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     oopsIForgotMyAccount: "糟了! 我忘记我的账号了..",
     pleaseInputValidName: "请输入有效的名称，需包含字母和数字且至少8个字符",
     pleaseInputValidEmail: "请输入有效的电子邮件",
+    pleaseInputValidAccount: "请输入有效的账号，可以是名称或电子邮件",
     pleaseInputStrongPassword: "请输入一个强密码",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: "请确保密码和确认密码",
   },

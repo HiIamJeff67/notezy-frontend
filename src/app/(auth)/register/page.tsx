@@ -6,12 +6,12 @@ import AuthPanel from "@/components/AuthPanel";
 import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { handleAndLogCaughtError } from "@/lib/handleCaughtError";
 import { isValidEmail, isValidName, isValidPassword } from "@/lib/validation";
 
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const RegisterPage = () => {
   const router = useAppRouter();
@@ -75,12 +75,7 @@ const RegisterPage = () => {
       userDataManager.setUserData(responseOfGetMe.data);
       router.push(WebURLPathDictionary.root.dashboard);
     } catch (error) {
-      if (error instanceof Error) {
-        error.message = languageManager.t(error.message);
-      } else if (typeof error === "string") {
-        error = languageManager.t(error);
-      }
-      handleAndLogCaughtError(error);
+      toast.error(languageManager.tError(error));
       setPassword("");
       setConfirmPassword("");
       loadingManager.setIsLoading(false);

@@ -1,12 +1,16 @@
 "use client";
 
+import { SendAuthCode } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
+import { isValidEmail } from "@/lib/validation";
+import { AuthCodeBlockedSecond } from "@/shared/constants/blockTimes.constant";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();
@@ -14,21 +18,70 @@ const ForgetPasswordPage = () => {
   const languageManager = useLanguage();
   const userDataManager = useUserData();
 
-  const [email, setEmail] = useState("");
-  const [authCode, setAuthCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [authCode, setAuthCode] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState<string>("");
+  const [sendAuthCodeTimeCounter, setSendAuthCodeTimeCounter] =
+    useState<number>(0);
 
   useEffect(() => {
     loadingManager.setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (sendAuthCodeTimeCounter === 0) return;
+    const timer = setInterval(() => {
+      setSendAuthCodeTimeCounter(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [sendAuthCodeTimeCounter]);
+
   const handlingSendAuthCodeOnClick = async function (): Promise<void> {
     loadingManager.setIsLoading(true);
+
+    try {
+      if (!isValidEmail(email)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+      }
+
+      const userAgent = navigator.userAgent;
+      const responseOfSendingAuthCode = await SendAuthCode({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          email: email,
+        },
+      });
+
+      const blockUntil = new Date(
+        responseOfSendingAuthCode.data.blockAuthCodeUntil
+      );
+      const blockTime = Math.floor(
+        (blockUntil.getTime() - new Date().getTime()) / 1000
+      );
+      setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
+      toast.success("AuthCode Sent");
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    } finally {
+      loadingManager.setIsLoading(false);
+    }
   };
 
   const handlingResetPasswordOnSubmit = async function (): Promise<void> {
     loadingManager.setIsLoading(true);
+
+    try {
+    } catch (error) {}
   };
 
   return (
@@ -55,12 +108,14 @@ const ForgetPasswordPage = () => {
             onChange: setAuthCode,
             required: true,
             rightButton: {
-              description: `${languageManager.t(
-                tKey.common.send
-              )}${languageManager.t(tKey.syntax.separator)}${languageManager.t(
-                tKey.auth.authCode
-              )}`,
-              onClick: () => {},
+              description:
+                sendAuthCodeTimeCounter > 0
+                  ? `${sendAuthCodeTimeCounter}s`
+                  : `${languageManager.t(tKey.common.send)}${languageManager.t(
+                      tKey.syntax.separator
+                    )}${languageManager.t(tKey.auth.authCode)}`,
+              onClick: async () => handlingSendAuthCodeOnClick(),
+              disabled: sendAuthCodeTimeCounter > 0,
             },
           },
           {

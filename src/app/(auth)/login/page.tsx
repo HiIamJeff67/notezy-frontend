@@ -6,10 +6,11 @@ import AuthPanel from "@/components/AuthPanel";
 import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { handleAndLogCaughtError } from "@/lib/handleCaughtError";
+import { isValidEmail, isValidName, isValidPassword } from "@/lib/validation";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const router = useAppRouter();
@@ -28,6 +29,13 @@ const LoginPage = () => {
     loadingManager.setIsLoading(true);
 
     try {
+      if (!isValidName(account) && !isValidEmail(account)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidAccount));
+      }
+      if (!isValidPassword(password)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
+      }
+
       const userAgent = navigator.userAgent;
       const responseOfRegister = await Login({
         header: {
@@ -43,7 +51,6 @@ const LoginPage = () => {
         header: {
           userAgent: userAgent,
         },
-        body: {},
       });
       if (
         responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
@@ -55,12 +62,7 @@ const LoginPage = () => {
       userDataManager.setUserData(responseOfGetMe.data);
       router.push(WebURLPathDictionary.root.dashboard);
     } catch (error) {
-      if (error instanceof Error) {
-        error.message = languageManager.t(error.message);
-      } else if (typeof error === "string") {
-        error = languageManager.t(error);
-      }
-      handleAndLogCaughtError(error);
+      toast.error(languageManager.tError(error));
       setPassword("");
       loadingManager.setIsLoading(false);
     }

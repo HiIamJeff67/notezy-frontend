@@ -4,7 +4,7 @@ import {
   CurrentAPIBaseURL,
 } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
-import { NotezyRequest, NotezyResponse } from "./form.api";
+import { NotezyRequest, NotezyResponse } from "./forms.api";
 
 /* ========================= Register ========================= */
 export interface RegisterRequest extends NotezyRequest {
@@ -142,6 +142,104 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   }
 
   const jsonResponse = (await response.json()) as LogoutResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
+  }
+  return jsonResponse;
+}
+
+/* ============================== SendAuthCode ============================== */
+export interface SendAuthCodeRequest extends NotezyRequest {
+  header: {
+    userAgent: string;
+    authorization?: string;
+  };
+  body: {
+    email: string;
+  };
+}
+
+export interface SendAuthCodeResponse extends NotezyResponse {
+  data: {
+    authCodeExpiredAt: Date;
+    blockAuthCodeUntil: Date;
+    updatedAt: Date;
+  };
+}
+
+export async function SendAuthCode(
+  request: SendAuthCodeRequest
+): Promise<SendAuthCodeResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.sendAuthCode}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const jsonResponse = (await response.json()) as SendAuthCodeResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
+  }
+  return jsonResponse;
+}
+
+/* ============================== ForgetPassword ============================== */
+export interface ForgetPasswordRequest extends NotezyRequest {
+  header: {
+    userAgent: string;
+    authorization?: string;
+  };
+  body: {
+    account: string;
+    newPassword: string;
+    authCode: string;
+  };
+}
+
+export interface ForgetPasswordResponse extends NotezyResponse {
+  data: {
+    updatedAt: Date;
+  };
+}
+
+export async function ForgetPassword(
+  request: ForgetPasswordRequest
+): Promise<ForgetPasswordResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.forgetPassword}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const jsonResponse = (await response.json()) as ForgetPasswordResponse;
   if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
     throw new Error(jsonResponse.exception.message);
   }

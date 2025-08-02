@@ -86,3 +86,17 @@ export const isValidPassword = function (password: string): boolean {
     hasSpecialCharacter
   );
 };
+
+/**
+ * ### Check if the given auth code is valid or not for Notezy API
+ * @param authCode string
+ * @returns a boolean value to indicate if the given auth code is valid or not
+ * @description A valid auth code is:
+ * - contain only digits (0 - 9)
+ * - its length should be exactly 6 characters
+ * @example 123456, or 845690, or 000123
+ * @note the range of the auth code is from 000000 to 999999
+ */
+export const isValidAuthCode = function (authCode: string): boolean {
+  return authCode.length === 6 && /[0-9]/.test(authCode);
+};

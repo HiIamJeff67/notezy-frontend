@@ -51,6 +51,7 @@ export interface TranslationWords {
     oopsIForgotMyAccount: string;
     pleaseInputValidName: string;
     pleaseInputValidEmail: string;
+    pleaseInputValidAccount: string;
     pleaseInputStrongPassword: string;
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: string;
   };

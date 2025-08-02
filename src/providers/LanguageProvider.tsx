@@ -5,7 +5,7 @@ import {
   LanguageKeyMap,
   Languages,
 } from "@/shared/constants/availableLanguages.constant";
-import { translations } from "@/shared/translations/index";
+import { tKey, translations } from "@/shared/translations/index";
 import { Language } from "@/shared/types/language.type";
 import { createContext, useEffect, useState } from "react";
 
@@ -14,6 +14,7 @@ interface LanguageContextType {
   setCurrentLanguage: (lang: Language) => void;
   availableLanguages: Language[];
   t: (key: string) => string;
+  tError: (error: unknown) => string;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -55,11 +56,22 @@ export const LanguageProvider = ({
     return value ?? key; // if we can't find it, then return the original one
   };
 
+  // translating error function
+  const tError = (error: unknown): string => {
+    if (error instanceof Error) {
+      return t(error.message ?? tKey.error.encounterUnknownError);
+    } else if (typeof error === "string") {
+      return t(error);
+    }
+    return t(tKey.error.encounterUnknownError);
+  };
+
   const contextValue: LanguageContextType = {
     currentLanguage: currentLanguage,
     setCurrentLanguage: setCurrentLanguage,
     availableLanguages: Languages,
     t: t,
+    tError: tError,
   };
 
   return (

@@ -54,6 +54,8 @@ export const JapaneseTranslationWords: TranslationWords = {
     pleaseInputValidName:
       "有効な名前を入力してください。英数字を含み、8文字以上である必要があります。",
     pleaseInputValidEmail: "有効なメールアドレスを入力してください。",
+    pleaseInputValidAccount:
+      "有効なアカウントを入力してください。名前またはメールアドレスである必要があります",
     pleaseInputStrongPassword: "強力なパスワードを入力してください",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "パスワードと確認用パスワードが一致していることを確認してください。",

@@ -54,6 +54,7 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     pleaseInputValidName:
       "請輸入有效的名稱，須包含英文字母和數字並且至少 8 個字元",
     pleaseInputValidEmail: "請輸入有效的電子郵件",
+    pleaseInputValidAccount: "請輸入有效的帳號，可以是名稱或電子郵件",
     pleaseInputStrongPassword: "請輸入一組強密碼",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "請確保密碼跟確認密碼一致",

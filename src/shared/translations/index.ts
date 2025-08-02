@@ -67,6 +67,7 @@ export const tKey: TranslationWords = {
     oopsIForgotMyAccount: "auth.oopsIForgotMyAccount",
     pleaseInputValidName: "auth.pleaseInputValidName",
     pleaseInputValidEmail: "auth.pleaseInputValidEmail",
+    pleaseInputValidAccount: "auth.pleaseInputValidAccount",
     pleaseInputStrongPassword: "auth.pleaseInputStrongPassword",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch",
