@@ -56,6 +56,7 @@ export const EnglishTranslationWords: TranslationWords = {
     pleaseInputValidEmail: "Please input a valid email",
     pleaseInputValidAccount:
       "Please input a valid account which should be either a name or an email",
+    pleaseInputValidAuthCode: "Please input a valid authentication code",
     pleaseInputStrongPassword: "Please input a strong password",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "Please make sure the password and confirm password are the same",

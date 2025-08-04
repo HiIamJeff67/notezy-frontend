@@ -4,7 +4,8 @@ import {
   CurrentAPIBaseURL,
 } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
-import { NotezyRequest, NotezyResponse } from "./forms.api";
+import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
+import { ExceptionReasonDictionary } from "./exceptions";
 
 /* ========================= Register ========================= */
 export interface RegisterRequest extends NotezyRequest {
@@ -46,11 +47,11 @@ export async function Register(
   }
 
   const jsonResponse = (await response.json()) as RegisterResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+  if (jsonResponse.exception) {
     switch (jsonResponse.exception.reason) {
-      case "DuplicateName":
+      case ExceptionReasonDictionary.user.duplicateName:
         throw new Error(tKey.error.apiError.register.duplicateName);
-      case "DuplicateEmail":
+      case ExceptionReasonDictionary.user.duplicateEmail:
         throw new Error(tKey.error.apiError.register.duplicateEmail);
       default:
         throw new Error(jsonResponse.exception.message);
@@ -96,9 +97,9 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
   }
 
   const jsonResponse = (await response.json()) as LoginResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+  if (jsonResponse.exception) {
     switch (jsonResponse.exception.reason) {
-      case "NotFound":
+      case ExceptionReasonDictionary.user.notFound:
         throw new Error(tKey.error.apiError.getUser.failedToGetUser);
       default:
         throw new Error(jsonResponse.exception.message);
@@ -142,7 +143,7 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   }
 
   const jsonResponse = (await response.json()) as LogoutResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+  if (jsonResponse.exception) {
     throw new Error(jsonResponse.exception.message);
   }
   return jsonResponse;
@@ -191,8 +192,13 @@ export async function SendAuthCode(
   }
 
   const jsonResponse = (await response.json()) as SendAuthCodeResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    switch (jsonResponse.exception.reason) {
+      case ExceptionReasonDictionary.user.notFound:
+        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+      default:
+        throw new Error(jsonResponse.exception.message);
+    }
   }
   return jsonResponse;
 }
@@ -240,7 +246,11 @@ export async function ForgetPassword(
   }
 
   const jsonResponse = (await response.json()) as ForgetPasswordResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+  if (jsonResponse.exception) {
+    switch (jsonResponse.exception.reason) {
+      case ExceptionReasonDictionary.user.notFound:
+        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+    }
     throw new Error(jsonResponse.exception.message);
   }
   return jsonResponse;

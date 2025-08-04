@@ -34,16 +34,19 @@ const RegisterPage = () => {
     try {
       if (!isValidName(name)) {
         throw new Error(languageManager.t(tKey.auth.pleaseInputValidName));
-      } else if (!isValidEmail(email)) {
+      }
+      if (!isValidEmail(email)) {
         throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-      } else if (password !== confirmPassword) {
+      }
+      if (!isValidPassword(password)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
+      }
+      if (password !== confirmPassword) {
         throw new Error(
           languageManager.t(
             tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
           )
         );
-      } else if (!isValidPassword(password)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
       }
 
       const userAgent = navigator.userAgent;
@@ -73,6 +76,10 @@ const RegisterPage = () => {
         );
       }
       userDataManager.setUserData(responseOfGetMe.data);
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
       router.push(WebURLPathDictionary.root.dashboard);
     } catch (error) {
       toast.error(languageManager.tError(error));

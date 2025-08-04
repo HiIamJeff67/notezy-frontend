@@ -56,6 +56,7 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     pleaseInputValidEmail: "請輸入有效的電子郵件",
     pleaseInputValidAccount: "請輸入有效的帳號，可以是名稱或電子郵件",
     pleaseInputStrongPassword: "請輸入一組強密碼",
+    pleaseInputValidAuthCode: "請輸入有效的驗證碼",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch:
       "請確保密碼跟確認密碼一致",
   },

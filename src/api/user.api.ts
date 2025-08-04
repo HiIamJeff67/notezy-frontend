@@ -7,7 +7,7 @@ import { tKey } from "@/shared/translations";
 import { PartialUpdate } from "@/shared/types/partialUpdate.type";
 import { PrivateUser } from "@/shared/types/user.type";
 import { UserData } from "@/shared/types/userData.type";
-import { NotezyRequest, NotezyResponse } from "./forms.api";
+import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
 
 /* ============================== GetUserData ============================== */
 export interface GetUserDataRequest extends NotezyRequest {

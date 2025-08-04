@@ -54,6 +54,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     pleaseInputValidName: "请输入有效的名称，需包含字母和数字且至少8个字符",
     pleaseInputValidEmail: "请输入有效的电子邮件",
     pleaseInputValidAccount: "请输入有效的账号，可以是名称或电子邮件",
+    pleaseInputValidAuthCode: "请输入有效的验证码",
     pleaseInputStrongPassword: "请输入一个强密码",
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: "请确保密码和确认密码",
   },

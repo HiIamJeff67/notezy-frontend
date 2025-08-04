@@ -52,6 +52,7 @@ export interface TranslationWords {
     pleaseInputValidName: string;
     pleaseInputValidEmail: string;
     pleaseInputValidAccount: string;
+    pleaseInputValidAuthCode: string;
     pleaseInputStrongPassword: string;
     pleaseMakeSurePasswordAndConfirmPasswordAreMatch: string;
   };

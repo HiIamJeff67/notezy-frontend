@@ -1,11 +1,15 @@
 "use client";
 
-import { SendAuthCode } from "@/api/auth.api";
+import { ForgetPassword, SendAuthCode } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { isValidEmail } from "@/lib/validation";
+import {
+  isValidAuthCode,
+  isValidEmail,
+  isValidPassword,
+} from "@/lib/validation";
 import { AuthCodeBlockedSecond } from "@/shared/constants/blockTimes.constant";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
@@ -69,7 +73,6 @@ const ForgetPasswordPage = () => {
         (blockUntil.getTime() - new Date().getTime()) / 1000
       );
       setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
-      toast.success("AuthCode Sent");
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
@@ -81,7 +84,45 @@ const ForgetPasswordPage = () => {
     loadingManager.setIsLoading(true);
 
     try {
-    } catch (error) {}
+      if (!isValidEmail(email)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+      }
+      if (!isValidAuthCode(authCode)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputValidAuthCode));
+      }
+      if (!isValidPassword(newPassword)) {
+        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
+      }
+      if (newPassword !== confirmNewPassword) {
+        throw new Error(
+          languageManager.t(
+            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+          )
+        );
+      }
+
+      const userAgent = navigator.userAgent;
+      await ForgetPassword({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          account: email,
+          newPassword: newPassword,
+          authCode: authCode,
+        },
+      });
+      setEmail("");
+      setAuthCode("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      router.push(WebURLPathDictionary.auth.login);
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+      setNewPassword("");
+      setConfirmNewPassword("");
+      loadingManager.setIsLoading(false);
+    }
   };
 
   return (

@@ -1,12 +1,4 @@
-export interface NotezyException {
-  code: number;
-  reason: string;
-  prefix: string;
-  message: string;
-  status: number;
-  details: any;
-  error: Error;
-}
+import { NotezyException } from "./apiException.type";
 
 export interface NotezyRequest {
   header?: any;
