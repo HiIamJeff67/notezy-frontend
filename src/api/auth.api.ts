@@ -250,8 +250,9 @@ export async function ForgetPassword(
     switch (jsonResponse.exception.reason) {
       case ExceptionReasonDictionary.user.notFound:
         throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+      default:
+        throw new Error(jsonResponse.exception.message);
     }
-    throw new Error(jsonResponse.exception.message);
   }
   return jsonResponse;
 }

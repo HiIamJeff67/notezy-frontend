@@ -13,7 +13,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@/shared/constants/url.constant";
@@ -28,7 +28,6 @@ const DashboardPage = () => {
   const languageManager = useLanguage();
   const userDataManager = useUserData();
   const themeManager = useTheme();
-  const sidebarManager = useSidebar();
 
   const [currentDisplayPanel, setCurrentDisplayPanel] = useState<
     "None" | "AccountSettingsPanel" | "PreferencesPanel"

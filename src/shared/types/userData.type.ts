@@ -18,5 +18,6 @@ export type UserData = {
   language: Language;
   generalSettingCode: number;
   privacySettingCode: number;
+  createdAt: Date;
   updatedAt: Date;
 };

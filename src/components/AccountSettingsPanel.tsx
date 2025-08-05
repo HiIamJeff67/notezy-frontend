@@ -1,5 +1,6 @@
 "use client";
 
+import { GetMyInfo } from "@/api/userInfo.api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/hooks";
+import { useUserData } from "@/hooks/useUserData";
 import {
   CreditCard,
   Link2,
@@ -20,6 +23,7 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 type AccountSettingsPage =
   | "profile"
@@ -51,33 +55,56 @@ const AccountSettingsPanel = ({
   isOpen,
   onClose,
 }: AccountSettingsPanelProps) => {
+  const languageManager = useLanguage();
+  const userDataManager = useUserData();
   const [currentPage, setCurrentPage] =
     useState<AccountSettingsPage>("profile");
   const [profileTab, setProfileTab] = useState<"user" | "userInfo">("user");
 
-  // 假資料
-  const publicUser = {
-    publicId: "notezy-123456",
-    name: "notezy",
-    displayName: "Notezy",
-    role: "user",
-    plan: "Free",
-    status: "Active",
-    createdAt: "2024-01-01",
-    coverBackgroundURL: "",
-    avatarURL: "",
-    header: "歡迎來到 Notezy",
-    introduction: "這是我的自我介紹",
-    gender: "其他",
-    country: "台灣",
-    birthDate: "2000-01-01",
-  };
   const user = {
-    ...publicUser,
-    email: "notezy@example.com",
-    userRole: "user",
-    userPlan: "Free",
-    updatedAt: "2024-07-31",
+    publicId: userDataManager.userData?.publicId,
+    name: userDataManager.userData?.name,
+    displayName: userDataManager.userData?.displayName,
+    email: userDataManager.userData?.email,
+    role: userDataManager.userData?.role,
+    plan: userDataManager.userData?.plan,
+    status: userDataManager.userData?.status,
+    updatedAt: userDataManager.userData?.updatedAt.toString(),
+    createdAt: userDataManager.userData?.createdAt.toString(),
+    info: {
+      avatarURL: userDataManager.userData?.avatarURL,
+      coverBackgroundURL: "",
+      header: "歡迎來到 Notezy",
+      introduction: "這是我的自我介紹",
+      gender: "其他",
+      country: "台灣",
+      birthDate: "2000-01-01",
+      updatedAt: "2024-07-31",
+    },
+  };
+
+  const prepareUser = async function (): Promise<void> {
+    try {
+      const userAgent = navigator.userAgent;
+      const responseOfGettingMyInfo = await GetMyInfo({
+        header: {
+          userAgent: userAgent,
+        },
+      });
+
+      // probably use useState instead
+      user.info.avatarURL = responseOfGettingMyInfo.data.avatarURL;
+      user.info.coverBackgroundURL =
+        responseOfGettingMyInfo.data.coverBackgroundURL;
+      user.info.header = responseOfGettingMyInfo.data.header;
+      user.info.introduction = responseOfGettingMyInfo.data.introduction;
+      user.info.gender = responseOfGettingMyInfo.data.gender;
+      user.info.country = responseOfGettingMyInfo.data.country;
+      user.info.birthDate = responseOfGettingMyInfo.data.birthDate.toString();
+      user.info.updatedAt = responseOfGettingMyInfo.data.updatedAt.toString();
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
   };
 
   return (
@@ -136,38 +163,6 @@ const AccountSettingsPanel = ({
                 </TabsList>
                 <TabsContent value="user">
                   <div className="space-y-4">
-                    <Label>公開個人資訊</Label>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <Label>公開ID</Label>
-                        <Input value={publicUser.publicId} readOnly />
-                      </div>
-                      <div>
-                        <Label>帳戶名稱</Label>
-                        <Input value={publicUser.name} readOnly />
-                      </div>
-                      <div>
-                        <Label>名稱</Label>
-                        <Input value={publicUser.displayName} readOnly />
-                      </div>
-                      <div>
-                        <Label>角色</Label>
-                        <Input value={publicUser.role} readOnly />
-                      </div>
-                      <div>
-                        <Label>方案</Label>
-                        <Input value={publicUser.plan} readOnly />
-                      </div>
-                      <div>
-                        <Label>狀態</Label>
-                        <Input value={publicUser.status} readOnly />
-                      </div>
-                      <div>
-                        <Label>加入日期</Label>
-                        <Input value={publicUser.createdAt} readOnly />
-                      </div>
-                    </div>
-                    <Separator className="my-4" />
                     <Label>私密個人資訊</Label>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
@@ -188,11 +183,11 @@ const AccountSettingsPanel = ({
                       </div>
                       <div>
                         <Label>角色</Label>
-                        <Input value={user.userRole} readOnly />
+                        <Input value={user.role} readOnly />
                       </div>
                       <div>
                         <Label>方案</Label>
-                        <Input value={user.userPlan} readOnly />
+                        <Input value={user.plan} readOnly />
                       </div>
                       <div>
                         <Label>狀態</Label>
@@ -210,35 +205,35 @@ const AccountSettingsPanel = ({
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <Label>背景橫幅</Label>
-                        <Input value={user.coverBackgroundURL} />
+                        <Input value={user.info.coverBackgroundURL} />
                       </div>
                       <div>
                         <Label>大頭貼</Label>
-                        <Input value={user.avatarURL} />
+                        <Input value={user.info.avatarURL} />
                       </div>
                       <div>
                         <Label>個人標題</Label>
-                        <Input value={user.header} />
+                        <Input value={user.info.header} />
                       </div>
                       <div>
                         <Label>自我介紹</Label>
-                        <Input value={user.introduction} />
+                        <Input value={user.info.introduction} />
                       </div>
                       <div>
                         <Label>性別</Label>
-                        <Input value={user.gender} />
+                        <Input value={user.info.gender} />
                       </div>
                       <div>
                         <Label>國家</Label>
-                        <Input value={user.country} />
+                        <Input value={user.info.country} />
                       </div>
                       <div>
                         <Label>生日</Label>
-                        <Input value={user.birthDate} />
+                        <Input value={user.info.birthDate} />
                       </div>
                       <div>
                         <Label>上次修改</Label>
-                        <Input value={user.updatedAt} readOnly />
+                        <Input value={user.info.updatedAt} readOnly />
                       </div>
                     </div>
                   </div>

@@ -4,7 +4,6 @@ import { ForgetPassword, SendAuthCode } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel";
 import GridBackground from "@/components/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
-import { useUserData } from "@/hooks/useUserData";
 import {
   isValidAuthCode,
   isValidEmail,
@@ -20,7 +19,6 @@ const ForgetPasswordPage = () => {
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
 
   const [email, setEmail] = useState<string>("");
   const [authCode, setAuthCode] = useState<string>("");
