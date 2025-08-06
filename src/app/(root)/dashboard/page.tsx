@@ -1,10 +1,10 @@
 "use client";
 
 import { GetUserData } from "@/api/user.api";
-import AccountSettingsPanel from "@/components/AccountSettingsPanel";
-import { AppSidebar } from "@/components/AppSidebar";
+import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
+import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
 import AvatarIcon from "@/components/icons/AvatarIcon";
-import PreferencesPanel from "@/components/PreferencesPanel";
+import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import {
   Menubar,
   MenubarContent,

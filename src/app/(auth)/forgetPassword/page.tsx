@@ -1,8 +1,8 @@
 "use client";
 
 import { ForgetPassword, SendAuthCode } from "@/api/auth.api";
-import AuthPanel from "@/components/AuthPanel";
-import GridBackground from "@/components/GridBackground";
+import AuthPanel from "@/components/AuthPanel/AuthPanel";
+import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import {
   isValidAuthCode,

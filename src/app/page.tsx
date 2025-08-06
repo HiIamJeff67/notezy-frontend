@@ -1,6 +1,6 @@
 "use client";
 
-import GridBlackBackground from "@/components/GridBackground";
+import GridBlackBackground from "@/components/GridBackground/GridBackground";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
 import DocumentIcon from "@/components/icons/DocumentIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";

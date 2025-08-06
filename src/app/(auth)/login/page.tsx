@@ -2,8 +2,8 @@
 
 import { Login } from "@/api/auth.api";
 import { GetUserData } from "@/api/user.api";
-import AuthPanel from "@/components/AuthPanel";
-import GridBackground from "@/components/GridBackground";
+import AuthPanel from "@/components/AuthPanel/AuthPanel";
+import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { isValidEmail, isValidName, isValidPassword } from "@/lib/validation";

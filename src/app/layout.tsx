@@ -1,4 +1,4 @@
-import LoadingOverlay from "@/components/LoadingOutlay";
+import LoadingOverlay from "@/components/LoadingOutlay/LoadingOutlay";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import {
   LanguageProvider,
