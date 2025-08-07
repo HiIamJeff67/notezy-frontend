@@ -23,6 +23,13 @@ export const APITestBaseURL =
 export const CurrentAPIBaseURL = APIDevelopmentBaseURL;
 
 export const APIURLPathDictionary = {
+  static: {
+    globalImages: {
+      avatars: {
+        first: "static/globalImages/avatars/1",
+      },
+    },
+  },
   auth: {
     register: "auth/register",
     login: "auth/login",

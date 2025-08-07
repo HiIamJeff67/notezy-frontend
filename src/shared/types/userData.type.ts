@@ -14,7 +14,7 @@ export type UserData = {
   plan: UserPlan;
   status: UserStatus;
   // Note: avatarURL is nullable in database, but non nullable in redis cache
-  avatarURL: string;
+  avatarURL: string | null;
   language: Language;
   generalSettingCode: number;
   privacySettingCode: number;

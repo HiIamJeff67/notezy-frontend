@@ -75,6 +75,7 @@ const RegisterPage = () => {
           languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
         );
       }
+
       userDataManager.setUserData(responseOfGetMe.data);
       setName("");
       setEmail("");

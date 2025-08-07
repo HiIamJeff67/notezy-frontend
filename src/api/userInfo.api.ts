@@ -57,12 +57,12 @@ export interface UpdateMyInfoRequest extends NotezyRequest {
     authorization?: string;
   };
   body: PartialUpdate<{
-    coverBackgroundURL: string;
-    avatarURL: string;
-    header: string;
-    introduction: string;
+    avatarURL: string | null;
+    coverBackgroundURL: string | null;
+    header: string | null;
+    introduction: string | null;
     gender: UserGender;
-    country: Country;
+    country: Country | null;
     birthDate: Date;
   }>;
 }

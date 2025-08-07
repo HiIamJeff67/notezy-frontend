@@ -5,20 +5,12 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import {
-  AllCountries,
-  AllUserGenders,
-  AllUserPlans,
-  AllUserRoles,
-  AllUserStatus,
-  Country,
-  UserGender,
-  UserPlan,
-  UserRole,
-  UserStatus,
-} from "@/shared/enums";
+  PrivateFakeUser,
+  PrivateFakeUserInfo,
+} from "@/shared/constants/defaultFakeUser.constant";
+import { PrivateUser, PrivateUserInfo } from "@/shared/types/user.type";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { z } from "zod";
 import AccountModificationTab from "./AccountModificationTab";
 import BindingTab from "./BindingTab";
 import ProfileTab from "./ProfileTab";
@@ -33,34 +25,6 @@ export type AccountSettingsPage =
   | "binding"
   | "accountModification";
 
-export const AccountSettingUserSchema = z.object({
-  publicId: z.string(),
-  name: z.string(),
-  displayName: z.string(),
-  email: z.string(),
-  role: z.enum(AllUserRoles),
-  plan: z.enum(AllUserPlans),
-  status: z.enum(AllUserStatus),
-  updatedAt: z.date(),
-  createdAt: z.date(),
-});
-
-export const AccountSettingUserInfoSchema = z.object({
-  avatarURL: z.string().nullable(),
-  coverBackgroundURL: z.string().nullable(),
-  header: z.string().nullable(),
-  introduction: z.string().nullable(),
-  gender: z.enum(AllUserGenders),
-  country: z.enum(AllCountries).nullable(),
-  birthDate: z.date(),
-  updatedAt: z.date(),
-});
-
-export type AccountSettingUser = z.infer<typeof AccountSettingUserSchema>;
-export type AccountSettingUserInfo = z.infer<
-  typeof AccountSettingUserInfoSchema
->;
-
 interface AccountSettingsPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -74,32 +38,43 @@ const AccountSettingsPanel = ({
   const userDataManager = useUserData();
   const [currentPage, setCurrentPage] =
     useState<AccountSettingsPage>("profile");
-  const [accountSettingUser, setAccountSettingUser] =
-    useState<AccountSettingUser>({
-      publicId: "",
-      name: "",
-      displayName: "",
-      email: "",
-      role: UserRole.Normal,
-      plan: UserPlan.Free,
-      status: UserStatus.Online,
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    });
-  const [accountSettingUserInfo, setAccountSettingUserInfo] =
-    useState<AccountSettingUserInfo>({
-      avatarURL: "",
-      coverBackgroundURL: "",
-      header: "",
-      introduction: "",
-      gender: UserGender.PreferNotToSay,
-      country: Country.Taiwan,
-      birthDate: new Date(),
-      updatedAt: new Date(),
-    });
+  const [user, setUser] = useState<PrivateUser>(PrivateFakeUser);
+  const [userInfo, setUserInfo] =
+    useState<PrivateUserInfo>(PrivateFakeUserInfo);
 
   useEffect(() => {
-    const prepareUserInfo = async function (): Promise<void> {
+    const refreshUser = async function (): Promise<void> {
+      if (
+        userDataManager.userData !== undefined &&
+        userDataManager.userData !== null
+      ) {
+        setUser(init => ({
+          publicId: userDataManager.userData?.publicId ?? init.publicId,
+          name: userDataManager.userData?.name ?? init.name,
+          displayName:
+            userDataManager.userData?.displayName ?? init.displayName,
+          email: userDataManager.userData?.email ?? init.email,
+          role: userDataManager.userData?.role ?? init.role,
+          plan: userDataManager.userData?.plan ?? init.plan,
+          status: userDataManager.userData?.status ?? init.status,
+          updatedAt: userDataManager.userData
+            ? new Date(userDataManager.userData.updatedAt)
+            : init.updatedAt,
+          createdAt: userDataManager.userData
+            ? new Date(userDataManager.userData.createdAt)
+            : init.createdAt,
+        }));
+      }
+    };
+
+    if (isOpen) {
+      // block to only refresh the user while the account setting panel is opened
+      refreshUser();
+    }
+  }, [isOpen, userDataManager.userData]);
+
+  useEffect(() => {
+    const refreshUserInfo = async function (): Promise<void> {
       try {
         const userAgent = navigator.userAgent;
         const response = await GetMyInfo({
@@ -107,7 +82,7 @@ const AccountSettingsPanel = ({
             userAgent: userAgent,
           },
         });
-        setAccountSettingUserInfo(init => ({
+        setUserInfo(init => ({
           ...init,
           avatarURL: response.data.avatarURL,
           coverBackgroundURL: response.data.coverBackgroundURL,
@@ -123,36 +98,8 @@ const AccountSettingsPanel = ({
       }
     };
 
-    prepareUserInfo();
+    refreshUserInfo();
   }, []);
-
-  useEffect(() => {
-    const prepareUser = function (): void {
-      if (
-        userDataManager.userData !== undefined &&
-        userDataManager.userData !== null
-      ) {
-        setAccountSettingUser(init => ({
-          publicId: userDataManager.userData?.publicId ?? init.publicId,
-          name: userDataManager.userData?.name ?? init.name,
-          displayName:
-            userDataManager.userData?.displayName ?? init.displayName,
-          email: userDataManager.userData?.email ?? init.email,
-          role: userDataManager.userData?.role ?? init.role,
-          plan: userDataManager.userData?.plan ?? init.plan,
-          status: userDataManager.userData?.status ?? init.status,
-          updatedAt: new Date(
-            userDataManager.userData?.updatedAt ?? init.updatedAt
-          ),
-          createdAt: new Date(
-            userDataManager.userData?.createdAt ?? init.createdAt
-          ),
-        }));
-      }
-    };
-
-    prepareUser();
-  }, [userDataManager.userData]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -161,12 +108,7 @@ const AccountSettingsPanel = ({
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
           <div className="flex-1 px-8 py-6 overflow-y-auto">
             {currentPage === "profile" && (
-              <ProfileTab
-                accountSettingUser={accountSettingUser}
-                accountSettingUserInfo={accountSettingUserInfo}
-                setAccountSettingUser={setAccountSettingUser}
-                setAccountSettingUserInfo={setAccountSettingUserInfo}
-              />
+              <ProfileTab user={user} userInfo={userInfo} />
             )}
             {currentPage === "upgrade" && <UpgradeTab />}
             {currentPage === "security" && <SecurityTab />}

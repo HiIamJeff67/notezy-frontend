@@ -1,6 +1,6 @@
 export interface PartialUpdate<Fields> {
-  Values: Fields;
-  SetNull?: {
+  values: Partial<Fields>;
+  setNull?: {
     [Key in keyof Fields]?: boolean;
   };
 }

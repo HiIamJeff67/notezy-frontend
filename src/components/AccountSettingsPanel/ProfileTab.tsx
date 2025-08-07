@@ -1,3 +1,6 @@
+import { DefaultAvatar1URL } from "@/api/static.api";
+import { UpdateMe } from "@/api/user.api";
+import { UpdateMyInfo } from "@/api/userInfo.api";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -20,61 +23,184 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { AllCountries, AllUserGenders } from "@/shared/enums";
+import { useLanguage, useLoading } from "@/hooks";
+import { useUserData } from "@/hooks/useUserData";
+import { AllCountries, AllUserGenders, AllUserStatus } from "@/shared/enums";
+import {
+  PrivateUser,
+  PrivateUserInfo,
+  PrivateUserInfoSchema,
+  PrivateUserSchema,
+} from "@/shared/types/user.type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SelectValue } from "@radix-ui/react-select";
 import { format } from "date-fns";
-import { useEffect } from "react";
+import { memo, startTransition, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import {
-  AccountSettingUser,
-  AccountSettingUserInfo,
-  AccountSettingUserInfoSchema,
-  AccountSettingUserSchema,
-} from "./AccountSettingsPanel";
 
 interface ProfileTabProps {
-  accountSettingUser: AccountSettingUser;
-  accountSettingUserInfo: AccountSettingUserInfo;
-  setAccountSettingUser: (accountSettingUser: AccountSettingUser) => void;
-  setAccountSettingUserInfo: (
-    accountSettingUserInfo: AccountSettingUserInfo
-  ) => void;
+  user: PrivateUser;
+  userInfo: PrivateUserInfo;
 }
+const ProfileTab = memo(({ user, userInfo }: ProfileTabProps) => {
+  const loadingManager = useLoading();
+  const languageManager = useLanguage();
+  const userDataManager = useUserData();
 
-const ProfileTab = ({
-  accountSettingUser,
-  accountSettingUserInfo,
-  setAccountSettingUser,
-  setAccountSettingUserInfo,
-}: ProfileTabProps) => {
+  const userFormDefaults = useMemo(() => user, [user]);
+  const userInfoFormDefaults = useMemo(() => userInfo, [userInfo]);
+
   const userForm = useForm({
-    resolver: zodResolver(AccountSettingUserSchema),
-    defaultValues: accountSettingUser,
+    resolver: zodResolver(PrivateUserSchema),
+    defaultValues: userFormDefaults,
   });
 
   const userInfoForm = useForm({
-    resolver: zodResolver(AccountSettingUserInfoSchema),
-    defaultValues: accountSettingUserInfo,
+    resolver: zodResolver(PrivateUserInfoSchema),
+    defaultValues: userInfoFormDefaults,
   });
 
-  useEffect(() => {
-    console.log(accountSettingUserInfo);
-  }, []);
+  const handleSaveUserInfoOnSubmit = useCallback(
+    async function (userInfo: PrivateUserInfo): Promise<void> {
+      loadingManager.setIsLoading(true);
+
+      try {
+        const userAgent = navigator.userAgent;
+        await UpdateMyInfo({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            values: {
+              avatarURL: userInfo.avatarURL,
+              coverBackgroundURL: userInfo.coverBackgroundURL,
+              header: userInfo.header,
+              introduction: userInfo.introduction,
+              gender: userInfo.gender,
+              country: userInfo.country,
+              birthDate: userInfo.birthDate,
+            },
+            setNull: {
+              avatarURL: userInfo.avatarURL === null,
+              coverBackgroundURL: userInfo.coverBackgroundURL === null,
+              header: userInfo.header === null,
+              introduction: userInfo.introduction === null,
+              gender: userInfo.gender === null,
+              country: userInfo.country === null,
+              birthDate: userInfo.birthDate === null,
+            },
+          },
+        });
+
+        startTransition(() => {
+          userDataManager.updateUserData({
+            ...(userInfo.avatarURL !== undefined && {
+              avatarURL: userInfo.avatarURL,
+            }),
+          });
+        });
+
+        toast.success("Successfully update the userInfo");
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsLoading(false);
+      }
+    },
+    [loadingManager, userDataManager, languageManager]
+  );
+
+  const handleSaveUserOnSubmit = useCallback(
+    async function (user: PrivateUser) {
+      loadingManager.setIsLoading(true);
+
+      try {
+        const userAgent = navigator.userAgent;
+        await UpdateMe({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            values: {
+              displayName: user.displayName,
+              status: user.status,
+            },
+            setNull: {
+              displayName: user.displayName === null,
+              status: user.status === null,
+            },
+          },
+        });
+
+        startTransition(() => {
+          userDataManager.updateUserData({
+            ...(user.displayName !== undefined && {
+              displayName: user.displayName,
+            }),
+            ...(user.status !== undefined && {
+              status: user.status,
+            }),
+          });
+        });
+
+        toast.success("Successfully update the user");
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsLoading(false);
+      }
+    },
+    [loadingManager, userDataManager, languageManager]
+  );
+
+  const genderOptions = useMemo(
+    () =>
+      AllUserGenders.map(gender => (
+        <SelectItem key={gender} value={gender}>
+          {gender}
+        </SelectItem>
+      )),
+    []
+  );
+  const countryOptions = useMemo(
+    () => [
+      <SelectItem
+        key="NO_COUNTRY"
+        value="NO_COUNTRY"
+        className="text-muted-foreground"
+      >
+        未設定國家
+      </SelectItem>,
+      ...AllCountries.map(country => (
+        <SelectItem key={country} value={country}>
+          {country}
+        </SelectItem>
+      )),
+    ],
+    []
+  );
+  const statusOptions = useMemo(
+    () =>
+      AllUserStatus.map(status => (
+        <SelectItem key={status} value={status}>
+          {status}
+        </SelectItem>
+      )),
+    []
+  );
 
   return (
     <div className="space-y-8">
       <Form {...userInfoForm}>
         <form
-          onSubmit={userInfoForm.handleSubmit(data => {
-            toast.success("UserInfo 已送出");
-            // 這裡可以呼叫 API
-            console.log("UserInfo submit", data);
-          })}
+          onSubmit={userInfoForm.handleSubmit(userInfo =>
+            handleSaveUserInfoOnSubmit(userInfo)
+          )}
           className="rounded-lg overflow-hidden mb-8 border bg-white"
         >
           <div
@@ -102,7 +228,7 @@ const ProfileTab = ({
             >
               <div className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer">
                 <img
-                  src={userInfoForm.getValues("avatarURL") || ""}
+                  src={userInfoForm.getValues("avatarURL") || DefaultAvatar1URL}
                   alt="Avatar"
                   className="w-full h-full object-cover bg-gray-100"
                 />
@@ -144,7 +270,7 @@ const ProfileTab = ({
                     <Textarea
                       {...field}
                       value={field.value ?? ""}
-                      className="text-base text-gray-700 mb-6 caret-foreground"
+                      className="text-base mb-6 caret-foreground"
                     />
                   </FormControl>
                   <FormMessage />
@@ -169,11 +295,8 @@ const ProfileTab = ({
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>性別</SelectLabel>
-                            {AllUserGenders.map(gender => (
-                              <SelectItem key={gender} value={gender}>
-                                {gender}
-                              </SelectItem>
-                            ))}
+                            <SelectSeparator />
+                            {genderOptions}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -190,20 +313,23 @@ const ProfileTab = ({
                     <FormLabel>國家</FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value ?? undefined}
-                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                        onValueChange={value => {
+                          if (value === "NO_COUNTRY") {
+                            field.onChange(null);
+                          } else {
+                            field.onChange(value);
+                          }
+                        }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="請選擇國家" />
+                          <SelectValue placeholder="未設定國家" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>國家</SelectLabel>
-                            {AllCountries.map(country => (
-                              <SelectItem key={country} value={country}>
-                                {country}
-                              </SelectItem>
-                            ))}
+                            <SelectSeparator />
+                            {countryOptions}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -270,13 +396,16 @@ const ProfileTab = ({
                 )}
               />
             </div>
-            <div className="flex justify-start gap-2">
+            <div className="flex justify-start gap-2 mt-4">
               <Button type="submit" className="max-w-2/5">
                 Save UserInfo
               </Button>
               <Button
-                type="reset"
+                type="button"
                 className="max-w-2/5 bg-destructive hover:bg-destructive/90"
+                onClick={() => {
+                  userInfoForm.reset(userInfo);
+                }}
               >
                 Reset Changes
               </Button>
@@ -284,14 +413,9 @@ const ProfileTab = ({
           </div>
         </form>
       </Form>
-      {/* User 區塊 */}
       <Form {...userForm}>
         <form
-          onSubmit={userForm.handleSubmit(data => {
-            toast.success("User 已送出");
-            // 這裡可以呼叫 API
-            console.log("User submit", data);
-          })}
+          onSubmit={userForm.handleSubmit(user => handleSaveUserOnSubmit(user))}
           className="rounded-lg border-1 border-border bg-secondary p-8 space-y-4"
         >
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -300,9 +424,9 @@ const ProfileTab = ({
               name="publicId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>公開ID</FormLabel>
+                  <FormLabel>公開 ID</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly />
+                    <Input {...field} readOnly className="cursor-default" />
                   </FormControl>
                 </FormItem>
               )}
@@ -314,7 +438,7 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>帳戶名稱</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly />
+                    <Input {...field} readOnly className="cursor-default" />
                   </FormControl>
                 </FormItem>
               )}
@@ -326,7 +450,7 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>名稱</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="caret-foreground" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -339,7 +463,7 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>電子郵件</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly />
+                    <Input {...field} readOnly className="cursor-default" />
                   </FormControl>
                 </FormItem>
               )}
@@ -351,7 +475,7 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>角色</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly />
+                    <Input {...field} readOnly className="cursor-not-allowed" />
                   </FormControl>
                 </FormItem>
               )}
@@ -363,7 +487,7 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>方案</FormLabel>
                   <FormControl>
-                    <Input {...field} readOnly />
+                    <Input {...field} readOnly className="cursor-default" />
                   </FormControl>
                 </FormItem>
               )}
@@ -375,7 +499,18 @@ const ProfileTab = ({
                 <FormItem>
                   <FormLabel>狀態</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="請選擇狀態" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>狀態</SelectLabel>
+                          <SelectSeparator />
+                          {statusOptions}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -395,22 +530,31 @@ const ProfileTab = ({
                           : field.value
                       }
                       readOnly
+                      className="cursor-not-allowed"
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
           </div>
-          <button
-            type="submit"
-            className="mt-6 px-4 py-2 bg-primary text-white rounded"
-          >
-            Save User
-          </button>
+          <div className="flex justify-start gap-2 mt-8">
+            <Button type="submit" className="max-w-2/5">
+              Save User
+            </Button>
+            <Button
+              type="button"
+              className="max-w-2/5 bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                userForm.reset(user);
+              }}
+            >
+              Reset Changes
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
   );
-};
+});
 
 export default ProfileTab;

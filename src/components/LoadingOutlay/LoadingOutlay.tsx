@@ -10,19 +10,25 @@ const LoadingOverlay = () => {
   useEffect(() => {
     if (isLoading) {
       document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
     } else {
       document.body.style.overflow = "unset";
+      document.body.style.pointerEvents = "auto";
     }
 
     return () => {
       document.body.style.overflow = "unset";
+      document.body.style.pointerEvents = "auto";
     };
   }, [isLoading]);
 
   if (!isLoading) return <></>;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray bg-opacity-60 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray bg-opacity-60 backdrop-blur-sm cursor-wait"
+      style={{ pointerEvents: "auto" }}
+    >
       <div className="flex flex-col items-center justify-center">
         {/* Loading Spinner */}
         <div

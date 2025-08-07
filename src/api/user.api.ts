@@ -96,8 +96,8 @@ export interface UpdateMeRequest extends NotezyRequest {
     authorization?: string;
   };
   body: PartialUpdate<{
-    displayName?: string;
-    status?: string;
+    displayName: string;
+    status: string;
   }>;
 }
 

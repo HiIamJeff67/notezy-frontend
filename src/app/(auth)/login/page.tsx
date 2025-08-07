@@ -59,6 +59,7 @@ const LoginPage = () => {
           languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
         );
       }
+
       userDataManager.setUserData(responseOfGetMe.data);
       router.push(WebURLPathDictionary.root.dashboard);
     } catch (error) {
