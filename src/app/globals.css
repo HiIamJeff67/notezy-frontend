@@ -179,12 +179,8 @@ since both of them offer some default colors in ShadCN component
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--muted); /* 跟隨主題 muted 色 */
+  background: transparent; /* 跟隨主題 muted 色 */
   border-radius: 4px;
-  border: 2px solid var(--background); /* 讓 thumb 更有層次 */
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent); /* 滑鼠移上時用 accent 色 */
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -193,7 +189,7 @@ since both of them offer some default colors in ShadCN component
 /* for Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--muted) var(--background);
+  scrollbar-color: var(--muted-foreground) var(--background);
 }
 
 /* ==================== Switch Styles ==================== */

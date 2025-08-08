@@ -1,48 +1,87 @@
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CreditCard, Link2, RefreshCcw, Shield, User } from "lucide-react";
+import { Crown, Link, Settings, Shield, User, UserCog } from "lucide-react";
+import { memo } from "react";
 import { AccountSettingsPage } from "./AccountSettingsPanel";
-
-const sidebarItems: {
-  id: AccountSettingsPage;
-  label: string;
-  icon: React.ElementType;
-}[] = [
-  { id: "profile", label: "個人資訊", icon: User },
-  { id: "upgrade", label: "升級", icon: CreditCard },
-  { id: "security", label: "安全性", icon: Shield },
-  { id: "binding", label: "綁定", icon: Link2 },
-  { id: "accountModification", label: "帳戶變更", icon: RefreshCcw },
-];
 
 interface SidebarProps {
   currentPage: AccountSettingsPage;
   setCurrentPage: (page: AccountSettingsPage) => void;
 }
 
-const Sidebar = ({ currentPage, setCurrentPage }: SidebarProps) => {
+const sidebarItems = [
+  {
+    id: "profile" as AccountSettingsPage,
+    label: "個人資料",
+    icon: User,
+  },
+  {
+    id: "account" as AccountSettingsPage,
+    label: "帳戶設定",
+    icon: Settings,
+  },
+  {
+    id: "upgrade" as AccountSettingsPage,
+    label: "升級方案",
+    icon: Crown,
+  },
+  {
+    id: "security" as AccountSettingsPage,
+    label: "安全設定",
+    icon: Shield,
+  },
+  {
+    id: "binding" as AccountSettingsPage,
+    label: "帳戶綁定",
+    icon: Link,
+  },
+  {
+    id: "accountModification" as AccountSettingsPage,
+    label: "帳戶修改",
+    icon: UserCog,
+  },
+];
+
+const Sidebar = memo(({ currentPage, setCurrentPage }: SidebarProps) => {
   return (
-    <div className="w-50 max-w-7/20 bg-muted/50 border-r flex flex-col">
-      <DialogHeader className="p-6 pb-4">
-        <DialogTitle className="text-lg font-semibold">帳戶設置</DialogTitle>
-      </DialogHeader>
-      <nav className="flex-1 px-4 pb-4">
-        <ul className="space-y-1">
+    <div className="w-16 md:w-48 lg:w-64 bg-muted border-r border-border flex flex-col">
+      <div className="p-2 md:p-6 border-b border-border">
+        {/* 小螢幕只顯示圖示 */}
+        <div className="flex justify-center md:hidden">
+          <Settings className="w-6 h-6 text-muted-foreground" />
+        </div>
+        {/* 大螢幕顯示標題 */}
+        <h2 className="hidden md:block text-lg font-semibold text-foreground">
+          設定
+        </h2>
+      </div>
+
+      <nav className="flex-1 p-1 md:p-4">
+        <ul className="space-y-1 md:space-y-2">
           {sidebarItems.map(item => {
-            const Icon = item.icon as React.ComponentType<
-              React.SVGProps<SVGSVGElement>
-            >;
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
+
             return (
               <li key={item.id}>
                 <button
                   onClick={() => setCurrentPage(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-left ${
-                    currentPage === item.id
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`
+                    w-full flex items-center justify-center md:justify-start 
+                    gap-0 md:gap-3
+                    px-2 md:px-4 py-2 md:py-3 
+                    rounded-lg transition-colors text-left
+                    ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }
+                  `}
+                  title={item.label} // 小螢幕的 tooltip
                 >
-                  <Icon />
-                  {item.label}
+                  <Icon className="w-6 h-6 md:w-5 md:h-5 flex-shrink-0" />
+                  {/* 小螢幕隱藏文字，大螢幕顯示文字 */}
+                  <span className="hidden md:inline font-medium">
+                    {item.label}
+                  </span>
                 </button>
               </li>
             );
@@ -51,6 +90,6 @@ const Sidebar = ({ currentPage, setCurrentPage }: SidebarProps) => {
       </nav>
     </div>
   );
-};
+});
 
 export default Sidebar;

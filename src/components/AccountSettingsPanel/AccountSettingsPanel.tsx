@@ -9,17 +9,22 @@ import {
   PrivateFakeUserInfo,
 } from "@/shared/constants/defaultFakeUser.constant";
 import { PrivateUser, PrivateUserInfo } from "@/shared/types/user.type";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import AccountModificationTab from "./AccountModificationTab";
+import AccountTab from "./AccountTab";
 import BindingTab from "./BindingTab";
-import ProfileTab from "./ProfileTab";
+import ProfileTabSkeleton from "./ProfileTabSkeleton";
 import SecurityTab from "./SecurityTab";
 import Sidebar from "./Sidebar";
 import UpgradeTab from "./UpgradeTab";
 
+// lazy loading the profile tab
+const ProfileTab = lazy(() => import("./ProfileTab"));
+
 export type AccountSettingsPage =
   | "profile"
+  | "account"
   | "upgrade"
   | "security"
   | "binding"
@@ -41,6 +46,8 @@ const AccountSettingsPanel = ({
   const [user, setUser] = useState<PrivateUser>(PrivateFakeUser);
   const [userInfo, setUserInfo] =
     useState<PrivateUserInfo>(PrivateFakeUserInfo);
+
+  const [showProfileContent, setShowProfileContent] = useState(false);
 
   useEffect(() => {
     const refreshUser = async function (): Promise<void> {
@@ -68,7 +75,6 @@ const AccountSettingsPanel = ({
     };
 
     if (isOpen) {
-      // block to only refresh the user while the account setting panel is opened
       refreshUser();
     }
   }, [isOpen, userDataManager.userData]);
@@ -98,18 +104,38 @@ const AccountSettingsPanel = ({
       }
     };
 
-    refreshUserInfo();
-  }, []);
+    if (isOpen) {
+      refreshUserInfo();
+    }
+  }, [isOpen, languageManager]);
+
+  useEffect(() => {
+    if (isOpen && currentPage === "profile") {
+      setShowProfileContent(false);
+
+      const timer = setTimeout(() => {
+        setShowProfileContent(true);
+      }, 200); // timeout to show the actual profile tab
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, currentPage]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-4/5 p-0 overflow-hidden">
+      <DialogContent className="min-w-4/5 p-0 overflow-hidden border-none">
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-          <div className="flex-1 px-8 py-6 overflow-y-auto">
-            {currentPage === "profile" && (
-              <ProfileTab user={user} userInfo={userInfo} />
-            )}
+          <div className="flex-1 h-[520px]">
+            {currentPage === "profile" &&
+              (!showProfileContent ? (
+                <ProfileTabSkeleton />
+              ) : (
+                <Suspense fallback={<ProfileTabSkeleton />}>
+                  <ProfileTab userInfo={userInfo} />
+                </Suspense>
+              ))}
+            {currentPage === "account" && <AccountTab user={user} />}
             {currentPage === "upgrade" && <UpgradeTab />}
             {currentPage === "security" && <SecurityTab />}
             {currentPage === "binding" && <BindingTab />}
