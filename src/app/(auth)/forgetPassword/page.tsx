@@ -4,14 +4,14 @@ import { ForgetPassword, SendAuthCode } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { AuthCodeBlockedSecond } from "@/shared/constants/blockTimes.constant";
+import { WebURLPathDictionary } from "@/shared/constants/url.constant";
+import { tKey } from "@/shared/translations";
 import {
   isValidAuthCode,
   isValidEmail,
   isValidPassword,
-} from "@/lib/validation";
-import { AuthCodeBlockedSecond } from "@/shared/constants/blockTimes.constant";
-import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
+} from "@/util/validation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 

@@ -2,7 +2,7 @@
 
 import "@/global/styles/panel.css";
 import { useTheme } from "@/hooks";
-import { toCamelCase } from "@/lib/stringCaseConversions";
+import { toCamelCase } from "@/util/stringCaseConversions";
 
 interface AuthPanelInput {
   title: string;

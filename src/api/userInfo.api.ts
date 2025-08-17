@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/lib/isJsonContext";
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
@@ -7,6 +6,7 @@ import { Country, UserGender } from "@/shared/enums";
 import { tKey } from "@/shared/translations";
 import { PartialUpdate } from "@/shared/types/partialUpdate.type";
 import { PrivateUserInfo } from "@/shared/types/user.type";
+import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
 
 /* ============================== GetMyInfo ============================== */
