@@ -18,7 +18,8 @@
     "prettier",
     "drei",
     "NANP",
-    "APIURL"
+    "APIURL",
+    "msgpack"
   ],
   "ignorePaths": [
     "node_modules/**",

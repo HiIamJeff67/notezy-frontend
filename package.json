@@ -6,10 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
+    "@msgpack/msgpack": "^3.1.2",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
     "@radix-ui/react-collapsible": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -46,13 +49,16 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/estree": "^1.0.8",
+    "@types/jest": "^30.0.0",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "jest": "^30.0.5",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.1",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"
   }

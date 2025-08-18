@@ -8,7 +8,7 @@ export function isValidUUID(value: string): value is UUID {
 }
 
 // Convert the uuid string to version 4 uuid type
-export function convertStringToUUID(uuidString: string): UUID {
+export function toUUID(uuidString: string): UUID {
   if (!isValidUUID(uuidString)) {
     throw new Error(`Invalid UUID format: ${uuidString}`);
   }
