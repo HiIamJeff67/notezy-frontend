@@ -11,8 +11,8 @@ export interface ShelfNode {
 export class ShelfManager {
   private static _maxIterations: number = 1e5;
   private static maxIterations: number = 1e5;
-  private static maxShelfDepth: number = 50; // note that the maximum width is bounded by the msgpack encoding algorithm
   private static maxShelfWidth: number = 1e5;
+  private static maxShelfDepth: number = 100; // note that the maximum width is bounded by the msgpack encoding algorithm
 
   constructor(maxIterations: number = 1e5) {
     ShelfManager.maxIterations = maxIterations;
@@ -40,6 +40,22 @@ export class ShelfManager {
       maxDepth++;
 
       while (levelSize--) {
+        if (traverseCount > ShelfManager.maxIterations) {
+          throw new Error(
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManager.maxIterations}`
+          );
+        }
+        if (maxDepth > ShelfManager.maxShelfDepth) {
+          throw new Error(
+            `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManager.maxShelfDepth}`
+          );
+        }
+        if (maxWidth > ShelfManager.maxShelfWidth) {
+          throw new Error(
+            `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManager.maxShelfWidth}`
+          );
+        }
+
         const current = queue.shift()!;
         traverseCount++;
 
@@ -52,22 +68,6 @@ export class ShelfManager {
           if (child) {
             queue.push(child);
           }
-        }
-
-        if (traverseCount >= ShelfManager.maxIterations) {
-          throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManager.maxIterations}`
-          );
-        }
-        if (maxDepth >= ShelfManager.maxShelfDepth) {
-          throw new Error(
-            `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManager.maxShelfDepth}`
-          );
-        }
-        if (maxWidth >= ShelfManager.maxShelfWidth) {
-          throw new Error(
-            `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManager.maxShelfWidth}`
-          );
         }
       }
     }
@@ -94,6 +94,22 @@ export class ShelfManager {
       maxDepth++;
 
       while (levelSize--) {
+        if (totalShelfNodes > ShelfManager.maxIterations) {
+          throw new Error(
+            `Maximum iterations (${ShelfManager.maxIterations}) exceeded`
+          );
+        }
+        if (maxDepth > ShelfManager.maxShelfDepth) {
+          throw new Error(
+            `Maximum depth (${ShelfManager.maxShelfDepth}) exceeded`
+          );
+        }
+        if (maxWidth > ShelfManager.maxShelfWidth) {
+          throw new Error(
+            `Maximum width (${ShelfManager.maxShelfWidth}) exceeded`
+          );
+        }
+
         const current = queue.shift()!;
         totalShelfNodes++;
 
@@ -108,22 +124,6 @@ export class ShelfManager {
 
         for (const child of Object.values(current.children)) {
           if (child) queue.push(child);
-        }
-
-        if (totalShelfNodes >= ShelfManager.maxIterations) {
-          throw new Error(
-            `Maximum iterations (${ShelfManager.maxIterations}) exceeded`
-          );
-        }
-        if (maxDepth >= ShelfManager.maxShelfDepth) {
-          throw new Error(
-            `Maximum depth (${ShelfManager.maxShelfDepth}) exceeded`
-          );
-        }
-        if (maxWidth >= ShelfManager.maxShelfWidth) {
-          throw new Error(
-            `Maximum width (${ShelfManager.maxShelfWidth}) exceeded`
-          );
         }
       }
     }

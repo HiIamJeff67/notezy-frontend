@@ -2,10 +2,9 @@ import { ShelfManager, ShelfNode } from "../../src/shared/lib/shelfNode";
 import { UUID } from "../../src/shared/types/uuid_v4.type";
 
 describe("ShelfNode Performance Tests", () => {
-  // 設定效能測試的預設值
-  const DEFAULT_MAX_ITERATIONS = 1e4;
-  const SAFE_MAX_DEPTH = 50; // ✅ 更安全的深度限制
-  const SAFE_MAX_WIDTH = 1e4; // ✅ 更安全的寬度限制
+  const DEFAULT_MAX_ITERATIONS = 1e5;
+  const SAFE_MAX_DEPTH = 100;
+  const SAFE_MAX_WIDTH = 1e5;
 
   beforeAll(() => {
     ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
@@ -23,7 +22,6 @@ describe("ShelfNode Performance Tests", () => {
     ShelfManager.setMaxIterations(1e4); // 恢復預設值
   });
 
-  // 工具函數：生成隨機 UUID
   function generateUUID(): UUID {
     return `${Math.random().toString(36).substr(2, 8)}-${Math.random()
       .toString(36)
@@ -32,7 +30,6 @@ describe("ShelfNode Performance Tests", () => {
       .substr(2, 4)}-${Math.random().toString(36).substr(2, 12)}` as UUID;
   }
 
-  // 工具函數：生成隨機材料 IDs
   function generateMaterialIds(count: number): Record<UUID, boolean> {
     const materials: Record<UUID, boolean> = {};
     for (let i = 0; i < count; i++) {
@@ -41,7 +38,6 @@ describe("ShelfNode Performance Tests", () => {
     return materials;
   }
 
-  // ✅ 修正：安全的寬樹創建函數
   function createWideTree(
     width: number,
     depth: number,
@@ -74,7 +70,6 @@ describe("ShelfNode Performance Tests", () => {
 
       nodeCount++;
 
-      // ✅ 只有第一層創建多個子節點，避免指數增長
       if (currentDepth === 0) {
         const actualWidth = Math.min(safeWidth, width);
         for (let i = 0; i < actualWidth && nodeCount < maxNodes; i++) {
@@ -104,67 +99,9 @@ describe("ShelfNode Performance Tests", () => {
     return result!;
   }
 
-  // ✅ 修正：控制深度和寬度的深樹創建函數
-  function createDeepTree(
-    maxDepth: number,
-    branchingFactor: number = 1,
-    maxNodes: number = 1000
-  ): ShelfNode {
-    let nodeCount = 0;
-    const safeMaxDepth = Math.min(maxDepth, SAFE_MAX_DEPTH);
-    const safeBranching = Math.min(branchingFactor, 2); // ✅ 最多2個分支
-
-    function createNode(currentDepth: number): ShelfNode | null {
-      if (nodeCount >= maxNodes) {
-        console.log(
-          `⚠️ Reached max nodes limit: ${maxNodes} at depth ${currentDepth}`
-        );
-        return null;
-      }
-
-      if (currentDepth >= safeMaxDepth) {
-        console.log(
-          `⚠️ Reached safe max depth: ${safeMaxDepth} at node ${nodeCount}`
-        );
-        return null;
-      }
-
-      const node: ShelfNode = {
-        id: generateUUID(),
-        name: `Deep-D${currentDepth}-N${nodeCount}`,
-        children: {},
-        materialIds: generateMaterialIds(Math.floor(Math.random() * 2) + 1),
-      };
-
-      nodeCount++;
-
-      // ✅ 控制分支增長，避免指數爆炸
-      if (currentDepth < safeMaxDepth) {
-        // 深度越深，分支越少
-        const actualBranching = currentDepth < 10 ? safeBranching : 1;
-
-        for (let i = 0; i < actualBranching && nodeCount < maxNodes; i++) {
-          const child = createNode(currentDepth + 1);
-          if (child) {
-            node.children[child.id] = child;
-          }
-        }
-      }
-
-      return node;
-    }
-
-    const result = createNode(0);
-    console.log(
-      `Created deep tree with ${nodeCount} nodes, actual max depth: ${safeMaxDepth}`
-    );
-    return result!;
-  }
-
-  // ✅ 修正：嚴格控制深度的平衡樹創建函數
   function createBalancedTree(totalNodes: number): ShelfNode {
     let nodeCount = 0;
-    const maxSafeDepth = Math.min(SAFE_MAX_DEPTH, 40); // ✅ 更保守的深度
+    const maxSafeDepth = Math.min(SAFE_MAX_DEPTH, 40);
 
     function createNode(depth: number): ShelfNode | null {
       if (nodeCount >= totalNodes) return null;
@@ -182,11 +119,9 @@ describe("ShelfNode Performance Tests", () => {
 
       nodeCount++;
 
-      // ✅ 更嚴格的子節點控制
       const remainingNodes = totalNodes - nodeCount;
       if (remainingNodes <= 0) return node;
 
-      // 根據深度動態調整分支數
       let maxChildren: number;
       if (depth < 5) {
         maxChildren = Math.min(3, Math.floor(remainingNodes / 8));
@@ -217,7 +152,6 @@ describe("ShelfNode Performance Tests", () => {
     return result!;
   }
 
-  // ✅ 新增：創建單鏈樹（純深度測試）
   function createChainTree(depth: number): ShelfNode {
     const safeDepth = Math.min(depth, SAFE_MAX_DEPTH);
 
@@ -249,7 +183,7 @@ describe("ShelfNode Performance Tests", () => {
     );
 
     console.time("Creating wide tree");
-    const wideTree = createWideTree(100, 3, 1000); // ✅ 修正：寬度100，深度3，最多1000節點
+    const wideTree = createWideTree(100, 3, 1000);
     console.timeEnd("Creating wide tree");
 
     console.time("Analyzing wide tree");
@@ -270,36 +204,6 @@ describe("ShelfNode Performance Tests", () => {
 
     expect(decoded.name).toBe(wideTree.name);
     console.log("✅ Wide tree test passed\n");
-  });
-
-  test("Performance: Deep Tree (Controlled depth)", () => {
-    console.log("\n=== Deep Tree Performance Test ===");
-    console.log(
-      `Current limits: maxIterations=${ShelfManager.getMaxIterations()}`
-    );
-
-    console.time("Creating deep tree");
-    const deepTree = createDeepTree(40, 1, 1000); // ✅ 修正：深度30，分支1，最多1000節點
-    console.timeEnd("Creating deep tree");
-
-    console.time("Analyzing deep tree");
-    const analysis = ShelfManager.analysisAndGenerateSummary(deepTree);
-    console.timeEnd("Analyzing deep tree");
-    console.log(`Deep tree analysis:`, analysis);
-
-    console.time("Safe encoding deep tree");
-    const encoded = ShelfManager.safeEncode(deepTree);
-    console.timeEnd("Safe encoding deep tree");
-
-    const encodedString = Buffer.from(encoded).toString("base64");
-    console.log(`Encoded size: ${(encodedString.length / 1024).toFixed(2)} KB`);
-
-    console.time("Decoding deep tree");
-    const decoded = ShelfManager.decodeFromBase64(encodedString);
-    console.timeEnd("Decoding deep tree");
-
-    expect(decoded.name).toBe(deepTree.name);
-    console.log("✅ Deep tree test passed\n");
   });
 
   test("Performance: Balanced Tree (3000 nodes)", () => {
@@ -337,7 +241,6 @@ describe("ShelfNode Performance Tests", () => {
     const decoded = ShelfManager.decodeFromBase64(encodedString);
     console.timeEnd("Decoding balanced tree");
 
-    // 驗證解碼後的節點數
     const decodedAnalysis = ShelfManager.analysisAndGenerateSummary(decoded);
     expect(decodedAnalysis.totalShelfNodes).toBe(analysis.totalShelfNodes);
 
@@ -401,10 +304,9 @@ describe("ShelfNode Performance Tests", () => {
     console.log(`Original maxIterations: ${originalMaxIterations}`);
 
     console.time("Creating boundary test tree");
-    const boundaryTree = createBalancedTree(500); // ✅ 修正：減少到500節點
+    const boundaryTree = createBalancedTree(500);
     console.timeEnd("Creating boundary test tree");
 
-    // 先測試正常情況
     console.log("\n--- Testing with normal limits ---");
     try {
       console.time("Normal analysis");
@@ -422,7 +324,6 @@ describe("ShelfNode Performance Tests", () => {
       console.log(`❌ Normal analysis failed: ${(error as Error).message}`);
     }
 
-    // 測試不同的限制值
     const testLimits = [50, 100, 200, 300, 500];
 
     testLimits.forEach(limit => {
@@ -431,7 +332,6 @@ describe("ShelfNode Performance Tests", () => {
       ShelfManager.setMaxIterations(limit);
       console.log(`Set maxIterations to: ${ShelfManager.getMaxIterations()}`);
 
-      // 測試 analysisAndGenerateSummary
       try {
         console.time(`Analysis with limit ${limit}`);
         const analysis = ShelfManager.analysisAndGenerateSummary(boundaryTree);
@@ -448,7 +348,6 @@ describe("ShelfNode Performance Tests", () => {
         );
       }
 
-      // 測試 isChildrenCircular
       try {
         console.time(`Circular check with limit ${limit}`);
         ShelfManager.isChildrenCircular(boundaryTree);
@@ -464,7 +363,6 @@ describe("ShelfNode Performance Tests", () => {
       }
     });
 
-    // 恢復原始設定
     ShelfManager.setMaxIterations(originalMaxIterations);
     console.log(
       `\n✅ Restored maxIterations to: ${ShelfManager.getMaxIterations()}`
@@ -510,7 +408,7 @@ describe("ShelfNode Performance Tests", () => {
   test("Performance: Find Optimal MaxIterations", () => {
     console.log("\n=== Finding Optimal MaxIterations ===");
 
-    const tree = createBalancedTree(800); // ✅ 修正：減少節點數
+    const tree = createBalancedTree(800);
 
     const iterationLimits = [100, 200, 300, 500, 800, 1000];
 
@@ -526,7 +424,6 @@ describe("ShelfNode Performance Tests", () => {
       let encodingResult = "❌";
       let overallStatus = "FAIL";
 
-      // 測試 analysis
       try {
         const analysis = ShelfManager.analysisAndGenerateSummary(tree);
         analysisResult = `✅(${analysis.totalShelfNodes})`;
@@ -534,7 +431,6 @@ describe("ShelfNode Performance Tests", () => {
         analysisResult = "⚠️LIMIT";
       }
 
-      // 測試 circular
       try {
         ShelfManager.isChildrenCircular(tree);
         circularResult = "✅";
@@ -542,7 +438,6 @@ describe("ShelfNode Performance Tests", () => {
         circularResult = "⚠️LIMIT";
       }
 
-      // 測試 encoding（只有在前面都成功時才測試）
       if (analysisResult.includes("✅") && circularResult === "✅") {
         try {
           const encoded = ShelfManager.safeEncode(tree);
@@ -564,7 +459,6 @@ describe("ShelfNode Performance Tests", () => {
       );
     });
 
-    // 恢復預設值
     ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
     console.log("\n💡 Recommendations:");
     console.log("- For development: 500-1000 (fast feedback)");
@@ -573,16 +467,16 @@ describe("ShelfNode Performance Tests", () => {
     console.log("\n✅ Optimal maxIterations analysis completed\n");
   });
 
-  test("Performance: msgpack Depth Limit Testing", () => {
+  test("Performance: Depth Limit Testing of msgpack", () => {
     console.log("\n=== msgpack Depth Limit Testing ===");
 
-    const depthLimits = [10, 20, 30, 40];
+    const depthLimits = [10, 20, 30, 40, 50, 70, 100];
 
     depthLimits.forEach(depth => {
       console.log(`\n--- Testing depth ${depth} ---`);
 
       console.time(`Creating depth-${depth} tree`);
-      const deepTree = createChainTree(depth); // ✅ 使用單鏈樹
+      const deepTree = createChainTree(depth);
       console.timeEnd(`Creating depth-${depth} tree`);
 
       const analysis = ShelfManager.analysisAndGenerateSummary(deepTree);
@@ -596,7 +490,6 @@ describe("ShelfNode Performance Tests", () => {
         console.timeEnd(`Encoding depth-${depth}`);
         console.log(`✅ Depth ${depth}: SUCCESS - ${encoded.length} bytes`);
 
-        // 測試解碼
         console.time(`Decoding depth-${depth}`);
         const decoded = ShelfManager.decode(encoded);
         console.timeEnd(`Decoding depth-${depth}`);
@@ -616,9 +509,9 @@ describe("ShelfNode Performance Tests", () => {
   // // 在文件最後加入這個測試
 
   // // ✅ 新增：激進的大規模平衡樹測試
-  test("Performance: Balanced Tree at max iteration limit (5,000 nodes)", () => {
+  test("Performance: Balanced Tree at max iteration limit (10,000 nodes)", () => {
     console.log("\n=== Testing Balanced Tree at Max Iteration Limit ===");
-    console.log("🎯 Goal: Create and encode a tree with exactly 5,000 nodes.");
+    console.log("🎯 Goal: Create and encode a tree with exactly 10,000 nodes.");
 
     const originalMaxIterations = ShelfManager.getMaxIterations();
     const maxIterationsLimit = 1e5;
