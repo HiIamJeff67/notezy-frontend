@@ -8,25 +8,91 @@ export interface ShelfNode {
   materialIds: Record<UUID, boolean>;
 }
 
-export class ShelfManager {
+export class ShelfManipulator {
   private static _maxIterations: number = 1e5;
   private static maxIterations: number = 1e5;
   private static maxShelfWidth: number = 1e5;
   private static maxShelfDepth: number = 100; // note that the maximum width is bounded by the msgpack encoding algorithm
 
   constructor(maxIterations: number = 1e5) {
-    ShelfManager.maxIterations = maxIterations;
+    ShelfManipulator.maxIterations = maxIterations;
   }
 
   public static getMaxIterations(): number {
-    return ShelfManager.maxIterations;
+    return ShelfManipulator.maxIterations;
   }
 
   public static setMaxIterations(value: number): void {
-    ShelfManager.maxIterations = Math.min(ShelfManager._maxIterations, value);
+    ShelfManipulator.maxIterations = Math.min(
+      ShelfManipulator._maxIterations,
+      value
+    );
   }
 
-  public static isChildrenCircular(root: ShelfNode): void {
+  // Check if `desiredChild` is a child of `desiredParent`
+  public static isChild(
+    desiredParent: ShelfNode,
+    desiredChild: ShelfNode
+  ): boolean {
+    if (desiredParent == desiredChild) return false;
+
+    let traverseCount: number = 0,
+      maxWidth: number = 0,
+      maxDepth: number = 0;
+
+    const visited: Set<UUID> = new Set<UUID>();
+    const queue: ShelfNode[] = [desiredParent];
+
+    while (queue.length > 0) {
+      let levelSize = queue.length;
+      maxWidth = Math.max(maxWidth, levelSize);
+      maxDepth++;
+
+      if (maxDepth > ShelfManipulator.maxShelfDepth) {
+        throw new Error(
+          `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManipulator.maxShelfDepth}`
+        );
+      }
+      if (maxWidth > ShelfManipulator.maxShelfWidth) {
+        throw new Error(
+          `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManipulator.maxShelfWidth}`
+        );
+      }
+
+      while (levelSize--) {
+        if (traverseCount > ShelfManipulator.maxIterations) {
+          throw new Error(
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManipulator.maxIterations}`
+          );
+        }
+
+        const current = queue.shift()!;
+        traverseCount++;
+
+        if (visited.has(current.id)) {
+          throw new Error(`Cycle detected at node: ${current.id}`);
+        }
+        visited.add(current.id);
+
+        if (current.id == desiredChild.id) {
+          return true;
+        }
+
+        for (const child of Object.values(current.children)) {
+          if (child) {
+            queue.push(child);
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  public static isChildrenCircular(root: ShelfNode): {
+    hasCycle: boolean;
+    cycleNode: ShelfNode | null;
+  } {
     let traverseCount: number = 0,
       maxWidth: number = 0,
       maxDepth: number = 0;
@@ -39,20 +105,21 @@ export class ShelfManager {
       maxWidth = Math.max(maxWidth, levelSize);
       maxDepth++;
 
+      if (maxDepth > ShelfManipulator.maxShelfDepth) {
+        throw new Error(
+          `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManipulator.maxShelfDepth}`
+        );
+      }
+      if (maxWidth > ShelfManipulator.maxShelfWidth) {
+        throw new Error(
+          `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManipulator.maxShelfWidth}`
+        );
+      }
+
       while (levelSize--) {
-        if (traverseCount > ShelfManager.maxIterations) {
+        if (traverseCount > ShelfManipulator.maxIterations) {
           throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManager.maxIterations}`
-          );
-        }
-        if (maxDepth > ShelfManager.maxShelfDepth) {
-          throw new Error(
-            `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManager.maxShelfDepth}`
-          );
-        }
-        if (maxWidth > ShelfManager.maxShelfWidth) {
-          throw new Error(
-            `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManager.maxShelfWidth}`
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManipulator.maxIterations}`
           );
         }
 
@@ -60,7 +127,7 @@ export class ShelfManager {
         traverseCount++;
 
         if (visited.has(current.id)) {
-          throw new Error(`Cycle detected at node: ${current.id}`);
+          return { hasCycle: true, cycleNode: current };
         }
         visited.add(current.id);
 
@@ -71,6 +138,11 @@ export class ShelfManager {
         }
       }
     }
+
+    return {
+      hasCycle: false,
+      cycleNode: null,
+    };
   }
 
   public static analysisAndGenerateSummary(root: ShelfNode): {
@@ -93,20 +165,21 @@ export class ShelfManager {
       maxWidth = Math.max(maxWidth, levelSize);
       maxDepth++;
 
+      if (maxDepth > ShelfManipulator.maxShelfDepth) {
+        throw new Error(
+          `Maximum depth (${ShelfManipulator.maxShelfDepth}) exceeded`
+        );
+      }
+      if (maxWidth > ShelfManipulator.maxShelfWidth) {
+        throw new Error(
+          `Maximum width (${ShelfManipulator.maxShelfWidth}) exceeded`
+        );
+      }
+
       while (levelSize--) {
-        if (totalShelfNodes > ShelfManager.maxIterations) {
+        if (totalShelfNodes > ShelfManipulator.maxIterations) {
           throw new Error(
-            `Maximum iterations (${ShelfManager.maxIterations}) exceeded`
-          );
-        }
-        if (maxDepth > ShelfManager.maxShelfDepth) {
-          throw new Error(
-            `Maximum depth (${ShelfManager.maxShelfDepth}) exceeded`
-          );
-        }
-        if (maxWidth > ShelfManager.maxShelfWidth) {
-          throw new Error(
-            `Maximum width (${ShelfManager.maxShelfWidth}) exceeded`
+            `Maximum iterations (${ShelfManipulator.maxIterations}) exceeded`
           );
         }
 
@@ -152,13 +225,34 @@ export class ShelfManager {
     return decode(data) as ShelfNode;
   }
 
+  // for performance testing
   public static encodeToBase64(node: ShelfNode): string {
-    const encoded = this.encode(node);
+    const encoded = this.safeEncode(node);
     return Buffer.from(encoded).toString("base64");
   }
 
+  // for performance testing
   public static decodeFromBase64(base64: string): ShelfNode {
     const buffer = Buffer.from(base64, "base64");
     return this.decode(new Uint8Array(buffer));
+  }
+
+  public static directlyInsertShelfNode(
+    destination: ShelfNode,
+    target: ShelfNode
+  ) {
+    if (destination == target) return;
+
+    destination.children[target.id] = target;
+  }
+
+  public static insertShelfNode(destination: ShelfNode, target: ShelfNode) {
+    if (destination == target) return;
+
+    if (this.isChild(target, destination)) {
+      throw new Error(`Insert parent into one of its child`);
+    }
+
+    destination.children[target.id] = target;
   }
 }

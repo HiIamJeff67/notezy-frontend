@@ -1,4 +1,4 @@
-import { ShelfManager, ShelfNode } from "../../src/shared/lib/shelfNode";
+import { ShelfManipulator, ShelfNode } from "../../src/shared/lib/shelfNode";
 import { UUID } from "../../src/shared/types/uuid_v4.type";
 
 describe("ShelfNode Performance Tests", () => {
@@ -7,19 +7,19 @@ describe("ShelfNode Performance Tests", () => {
   const SAFE_MAX_WIDTH = 1e5;
 
   beforeAll(() => {
-    ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
   });
 
   beforeEach(() => {
-    ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
   });
 
   afterEach(() => {
-    ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
   });
 
   afterAll(() => {
-    ShelfManager.setMaxIterations(1e4); // 恢復預設值
+    ShelfManipulator.setMaxIterations(1e4); // 恢復預設值
   });
 
   function generateUUID(): UUID {
@@ -176,10 +176,15 @@ describe("ShelfNode Performance Tests", () => {
     return result;
   }
 
+  function encodeToBase64(node: ShelfNode): string {
+    const encoded = ShelfManipulator.safeEncode(node);
+    return Buffer.from(encoded).toString("base64");
+  }
+
   test("Performance: Wide Tree (Limited nodes)", () => {
     console.log("\n=== Wide Tree Performance Test ===");
     console.log(
-      `Current limits: maxIterations=${ShelfManager.getMaxIterations()}`
+      `Current limits: maxIterations=${ShelfManipulator.getMaxIterations()}`
     );
 
     console.time("Creating wide tree");
@@ -187,19 +192,19 @@ describe("ShelfNode Performance Tests", () => {
     console.timeEnd("Creating wide tree");
 
     console.time("Analyzing wide tree");
-    const analysis = ShelfManager.analysisAndGenerateSummary(wideTree);
+    const analysis = ShelfManipulator.analysisAndGenerateSummary(wideTree);
     console.timeEnd("Analyzing wide tree");
     console.log(`Wide tree analysis:`, analysis);
 
     console.time("Safe encoding wide tree");
-    const encoded = ShelfManager.safeEncode(wideTree);
+    const encoded = ShelfManipulator.safeEncode(wideTree);
     console.timeEnd("Safe encoding wide tree");
 
     const encodedString = Buffer.from(encoded).toString("base64");
     console.log(`Encoded size: ${(encodedString.length / 1024).toFixed(2)} KB`);
 
     console.time("Decoding wide tree");
-    const decoded = ShelfManager.decodeFromBase64(encodedString);
+    const decoded = ShelfManipulator.decodeFromBase64(encodedString);
     console.timeEnd("Decoding wide tree");
 
     expect(decoded.name).toBe(wideTree.name);
@@ -214,12 +219,12 @@ describe("ShelfNode Performance Tests", () => {
     console.timeEnd("Creating balanced tree");
 
     console.time("Analyzing balanced tree");
-    const analysis = ShelfManager.analysisAndGenerateSummary(balancedTree);
+    const analysis = ShelfManipulator.analysisAndGenerateSummary(balancedTree);
     console.timeEnd("Analyzing balanced tree");
     console.log(`Balanced tree analysis:`, analysis);
 
     console.time("Safe encoding balanced tree");
-    const encoded = ShelfManager.safeEncode(balancedTree);
+    const encoded = ShelfManipulator.safeEncode(balancedTree);
     console.timeEnd("Safe encoding balanced tree");
 
     const encodedString = Buffer.from(encoded).toString("base64");
@@ -238,10 +243,11 @@ describe("ShelfNode Performance Tests", () => {
     );
 
     console.time("Decoding balanced tree");
-    const decoded = ShelfManager.decodeFromBase64(encodedString);
+    const decoded = ShelfManipulator.decodeFromBase64(encodedString);
     console.timeEnd("Decoding balanced tree");
 
-    const decodedAnalysis = ShelfManager.analysisAndGenerateSummary(decoded);
+    const decodedAnalysis =
+      ShelfManipulator.analysisAndGenerateSummary(decoded);
     expect(decodedAnalysis.totalShelfNodes).toBe(analysis.totalShelfNodes);
 
     console.log("✅ Balanced tree test passed\n");
@@ -266,7 +272,7 @@ describe("ShelfNode Performance Tests", () => {
       console.timeEnd(`Creating ${config.name}`);
 
       console.time(`Analyzing ${config.name}`);
-      const analysis = ShelfManager.analysisAndGenerateSummary(tree);
+      const analysis = ShelfManipulator.analysisAndGenerateSummary(tree);
       console.timeEnd(`Analyzing ${config.name}`);
 
       console.log(`Actual nodes: ${analysis.totalShelfNodes}`);
@@ -276,7 +282,7 @@ describe("ShelfNode Performance Tests", () => {
       console.log(`Total materials: ${analysis.totalMaterials}`);
 
       console.time(`Encoding ${config.name}`);
-      const encoded = ShelfManager.safeEncode(tree);
+      const encoded = ShelfManipulator.safeEncode(tree);
       console.timeEnd(`Encoding ${config.name}`);
 
       const encodedString = Buffer.from(encoded).toString("base64");
@@ -288,7 +294,7 @@ describe("ShelfNode Performance Tests", () => {
       console.log(`Size: ${sizeKB} KB, Bytes/node: ${bytesPerNode}`);
 
       console.time(`Decoding ${config.name}`);
-      const decoded = ShelfManager.decodeFromBase64(encodedString);
+      const decoded = ShelfManipulator.decodeFromBase64(encodedString);
       console.timeEnd(`Decoding ${config.name}`);
 
       expect(decoded.name).toBeDefined();
@@ -300,7 +306,7 @@ describe("ShelfNode Performance Tests", () => {
   test("Performance: Max Iterations Boundary Test", () => {
     console.log("\n=== Max Iterations Boundary Test ===");
 
-    const originalMaxIterations = ShelfManager.getMaxIterations();
+    const originalMaxIterations = ShelfManipulator.getMaxIterations();
     console.log(`Original maxIterations: ${originalMaxIterations}`);
 
     console.time("Creating boundary test tree");
@@ -311,7 +317,7 @@ describe("ShelfNode Performance Tests", () => {
     try {
       console.time("Normal analysis");
       const normalAnalysis =
-        ShelfManager.analysisAndGenerateSummary(boundaryTree);
+        ShelfManipulator.analysisAndGenerateSummary(boundaryTree);
       console.timeEnd("Normal analysis");
       console.log(
         `✅ Normal analysis completed: ${normalAnalysis.totalShelfNodes} nodes`
@@ -329,12 +335,15 @@ describe("ShelfNode Performance Tests", () => {
     testLimits.forEach(limit => {
       console.log(`\n--- Testing with maxIterations = ${limit} ---`);
 
-      ShelfManager.setMaxIterations(limit);
-      console.log(`Set maxIterations to: ${ShelfManager.getMaxIterations()}`);
+      ShelfManipulator.setMaxIterations(limit);
+      console.log(
+        `Set maxIterations to: ${ShelfManipulator.getMaxIterations()}`
+      );
 
       try {
         console.time(`Analysis with limit ${limit}`);
-        const analysis = ShelfManager.analysisAndGenerateSummary(boundaryTree);
+        const analysis =
+          ShelfManipulator.analysisAndGenerateSummary(boundaryTree);
         console.timeEnd(`Analysis with limit ${limit}`);
         console.log(
           `✅ Analysis with limit ${limit} completed: ${analysis.totalShelfNodes} nodes`
@@ -350,7 +359,7 @@ describe("ShelfNode Performance Tests", () => {
 
       try {
         console.time(`Circular check with limit ${limit}`);
-        ShelfManager.isChildrenCircular(boundaryTree);
+        ShelfManipulator.isChildrenCircular(boundaryTree);
         console.timeEnd(`Circular check with limit ${limit}`);
         console.log(`✅ Circular check with limit ${limit} completed`);
       } catch (error) {
@@ -363,9 +372,9 @@ describe("ShelfNode Performance Tests", () => {
       }
     });
 
-    ShelfManager.setMaxIterations(originalMaxIterations);
+    ShelfManipulator.setMaxIterations(originalMaxIterations);
     console.log(
-      `\n✅ Restored maxIterations to: ${ShelfManager.getMaxIterations()}`
+      `\n✅ Restored maxIterations to: ${ShelfManipulator.getMaxIterations()}`
     );
     console.log("✅ Max iterations boundary test completed\n");
   });
@@ -379,9 +388,9 @@ describe("ShelfNode Performance Tests", () => {
       console.log(`\n--- Testing ${size} nodes ---`);
 
       const tree = createBalancedTree(size);
-      const analysis = ShelfManager.analysisAndGenerateSummary(tree);
+      const analysis = ShelfManipulator.analysisAndGenerateSummary(tree);
 
-      const encoded = ShelfManager.safeEncode(tree);
+      const encoded = ShelfManipulator.safeEncode(tree);
       const encodedString = Buffer.from(encoded).toString("base64");
 
       const sizeKB = (encodedString.length / 1024).toFixed(2);
@@ -417,7 +426,7 @@ describe("ShelfNode Performance Tests", () => {
     console.log("|--------|----------|----------|----------|---------|");
 
     iterationLimits.forEach(limit => {
-      ShelfManager.setMaxIterations(limit);
+      ShelfManipulator.setMaxIterations(limit);
 
       let analysisResult = "❌";
       let circularResult = "❌";
@@ -425,14 +434,14 @@ describe("ShelfNode Performance Tests", () => {
       let overallStatus = "FAIL";
 
       try {
-        const analysis = ShelfManager.analysisAndGenerateSummary(tree);
+        const analysis = ShelfManipulator.analysisAndGenerateSummary(tree);
         analysisResult = `✅(${analysis.totalShelfNodes})`;
       } catch (error) {
         analysisResult = "⚠️LIMIT";
       }
 
       try {
-        ShelfManager.isChildrenCircular(tree);
+        ShelfManipulator.isChildrenCircular(tree);
         circularResult = "✅";
       } catch (error) {
         circularResult = "⚠️LIMIT";
@@ -440,7 +449,7 @@ describe("ShelfNode Performance Tests", () => {
 
       if (analysisResult.includes("✅") && circularResult === "✅") {
         try {
-          const encoded = ShelfManager.safeEncode(tree);
+          const encoded = ShelfManipulator.safeEncode(tree);
           encodingResult = `✅(${encoded.length}B)`;
           overallStatus = "PASS";
         } catch (error) {
@@ -459,7 +468,7 @@ describe("ShelfNode Performance Tests", () => {
       );
     });
 
-    ShelfManager.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
     console.log("\n💡 Recommendations:");
     console.log("- For development: 500-1000 (fast feedback)");
     console.log("- For testing: 1000-5000 (comprehensive testing)");
@@ -468,7 +477,7 @@ describe("ShelfNode Performance Tests", () => {
   });
 
   test("Performance: Depth Limit Testing of msgpack", () => {
-    console.log("\n=== msgpack Depth Limit Testing ===");
+    console.log("\n=== Depth Limit Testing of msgpack ===");
 
     const depthLimits = [10, 20, 30, 40, 50, 70, 100];
 
@@ -479,19 +488,19 @@ describe("ShelfNode Performance Tests", () => {
       const deepTree = createChainTree(depth);
       console.timeEnd(`Creating depth-${depth} tree`);
 
-      const analysis = ShelfManager.analysisAndGenerateSummary(deepTree);
+      const analysis = ShelfManipulator.analysisAndGenerateSummary(deepTree);
       console.log(
         `Tree: ${analysis.totalShelfNodes} nodes, actual depth ${analysis.maxDepth}`
       );
 
       try {
         console.time(`Encoding depth-${depth}`);
-        const encoded = ShelfManager.safeEncode(deepTree);
+        const encoded = ShelfManipulator.safeEncode(deepTree);
         console.timeEnd(`Encoding depth-${depth}`);
         console.log(`✅ Depth ${depth}: SUCCESS - ${encoded.length} bytes`);
 
         console.time(`Decoding depth-${depth}`);
-        const decoded = ShelfManager.decode(encoded);
+        const decoded = ShelfManipulator.decode(encoded);
         console.timeEnd(`Decoding depth-${depth}`);
         console.log(`✅ Decode depth ${depth}: SUCCESS`);
       } catch (error) {
@@ -513,11 +522,11 @@ describe("ShelfNode Performance Tests", () => {
     console.log("\n=== Testing Balanced Tree at Max Iteration Limit ===");
     console.log("🎯 Goal: Create and encode a tree with exactly 10,000 nodes.");
 
-    const originalMaxIterations = ShelfManager.getMaxIterations();
+    const originalMaxIterations = ShelfManipulator.getMaxIterations();
     const maxIterationsLimit = 1e5;
-    ShelfManager.setMaxIterations(maxIterationsLimit);
+    ShelfManipulator.setMaxIterations(maxIterationsLimit);
     console.log(
-      `Set maxIterations to its hard limit: ${ShelfManager.getMaxIterations()}`
+      `Set maxIterations to its hard limit: ${ShelfManipulator.getMaxIterations()}`
     );
 
     const targetNodes = 1e4;
@@ -582,7 +591,7 @@ describe("ShelfNode Performance Tests", () => {
 
       // 分析樹結構以驗證其是否在限制內
       console.time("Analyzing 10,000-node tree");
-      const analysis = ShelfManager.analysisAndGenerateSummary(tree);
+      const analysis = ShelfManipulator.analysisAndGenerateSummary(tree);
       console.timeEnd("Analyzing 10,000-node tree");
 
       console.log(`📊 Tree analysis results:`);
@@ -598,7 +607,7 @@ describe("ShelfNode Performance Tests", () => {
       // 執行並測量 safeEncode 的時間
       console.log("🚀 Encoding 10,000-node tree...");
       console.time("Encoding 10,000-node tree");
-      const encoded = ShelfManager.safeEncode(tree);
+      const encoded = ShelfManipulator.safeEncode(tree);
       console.timeEnd("Encoding 10,000-node tree");
 
       const sizeKB = (encoded.length / 1024).toFixed(2);
@@ -611,9 +620,9 @@ describe("ShelfNode Performance Tests", () => {
       fail((error as Error).message);
     } finally {
       // 無論如何都恢復原始的迭代設定
-      ShelfManager.setMaxIterations(originalMaxIterations);
+      ShelfManipulator.setMaxIterations(originalMaxIterations);
       console.log(
-        `\n✅ Restored maxIterations to: ${ShelfManager.getMaxIterations()}`
+        `\n✅ Restored maxIterations to: ${ShelfManipulator.getMaxIterations()}`
       );
     }
     console.log("✅ Boundary condition test completed.\n");
