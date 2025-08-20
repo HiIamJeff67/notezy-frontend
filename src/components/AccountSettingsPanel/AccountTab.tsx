@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/select";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { AllUserStatus } from "@/shared/enums";
-import { PrivateUser, PrivateUserSchema } from "@/shared/types/user.type";
+import { AllUserStatus } from "@/shared/types/enums";
+import { PrivateUser, PrivateUserSchema } from "@/shared/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { memo, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";

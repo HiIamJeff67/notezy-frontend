@@ -3,9 +3,8 @@ import {
   CurrentAPIBaseURL,
 } from "@/shared/constants/url.constant";
 import { tKey } from "@/shared/translations";
+import { PrivateUser, UserData } from "@/shared/types/models/";
 import { PartialUpdate } from "@/shared/types/partialUpdate.type";
-import { PrivateUser } from "@/shared/types/user.type";
-import { UserData } from "@/shared/types/userData.type";
 import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
 

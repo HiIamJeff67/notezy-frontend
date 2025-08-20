@@ -1,4 +1,6 @@
-import { ShelfManipulator, ShelfNode } from "../../src/shared/lib/shelfNode";
+import { ShelfManipulator } from "../../src/shared/lib/shelfManipulator";
+import { ShelfNode } from "../../src/shared/lib/shelfNode";
+
 import { UUID } from "../../src/shared/types/uuid_v4.type";
 
 describe("ShelfNode Performance Tests", () => {
@@ -7,19 +9,19 @@ describe("ShelfNode Performance Tests", () => {
   const SAFE_MAX_WIDTH = 1e5;
 
   beforeAll(() => {
-    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxTraverseCount(DEFAULT_MAX_ITERATIONS);
   });
 
   beforeEach(() => {
-    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxTraverseCount(DEFAULT_MAX_ITERATIONS);
   });
 
   afterEach(() => {
-    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxTraverseCount(DEFAULT_MAX_ITERATIONS);
   });
 
   afterAll(() => {
-    ShelfManipulator.setMaxIterations(1e4); // 恢復預設值
+    ShelfManipulator.setMaxTraverseCount(1e4); // 恢復預設值
   });
 
   function generateUUID(): UUID {
@@ -184,7 +186,7 @@ describe("ShelfNode Performance Tests", () => {
   test("Performance: Wide Tree (Limited nodes)", () => {
     console.log("\n=== Wide Tree Performance Test ===");
     console.log(
-      `Current limits: maxIterations=${ShelfManipulator.getMaxIterations()}`
+      `Current limits: maxTraverseCount=${ShelfManipulator.getMaxTraverseCount()}`
     );
 
     console.time("Creating wide tree");
@@ -306,8 +308,8 @@ describe("ShelfNode Performance Tests", () => {
   test("Performance: Max Iterations Boundary Test", () => {
     console.log("\n=== Max Iterations Boundary Test ===");
 
-    const originalMaxIterations = ShelfManipulator.getMaxIterations();
-    console.log(`Original maxIterations: ${originalMaxIterations}`);
+    const originalMaxTraverseCount = ShelfManipulator.getMaxTraverseCount();
+    console.log(`Original maxTraverseCount: ${originalMaxTraverseCount}`);
 
     console.time("Creating boundary test tree");
     const boundaryTree = createBalancedTree(500);
@@ -333,11 +335,11 @@ describe("ShelfNode Performance Tests", () => {
     const testLimits = [50, 100, 200, 300, 500];
 
     testLimits.forEach(limit => {
-      console.log(`\n--- Testing with maxIterations = ${limit} ---`);
+      console.log(`\n--- Testing with maxTraverseCount = ${limit} ---`);
 
-      ShelfManipulator.setMaxIterations(limit);
+      ShelfManipulator.setMaxTraverseCount(limit);
       console.log(
-        `Set maxIterations to: ${ShelfManipulator.getMaxIterations()}`
+        `Set maxTraverseCount to: ${ShelfManipulator.getMaxTraverseCount()}`
       );
 
       try {
@@ -359,7 +361,7 @@ describe("ShelfNode Performance Tests", () => {
 
       try {
         console.time(`Circular check with limit ${limit}`);
-        ShelfManipulator.isChildrenCircular(boundaryTree);
+        ShelfManipulator.isChildrenSimple(boundaryTree);
         console.timeEnd(`Circular check with limit ${limit}`);
         console.log(`✅ Circular check with limit ${limit} completed`);
       } catch (error) {
@@ -372,9 +374,9 @@ describe("ShelfNode Performance Tests", () => {
       }
     });
 
-    ShelfManipulator.setMaxIterations(originalMaxIterations);
+    ShelfManipulator.setMaxTraverseCount(originalMaxTraverseCount);
     console.log(
-      `\n✅ Restored maxIterations to: ${ShelfManipulator.getMaxIterations()}`
+      `\n✅ Restored maxTraverseCount to: ${ShelfManipulator.getMaxTraverseCount()}`
     );
     console.log("✅ Max iterations boundary test completed\n");
   });
@@ -414,19 +416,19 @@ describe("ShelfNode Performance Tests", () => {
     console.log("\n✅ Memory analysis completed\n");
   });
 
-  test("Performance: Find Optimal MaxIterations", () => {
-    console.log("\n=== Finding Optimal MaxIterations ===");
+  test("Performance: Find Optimal MaxTraverseCount", () => {
+    console.log("\n=== Finding Optimal MaxTraverseCount ===");
 
     const tree = createBalancedTree(800);
 
     const iterationLimits = [100, 200, 300, 500, 800, 1000];
 
-    console.log("Testing different maxIterations values:");
+    console.log("Testing different maxTraverseCount values:");
     console.log("| Limit | Analysis | Circular | Encoding | Status |");
     console.log("|--------|----------|----------|----------|---------|");
 
     iterationLimits.forEach(limit => {
-      ShelfManipulator.setMaxIterations(limit);
+      ShelfManipulator.setMaxTraverseCount(limit);
 
       let analysisResult = "❌";
       let circularResult = "❌";
@@ -441,8 +443,8 @@ describe("ShelfNode Performance Tests", () => {
       }
 
       try {
-        ShelfManipulator.isChildrenCircular(tree);
-        circularResult = "✅";
+        const { isSimple } = ShelfManipulator.isChildrenSimple(tree);
+        circularResult = isSimple ? "✅" : "⚠️LIMIT";
       } catch (error) {
         circularResult = "⚠️LIMIT";
       }
@@ -468,12 +470,12 @@ describe("ShelfNode Performance Tests", () => {
       );
     });
 
-    ShelfManipulator.setMaxIterations(DEFAULT_MAX_ITERATIONS);
+    ShelfManipulator.setMaxTraverseCount(DEFAULT_MAX_ITERATIONS);
     console.log("\n💡 Recommendations:");
     console.log("- For development: 500-1000 (fast feedback)");
     console.log("- For testing: 1000-5000 (comprehensive testing)");
     console.log("- For production: 5000+ (handle real workloads)");
-    console.log("\n✅ Optimal maxIterations analysis completed\n");
+    console.log("\n✅ Optimal maxTraverseCount analysis completed\n");
   });
 
   test("Performance: Depth Limit Testing of msgpack", () => {
@@ -522,11 +524,11 @@ describe("ShelfNode Performance Tests", () => {
     console.log("\n=== Testing Balanced Tree at Max Iteration Limit ===");
     console.log("🎯 Goal: Create and encode a tree with exactly 10,000 nodes.");
 
-    const originalMaxIterations = ShelfManipulator.getMaxIterations();
-    const maxIterationsLimit = 1e5;
-    ShelfManipulator.setMaxIterations(maxIterationsLimit);
+    const originalMaxTraverseCount = ShelfManipulator.getMaxTraverseCount();
+    const maxTraverseCountLimit = 1e5;
+    ShelfManipulator.setMaxTraverseCount(maxTraverseCountLimit);
     console.log(
-      `Set maxIterations to its hard limit: ${ShelfManipulator.getMaxIterations()}`
+      `Set maxTraverseCount to its hard limit: ${ShelfManipulator.getMaxTraverseCount()}`
     );
 
     const targetNodes = 1e4;
@@ -620,9 +622,9 @@ describe("ShelfNode Performance Tests", () => {
       fail((error as Error).message);
     } finally {
       // 無論如何都恢復原始的迭代設定
-      ShelfManipulator.setMaxIterations(originalMaxIterations);
+      ShelfManipulator.setMaxTraverseCount(originalMaxTraverseCount);
       console.log(
-        `\n✅ Restored maxIterations to: ${ShelfManipulator.getMaxIterations()}`
+        `\n✅ Restored maxTraverseCount to: ${ShelfManipulator.getMaxTraverseCount()}`
       );
     }
     console.log("✅ Boundary condition test completed.\n");

@@ -33,7 +33,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { AllCountries, AllUserGenders } from "@/shared/enums";
+import { AllCountries, AllUserGenders } from "@/shared/types/enums";
 import {
   PrivateUserInfo,
   PrivateUserInfoSchema,

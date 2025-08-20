@@ -1,4 +1,4 @@
-import { UserGender, UserPlan, UserRole, UserStatus } from "../enums";
+import { UserGender, UserPlan, UserRole, UserStatus } from "../types/enums";
 import { PrivateUser, PrivateUserInfo } from "../types/user.type";
 
 export const PrivateFakeUser: PrivateUser = {

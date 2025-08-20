@@ -46,6 +46,10 @@ export const APIURLPathDictionary = {
     getMyInfo: "userInfo/getMyInfo",
     updateMyInfo: "userInfo/updateMyInfo",
   },
+  shelf: {
+    createShelf: "shelf/createShelf",
+    synchronizeShelves: "shelf/synchronizeShelves",
+  },
 };
 
 /* ============================== Frontend Web URL ============================== */

@@ -41,7 +41,7 @@ export class Deque<T> {
   }
 
   public isFull(): boolean {
-    return this.size == this.capacity;
+    return this.size === this.capacity;
   }
 
   // Clear the entire deque to an list with all elements set to undefined.
@@ -65,6 +65,46 @@ export class Deque<T> {
       }
     }
     return result;
+  }
+
+  public map<U>(callback: (value: T, index: number) => U): U[] {
+    const result: U[] = [];
+    for (let i = 0; i < this.size; i++) {
+      const element = this.get(i);
+      if (element !== undefined) {
+        result.push(callback(element, i));
+      }
+    }
+    return result;
+  }
+
+  public forEach(callback: (value: T, index: number) => void): void {
+    for (let i = 0; i < this.size; i++) {
+      const element = this.get(i);
+      if (element !== undefined) {
+        callback(element, i);
+      }
+    }
+  }
+
+  public filter(predicate: (value: T, index: number) => boolean): T[] {
+    const result: T[] = [];
+    for (let i = 0; i < this.size; i++) {
+      const element = this.get(i);
+      if (element !== undefined && predicate(element, i)) {
+        result.push(element);
+      }
+    }
+    return result;
+  }
+
+  public *[Symbol.iterator](): Iterator<T> {
+    for (let i = 0; i < this.size; i++) {
+      const element = this.get(i);
+      if (element !== undefined) {
+        yield element;
+      }
+    }
   }
 
   // Push an element to the front of the deque.
@@ -106,7 +146,7 @@ export class Deque<T> {
       this.unshift(element);
       return;
     }
-    if (index == this.size) {
+    if (index === this.size) {
       this.push(element);
       return;
     }
@@ -182,7 +222,7 @@ export class Deque<T> {
     if (index === 0) {
       return this.shift();
     }
-    if (index == this.size - 1) {
+    if (index === this.size - 1) {
       return this.pop();
     }
 

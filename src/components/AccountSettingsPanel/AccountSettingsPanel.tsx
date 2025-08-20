@@ -8,7 +8,7 @@ import {
   PrivateFakeUser,
   PrivateFakeUserInfo,
 } from "@/shared/constants/defaultFakeUser.constant";
-import { PrivateUser, PrivateUserInfo } from "@/shared/types/user.type";
+import { PrivateUser, PrivateUserInfo } from "@/shared/types/models";
 import { lazy, Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import AccountModificationTab from "./AccountModificationTab";

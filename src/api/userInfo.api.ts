@@ -2,10 +2,10 @@ import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@/shared/constants/url.constant";
-import { Country, UserGender } from "@/shared/enums";
 import { tKey } from "@/shared/translations";
+import { Country, UserGender } from "@/shared/types/enums";
+import { PrivateUserInfo } from "@/shared/types/models";
 import { PartialUpdate } from "@/shared/types/partialUpdate.type";
-import { PrivateUserInfo } from "@/shared/types/user.type";
 import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
 
