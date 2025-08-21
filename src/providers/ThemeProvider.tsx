@@ -1,9 +1,9 @@
 "use client";
 import { useLocalStorage } from "@/hooks";
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { DefaultStandardTheme } from "@/shared/constants/defaultThemes.constant";
-import { Theme } from "@/shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
+import { DefaultStandardTheme } from "../../shared/constants/defaultThemes.constant";
+import { Theme } from "../../shared/types/theme.type";
 
 interface ThemeContextType {
   currentTheme: Theme;

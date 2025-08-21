@@ -22,7 +22,6 @@ const AccountModificationTab = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
 
-  // 重置帳戶
   const handleResetAccount = async () => {
     try {
       console.log("重置帳戶");
@@ -33,7 +32,6 @@ const AccountModificationTab = () => {
     }
   };
 
-  // 更改密碼
   const handleChangePassword = async (
     oldPassword: string,
     newPassword: string

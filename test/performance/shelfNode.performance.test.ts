@@ -1,7 +1,7 @@
-import { ShelfManipulator } from "../../src/shared/lib/shelfManipulator";
-import { ShelfNode } from "../../src/shared/lib/shelfNode";
+import { ShelfManipulator } from "../../shared/lib/shelfManipulator";
+import { ShelfNode } from "../../shared/lib/shelfNode";
 
-import { UUID } from "../../src/shared/types/uuid_v4.type";
+import { UUID } from "../../shared/types/uuid_v4.type";
 
 describe("ShelfNode Performance Tests", () => {
   const DEFAULT_MAX_ITERATIONS = 1e5;

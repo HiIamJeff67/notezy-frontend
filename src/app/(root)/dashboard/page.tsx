@@ -16,8 +16,8 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
+import { WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
 import { Bell, Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";

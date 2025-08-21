@@ -4,13 +4,13 @@ import { GetMyInfo } from "@/api/userInfo.api";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
+import { lazy, Suspense, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   PrivateFakeUser,
   PrivateFakeUserInfo,
-} from "@/shared/constants/defaultFakeUser.constant";
-import { PrivateUser, PrivateUserInfo } from "@/shared/types/models";
-import { lazy, Suspense, useEffect, useState } from "react";
-import toast from "react-hot-toast";
+} from "../../../shared/constants/defaultFakeUser.constant";
+import { PrivateUser, PrivateUserInfo } from "../../../shared/types/models";
 import AccountModificationTab from "./AccountModificationTab";
 import AccountTab from "./AccountTab";
 import BindingTab from "./BindingTab";

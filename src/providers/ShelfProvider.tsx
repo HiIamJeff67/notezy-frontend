@@ -1,9 +1,12 @@
 "use client";
 
-import { Deque } from "@/shared/lib/deque";
-import { ShelfManipulator, ShelfSummary } from "@/shared/lib/shelfManipulator";
-import { UUID } from "@/shared/types/uuid_v4.type";
 import React, { createContext, useState } from "react";
+import { Deque } from "../../shared/lib/deque";
+import {
+  ShelfManipulator,
+  ShelfSummary,
+} from "../../shared/lib/shelfManipulator";
+import { UUID } from "../../shared/types/uuid_v4.type";
 
 interface ShelfContextType {
   compressedShelves: Record<UUID, Uint8Array>;

@@ -2,7 +2,7 @@ import {
   ExceptionCode,
   ExceptionPrefix,
   NotezyException,
-} from "@/shared/types/apiException.type";
+} from "@shared/types/apiException.type";
 import { StatusCodes } from "http-status-codes";
 import {
   APIExceptionReasons,

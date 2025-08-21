@@ -20,7 +20,8 @@
     "NANP",
     "APIURL",
     "Deque",
-    "msgpack"
+    "msgpack",
+    "codegen"
   ],
   "ignorePaths": [
     "node_modules/**",

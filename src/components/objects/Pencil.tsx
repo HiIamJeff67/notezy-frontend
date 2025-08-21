@@ -1,7 +1,7 @@
-import { ThreeCord } from "@/shared/types/threeCord.type";
 import { Float } from "@react-three/drei";
 import { useRef } from "react";
 import * as THREE from "three";
+import { ThreeCord } from "../../../shared/types/threeCord.type";
 
 export const Pencil = ({ position }: { position: ThreeCord }) => {
   const pencilRef = useRef<THREE.Group>(null);

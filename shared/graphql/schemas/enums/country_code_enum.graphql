@@ -1,0 +1,10 @@
+enum CountryCode {
+  COUNTRY_CODE_886 # Taiwan
+  COUNTRY_CODE_81 # Japan
+  COUNTRY_CODE_60 # Malaysia
+  COUNTRY_CODE_65 # Singapore
+  COUNTRY_CODE_86 # China
+  COUNTRY_CODE_1 # NANP
+  COUNTRY_CODE_44 # UK
+  COUNTRY_CODE_61 # Australia
+}

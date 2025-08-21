@@ -15,8 +15,8 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
-import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
+import { WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {

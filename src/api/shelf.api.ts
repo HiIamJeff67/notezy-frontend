@@ -1,12 +1,9 @@
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
-import { NotezyRequest, NotezyResponse } from "@/shared/types/context.type";
-import { PartialUpdate } from "@/shared/types/partialUpdate.type";
-import { UUID } from "@/shared/types/uuid_v4.type";
 import { isJsonResponse } from "@/util/isJsonContext";
+import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import { tKey } from "@shared/translations";
+import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
+import { PartialUpdate } from "@shared/types/partialUpdate.type";
+import { UUID } from "@shared/types/uuid_v4.type";
 
 /* ============================== CreateShelf ============================== */
 export interface CreateShelfRequest extends NotezyRequest {

@@ -6,9 +6,9 @@ import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
 import { isValidEmail, isValidName, isValidPassword } from "@/util/validation";
+import { WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 

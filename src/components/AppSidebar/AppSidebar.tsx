@@ -12,8 +12,6 @@ export function AppSidebar() {
         <SidebarHeader className="flex flex-row justify-end">
           <SidebarTrigger />
         </SidebarHeader>
-        {/* <SidebarContent></SidebarContent> */}
-        {/* <SidebarFooter /> */}
       </Sidebar>
     </Collapsible>
   );

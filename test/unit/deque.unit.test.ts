@@ -1,4 +1,4 @@
-import { Deque } from "../../src/shared/lib/deque";
+import { Deque } from "../../shared/lib/deque";
 
 describe("Deque Unit Tests", () => {
   describe("Constructor and Basic Properties", () => {

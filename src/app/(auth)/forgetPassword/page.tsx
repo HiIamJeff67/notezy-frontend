@@ -4,16 +4,16 @@ import { ForgetPassword, SendAuthCode } from "@/api/auth.api";
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
-import { AuthCodeBlockedSecond } from "@/shared/constants/blockTimes.constant";
-import { WebURLPathDictionary } from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
 import {
   isValidAuthCode,
   isValidEmail,
   isValidPassword,
 } from "@/util/validation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { AuthCodeBlockedSecond } from "../../../../shared/constants/blockTimes.constant";
+import { WebURLPathDictionary } from "../../../../shared/constants/url.constant";
+import { tKey } from "../../../../shared/translations";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();
@@ -46,82 +46,92 @@ const ForgetPasswordPage = () => {
     return () => clearInterval(timer);
   }, [sendAuthCodeTimeCounter]);
 
-  const handlingSendAuthCodeOnClick = async function (): Promise<void> {
-    loadingManager.setIsLoading(true);
+  const handlingSendAuthCodeOnClick = useCallback(
+    async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
 
-    try {
-      if (!isValidEmail(email)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-      }
+      try {
+        if (!isValidEmail(email)) {
+          throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+        }
 
-      const userAgent = navigator.userAgent;
-      const responseOfSendingAuthCode = await SendAuthCode({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          email: email,
-        },
-      });
+        const userAgent = navigator.userAgent;
+        const responseOfSendingAuthCode = await SendAuthCode({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            email: email,
+          },
+        });
 
-      const blockUntil = new Date(
-        responseOfSendingAuthCode.data.blockAuthCodeUntil
-      );
-      const blockTime = Math.floor(
-        (blockUntil.getTime() - new Date().getTime()) / 1000
-      );
-      setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    } finally {
-      loadingManager.setIsLoading(false);
-    }
-  };
-
-  const handlingResetPasswordOnSubmit = async function (): Promise<void> {
-    loadingManager.setIsLoading(true);
-
-    try {
-      if (!isValidEmail(email)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-      }
-      if (!isValidAuthCode(authCode)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidAuthCode));
-      }
-      if (!isValidPassword(newPassword)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
-      }
-      if (newPassword !== confirmNewPassword) {
-        throw new Error(
-          languageManager.t(
-            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-          )
+        const blockUntil = new Date(
+          responseOfSendingAuthCode.data.blockAuthCodeUntil
         );
+        const blockTime = Math.floor(
+          (blockUntil.getTime() - new Date().getTime()) / 1000
+        );
+        setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsLoading(false);
       }
+    },
+    [email]
+  );
 
-      const userAgent = navigator.userAgent;
-      await ForgetPassword({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          account: email,
-          newPassword: newPassword,
-          authCode: authCode,
-        },
-      });
-      setEmail("");
-      setAuthCode("");
-      setNewPassword("");
-      setConfirmNewPassword("");
-      router.push(WebURLPathDictionary.auth.login);
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-      setNewPassword("");
-      setConfirmNewPassword("");
-      loadingManager.setIsLoading(false);
-    }
-  };
+  const handlingResetPasswordOnSubmit = useCallback(
+    async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
+
+      try {
+        if (!isValidEmail(email)) {
+          throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+        }
+        if (!isValidAuthCode(authCode)) {
+          throw new Error(
+            languageManager.t(tKey.auth.pleaseInputValidAuthCode)
+          );
+        }
+        if (!isValidPassword(newPassword)) {
+          throw new Error(
+            languageManager.t(tKey.auth.pleaseInputStrongPassword)
+          );
+        }
+        if (newPassword !== confirmNewPassword) {
+          throw new Error(
+            languageManager.t(
+              tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+            )
+          );
+        }
+
+        const userAgent = navigator.userAgent;
+        await ForgetPassword({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            account: email,
+            newPassword: newPassword,
+            authCode: authCode,
+          },
+        });
+        setEmail("");
+        setAuthCode("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        router.push(WebURLPathDictionary.auth.login);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+        setNewPassword("");
+        setConfirmNewPassword("");
+        loadingManager.setIsLoading(false);
+      }
+    },
+    [email, authCode, newPassword, confirmNewPassword]
+  );
 
   return (
     <GridBackground>

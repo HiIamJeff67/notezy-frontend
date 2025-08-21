@@ -1,9 +1,9 @@
+import { decode, encode } from "@msgpack/msgpack";
 import {
   DefaultShelfManipulatorIterations,
   MaxShelfManipulatorIterations,
-} from "@/shared/constants/shelfLimitations.constant";
-import { UUID } from "@/shared/types/uuid_v4.type";
-import { decode, encode } from "@msgpack/msgpack";
+} from "../constants/shelfLimitations.constant";
+import { UUID } from "../types/uuid_v4.type";
 import { ShelfNode } from "./shelfNode";
 
 // This shelf summary structure maybe different from the backend,

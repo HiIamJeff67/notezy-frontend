@@ -1,10 +1,7 @@
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
 import { isJsonResponse } from "@/util/isJsonContext";
-import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
+import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import { tKey } from "@shared/translations";
+import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
 import { ExceptionReasonDictionary } from "./exceptions";
 
 /* ========================= Register ========================= */

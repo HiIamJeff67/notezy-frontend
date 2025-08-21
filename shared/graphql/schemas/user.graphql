@@ -1,0 +1,80 @@
+# the complete user structure: app/models/schemas/user_schema.go
+# this schema file is only use for go graphql to improve better user experience
+
+type PublicUser {
+  # id: UUID!
+  publicId: String! # the encoded of this field is the identifier of the PublicUser
+  name: String!
+  displayName: String!
+  # email: String!
+  # password: String!
+  # refreshToken: String!
+  # loginCount: Int
+  # blockLoginUtil: Time!
+  # userAgent: String!
+  role: UserRole!
+  plan: UserPlan!
+  # prevStatus: UserStatus!
+  status: UserStatus!
+  createdAt: Time!
+  # updatedAt: Time!
+
+  # relations
+  userInfo: PublicUserInfo!
+  badges: [PublicBadge!]!
+  themes: [PublicTheme!]!
+}
+
+# =============== Search Filters & SortBy & Input =============== #
+
+input SearchUserFilters {
+  role: UserRole
+  plan: UserPlan
+  status: UserStatus
+  hasAvatar: Boolean
+  country: Country
+  isOnline: Boolean
+}
+
+enum SearchUserSortBy {
+  RELEVANCE
+  NAME # using this to check both the name and display name fields
+  LAST_ACTIVE
+  CREATED_AT
+}
+
+input SearchUserInput {
+  query: String! # the input from the frontend
+  after: String # base64 encoded cursor
+  first: Int = 10 # the number of data we want to extract
+  filters: SearchUserFilters
+  sortBy: SearchUserSortBy = RELEVANCE
+  sortOrder: SearchSortOrder = DESC
+}
+
+# =============== Search Cursor Fields =============== #
+
+# type SearchUserEnvironmentAttributes {}
+
+# use the below fields to encoded it into base64
+# and included some attributes as weights of the search algorithm
+# for better search experience
+input SearchUserCursorFields {
+  publicId: String!
+  # environmentAttributes: SearchUserEnvironmentAttributes
+  # add some weight to effect the searching result here
+}
+
+# =============== Search Edge & Connection =============== #
+
+type SearchUserEdge implements SearchEdge {
+  encodedSearchCursor: String! # the encoded search identifier
+  node: PublicUser! # the search result
+}
+
+type SearchUserConnection implements SearchConnection {
+  searchEdges: [SearchUserEdge!]!
+  searchPageInfo: SearchPageInfo!
+  totalCount: Int!
+  searchTime: Float!
+}

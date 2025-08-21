@@ -1,0 +1,39 @@
+schema:
+  - "shared/graphql/schemas/enums/*.graphql"
+  - "shared/graphql/schemas/*.graphql"
+documents:
+  - "shared/graphql/fragments/*.graphql"
+  - "shared/graphql/queries/*.graphql"
+  # - "shared/graphql/mutations/*.graphql"
+generates:
+  src/graphql/generated/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      scalars:
+        UUID: string
+        Time: string
+        Base64Bytes: string
+        Int32: number
+        Int64: number
+      maybeValue: T | null | undefined
+      strictScalars: true
+
+  src/graphql/generated/hooks.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      scalars:
+        UUID: string
+        Time: string
+        Base64Bytes: string
+        Int32: number
+        Int64: number
+      withHooks: true
+      withComponent: false
+      withHOC: false
+      enumsAsTypes: true
+      reactApolloVersion: 3

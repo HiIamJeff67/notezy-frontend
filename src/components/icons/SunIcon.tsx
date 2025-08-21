@@ -1,4 +1,4 @@
-import { IconProps } from "@/shared/types/iconProps.type";
+import { IconProps } from "../../../shared/types/iconProps.type";
 
 export const SunIcon = ({ size = 24, className = "", ...props }: IconProps) => (
   <svg

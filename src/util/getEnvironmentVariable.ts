@@ -1,5 +1,3 @@
-"use client";
-
 export function getEnvironmentVariable(key: string): string {
   const value = (process.env as any)[key];
   if (typeof value === "undefined" || value === "") {

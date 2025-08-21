@@ -1,0 +1,9 @@
+type Query {
+  searchUsers(input: SearchUserInput!): SearchUserConnection!
+  searchThemes(input: SearchThemeInput!): SearchThemeConnection!
+  searchShelves(input: SearchShelfInput!): SearchShelfConnection!
+}
+
+# type Mutation {}
+
+# type Subscription {}

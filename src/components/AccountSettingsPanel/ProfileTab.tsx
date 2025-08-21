@@ -33,16 +33,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { AllCountries, AllUserGenders } from "@/shared/types/enums";
-import {
-  PrivateUserInfo,
-  PrivateUserInfoSchema,
-} from "@/shared/types/user.type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { AllCountries, AllUserGenders } from "../../../shared/types/enums";
+import {
+  PrivateUserInfo,
+  PrivateUserInfoSchema,
+} from "../../../shared/types/models";
 
 interface ProfileTabProps {
   userInfo: PrivateUserInfo;

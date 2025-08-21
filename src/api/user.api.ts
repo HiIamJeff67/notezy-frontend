@@ -1,12 +1,9 @@
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@/shared/constants/url.constant";
-import { tKey } from "@/shared/translations";
-import { PrivateUser, UserData } from "@/shared/types/models/";
-import { PartialUpdate } from "@/shared/types/partialUpdate.type";
 import { isJsonResponse } from "@/util/isJsonContext";
-import { NotezyRequest, NotezyResponse } from "../shared/types/context.type";
+import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import { tKey } from "@shared/translations";
+import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
+import { PrivateUser, UserData } from "@shared/types/models";
+import { PartialUpdate } from "@shared/types/partialUpdate.type";
 
 /* ============================== GetUserData ============================== */
 export interface GetUserDataRequest extends NotezyRequest {
