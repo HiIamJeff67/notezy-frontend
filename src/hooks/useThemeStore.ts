@@ -1,8 +1,8 @@
 "use client";
 
+import { DefaultThemes } from "@shared/constants";
+import { Theme } from "@shared/types/theme.type";
 import { useCallback, useState } from "react";
-import { DefaultThemes } from "../../shared/constants/defaultThemes.constant";
-import { Theme } from "../../shared/types/theme.type";
 
 export const useThemeStore = () => {
   const [availableThemes, setAvailableThemes] =

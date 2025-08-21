@@ -2,7 +2,7 @@ import { decode, encode } from "@msgpack/msgpack";
 import {
   DefaultShelfManipulatorIterations,
   MaxShelfManipulatorIterations,
-} from "../constants/shelfLimitations.constant";
+} from "../constants";
 import { UUID } from "../types/uuid_v4.type";
 import { ShelfNode } from "./shelfNode";
 

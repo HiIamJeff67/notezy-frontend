@@ -1,4 +1,4 @@
-import { IconProps } from "../../../shared/types/iconProps.type";
+import { IconProps } from "@shared/types/iconProps.type";
 
 const MenuIcon = ({ size = 24, className = "" }: IconProps) => {
   return (

@@ -1,4 +1,4 @@
-import { IconProps } from "../../../shared/types/iconProps.type";
+import { IconProps } from "@shared/types/iconProps.type";
 
 export const MoonIcon = ({
   size = 24,

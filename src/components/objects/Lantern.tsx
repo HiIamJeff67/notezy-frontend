@@ -1,7 +1,7 @@
 import { Float } from "@react-three/drei";
+import { ThreeCord } from "@shared/types/threeCord.type";
 import { useRef } from "react";
 import * as THREE from "three";
-import { ThreeCord } from "../../../shared/types/threeCord.type";
 
 const Lantern = ({ position }: { position: ThreeCord }) => {
   const lanternRef = useRef<THREE.Group>(null);

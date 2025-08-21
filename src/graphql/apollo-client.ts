@@ -6,7 +6,7 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
-import { CurrentAPIBaseURL } from "../../shared/constants/url.constant";
+import { CurrentAPIBaseURL } from "@shared/constants";
 
 const httpLink = createHttpLink({
   uri: `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/graphql/`,

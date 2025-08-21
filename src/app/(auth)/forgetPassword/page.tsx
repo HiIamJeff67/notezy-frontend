@@ -9,11 +9,10 @@ import {
   isValidEmail,
   isValidPassword,
 } from "@/util/validation";
+import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { AuthCodeBlockedSecond } from "../../../../shared/constants/blockTimes.constant";
-import { WebURLPathDictionary } from "../../../../shared/constants/url.constant";
-import { tKey } from "../../../../shared/translations";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();
