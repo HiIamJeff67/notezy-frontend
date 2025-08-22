@@ -9,7 +9,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { isValidEmail, isValidName, isValidPassword } from "@/util/validation";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const RegisterPage = () => {
@@ -27,67 +27,82 @@ const RegisterPage = () => {
     loadingManager.setIsLoading(false);
   }, []);
 
-  const handlingRegisterOnSubmit = async function (): Promise<void> {
-    loadingManager.setIsLoading(true);
+  const handleRegisterOnSubmit = useCallback(
+    async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
 
-    try {
-      if (!isValidName(name)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidName));
-      }
-      if (!isValidEmail(email)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
-      }
-      if (!isValidPassword(password)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
-      }
-      if (password !== confirmPassword) {
-        throw new Error(
-          languageManager.t(
-            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-          )
-        );
-      }
+      try {
+        if (!isValidName(name)) {
+          throw new Error(languageManager.t(tKey.auth.pleaseInputValidName));
+        }
+        if (!isValidEmail(email)) {
+          throw new Error(languageManager.t(tKey.auth.pleaseInputValidEmail));
+        }
+        if (!isValidPassword(password)) {
+          throw new Error(
+            languageManager.t(tKey.auth.pleaseInputStrongPassword)
+          );
+        }
+        if (password !== confirmPassword) {
+          throw new Error(
+            languageManager.t(
+              tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+            )
+          );
+        }
 
-      const userAgent = navigator.userAgent;
-      const responseOfRegister = await Register({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          name: name,
-          email: email,
-          password: password,
-        },
-      });
+        const userAgent = navigator.userAgent;
+        const responseOfRegister = await Register({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            name: name,
+            email: email,
+            password: password,
+          },
+        });
 
-      const responseOfGetMe = await GetUserData({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {},
-      });
-      if (
-        responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
-      ) {
-        router.push(WebURLPathDictionary.auth.login);
-        throw new Error(
-          languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-        );
+        const responseOfGetMe = await GetUserData({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {},
+        });
+        if (
+          responseOfGetMe.data.accessToken !==
+          responseOfRegister.data.accessToken
+        ) {
+          router.push(WebURLPathDictionary.auth.login);
+          throw new Error(
+            languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
+          );
+        }
+
+        userDataManager.setUserData(responseOfGetMe.data);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        router.push(WebURLPathDictionary.root.dashboard);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+        setPassword("");
+        setConfirmPassword("");
+        loadingManager.setIsLoading(false);
       }
-
-      userDataManager.setUserData(responseOfGetMe.data);
-      setName("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      router.push(WebURLPathDictionary.root.dashboard);
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-      setPassword("");
-      setConfirmPassword("");
-      loadingManager.setIsLoading(false);
-    }
-  };
+    },
+    [
+      name,
+      email,
+      password,
+      confirmPassword,
+      loadingManager,
+      languageManager,
+      userDataManager,
+      router,
+    ]
+  );
 
   return (
     <GridBackground>
@@ -131,7 +146,7 @@ const RegisterPage = () => {
           },
         ]}
         submitButtonText={languageManager.t(tKey.auth.register)}
-        onSubmit={handlingRegisterOnSubmit}
+        onSubmit={handleRegisterOnSubmit}
         switchButtons={[
           {
             description: languageManager.t(tKey.auth.alreadyHaveAnAccount),

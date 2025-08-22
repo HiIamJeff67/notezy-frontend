@@ -9,7 +9,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { isValidEmail, isValidName, isValidPassword } from "@/util/validation";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
@@ -25,49 +25,62 @@ const LoginPage = () => {
     loadingManager.setIsLoading(false);
   }, []);
 
-  const handlingLoginOnSubmit = async function (): Promise<void> {
-    loadingManager.setIsLoading(true);
+  const handleLoginOnSubmit = useCallback(
+    async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
 
-    try {
-      if (!isValidName(account) && !isValidEmail(account)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputValidAccount));
+      try {
+        if (!isValidName(account) && !isValidEmail(account)) {
+          throw new Error(languageManager.t(tKey.auth.pleaseInputValidAccount));
+        }
+        if (!isValidPassword(password)) {
+          throw new Error(
+            languageManager.t(tKey.auth.pleaseInputStrongPassword)
+          );
+        }
+
+        const userAgent = navigator.userAgent;
+        const responseOfRegister = await Login({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            account: account,
+            password: password,
+          },
+        });
+
+        const responseOfGetMe = await GetUserData({
+          header: {
+            userAgent: userAgent,
+          },
+        });
+        if (
+          responseOfGetMe.data.accessToken !==
+          responseOfRegister.data.accessToken
+        ) {
+          throw new Error(
+            languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
+          );
+        }
+
+        userDataManager.setUserData(responseOfGetMe.data);
+        router.push(WebURLPathDictionary.root.dashboard);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+        setPassword("");
+        loadingManager.setIsLoading(false);
       }
-      if (!isValidPassword(password)) {
-        throw new Error(languageManager.t(tKey.auth.pleaseInputStrongPassword));
-      }
-
-      const userAgent = navigator.userAgent;
-      const responseOfRegister = await Login({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          account: account,
-          password: password,
-        },
-      });
-
-      const responseOfGetMe = await GetUserData({
-        header: {
-          userAgent: userAgent,
-        },
-      });
-      if (
-        responseOfGetMe.data.accessToken !== responseOfRegister.data.accessToken
-      ) {
-        throw new Error(
-          languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-        );
-      }
-
-      userDataManager.setUserData(responseOfGetMe.data);
-      router.push(WebURLPathDictionary.root.dashboard);
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-      setPassword("");
-      loadingManager.setIsLoading(false);
-    }
-  };
+    },
+    [
+      account,
+      password,
+      loadingManager,
+      languageManager,
+      userDataManager,
+      router,
+    ]
+  );
 
   return (
     <GridBackground>
@@ -95,7 +108,7 @@ const LoginPage = () => {
           },
         ]}
         submitButtonText={languageManager.t(tKey.auth.login)}
-        onSubmit={handlingLoginOnSubmit}
+        onSubmit={handleLoginOnSubmit}
         switchButtons={[
           {
             description: languageManager.t(tKey.auth.haveNotRegisterAnAccount),

@@ -45,7 +45,7 @@ const ForgetPasswordPage = () => {
     return () => clearInterval(timer);
   }, [sendAuthCodeTimeCounter]);
 
-  const handlingSendAuthCodeOnClick = useCallback(
+  const handleSendAuthCodeOnClick = useCallback(
     async function (): Promise<void> {
       loadingManager.setIsLoading(true);
 
@@ -77,10 +77,10 @@ const ForgetPasswordPage = () => {
         loadingManager.setIsLoading(false);
       }
     },
-    [email]
+    [email, loadingManager, languageManager]
   );
 
-  const handlingResetPasswordOnSubmit = useCallback(
+  const handleResetPasswordOnSubmit = useCallback(
     async function (): Promise<void> {
       loadingManager.setIsLoading(true);
 
@@ -129,7 +129,15 @@ const ForgetPasswordPage = () => {
         loadingManager.setIsLoading(false);
       }
     },
-    [email, authCode, newPassword, confirmNewPassword]
+    [
+      email,
+      authCode,
+      newPassword,
+      confirmNewPassword,
+      loadingManager,
+      languageManager,
+      router,
+    ]
   );
 
   return (
@@ -162,7 +170,7 @@ const ForgetPasswordPage = () => {
                   : `${languageManager.t(tKey.common.send)}${languageManager.t(
                       tKey.syntax.separator
                     )}${languageManager.t(tKey.auth.authCode)}`,
-              onClick: async () => handlingSendAuthCodeOnClick(),
+              onClick: async () => handleSendAuthCodeOnClick(),
               disabled: sendAuthCodeTimeCounter > 0,
             },
           },
@@ -184,7 +192,7 @@ const ForgetPasswordPage = () => {
           },
         ]}
         submitButtonText={languageManager.t(tKey.auth.resetPassword)}
-        onSubmit={handlingResetPasswordOnSubmit}
+        onSubmit={handleResetPasswordOnSubmit}
         switchButtons={[
           {
             description: languageManager.t(tKey.auth.haveNotRegisterAnAccount),
