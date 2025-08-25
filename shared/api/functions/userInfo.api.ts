@@ -1,22 +1,14 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import {
+  GetMyInfoRequest,
+  GetMyInfoResponse,
+  UpdateMyInfoRequest,
+  UpdateMyInfoResponse,
+} from "@shared/api/interfaces/userInfo.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
-import { Country, UserGender } from "@shared/types/enums";
-import { PrivateUserInfo } from "@shared/types/models";
-import { PartialUpdate } from "@shared/types/partialUpdate.type";
 
 /* ============================== GetMyInfo ============================== */
-export interface GetMyInfoRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-}
-
-export interface GetMyInfoResponse extends NotezyResponse {
-  data: PrivateUserInfo;
-}
 
 export async function GetMyInfo(
   request: GetMyInfoRequest
@@ -48,27 +40,6 @@ export async function GetMyInfo(
 }
 
 /* ============================== UpdateMyInfo ============================== */
-export interface UpdateMyInfoRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: PartialUpdate<{
-    avatarURL: string | null;
-    coverBackgroundURL: string | null;
-    header: string | null;
-    introduction: string | null;
-    gender: UserGender;
-    country: Country | null;
-    birthDate: Date;
-  }>;
-}
-
-export interface UpdateMyInfoResponse extends NotezyResponse {
-  data: {
-    updatedAt: Date;
-  };
-}
 
 export async function UpdateMyInfo(
   request: UpdateMyInfoRequest

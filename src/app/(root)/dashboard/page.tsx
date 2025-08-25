@@ -1,8 +1,8 @@
 "use client";
 
-import { GetUserData } from "@/api/user.api";
 import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
+import CreateShelfDialog from "@/components/CreateShelfDialog.tsx/CreateShelfDialog";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import {
@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
+import { useShelf } from "@/hooks/useShelf";
 import { useUserData } from "@/hooks/useUserData";
+import { GetUserData } from "@shared/api/functions/user.api";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { Bell, Palette } from "lucide-react";
@@ -28,9 +30,10 @@ const DashboardPage = () => {
   const languageManager = useLanguage();
   const userDataManager = useUserData();
   const themeManager = useTheme();
+  const shelfManager = useShelf();
 
-  const [currentDisplayPanel, setCurrentDisplayPanel] = useState<
-    "None" | "AccountSettingsPanel" | "PreferencesPanel"
+  const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
+    "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
   >("None");
 
   useEffect(() => {
@@ -56,29 +59,41 @@ const DashboardPage = () => {
       tryGetUser();
     }
 
+    const initShelves = async () => {
+      await shelfManager.searchCompressedShelves();
+    };
+    initShelves();
+    console.log(shelfManager.compressedShelves.length);
     loadingManager.setIsLoading(false);
   }, []);
 
+  const createShelf = () => {};
+
   return (
-    <div>
-      <AppSidebar />
+    <div className="w-full h-full p-0 m-0">
+      <AppSidebar>
+        {shelfManager.compressedShelves.map(data => (
+          <div>{data.node.name}</div>
+        ))}
+      </AppSidebar>
       <SidebarTrigger className="fixed top-2 left-2" />
-
       <AccountSettingsPanel
-        isOpen={currentDisplayPanel === "AccountSettingsPanel"}
-        onClose={() => setCurrentDisplayPanel("None")}
+        isOpen={currentDisplayPopup === "AccountSettingsPanel"}
+        onClose={() => setCurrentDisplayPopup("None")}
       />
-
       <PreferencesPanel
-        isOpen={currentDisplayPanel === "PreferencesPanel"}
-        onClose={() => setCurrentDisplayPanel("None")}
+        isOpen={currentDisplayPopup === "PreferencesPanel"}
+        onClose={() => setCurrentDisplayPopup("None")}
       />
-
+      <CreateShelfDialog
+        isOpen={currentDisplayPopup === "CreateShelfDialog"}
+        onClose={() => setCurrentDisplayPopup("CreateShelfDialog")}
+      />
       <div className="fixed top-2 right-2 z-50">
         <Menubar className="bg-secondary border-border border shadow-lg h-8">
           <MenubarMenu>
             <MenubarTrigger className="px-3 py-2 w-11 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-              <Palette size={20} />
+              <Palette size={16} />
             </MenubarTrigger>
             <MenubarContent className="w-56 bg-popover border-border">
               <div className="px-2 py-1.5 text-sm text-muted-foreground">
@@ -127,13 +142,13 @@ const DashboardPage = () => {
               <MenubarSeparator />
               <MenubarItem
                 className="cursor-pointer"
-                onClick={() => setCurrentDisplayPanel("AccountSettingsPanel")}
+                onClick={() => setCurrentDisplayPopup("AccountSettingsPanel")}
               >
                 <span>{languageManager.t(tKey.settings.accountSettings)}</span>
               </MenubarItem>
               <MenubarItem
                 className="cursor-pointer"
-                onClick={() => setCurrentDisplayPanel("PreferencesPanel")}
+                onClick={() => setCurrentDisplayPopup("PreferencesPanel")}
               >
                 <span>{languageManager.t(tKey.settings.preferences)}</span>
               </MenubarItem>

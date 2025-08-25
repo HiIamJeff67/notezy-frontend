@@ -1,6 +1,5 @@
 "use client";
 
-import { UpdateMe } from "@/api/user.api";
 import SettingMenuItem from "@/components/SettingMenuItem/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +23,7 @@ import {
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { UpdateMe } from "@shared/api/functions/user.api";
 import { AllUserStatus } from "@shared/types/enums";
 import { PrivateUser, PrivateUserSchema } from "@shared/types/models";
 import { memo, useCallback, useMemo } from "react";

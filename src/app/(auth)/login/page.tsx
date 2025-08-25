@@ -1,12 +1,12 @@
 "use client";
 
-import { Login } from "@/api/auth.api";
-import { GetUserData } from "@/api/user.api";
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { isValidEmail, isValidName, isValidPassword } from "@/util/validation";
+import { Login } from "@shared/api/functions/auth.api";
+import { GetUserData } from "@shared/api/functions/user.api";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { useCallback, useEffect, useState } from "react";

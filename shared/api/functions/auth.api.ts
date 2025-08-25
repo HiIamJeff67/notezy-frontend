@@ -1,27 +1,21 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import { ExceptionReasonDictionary } from "@shared/api/exceptions";
+import {
+  ForgetPasswordRequest,
+  ForgetPasswordResponse,
+  LoginRequest,
+  LoginResponse,
+  LogoutRequest,
+  LogoutResponse,
+  RegisterRequest,
+  RegisterResponse,
+  SendAuthCodeRequest,
+  SendAuthCodeResponse,
+} from "@shared/api/interfaces/auth.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
-import { ExceptionReasonDictionary } from "./exceptions";
 
 /* ========================= Register ========================= */
-export interface RegisterRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-  };
-  body: {
-    name: string;
-    email: string;
-    password: string;
-  };
-}
-
-export interface RegisterResponse extends NotezyResponse {
-  data: {
-    accessToken: string;
-    createdAt: Date;
-  };
-}
 
 export async function Register(
   request: RegisterRequest
@@ -58,22 +52,6 @@ export async function Register(
 }
 
 /* ========================= Login ========================= */
-export interface LoginRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-  };
-  body: {
-    account: string;
-    password: string;
-  };
-}
-
-export interface LoginResponse extends NotezyResponse {
-  data: {
-    accessToken: string;
-    createdAt: Date;
-  };
-}
 
 export async function Login(request: LoginRequest): Promise<LoginResponse> {
   const response = await fetch(
@@ -106,18 +84,6 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
 }
 
 /* ========================= Logout ========================= */
-export interface LogoutRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-}
-
-export interface LogoutResponse extends NotezyResponse {
-  data: {
-    updatedAt: Date;
-  };
-}
 
 export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   const response = await fetch(
@@ -147,23 +113,6 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
 }
 
 /* ============================== SendAuthCode ============================== */
-export interface SendAuthCodeRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: {
-    email: string;
-  };
-}
-
-export interface SendAuthCodeResponse extends NotezyResponse {
-  data: {
-    authCodeExpiredAt: Date;
-    blockAuthCodeUntil: Date;
-    updatedAt: Date;
-  };
-}
 
 export async function SendAuthCode(
   request: SendAuthCodeRequest
@@ -201,23 +150,6 @@ export async function SendAuthCode(
 }
 
 /* ============================== ForgetPassword ============================== */
-export interface ForgetPasswordRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: {
-    account: string;
-    newPassword: string;
-    authCode: string;
-  };
-}
-
-export interface ForgetPasswordResponse extends NotezyResponse {
-  data: {
-    updatedAt: Date;
-  };
-}
 
 export async function ForgetPassword(
   request: ForgetPasswordRequest

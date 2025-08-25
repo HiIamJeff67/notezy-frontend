@@ -1,16 +1,11 @@
-import { z } from "zod";
 import {
-  AllCountries,
-  AllUserGenders,
-  AllUserPlans,
-  AllUserRoles,
-  AllUserStatus,
   Country,
   UserGender,
   UserPlan,
   UserRole,
   UserStatus,
-} from "../enums";
+} from "@shared/types/enums";
+import { z } from "zod";
 
 export type PublicUser = {
   publicId: string;
@@ -35,12 +30,20 @@ export type PublicUserInfo = {
 
 export const PrivateUserSchema = z.object({
   publicId: z.string(),
-  name: z.string().min(6).max(16),
-  displayName: z.string().min(6).max(32),
-  email: z.string().email(),
-  role: z.enum(AllUserRoles),
-  plan: z.enum(AllUserPlans),
-  status: z.enum(AllUserStatus),
+  name: z
+    .string()
+    .min(6)
+    .max(16)
+    .regex(/^[a-zA-Z0-9]+/),
+  displayName: z
+    .string()
+    .min(6)
+    .max(32)
+    .regex(/^[a-zA-Z0-9]+/),
+  email: z.email(),
+  role: z.enum(UserRole),
+  plan: z.enum(UserPlan),
+  status: z.enum(UserStatus),
   updatedAt: z.date(),
   createdAt: z.date(),
 });
@@ -48,12 +51,12 @@ export const PrivateUserSchema = z.object({
 export type PrivateUser = z.infer<typeof PrivateUserSchema>;
 
 export const PrivateUserInfoSchema = z.object({
-  avatarURL: z.string().url().nullable(),
-  coverBackgroundURL: z.string().url().nullable(),
+  avatarURL: z.url().nullable(),
+  coverBackgroundURL: z.url().nullable(),
   header: z.string().min(0).max(64).nullable(),
   introduction: z.string().min(0).max(256).nullable(),
-  gender: z.enum(AllUserGenders),
-  country: z.enum(AllCountries).nullable(),
+  gender: z.enum(UserGender),
+  country: z.enum(Country).nullable(),
   birthDate: z.date(),
   updatedAt: z.date(),
 });

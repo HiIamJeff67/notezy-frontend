@@ -1,6 +1,6 @@
 "use client";
 
-import { Logout } from "@/api/auth.api";
+import { Logout } from "@shared/api/functions/auth.api";
 import { UserData } from "@shared/types/models";
 import React, { createContext, useState } from "react";
 import toast from "react-hot-toast";

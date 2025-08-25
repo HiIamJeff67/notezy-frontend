@@ -1,26 +1,14 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import {
+  CreateShelfRequest,
+  CreateShelfResponse,
+  SynchronizeShelvesRequest,
+  SynchronizeShelvesResponse,
+} from "@shared/api/interfaces/shelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
-import { PartialUpdate } from "@shared/types/partialUpdate.type";
-import { UUID } from "@shared/types/uuid_v4.type";
 
 /* ============================== CreateShelf ============================== */
-export interface CreateShelfRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: {
-    name: string;
-  };
-}
-
-export interface CreateShelfResponse extends NotezyResponse {
-  data: {
-    createdAt: Date;
-  };
-}
 
 export async function CreateShelf(
   request: CreateShelfRequest
@@ -54,25 +42,6 @@ export async function CreateShelf(
 }
 
 /* ============================== SynchronizeShelves ============================== */
-export interface SynchronizeShelvesRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: {
-    shelfIds: UUID[];
-    partialUpdates: PartialUpdate<{
-      name: string;
-      encodedStructure: Uint8Array;
-    }>[];
-  };
-}
-
-export interface SynchronizeShelvesResponse extends NotezyResponse {
-  data: {
-    updatedAt: Date;
-  };
-}
 
 export async function SynchronizeShelves(
   request: SynchronizeShelvesRequest

@@ -1,21 +1,16 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import {
+  GetMeRequest,
+  GetMeResponse,
+  GetUserDataRequest,
+  GetUserDataResponse,
+  UpdateMeRequest,
+  UpdateMeResponse,
+} from "@shared/api/interfaces/user.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyRequest, NotezyResponse } from "@shared/types/context.type";
-import { PrivateUser, UserData } from "@shared/types/models";
-import { PartialUpdate } from "@shared/types/partialUpdate.type";
 
 /* ============================== GetUserData ============================== */
-export interface GetUserDataRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-}
-
-export interface GetUserDataResponse extends NotezyResponse {
-  data: UserData;
-}
 
 export async function GetUserData(
   request: GetUserDataRequest
@@ -39,24 +34,14 @@ export async function GetUserData(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const data = (await response.json()) as GetUserDataResponse;
-  if (data.exception !== null) {
-    throw new Error(data.exception.message);
+  const jsonResponse = (await response.json()) as GetUserDataResponse;
+  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
+    throw new Error(jsonResponse.exception.message);
   }
-  return data;
+  return jsonResponse;
 }
 
 /* ============================== GetMe ============================== */
-export interface GetMeRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-}
-
-export interface GetMeResponse extends NotezyResponse {
-  data: PrivateUser;
-}
 
 export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
   const response = await fetch(
@@ -86,22 +71,6 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
 }
 
 /* ============================== UpdateMe ============================== */
-export interface UpdateMeRequest extends NotezyRequest {
-  header: {
-    userAgent: string;
-    authorization?: string;
-  };
-  body: PartialUpdate<{
-    displayName: string;
-    status: string;
-  }>;
-}
-
-export interface UpdateMeResponse extends NotezyResponse {
-  data: {
-    updatedAt: Date;
-  };
-}
 
 export async function UpdateMe(
   request: UpdateMeRequest

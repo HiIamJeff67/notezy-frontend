@@ -2,13 +2,13 @@ import {
   ExceptionCode,
   ExceptionPrefix,
   NotezyException,
-} from "@shared/types/apiException.type";
+} from "@shared/api/exceptions";
 import { StatusCodes } from "http-status-codes";
 import { ExceptionReasonDictionary } from ".";
 import {
   DatabaseException,
   ExceptionSubDomainCodeShiftAmount,
-} from "./exceptions";
+} from "./database.exception";
 
 const UserExceptionSubDomainCode: ExceptionCode = 31;
 const ExceptionBaseCode_User: ExceptionCode =
@@ -26,22 +26,22 @@ export class UserExceptions extends DatabaseException {
   }
 
   DuplicateName(name: string = "FAKE_NAME"): NotezyException {
-    return new NotezyException(
-      this.BaseCode + 1,
-      this.Prefix,
-      ExceptionReasonDictionary.user.duplicateName,
-      `The name of ${name} is already be used`,
-      StatusCodes.CONFLICT
-    );
+    return new NotezyException({
+      code: this.BaseCode + 1,
+      prefix: this.Prefix,
+      reason: ExceptionReasonDictionary.user.duplicateName,
+      message: `The name of ${name} is already be used`,
+      status: StatusCodes.CONFLICT,
+    });
   }
 
   DuplicateEmail(email: string = "FAKE_EMAIL"): NotezyException {
-    return new NotezyException(
-      this.BaseCode + 2,
-      this.Prefix,
-      ExceptionReasonDictionary.user.duplicateEmail,
-      `The email of ${email} is already be used`,
-      StatusCodes.CONFLICT
-    );
+    return new NotezyException({
+      code: this.BaseCode + 2,
+      prefix: this.Prefix,
+      reason: ExceptionReasonDictionary.user.duplicateEmail,
+      message: `The email of ${email} is already be used`,
+      status: StatusCodes.CONFLICT,
+    });
   }
 }

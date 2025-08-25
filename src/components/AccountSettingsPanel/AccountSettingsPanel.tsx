@@ -1,9 +1,9 @@
 "use client";
 
-import { GetMyInfo } from "@/api/userInfo.api";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
+import { GetMyInfo } from "@shared/api/functions/userInfo.api";
 import { PrivateFakeUser, PrivateFakeUserInfo } from "@shared/constants";
 import { PrivateUser, PrivateUserInfo } from "@shared/types/models";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -120,6 +120,7 @@ const AccountSettingsPanel = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogTitle />
       <DialogContent className="min-w-4/5 p-0 overflow-hidden border-none">
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />

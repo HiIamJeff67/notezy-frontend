@@ -1,5 +1,3 @@
-import { DefaultAvatar1URL } from "@/api/static.api";
-import { UpdateMyInfo } from "@/api/userInfo.api";
 import SettingMenuItem from "@/components/SettingMenuItem/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,6 +32,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DefaultAvatar1URL } from "@shared/api/functions/static.api";
+import { UpdateMyInfo } from "@shared/api/functions/userInfo.api";
 import { AllCountries, AllUserGenders } from "@shared/types/enums";
 import { PrivateUserInfo, PrivateUserInfoSchema } from "@shared/types/models";
 import { format } from "date-fns";

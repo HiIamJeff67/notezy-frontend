@@ -7,6 +7,7 @@ import {
   SearchShelfSortBy,
   SearchSortOrder,
 } from "@/graphql/generated/types";
+import { CreateShelf } from "@shared/api/functions/shelf.api";
 import { Deque } from "@shared/lib/deque";
 import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
 import { Range } from "@shared/types/range.type";
@@ -23,7 +24,7 @@ interface ShelfContextType {
   loadMoreCompressedShelves: () => Promise<void>;
   expandShelvesForward: (amount?: number) => void;
   expandShelvesBackward: (amount?: number) => void;
-  createShelves: (name: string) => Promise<void>;
+  createShelf: (name: string) => Promise<void>;
   synchronizeShelves: (index: number) => Promise<void>;
 }
 
@@ -40,7 +41,7 @@ export const ShelfProvider = ({
 }) => {
   const [searchInput, setSearchInput] = useState<SearchShelfInput>({
     query: "",
-    first: 50,
+    first: 100,
     after: null,
     sortBy: SearchShelfSortBy.LastUpdate,
     sortOrder: SearchSortOrder.Desc,
@@ -276,7 +277,37 @@ export const ShelfProvider = ({
     ]
   );
 
-  const createShelves = async (name: string): Promise<void> => {};
+  const createShelf = async (name: string): Promise<void> => {
+    const userAgent = navigator.userAgent;
+    const responseOfCreateShelf = await CreateShelf({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        name: name,
+      },
+    });
+    // if the creation is success
+    setCompressedShelves(prev => [
+      {
+        encodedSearchCursor: "",
+        node: {
+          id: "",
+          name: name,
+          encodedStructure: responseOfCreateShelf.data.encodedStructure,
+          encodedStructureByteSize: 36,
+          totalShelfNodes: 1,
+          totalMaterials: 0,
+          maxWidth: 1,
+          maxDepth: 1,
+          updatedAt: String(responseOfCreateShelf.data.createdAt),
+          createdAt: String(responseOfCreateShelf.data.createdAt),
+          owner: [],
+        },
+      },
+      ...prev,
+    ]);
+  };
 
   const synchronizeShelves = async (index: number): Promise<void> => {};
 
@@ -291,7 +322,7 @@ export const ShelfProvider = ({
     loadMoreCompressedShelves: loadMoreCompressedShelves,
     expandShelvesForward: expandShelvesForward,
     expandShelvesBackward: expandShelvesBackward,
-    createShelves: createShelves,
+    createShelf: createShelf,
     synchronizeShelves: synchronizeShelves,
   };
 

@@ -21,7 +21,10 @@
     "APIURL",
     "Deque",
     "msgpack",
-    "codegen"
+    "codegen",
+    "uuidv4",
+    "uuidv6",
+    "uuidv7"
   ],
   "ignorePaths": [
     "node_modules/**",
