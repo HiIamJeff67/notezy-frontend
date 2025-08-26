@@ -1,5 +1,5 @@
 import { isJsonResponse } from "@/util/isJsonContext";
-import { ExceptionReasonDictionary } from "@shared/api/exceptions";
+import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   ForgetPasswordRequest,
   ForgetPasswordResponse,
@@ -39,14 +39,7 @@ export async function Register(
 
   const jsonResponse = (await response.json()) as RegisterResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      case ExceptionReasonDictionary.user.duplicateName:
-        throw new Error(tKey.error.apiError.register.duplicateName);
-      case ExceptionReasonDictionary.user.duplicateEmail:
-        throw new Error(tKey.error.apiError.register.duplicateEmail);
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -73,12 +66,7 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
 
   const jsonResponse = (await response.json()) as LoginResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      case ExceptionReasonDictionary.user.notFound:
-        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -107,7 +95,7 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
 
   const jsonResponse = (await response.json()) as LogoutResponse;
   if (jsonResponse.exception) {
-    throw new Error(jsonResponse.exception.message);
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -139,12 +127,7 @@ export async function SendAuthCode(
 
   const jsonResponse = (await response.json()) as SendAuthCodeResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      case ExceptionReasonDictionary.user.notFound:
-        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -176,12 +159,7 @@ export async function ForgetPassword(
 
   const jsonResponse = (await response.json()) as ForgetPasswordResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      case ExceptionReasonDictionary.user.notFound:
-        throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }

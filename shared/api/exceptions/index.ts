@@ -1,6 +1,8 @@
 import { ZodClass } from "@/util/zodClass";
 import { z } from "zod";
 
+/* ============================== Exception Definition ============================== */
+
 export type ExceptionCode = number;
 export type ExceptionPrefix = string;
 
@@ -14,13 +16,15 @@ export class NotezyException extends ZodClass({
   error: z.string().optional(),
 }) {
   static fromJSON(obj: any): NotezyException {
-    return new (obj.code,
-    obj.prefix,
-    obj.reason,
-    obj.message,
-    obj.status,
-    obj.details,
-    obj.error)();
+    return new NotezyException({
+      code: obj.code,
+      prefix: obj.prefix,
+      reason: obj.reason,
+      message: obj.message,
+      status: obj.status,
+      details: obj.details,
+      error: obj.error,
+    });
   }
 
   toJSON(): any {
@@ -35,7 +39,7 @@ export class NotezyException extends ZodClass({
     };
   }
 
-  toString() {
+  toString(): string {
     if (this.error) {
       return `[${this.code}]${this.reason}: ${this.error}`;
     }
@@ -77,6 +81,24 @@ export class NotezyException extends ZodClass({
     );
   }
 }
+
+/* ============================== Error Instance with Exception ============================== */
+
+export class NotezyAPIError extends Error {
+  private readonly exception: NotezyException;
+
+  constructor(exception: NotezyException) {
+    super(exception.reason);
+    this.name = "APIError";
+    this.exception = exception;
+  }
+
+  get unWrap(): NotezyException {
+    return this.exception;
+  }
+}
+
+/* ============================== Some Reasons and Dictionaries ============================== */
 
 /* 
   ### Note that we only list the Exception with `IsInternal = false` here 

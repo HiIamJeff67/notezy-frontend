@@ -11,8 +11,8 @@ export type NotezyRequest = z.infer<typeof NotezyRequestSchema>;
 
 export const NotezyResponseSchema = z.object({
   success: z.boolean(),
-  data: z.object({}).optional(),
-  exception: NotezyException.optional(),
+  data: z.object({}).nullable(),
+  exception: NotezyException.nullable(),
 });
 
 export type NotezyResponse = z.infer<typeof NotezyResponseSchema>;

@@ -7,6 +7,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { isValidEmail, isValidName, isValidPassword } from "@/util/validation";
 import { Register } from "@shared/api/functions/auth.api";
 import { GetUserData } from "@shared/api/functions/user.api";
+import { useRegister } from "@shared/api/hooks/auth.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { useCallback, useEffect, useState } from "react";
@@ -17,6 +18,7 @@ const RegisterPage = () => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
+  const registerManager = useRegister();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,6 +28,34 @@ const RegisterPage = () => {
   useEffect(() => {
     loadingManager.setIsLoading(false);
   }, []);
+
+  const newHandleRegisterOnSubmit = useCallback(
+    async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
+      try {
+        if (password !== confirmPassword) {
+          throw new Error(
+            languageManager.t(
+              tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+            )
+          );
+        }
+
+        const userAgent = navigator.userAgent;
+        await registerManager.mutateAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            name: name,
+            email: email,
+            password: password,
+          },
+        });
+      } catch (error) {}
+    },
+    []
+  );
 
   const handleRegisterOnSubmit = useCallback(
     async function (): Promise<void> {

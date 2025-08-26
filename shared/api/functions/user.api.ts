@@ -9,6 +9,7 @@ import {
 } from "@shared/api/interfaces/user.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { NotezyAPIError, NotezyException } from "../exceptions";
 
 /* ============================== GetUserData ============================== */
 
@@ -35,8 +36,8 @@ export async function GetUserData(
   }
 
   const jsonResponse = (await response.json()) as GetUserDataResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -64,8 +65,8 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
   }
 
   const jsonResponse = (await response.json()) as GetMeResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -96,8 +97,8 @@ export async function UpdateMe(
   }
 
   const jsonResponse = (await response.json()) as UpdateMeResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
   }
   return jsonResponse;
 }
