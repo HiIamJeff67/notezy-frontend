@@ -37,7 +37,7 @@ export async function GetUserData(
 
   const jsonResponse = (await response.json()) as GetUserDataResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -66,7 +66,7 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
 
   const jsonResponse = (await response.json()) as GetMeResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -98,7 +98,7 @@ export async function UpdateMe(
 
   const jsonResponse = (await response.json()) as UpdateMeResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }

@@ -1,4 +1,3 @@
-import { ZodClass } from "@/util/zodClass";
 import { z } from "zod";
 
 /* ============================== Exception Definition ============================== */
@@ -6,25 +5,44 @@ import { z } from "zod";
 export type ExceptionCode = number;
 export type ExceptionPrefix = string;
 
-export class NotezyException extends ZodClass({
-  code: z.int().positive(),
+export const NotezyExceptionSchema = z.object({
+  code: z.number().int().positive(),
   prefix: z.string(),
   reason: z.string(),
   message: z.string(),
-  status: z.int().positive(),
+  status: z.number().int().positive(),
   details: z.any().optional(),
   error: z.string().optional(),
-}) {
-  static fromJSON(obj: any): NotezyException {
-    return new NotezyException({
-      code: obj.code,
-      prefix: obj.prefix,
-      reason: obj.reason,
-      message: obj.message,
-      status: obj.status,
-      details: obj.details,
-      error: obj.error,
-    });
+});
+
+export type NotezyExceptionFields = z.infer<typeof NotezyExceptionSchema>;
+
+export class NotezyException {
+  public code: number;
+  public prefix: string;
+  public reason: string;
+  public message: string;
+  public status: number;
+  public details?: any;
+  public error?: string;
+
+  constructor(obj: any) {
+    const validated = NotezyExceptionSchema.parse(obj);
+    this.code = validated.code;
+    this.prefix = validated.prefix;
+    this.reason = validated.reason;
+    this.message = validated.message;
+    this.status = validated.status;
+    this.details = validated.details;
+    this.error = validated.error;
+  }
+
+  static nullable(value: any): value is null | undefined {
+    return value === null || value === undefined;
+  }
+
+  static validate(obj: any): NotezyExceptionFields {
+    return NotezyExceptionSchema.parse(obj);
   }
 
   toJSON(): any {

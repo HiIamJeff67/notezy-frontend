@@ -7,6 +7,7 @@ import {
 } from "@shared/api/interfaces/shelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { NotezyAPIError, NotezyException } from "../exceptions";
 
 /* ============================== CreateShelf ============================== */
 
@@ -32,10 +33,7 @@ export async function CreateShelf(
 
   const jsonResponse = (await response.json()) as CreateShelfResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
 
   return jsonResponse;
@@ -65,10 +63,7 @@ export async function SynchronizeShelves(
 
   const jsonResponse = (await response.json()) as SynchronizeShelvesResponse;
   if (jsonResponse.exception) {
-    switch (jsonResponse.exception.reason) {
-      default:
-        throw new Error(jsonResponse.exception.message);
-    }
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }

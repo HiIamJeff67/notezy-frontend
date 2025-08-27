@@ -18,7 +18,9 @@ export const RegisterRequestSchema = NotezyRequestSchema.extend({
       .string()
       .min(8)
       .max(1024)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/
+      ),
   }),
 });
 
@@ -45,7 +47,9 @@ export const LoginRequestSchema = NotezyRequestSchema.extend({
       .string()
       .min(8)
       .max(1024)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/
+      ),
   }),
 });
 
@@ -116,7 +120,9 @@ export const ForgetPasswordRequestSchema = NotezyRequestSchema.extend({
       .string()
       .min(8)
       .max(1024)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/
+      ),
     authCode: z
       .string()
       .length(6)

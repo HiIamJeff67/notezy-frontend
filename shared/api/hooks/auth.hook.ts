@@ -18,15 +18,22 @@ import {
   SendAuthCodeRequestSchema,
 } from "@shared/api/interfaces/auth.interface";
 import { tKey } from "@shared/translations";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ZodError } from "zod";
 import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
+import { queryKeys } from "../queryKeys";
 
 export const useRegister = () => {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
     mutationFn: async (request: RegisterRequest) => {
       const validatedRequest = RegisterRequestSchema.parse(request);
       return await Register(validatedRequest);
+    },
+    onSuccess: _ => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -48,13 +55,24 @@ export const useRegister = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "REGISTER_HOOK" as const,
+  };
 };
 
 export const useLogin = () => {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
     mutationFn: async (request: LoginRequest) => {
       const validatedRequest = LoginRequestSchema.parse(request);
       return await Login(validatedRequest);
+    },
+    onSuccess: _ => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -75,13 +93,24 @@ export const useLogin = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "LOGIN_HOOK" as const,
+  };
 };
 
 export const useLogout = () => {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
     mutationFn: async (request: LogoutRequest) => {
       const validatedRequest = LogoutRequestSchema.parse(request);
       return await Logout(validatedRequest);
+    },
+    onSuccess: _ => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -99,10 +128,15 @@ export const useLogout = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "LOGOUT_HOOK" as const,
+  };
 };
 
 export const useSendAuthCode = () => {
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (request: SendAuthCodeRequest) => {
       const validatedRequest = SendAuthCodeRequestSchema.parse(request);
       return await SendAuthCode(validatedRequest);
@@ -125,13 +159,24 @@ export const useSendAuthCode = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "SEND_AUTH_CODE_HOOK" as const,
+  };
 };
 
 export const useForgetPassword = () => {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
     mutationFn: async (request: ForgetPasswordRequest) => {
       const validatedRequest = ForgetPasswordRequestSchema.parse(request);
       return await ForgetPassword(validatedRequest);
+    },
+    onSuccess: _ => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -151,4 +196,9 @@ export const useForgetPassword = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "FORGET_PASSWORD_HOOK" as const,
+  };
 };

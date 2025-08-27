@@ -4,6 +4,7 @@ import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSetti
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
 import CreateShelfDialog from "@/components/CreateShelfDialog.tsx/CreateShelfDialog";
 import AvatarIcon from "@/components/icons/AvatarIcon";
+import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import {
   Menubar,
@@ -17,11 +18,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
 import { useShelf } from "@/hooks/useShelf";
 import { useUserData } from "@/hooks/useUserData";
-import { GetUserData } from "@shared/api/functions/user.api";
+import { useGetUserData } from "@shared/api/hooks/user.hook";
+import { queryClient } from "@shared/api/queryClient";
+import { queryKeys } from "@shared/api/queryKeys";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { Bell, Palette } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const DashboardPage = () => {
@@ -31,6 +34,7 @@ const DashboardPage = () => {
   const userDataManager = useUserData();
   const themeManager = useTheme();
   const shelfManager = useShelf();
+  const getUserDataQuerier = useGetUserData();
 
   const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
     "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
@@ -41,13 +45,26 @@ const DashboardPage = () => {
       const tryGetUser = async () => {
         try {
           const userAgent = navigator.userAgent;
-          const responseOfGetMe = await GetUserData({
-            header: {
-              userAgent: userAgent,
-            },
-            body: {},
-          });
-          userDataManager.setUserData(responseOfGetMe.data);
+          const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
+            {
+              header: {
+                userAgent: userAgent,
+              },
+              body: {},
+            }
+          );
+
+          if (!responseOfGettingUserData) {
+            throw new Error(
+              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
+            );
+          }
+
+          userDataManager.setUserData(responseOfGettingUserData.data);
+          queryClient.setQueryData(
+            queryKeys.user.data(),
+            responseOfGettingUserData
+          );
         } catch {
           toast.error(
             "Your account has been logged out, please try to log in again."
@@ -65,112 +82,119 @@ const DashboardPage = () => {
     initShelves();
     console.log(shelfManager.compressedShelves.length);
     loadingManager.setIsLoading(false);
+    loadingManager.clearInactiveStrictLoadingStates();
+    loadingManager.clearInactiveLaxLoadingStates();
   }, []);
 
   const createShelf = () => {};
 
   return (
-    <div className="w-full h-full p-0 m-0">
-      <AppSidebar>
-        {shelfManager.compressedShelves.map(data => (
-          <div>{data.node.name}</div>
-        ))}
-      </AppSidebar>
-      <SidebarTrigger className="fixed top-2 left-2" />
-      <AccountSettingsPanel
-        isOpen={currentDisplayPopup === "AccountSettingsPanel"}
-        onClose={() => setCurrentDisplayPopup("None")}
-      />
-      <PreferencesPanel
-        isOpen={currentDisplayPopup === "PreferencesPanel"}
-        onClose={() => setCurrentDisplayPopup("None")}
-      />
-      <CreateShelfDialog
-        isOpen={currentDisplayPopup === "CreateShelfDialog"}
-        onClose={() => setCurrentDisplayPopup("CreateShelfDialog")}
-      />
-      <div className="fixed top-2 right-2 z-50">
-        <Menubar className="bg-secondary border-border border shadow-lg h-8">
-          <MenubarMenu>
-            <MenubarTrigger className="px-3 py-2 w-11 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-              <Palette size={16} />
-            </MenubarTrigger>
-            <MenubarContent className="w-56 bg-popover border-border">
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                {`${languageManager.t(tKey.common.choose)}${languageManager.t(
-                  tKey.syntax.separator
-                )}${languageManager.t(tKey.themes.theme)}`}
-              </div>
-              <MenubarSeparator />
-              {themeManager.availableThemes.map(theme => (
-                <MenubarItem
-                  key={theme.id}
-                  onClick={() => themeManager.switchCurrentTheme(theme.id)}
-                  className="flex items-center justify-between cursor-pointer"
-                >
-                  <span>{languageManager.t(theme.translationKey)}</span>
-                  {themeManager.currentTheme === theme && (
-                    <span className="text-accent text-sm">✓</span>
-                  )}
-                </MenubarItem>
-              ))}
-            </MenubarContent>
-          </MenubarMenu>
-
-          <MenubarMenu>
-            <MenubarTrigger className="px-3 py-2 w-10 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-              <Bell size={24} />
-            </MenubarTrigger>
-          </MenubarMenu>
-
-          <MenubarMenu>
-            <MenubarTrigger className="px-2 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-              <AvatarIcon avatarURL="" size={20} />
-            </MenubarTrigger>
-            <MenubarContent className="w-64 bg-popover border-border">
-              <div className="flex items-center space-x-3 px-3 py-3">
-                <AvatarIcon avatarURL="" size={48} />
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground">
-                    {userDataManager.userData?.name || "User Name"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {userDataManager.userData?.email || "user@example.com"}
-                  </span>
+    <Suspense fallback={<StrictLoadingOutlay />}>
+      {getUserDataQuerier.isFetching && <StrictLoadingOutlay />}
+      <div className="w-full h-full p-0 m-0">
+        <AppSidebar>
+          {shelfManager.compressedShelves.map(data => (
+            <div>{data.node.name}</div>
+          ))}
+        </AppSidebar>
+        <SidebarTrigger className="fixed top-2 left-2" />
+        <AccountSettingsPanel
+          isOpen={currentDisplayPopup === "AccountSettingsPanel"}
+          onClose={() => setCurrentDisplayPopup("None")}
+        />
+        <PreferencesPanel
+          isOpen={currentDisplayPopup === "PreferencesPanel"}
+          onClose={() => setCurrentDisplayPopup("None")}
+        />
+        <CreateShelfDialog
+          isOpen={currentDisplayPopup === "CreateShelfDialog"}
+          onClose={() => setCurrentDisplayPopup("CreateShelfDialog")}
+        />
+        <div className="fixed top-2 right-2 z-50">
+          <Menubar className="bg-secondary border-border border shadow-lg h-8">
+            <MenubarMenu>
+              <MenubarTrigger className="px-3 py-2 w-11 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+                <Palette size={16} />
+              </MenubarTrigger>
+              <MenubarContent className="w-56 bg-popover border-border">
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  {`${languageManager.t(tKey.common.choose)}${languageManager.t(
+                    tKey.syntax.separator
+                  )}${languageManager.t(tKey.themes.theme)}`}
                 </div>
-              </div>
-              <MenubarSeparator />
-              <MenubarItem
-                className="cursor-pointer"
-                onClick={() => setCurrentDisplayPopup("AccountSettingsPanel")}
-              >
-                <span>{languageManager.t(tKey.settings.accountSettings)}</span>
-              </MenubarItem>
-              <MenubarItem
-                className="cursor-pointer"
-                onClick={() => setCurrentDisplayPopup("PreferencesPanel")}
-              >
-                <span>{languageManager.t(tKey.settings.preferences)}</span>
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem className="cursor-pointer">
-                <span>{languageManager.t(tKey.auth.switchAccount)}</span>
-              </MenubarItem>
-              <MenubarItem
-                className="cursor-pointer text-destructive focus:text-destructive"
-                onClick={() => {
-                  loadingManager.setIsLoading(true);
-                  router.push(WebURLPathDictionary.home);
-                  userDataManager.logout();
-                }}
-              >
-                <span>{languageManager.t(tKey.auth.logout)}</span>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
+                <MenubarSeparator />
+                {themeManager.availableThemes.map(theme => (
+                  <MenubarItem
+                    key={theme.id}
+                    onClick={() => themeManager.switchCurrentTheme(theme.id)}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <span>{languageManager.t(theme.translationKey)}</span>
+                    {themeManager.currentTheme === theme && (
+                      <span className="text-accent text-sm">✓</span>
+                    )}
+                  </MenubarItem>
+                ))}
+              </MenubarContent>
+            </MenubarMenu>
+
+            <MenubarMenu>
+              <MenubarTrigger className="px-3 py-2 w-10 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+                <Bell size={24} />
+              </MenubarTrigger>
+            </MenubarMenu>
+
+            <MenubarMenu>
+              <MenubarTrigger className="px-2 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+                <AvatarIcon avatarURL="" size={20} />
+              </MenubarTrigger>
+              <MenubarContent className="w-64 bg-popover border-border">
+                <div className="flex items-center space-x-3 px-3 py-3">
+                  <AvatarIcon avatarURL="" size={48} />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground">
+                      {userDataManager.userData?.name || "User Name"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {userDataManager.userData?.email || "user@example.com"}
+                    </span>
+                  </div>
+                </div>
+                <MenubarSeparator />
+                <MenubarItem
+                  className="cursor-pointer"
+                  onClick={() => setCurrentDisplayPopup("AccountSettingsPanel")}
+                >
+                  <span>
+                    {languageManager.t(tKey.settings.accountSettings)}
+                  </span>
+                </MenubarItem>
+                <MenubarItem
+                  className="cursor-pointer"
+                  onClick={() => setCurrentDisplayPopup("PreferencesPanel")}
+                >
+                  <span>{languageManager.t(tKey.settings.preferences)}</span>
+                </MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem className="cursor-pointer">
+                  <span>{languageManager.t(tKey.auth.switchAccount)}</span>
+                </MenubarItem>
+                <MenubarItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={() => {
+                    loadingManager.setIsLoading(true);
+                    router.push(WebURLPathDictionary.home);
+                    userDataManager.logout();
+                  }}
+                >
+                  <span>{languageManager.t(tKey.auth.logout)}</span>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </Menubar>
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 };
 

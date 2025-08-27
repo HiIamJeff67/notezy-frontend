@@ -39,7 +39,7 @@ export async function Register(
 
   const jsonResponse = (await response.json()) as RegisterResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -66,7 +66,7 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
 
   const jsonResponse = (await response.json()) as LoginResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -95,7 +95,7 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
 
   const jsonResponse = (await response.json()) as LogoutResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -127,7 +127,7 @@ export async function SendAuthCode(
 
   const jsonResponse = (await response.json()) as SendAuthCodeResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -159,7 +159,7 @@ export async function ForgetPassword(
 
   const jsonResponse = (await response.json()) as ForgetPasswordResponse;
   if (jsonResponse.exception) {
-    throw new NotezyAPIError(NotezyException.fromJSON(jsonResponse.exception));
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }

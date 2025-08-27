@@ -7,6 +7,7 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { NotezyAPIError, NotezyException } from "../exceptions";
 
 /* ============================== GetMyInfo ============================== */
 
@@ -33,8 +34,8 @@ export async function GetMyInfo(
   }
 
   const jsonResponse = (await response.json()) as GetMyInfoResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }
@@ -65,8 +66,8 @@ export async function UpdateMyInfo(
   }
 
   const jsonResponse = (await response.json()) as UpdateMyInfoResponse;
-  if (jsonResponse.exception !== null && jsonResponse.exception !== undefined) {
-    throw new Error(jsonResponse.exception.message);
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
   return jsonResponse;
 }

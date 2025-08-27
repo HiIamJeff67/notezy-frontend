@@ -1,28 +1,9 @@
 "use client";
 
-import { useLoading, useTheme } from "@/hooks";
-import { useEffect } from "react";
+import { useTheme } from "@/hooks";
 
-const LoadingOverlay = () => {
-  const { isLoading, isAnyStrictLoading } = useLoading();
+const StrictLoadingOutlay = () => {
   const themeManager = useTheme();
-
-  useEffect(() => {
-    if (isLoading || isAnyStrictLoading) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
-    } else {
-      document.body.style.overflow = "unset";
-      document.body.style.pointerEvents = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-      document.body.style.pointerEvents = "auto";
-    };
-  }, [isLoading, isAnyStrictLoading]);
-
-  if (!isLoading && !isAnyStrictLoading) return <></>;
 
   return (
     <div
@@ -55,4 +36,4 @@ const LoadingOverlay = () => {
   );
 };
 
-export default LoadingOverlay;
+export default StrictLoadingOutlay;

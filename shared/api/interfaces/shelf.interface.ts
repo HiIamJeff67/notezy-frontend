@@ -18,6 +18,7 @@ export type CreateShelfRequest = z.infer<typeof CreateShelfRequestSchema>;
 
 export const CreateShelfResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    id: z.uuidv4(),
     encodedStructure: z.base64(),
     createdAt: z.coerce.date(),
   }),
@@ -33,7 +34,7 @@ export const SynchronizeShelvesRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
-    shelfIds: z.array(z.uuid("v4")),
+    shelfIds: z.array(z.uuidv4()),
     partialUpdates: z.array(
       partialUpdateSchemaFactory(
         z.object({

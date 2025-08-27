@@ -1,3 +1,4 @@
+import { NotezyAPIError } from "@shared/api/exceptions";
 import { GetMe, GetUserData, UpdateMe } from "@shared/api/functions/user.api";
 import {
   GetMeRequest,
@@ -7,45 +8,71 @@ import {
   UpdateMeRequest,
   UpdateMeRequestSchema,
 } from "@shared/api/interfaces/user.interface";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@shared/api/queryKeys";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { ZodError } from "zod";
-import { NotezyAPIError } from "../exceptions";
-import { queryKeys } from "../queryKeys";
 
-export const useGetUserData = (request: GetUserDataRequest) => {
-  return useQuery({
-    queryKey: queryKeys.user.data(request),
-    queryFn: async () => {
-      try {
-        const validatedRequest = GetUserDataRequestSchema.parse(request);
-        return await GetUserData(validatedRequest);
-      } catch (error) {
-        if (error instanceof ZodError) {
-          const errorMessage = error.issues
-            .map(issue => issue.message)
-            .join(", ");
-          throw new Error(`validation failed : ${errorMessage}`);
-        }
-        if (error instanceof NotezyAPIError) {
-          switch (error.unWrap.reason) {
-            default:
-              throw new Error(error.unWrap.message);
-          }
-        }
-        throw error;
+export const useGetUserData = (
+  hookRequest?: GetUserDataRequest,
+  options?: UseQueryOptions
+) => {
+  const queryClient = useQueryClient();
+
+  const queryFunction = async (request?: GetUserDataRequest) => {
+    if (!request) return;
+    try {
+      const validatedRequest = GetUserDataRequestSchema.parse(request);
+      return await GetUserData(validatedRequest);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
       }
-    },
-    staleTime: 15 * 60 * 1000, // sync with the access token expired duration
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    }
+  };
+
+  const query = useQuery({
+    queryKey: queryKeys.user.data(),
+    queryFn: async () => await queryFunction(hookRequest), // use the request from the param of useGetUserData()
+    staleTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    retry: 3,
-    retryDelay: 500,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
   });
+
+  const queryAsync = async (callbackRequest: GetUserDataRequest) => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.user.data(),
+      queryFn: async () => await queryFunction(callbackRequest), // use the request from the param of useGetUserData.queryAsync()
+      staleTime: 15 * 60 * 1000,
+    });
+  };
+
+  return {
+    ...query,
+    queryAsync,
+    name: "GET_USER_DATA_HOOK" as const,
+  };
 };
 
 export const useGetMe = (request: GetMeRequest) => {
-  return useQuery({
-    queryKey: queryKeys.user.me(request),
+  const query = useQuery({
+    queryKey: queryKeys.user.me(),
     queryFn: async () => {
       try {
         const validatedRequest = GetMeRequestSchema.parse(request);
@@ -70,13 +97,23 @@ export const useGetMe = (request: GetMeRequest) => {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
   });
+
+  return {
+    ...query,
+    name: "GET_ME_HOOK" as const,
+  };
 };
 
 export const useUpdateMe = () => {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
     mutationFn: async (request: UpdateMeRequest) => {
       const validatedRequest = UpdateMeRequestSchema.parse(request);
       return await UpdateMe(validatedRequest);
+    },
+    onSuccess: _ => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -94,4 +131,9 @@ export const useUpdateMe = () => {
       throw error;
     },
   });
+
+  return {
+    ...mutation,
+    name: "UPDATE_ME_HOOK" as const,
+  };
 };
