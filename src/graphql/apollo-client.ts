@@ -110,7 +110,7 @@ const cache = new InMemoryCache({
 
 export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink, errorLink]),
-  cache,
+  cache: cache,
   defaultOptions: {
     watchQuery: {
       errorPolicy: "all",

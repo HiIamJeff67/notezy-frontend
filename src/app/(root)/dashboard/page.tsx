@@ -1,30 +1,15 @@
 "use client";
 
-import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
-import CreateShelfDialog from "@/components/CreateShelfDialog.tsx/CreateShelfDialog";
-import AvatarIcon from "@/components/icons/AvatarIcon";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
-import { useShelf } from "@/hooks/useShelf";
-import { useUserData } from "@/hooks/useUserData";
+import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { Bell, Palette } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const DashboardPage = () => {
@@ -32,13 +17,7 @@ const DashboardPage = () => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
-  const themeManager = useTheme();
-  const shelfManager = useShelf();
   const getUserDataQuerier = useGetUserData();
-
-  const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
-    "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
-  >("None");
 
   useEffect(() => {
     if (userDataManager.userData === null) {
@@ -76,123 +55,20 @@ const DashboardPage = () => {
       tryGetUser();
     }
 
-    const initShelves = async () => {
-      await shelfManager.searchCompressedShelves();
-    };
-    initShelves();
-    console.log(shelfManager.compressedShelves.length);
     loadingManager.setIsLoading(false);
     loadingManager.clearInactiveStrictLoadingStates();
     loadingManager.clearInactiveLaxLoadingStates();
   }, []);
 
-  const createShelf = () => {};
-
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>
-      {getUserDataQuerier.isFetching && <StrictLoadingOutlay />}
+      <StrictLoadingOutlay
+        condition={getUserDataQuerier.isFetching || router.isNavigating}
+      />
       <div className="w-full h-full p-0 m-0">
-        <AppSidebar>
-          {shelfManager.compressedShelves.map(data => (
-            <div>{data.node.name}</div>
-          ))}
-        </AppSidebar>
+        <AppSidebar />
         <SidebarTrigger className="fixed top-2 left-2" />
-        <AccountSettingsPanel
-          isOpen={currentDisplayPopup === "AccountSettingsPanel"}
-          onClose={() => setCurrentDisplayPopup("None")}
-        />
-        <PreferencesPanel
-          isOpen={currentDisplayPopup === "PreferencesPanel"}
-          onClose={() => setCurrentDisplayPopup("None")}
-        />
-        <CreateShelfDialog
-          isOpen={currentDisplayPopup === "CreateShelfDialog"}
-          onClose={() => setCurrentDisplayPopup("CreateShelfDialog")}
-        />
-        <div className="fixed top-2 right-2 z-50">
-          <Menubar className="bg-secondary border-border border shadow-lg h-8">
-            <MenubarMenu>
-              <MenubarTrigger className="px-3 py-2 w-11 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-                <Palette size={16} />
-              </MenubarTrigger>
-              <MenubarContent className="w-56 bg-popover border-border">
-                <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  {`${languageManager.t(tKey.common.choose)}${languageManager.t(
-                    tKey.syntax.separator
-                  )}${languageManager.t(tKey.themes.theme)}`}
-                </div>
-                <MenubarSeparator />
-                {themeManager.availableThemes.map(theme => (
-                  <MenubarItem
-                    key={theme.id}
-                    onClick={() => themeManager.switchCurrentTheme(theme.id)}
-                    className="flex items-center justify-between cursor-pointer"
-                  >
-                    <span>{languageManager.t(theme.translationKey)}</span>
-                    {themeManager.currentTheme === theme && (
-                      <span className="text-accent text-sm">✓</span>
-                    )}
-                  </MenubarItem>
-                ))}
-              </MenubarContent>
-            </MenubarMenu>
-
-            <MenubarMenu>
-              <MenubarTrigger className="px-3 py-2 w-10 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-                <Bell size={24} />
-              </MenubarTrigger>
-            </MenubarMenu>
-
-            <MenubarMenu>
-              <MenubarTrigger className="px-2 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
-                <AvatarIcon avatarURL="" size={20} />
-              </MenubarTrigger>
-              <MenubarContent className="w-64 bg-popover border-border">
-                <div className="flex items-center space-x-3 px-3 py-3">
-                  <AvatarIcon avatarURL="" size={48} />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-foreground">
-                      {userDataManager.userData?.name || "User Name"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {userDataManager.userData?.email || "user@example.com"}
-                    </span>
-                  </div>
-                </div>
-                <MenubarSeparator />
-                <MenubarItem
-                  className="cursor-pointer"
-                  onClick={() => setCurrentDisplayPopup("AccountSettingsPanel")}
-                >
-                  <span>
-                    {languageManager.t(tKey.settings.accountSettings)}
-                  </span>
-                </MenubarItem>
-                <MenubarItem
-                  className="cursor-pointer"
-                  onClick={() => setCurrentDisplayPopup("PreferencesPanel")}
-                >
-                  <span>{languageManager.t(tKey.settings.preferences)}</span>
-                </MenubarItem>
-                <MenubarSeparator />
-                <MenubarItem className="cursor-pointer">
-                  <span>{languageManager.t(tKey.auth.switchAccount)}</span>
-                </MenubarItem>
-                <MenubarItem
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                  onClick={() => {
-                    loadingManager.setIsLoading(true);
-                    router.push(WebURLPathDictionary.home);
-                    userDataManager.logout();
-                  }}
-                >
-                  <span>{languageManager.t(tKey.auth.logout)}</span>
-                </MenubarItem>
-              </MenubarContent>
-            </MenubarMenu>
-          </Menubar>
-        </div>
+        <div className="fixed top-2 right-2 z-50"></div>
       </div>
     </Suspense>
   );

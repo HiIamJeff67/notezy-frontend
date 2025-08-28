@@ -1,27 +1,32 @@
 "use client";
 
-import { useSearchShelvesLazyQuery } from "@/graphql/generated/hooks";
+import { apolloClient } from "@/graphql/apollo-client";
 import {
-  SearchShelfEdge,
-  SearchShelfInput,
+  FragmentedPrivateShelfFragmentDoc,
+  useSearchShelvesLazyQuery,
+} from "@/graphql/generated/hooks";
+import {
+  PrivateShelf,
+  SearchShelfConnection,
   SearchShelfSortBy,
   SearchSortOrder,
 } from "@/graphql/generated/types";
-import { CreateShelf } from "@shared/api/functions/shelf.api";
-import { Deque } from "@shared/lib/deque";
+import { useCreateShelf } from "@shared/api/hooks/shelf.hook";
+import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
+import { LRUCache } from "@shared/lib/LRUCache";
 import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
 import { Range } from "@shared/types/range.type";
 import React, { createContext, useCallback, useRef, useState } from "react";
 
 interface ShelfContextType {
-  compressedShelves: SearchShelfEdge[];
-  expandedShelves: Deque<ShelfSummary>;
-  currentExpandedRange: Range;
-  isExpanding: boolean;
-  searchInput: SearchShelfInput;
-  setSearchInput: (input: SearchShelfInput) => void;
+  getSearchShelvesConnectionFromCache: () => SearchShelfConnection;
   searchCompressedShelves: () => Promise<void>;
   loadMoreCompressedShelves: () => Promise<void>;
+  expandedShelves: LRUCache<string, ShelfSummary>;
+  currentExpandedRange: Range;
+  isExpanding: boolean;
+  searchInput: { query: string; after: string | null };
+  setSearchInput: (input: { query: string; after: string | null }) => void;
   expandShelvesForward: (amount?: number) => void;
   expandShelvesBackward: (amount?: number) => void;
   createShelf: (name: string) => Promise<void>;
@@ -39,91 +44,96 @@ export const ShelfProvider = ({
   children: React.ReactNode;
   maxNumOfExpandedShelves: number;
 }) => {
-  const [searchInput, setSearchInput] = useState<SearchShelfInput>({
-    query: "",
-    first: 100,
-    after: null,
-    sortBy: SearchShelfSortBy.LastUpdate,
-    sortOrder: SearchSortOrder.Desc,
-  });
-  const [compressedShelves, setCompressedShelves] = useState<SearchShelfEdge[]>(
-    []
-  );
+  const createShelfMutator = useCreateShelf();
 
-  const expandedShelvesRef = useRef(
-    new Deque<ShelfSummary>(maxNumOfExpandedShelves)
-  ); // usually set to a ratio of the size of compressed shelves
+  const [searchInput, setSearchInput] = useState<{
+    query: string;
+    after: string | null;
+  }>({
+    query: "",
+    after: null,
+  });
   const [_, setUpdateTrigger] = useState(0);
-  const forceUpdate = useCallback(() => {
-    setUpdateTrigger(prev => prev + 1);
-  }, []);
   const [currentExpandedRange, setCurrentExpandedRange] = useState({
     start: 0,
-    end: 100,
+    end: maxNumOfExpandedShelves,
   });
   const [isExpanding, setIsExpanding] = useState<boolean>(false);
 
+  const expandedShelvesRef = useRef(
+    new LRUCache<string, ShelfSummary>(maxNumOfExpandedShelves)
+  ); // usually set to a ratio of the size of compressed shelves
+
+  const forceUpdate = useCallback(() => {
+    setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
+  }, []);
+
   const expandedShelvesActions = {
-    scrollNext: useCallback(
-      (element: ShelfSummary) => {
-        if (expandedShelvesRef.current.isFull()) {
-          expandedShelvesRef.current.shift();
-        }
-        expandedShelvesRef.current.push(element);
+    setShelf: useCallback(
+      (shelfId: string, shelf: ShelfSummary) => {
+        expandedShelvesRef.current.set(shelfId, shelf);
         forceUpdate();
       },
       [forceUpdate]
     ),
-    scrollPrevious: useCallback(
-      (element: ShelfSummary) => {
-        if (expandedShelvesRef.current.isFull()) {
-          expandedShelvesRef.current.pop();
-        }
-        expandedShelvesRef.current.unshift(element);
+    getShelf: useCallback((shelfId: string) => {
+      return expandedShelvesRef.current.get(shelfId);
+    }, []),
+    deleteShelf: useCallback(
+      (shelfId: string) => {
+        expandedShelvesRef.current.delete(shelfId);
         forceUpdate();
       },
       [forceUpdate]
     ),
+    clear: useCallback(() => {
+      expandedShelvesRef.current.clear();
+      forceUpdate();
+    }, [forceUpdate]),
   };
 
   const [executeSearch, { data, loading, error, fetchMore }] =
     useSearchShelvesLazyQuery({
       notifyOnNetworkStatusChange: true,
-      onCompleted: data => {
-        console.log("✅ Search completed:", data);
-
-        const newCompressedShelves: SearchShelfEdge[] = [];
-        data.searchShelves.searchEdges.forEach(edge => {
-          newCompressedShelves.push(edge as SearchShelfEdge);
-        });
-
-        setCompressedShelves(prevShelves => [
-          ...prevShelves,
-          ...newCompressedShelves,
-        ]);
+      onCompleted: _ => {
+        forceUpdate();
       },
       onError: error => {
         console.error("❌ Search error:", error);
       },
     });
 
-  // for initial searching the shelves
+  const getSearchShelvesConnectionFromCache = useCallback(() => {
+    return (data?.searchShelves as SearchShelfConnection) || [];
+  }, [data]);
+
   const searchCompressedShelves = async () => {
-    console.log("Executing Search...");
     await executeSearch({
-      variables: { input: searchInput },
+      variables: {
+        input: {
+          ...searchInput,
+          first: MaxSearchNumOfShelves,
+          sortBy: SearchShelfSortBy.LastUpdate,
+          sortOrder: SearchSortOrder.Desc,
+        },
+      },
     });
   };
 
   const loadMoreCompressedShelves = async () => {
-    if (!data?.searchShelves.searchPageInfo.hasNextPage) return;
+    const compressedShelves = getSearchShelvesConnectionFromCache();
+    if (compressedShelves.searchEdges.length === 0) return;
+    const pageInfo = compressedShelves?.searchPageInfo;
+    if (!pageInfo.hasNextPage) return;
 
-    console.log("Loading more...");
     await fetchMore({
       variables: {
         input: {
           ...searchInput,
-          after: data.searchShelves.searchPageInfo.endEncodedSearchCursor,
+          first: MaxSearchNumOfShelves,
+          sortBy: SearchShelfSortBy.LastUpdate,
+          sortOrder: SearchSortOrder.Desc,
+          after: pageInfo.endEncodedSearchCursor,
         },
       },
     });
@@ -134,6 +144,8 @@ export const ShelfProvider = ({
       if (isExpanding) return;
       setIsExpanding(true);
 
+      const compressedShelves =
+        getSearchShelvesConnectionFromCache().searchEdges;
       let remaining = amount;
       while (
         remaining > 0 &&
@@ -155,7 +167,7 @@ export const ShelfProvider = ({
                   end: prev.end + 1,
                 }));
 
-                expandedShelvesActions.scrollNext({
+                expandedShelvesActions.setShelf(nextRoot.id, {
                   root: nextRoot,
                   encodedStructureByteSize:
                     nextExpandedShelf.encodedStructureByteSize,
@@ -196,7 +208,6 @@ export const ShelfProvider = ({
     [
       isExpanding,
       currentExpandedRange,
-      compressedShelves,
       expandedShelvesActions,
       maxNumOfExpandedShelves,
     ]
@@ -207,6 +218,8 @@ export const ShelfProvider = ({
       if (isExpanding) return;
       setIsExpanding(true);
 
+      const compressedShelves =
+        getSearchShelvesConnectionFromCache().searchEdges;
       let remaining = amount;
       while (remaining > 0 && currentExpandedRange.start > 0) {
         const targetIndex = currentExpandedRange.start - 1;
@@ -227,7 +240,7 @@ export const ShelfProvider = ({
                   end: prev.end - 1,
                 }));
 
-                expandedShelvesActions.scrollPrevious({
+                expandedShelvesActions.setShelf(previousRoot.id, {
                   root: previousRoot,
                   encodedStructureByteSize:
                     previousExpandedShelf.encodedStructureByteSize,
@@ -271,7 +284,6 @@ export const ShelfProvider = ({
     [
       isExpanding,
       currentExpandedRange,
-      compressedShelves,
       expandedShelvesActions,
       maxNumOfExpandedShelves,
     ]
@@ -279,7 +291,7 @@ export const ShelfProvider = ({
 
   const createShelf = async (name: string): Promise<void> => {
     const userAgent = navigator.userAgent;
-    const responseOfCreateShelf = await CreateShelf({
+    const responseOfCreateShelf = await createShelfMutator.mutateAsync({
       header: {
         userAgent: userAgent,
       },
@@ -287,39 +299,74 @@ export const ShelfProvider = ({
         name: name,
       },
     });
-    // if the creation is success
-    setCompressedShelves(prev => [
-      {
-        encodedSearchCursor: "",
-        node: {
-          id: "",
-          name: name,
-          encodedStructure: responseOfCreateShelf.data.encodedStructure,
-          encodedStructureByteSize: 36,
-          totalShelfNodes: 1,
-          totalMaterials: 0,
-          maxWidth: 1,
-          maxDepth: 1,
-          updatedAt: String(responseOfCreateShelf.data.createdAt),
-          createdAt: String(responseOfCreateShelf.data.createdAt),
-          owner: [],
+
+    const shelfNode: PrivateShelf = {
+      __typename: "PrivateShelf",
+      id: responseOfCreateShelf.data.id,
+      name: name,
+      encodedStructure: responseOfCreateShelf.data.encodedStructure,
+      encodedStructureByteSize: 36,
+      totalShelfNodes: 1,
+      totalMaterials: 0,
+      maxWidth: 1,
+      maxDepth: 1,
+      lastAnalyzedAt: String(responseOfCreateShelf.data.lastAnalyzedAt),
+      updatedAt: String(responseOfCreateShelf.data.createdAt),
+      createdAt: String(responseOfCreateShelf.data.createdAt),
+      owner: [],
+    };
+    apolloClient.cache.modify({
+      fields: {
+        searchShelves(existing) {
+          if (!existing) return existing;
+          const edges = existing.searchEdges || [];
+          const exists = edges.some((e: any) => e.node.id === shelfNode.id);
+          if (exists) return existing;
+          const writtenRef = apolloClient.cache.writeFragment({
+            fragment: FragmentedPrivateShelfFragmentDoc,
+            data: shelfNode,
+          });
+          const newEdge = {
+            __typename: "SearchShelfEdge",
+            encodedSearchCursor: "",
+            node: writtenRef,
+          };
+          return {
+            ...existing,
+            searchEdges: [newEdge, ...edges],
+          };
         },
       },
-      ...prev,
-    ]);
+    });
+
+    try {
+      const root = ShelfManipulator.decodeFromBase64(
+        responseOfCreateShelf.data.encodedStructure
+      );
+      expandedShelvesActions.setShelf(responseOfCreateShelf.data.id, {
+        root,
+        encodedStructureByteSize: 36,
+        hasChanged: false,
+        totalShelfNodes: 1,
+        totalMaterials: 0,
+        maxWidth: 1,
+        maxDepth: 1,
+        uniqueMaterialIds: [],
+      });
+    } catch {}
   };
 
   const synchronizeShelves = async (index: number): Promise<void> => {};
 
   const contextValue: ShelfContextType = {
-    compressedShelves: compressedShelves,
+    getSearchShelvesConnectionFromCache: getSearchShelvesConnectionFromCache,
+    searchCompressedShelves: searchCompressedShelves,
+    loadMoreCompressedShelves: loadMoreCompressedShelves,
     expandedShelves: expandedShelvesRef.current,
     currentExpandedRange: currentExpandedRange,
     isExpanding: isExpanding,
     searchInput: searchInput,
     setSearchInput: setSearchInput,
-    searchCompressedShelves: searchCompressedShelves,
-    loadMoreCompressedShelves: loadMoreCompressedShelves,
     expandShelvesForward: expandShelvesForward,
     expandShelvesBackward: expandShelvesBackward,
     createShelf: createShelf,

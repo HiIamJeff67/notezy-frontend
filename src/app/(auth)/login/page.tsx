@@ -3,8 +3,7 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useLoading } from "@/hooks";
-import { useUserData } from "@/hooks/useUserData";
+import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryClient } from "@shared/api/queryClient";
@@ -89,10 +88,14 @@ const LoginPage = () => {
 
   return (
     <GridBackground>
-      {(loginMutator.isPending || getUserDataQuerier.isFetching) && (
-        <StrictLoadingOutlay />
-      )}
       <Suspense fallback={<StrictLoadingOutlay />}>
+        <StrictLoadingOutlay
+          condition={
+            loginMutator.isPending ||
+            getUserDataQuerier.isFetching ||
+            router.isNavigating
+          }
+        />
         <AuthPanel
           title={languageManager.t(tKey.auth.login)}
           subtitle={`${languageManager.t(

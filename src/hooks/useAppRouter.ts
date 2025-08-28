@@ -1,12 +1,17 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const useAppRouter = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const prevPathsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
 
   if (
     typeof window !== "undefined" &&
@@ -16,20 +21,27 @@ export const useAppRouter = () => {
   }
 
   const appRouter = {
+    isNavigating: isNavigating,
     push: (path: string) => {
       // use router.push() directly, let Next.js handle the base path
+      setIsNavigating(true);
       router.push(path.startsWith("/") ? path : "/" + path);
     },
     replace: (path: string) => {
+      setIsNavigating(true);
       router.replace(path.startsWith("/") ? path : "/" + path);
     },
     back: (steps: number = 1) => {
+      setIsNavigating(true);
       while (steps-- > 0) router.back();
     },
     forward: (steps: number = 1) => {
+      setIsNavigating(true);
       while (steps-- > 0) router.forward();
     },
-    refresh: () => router.refresh(),
+    refresh: () => {
+      router.refresh();
+    },
     getPrevPaths: (): string[] => [...prevPathsRef.current],
   };
 

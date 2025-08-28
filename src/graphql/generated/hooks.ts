@@ -86,6 +86,7 @@ export type PrivateShelf = {
   encodedStructure: Scalars['Base64Bytes']['output'];
   encodedStructureByteSize: Scalars['Int64']['output'];
   id: Scalars['UUID']['output'];
+  lastAnalyzedAt: Scalars['Time']['output'];
   maxDepth: Scalars['Int32']['output'];
   maxWidth: Scalars['Int32']['output'];
   name: Scalars['String']['output'];
@@ -361,9 +362,9 @@ export type UserStatus =
 
 export type FragmentedBasicPublicBadgeFragment = { __typename?: 'PublicBadge', publicId: string, title: string, description: string, type: BadgeType, imageURL?: string | null, createdAt: string };
 
-export type FragmentedBasicPrivateShelfFragment = { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, updatedAt: string, createdAt: string };
+export type FragmentedBasicPrivateShelfFragment = { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, lastAnalyzedAt: string, updatedAt: string, createdAt: string };
 
-export type FragmentedPrivateShelfFragment = { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, updatedAt: string, createdAt: string, owner: Array<{ __typename?: 'PublicUser', publicId: string, name: string, displayName: string, role: UserRole, plan: UserPlan, status: UserStatus, createdAt: string }> };
+export type FragmentedPrivateShelfFragment = { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, lastAnalyzedAt: string, updatedAt: string, createdAt: string, owner: Array<{ __typename?: 'PublicUser', publicId: string, name: string, displayName: string, role: UserRole, plan: UserPlan, status: UserStatus, createdAt: string }> };
 
 export type FragmentedBasicPublicThemeFragment = { __typename?: 'PublicTheme', publicId: string, name: string, isDark: boolean, version: string, isDefault: boolean, downloadURL?: string | null, downloadCount: number, createdAt: string, updatedAt: string };
 
@@ -394,7 +395,7 @@ export type SearchShelvesQueryVariables = Exact<{
 }>;
 
 
-export type SearchShelvesQuery = { __typename?: 'Query', searchShelves: { __typename?: 'SearchShelfConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchShelfEdge', encodedSearchCursor: string, node: { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, updatedAt: string, createdAt: string, owner: Array<{ __typename?: 'PublicUser', publicId: string, name: string, displayName: string, role: UserRole, plan: UserPlan, status: UserStatus, createdAt: string }> } }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
+export type SearchShelvesQuery = { __typename?: 'Query', searchShelves: { __typename?: 'SearchShelfConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchShelfEdge', encodedSearchCursor: string, node: { __typename?: 'PrivateShelf', id: string, name: string, encodedStructure: string, encodedStructureByteSize: number, totalShelfNodes: number, totalMaterials: number, maxWidth: number, maxDepth: number, lastAnalyzedAt: string, updatedAt: string, createdAt: string, owner: Array<{ __typename?: 'PublicUser', publicId: string, name: string, displayName: string, role: UserRole, plan: UserPlan, status: UserStatus, createdAt: string }> } }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
 
 export const FragmentedBasicPrivateShelfFragmentDoc = gql`
     fragment FragmentedBasicPrivateShelf on PrivateShelf {
@@ -406,6 +407,7 @@ export const FragmentedBasicPrivateShelfFragmentDoc = gql`
   totalMaterials
   maxWidth
   maxDepth
+  lastAnalyzedAt
   updatedAt
   createdAt
 }

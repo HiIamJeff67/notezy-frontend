@@ -20,6 +20,7 @@ export const CreateShelfResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     encodedStructure: z.base64(),
+    lastAnalyzedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
 });
@@ -40,6 +41,7 @@ export const SynchronizeShelvesRequestSchema = NotezyRequestSchema.extend({
         z.object({
           name: z.string().min(1).max(128),
           encodedStructure: z.base64(),
+          lastAnalyzedAt: z.coerce.date(),
         })
       )
     ),

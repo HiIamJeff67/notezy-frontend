@@ -4,5 +4,6 @@ export * from "./defaultFakeUser.constant";
 export * from "./defaultLocalStorage.constant";
 export * from "./defaultThemes.constant";
 export * from "./shelfLimitations.constant";
+export * from "./triggerLimitations.constant";
 export * from "./url.constant";
 export * from "./version.constants";

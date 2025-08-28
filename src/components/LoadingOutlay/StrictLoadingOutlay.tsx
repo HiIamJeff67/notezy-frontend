@@ -2,8 +2,14 @@
 
 import { useTheme } from "@/hooks";
 
-const StrictLoadingOutlay = () => {
+interface StrictLoadingOutlayProps {
+  condition?: boolean;
+}
+
+const StrictLoadingOutlay = ({ condition }: StrictLoadingOutlayProps) => {
   const themeManager = useTheme();
+
+  if (condition !== undefined && condition !== null && !condition) return <></>;
 
   return (
     <div

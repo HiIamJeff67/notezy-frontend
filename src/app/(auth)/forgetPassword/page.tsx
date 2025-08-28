@@ -72,6 +72,8 @@ const ForgetPasswordPage = () => {
         setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
       } catch (error) {
         toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsLoading(false);
       }
     },
     [email, loadingManager, languageManager, sendAuthCodeMutator]
@@ -79,6 +81,8 @@ const ForgetPasswordPage = () => {
 
   const handleResetPasswordOnSubmit = useCallback(
     async function (): Promise<void> {
+      loadingManager.setIsLoading(true);
+
       try {
         if (newPassword !== confirmNewPassword) {
           throw new Error(
@@ -122,10 +126,14 @@ const ForgetPasswordPage = () => {
 
   return (
     <GridBackground>
-      {(sendAuthCodeMutator.isPending || forgetPasswordMutator.isPending) && (
-        <StrictLoadingOutlay />
-      )}
       <Suspense fallback={<StrictLoadingOutlay />}>
+        <StrictLoadingOutlay
+          condition={
+            sendAuthCodeMutator.isPending ||
+            forgetPasswordMutator.isPending ||
+            router.isNavigating
+          }
+        />
         <AuthPanel
           title={languageManager.t(tKey.auth.resetPassword)}
           subtitle={`${languageManager.t(
