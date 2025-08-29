@@ -26,6 +26,7 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { BellIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
+import ShelfMenu from "../ShelfMenu/ShelfMenu";
 
 export function AppSidebar() {
   const router = useAppRouter();
@@ -73,7 +74,9 @@ export function AppSidebar() {
           </Button>
         </SidebarHeader>
         <SidebarSeparator className="w-full m-0 p-0" />
-        <SidebarContent>{}</SidebarContent>
+        <SidebarContent>
+          <ShelfMenu></ShelfMenu>
+        </SidebarContent>
         <SidebarSeparator className="w-full m-0 p-0" />
         <SidebarFooter className="w-full p-0 m-0">
           <Menubar className="w-full h-full flex flex-row justify-start items-center rounded-none bg-transparent border-none">

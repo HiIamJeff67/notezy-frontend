@@ -4,7 +4,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { queryClient } from "@shared/api/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { ApolloProvider } from "./ApolloProvider";
+
+import { ApolloWrapper } from "./ApolloProvider";
 import { LanguageProvider } from "./LanguageProvider";
 import { LoadingProvider } from "./LoadingProvider";
 import { ShelfProvider } from "./ShelfProvider";
@@ -13,7 +14,7 @@ import { UserDataProvider } from "./UserDataProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ApolloProvider>
+    <ApolloWrapper>
       <QueryClientProvider client={queryClient}>
         <LoadingProvider>
           <LanguageProvider>
@@ -27,6 +28,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           </LanguageProvider>
         </LoadingProvider>
       </QueryClientProvider>
-    </ApolloProvider>
+    </ApolloWrapper>
   );
 }

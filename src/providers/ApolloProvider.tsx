@@ -1,11 +1,14 @@
 "use client";
+import { makeClient } from "@/graphql/apollo-client";
+// ^ this file needs the "use client" pragma
 
-import { apolloClient } from "@/graphql/apollo-client";
-import { ApolloProvider as BaseApolloProvider } from "@apollo/client";
-import React from "react";
+import { ApolloNextAppProvider } from "@apollo/client-integration-nextjs";
 
-export const ApolloProvider = ({ children }: { children: React.ReactNode }) => {
+// you need to create a component to wrap your app in
+export function ApolloWrapper({ children }: React.PropsWithChildren) {
   return (
-    <BaseApolloProvider client={apolloClient}>{children}</BaseApolloProvider>
+    <ApolloNextAppProvider makeClient={makeClient}>
+      {children}
+    </ApolloNextAppProvider>
   );
-};
+}

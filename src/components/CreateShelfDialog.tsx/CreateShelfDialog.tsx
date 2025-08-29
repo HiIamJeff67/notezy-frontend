@@ -40,7 +40,7 @@ const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
     } finally {
       loadingManager.setIsLoading(false);
     }
-  }, [shelfManager]);
+  }, [newShelfName, loadingManager, languageManager, shelfManager]);
 
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>

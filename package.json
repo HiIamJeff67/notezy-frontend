@@ -9,12 +9,13 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "codegen": "graphql-codegen --config codegen.yml",
-    "codegen:watch": "graphql-codegen --config codegen.yml --watch",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
     "recodegen": "rm -rf src/graphql/generated && npm run codegen"
   },
   "dependencies": {
-    "@apollo/client": "^3.13.9",
+    "@apollo/client": "^4.0.2",
+    "@apollo/client-integration-nextjs": "^0.13.0",
     "@hookform/resolvers": "^5.2.1",
     "@msgpack/msgpack": "^3.1.2",
     "@radix-ui/react-aspect-ratio": "^1.1.7",

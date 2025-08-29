@@ -1,16 +1,15 @@
 "use client";
 
-import { apolloClient } from "@/graphql/apollo-client";
 import {
   FragmentedPrivateShelfFragmentDoc,
-  useSearchShelvesLazyQuery,
-} from "@/graphql/generated/hooks";
-import {
   PrivateShelf,
-  SearchShelfConnection,
+  SearchShelfEdge,
   SearchShelfSortBy,
   SearchSortOrder,
-} from "@/graphql/generated/types";
+} from "@/graphql/generated/graphql";
+import { useSearchShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
+import { useApolloClient } from "@apollo/client/react";
+
 import { useCreateShelf } from "@shared/api/hooks/shelf.hook";
 import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
@@ -19,9 +18,10 @@ import { Range } from "@shared/types/range.type";
 import React, { createContext, useCallback, useRef, useState } from "react";
 
 interface ShelfContextType {
-  getSearchShelvesConnectionFromCache: () => SearchShelfConnection;
+  compressedShelves: SearchShelfEdge[];
   searchCompressedShelves: () => Promise<void>;
   loadMoreCompressedShelves: () => Promise<void>;
+  isFetching: boolean;
   expandedShelves: LRUCache<string, ShelfSummary>;
   currentExpandedRange: Range;
   isExpanding: boolean;
@@ -44,6 +44,7 @@ export const ShelfProvider = ({
   children: React.ReactNode;
   maxNumOfExpandedShelves: number;
 }) => {
+  const apolloClient = useApolloClient();
   const createShelfMutator = useCreateShelf();
 
   const [searchInput, setSearchInput] = useState<{
@@ -67,7 +68,6 @@ export const ShelfProvider = ({
   const forceUpdate = useCallback(() => {
     setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
   }, []);
-
   const expandedShelvesActions = {
     setShelf: useCallback(
       (shelfId: string, shelf: ShelfSummary) => {
@@ -93,18 +93,10 @@ export const ShelfProvider = ({
   };
 
   const [executeSearch, { data, loading, error, fetchMore }] =
-    useSearchShelvesLazyQuery({
-      notifyOnNetworkStatusChange: true,
-      onCompleted: _ => {
-        forceUpdate();
-      },
-      onError: error => {
-        console.error("❌ Search error:", error);
-      },
-    });
+    useSearchShelvesLazyQuery();
 
   const getSearchShelvesConnectionFromCache = useCallback(() => {
-    return (data?.searchShelves as SearchShelfConnection) || [];
+    return data?.searchShelves;
   }, [data]);
 
   const searchCompressedShelves = async () => {
@@ -121,9 +113,13 @@ export const ShelfProvider = ({
   };
 
   const loadMoreCompressedShelves = async () => {
-    const compressedShelves = getSearchShelvesConnectionFromCache();
-    if (compressedShelves.searchEdges.length === 0) return;
-    const pageInfo = compressedShelves?.searchPageInfo;
+    const searchShelvesConnection = getSearchShelvesConnectionFromCache();
+    if (
+      !searchShelvesConnection ||
+      searchShelvesConnection.searchEdges.length === 0
+    )
+      return;
+    const pageInfo = searchShelvesConnection?.searchPageInfo;
     if (!pageInfo.hasNextPage) return;
 
     await fetchMore({
@@ -145,14 +141,17 @@ export const ShelfProvider = ({
       setIsExpanding(true);
 
       const compressedShelves =
-        getSearchShelvesConnectionFromCache().searchEdges;
+        getSearchShelvesConnectionFromCache()?.searchEdges;
+      if (!compressedShelves) return;
       let remaining = amount;
       while (
         remaining > 0 &&
         currentExpandedRange.end < compressedShelves.length - 1
       ) {
         const targetIndex = currentExpandedRange.end + 1;
-        const nextExpandedShelf = compressedShelves[targetIndex].node;
+        const nextExpandedShelf = compressedShelves[targetIndex]
+          .node as PrivateShelf;
+        if (!nextExpandedShelf) return;
 
         try {
           await new Promise<void>(resolve => {
@@ -219,11 +218,14 @@ export const ShelfProvider = ({
       setIsExpanding(true);
 
       const compressedShelves =
-        getSearchShelvesConnectionFromCache().searchEdges;
+        getSearchShelvesConnectionFromCache()?.searchEdges;
+      if (!compressedShelves) return;
       let remaining = amount;
       while (remaining > 0 && currentExpandedRange.start > 0) {
         const targetIndex = currentExpandedRange.start - 1;
-        const previousExpandedShelf = compressedShelves[targetIndex].node;
+        const previousExpandedShelf = compressedShelves[targetIndex]
+          .node as PrivateShelf;
+        if (!previousExpandedShelf) return;
 
         try {
           // Non-blocking decoding
@@ -324,6 +326,7 @@ export const ShelfProvider = ({
           if (exists) return existing;
           const writtenRef = apolloClient.cache.writeFragment({
             fragment: FragmentedPrivateShelfFragmentDoc,
+            fragmentName: "FragmentedPrivateShelf",
             data: shelfNode,
           });
           const newEdge = {
@@ -359,9 +362,12 @@ export const ShelfProvider = ({
   const synchronizeShelves = async (index: number): Promise<void> => {};
 
   const contextValue: ShelfContextType = {
-    getSearchShelvesConnectionFromCache: getSearchShelvesConnectionFromCache,
+    // we MUST export the `data` from GraphQL Query directly
+    compressedShelves:
+      (data?.searchShelves?.searchEdges as SearchShelfEdge[]) || [],
     searchCompressedShelves: searchCompressedShelves,
     loadMoreCompressedShelves: loadMoreCompressedShelves,
+    isFetching: loading,
     expandedShelves: expandedShelvesRef.current,
     currentExpandedRange: currentExpandedRange,
     isExpanding: isExpanding,
