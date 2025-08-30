@@ -3,7 +3,11 @@ import CreateShelfDialog from "@/components/CreateShelfDialog.tsx/CreateShelfDia
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import { Button } from "@/components/ui/button";
-import { Collapsible } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Menubar,
   MenubarContent,
@@ -16,7 +20,15 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -24,9 +36,9 @@ import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { BellIcon, SettingsIcon } from "lucide-react";
+import { BellIcon, BookOpenIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
-import ShelfMenu from "../ShelfMenu/ShelfMenu";
+import ShelfMenu from "./ShelfMenu";
 
 export function AppSidebar() {
   const router = useAppRouter();
@@ -53,29 +65,74 @@ export function AppSidebar() {
           isOpen={currentDisplayPopup === "CreateShelfDialog"}
           onClose={() => setCurrentDisplayPopup("None")}
         />
-        <SidebarHeader className="flex flex-col justify-center items-center p-2">
-          <div className="w-full flex justify-between items-center bg-muted hover:bg-primary/50 rounded-sm pr-1">
-            <Button
-              className="w-4/5 bg-transparent hover:bg-transparent overflow-hidden flex justify-start select-none"
-              onClick={() => setCurrentDisplayPopup("CreateShelfDialog")}
-            >
-              Create a new shelf
-            </Button>
-            <SidebarTrigger className="h-full bg-transparent" />
-          </div>
-          <Button className="w-full bg-muted hover:bg-primary/40 flex justify-between items-center select-none">
-            Daily Routine
-          </Button>
-          <Button className="w-full bg-muted hover:bg-primary/40 flex justify-between items-center select-none">
-            Community
-          </Button>
-          <Button className="w-full bg-muted hover:bg-primary/40 flex justify-between items-center select-none">
-            Upgrade
-          </Button>
+        <SidebarHeader className="flex flex-col justify-center items-center p-0">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem className="flex justify-between items-center hover:bg-primary/50 rounded-sm pr-1">
+                  <Button className="w-4/5 bg-transparent hover:bg-transparent flex justify-between items-center select-none">
+                    Dashboard
+                  </Button>
+                  <SidebarTrigger
+                    variant={"secondary"}
+                    className="h-full bg-transparent hover:bg-primary/60"
+                  />
+                </SidebarMenuItem>
+                {/* <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
+                <Button
+                  className="w-full bg-transparent hover:bg-primary/60 overflow-hidden flex justify-start select-none"
+                  onClick={() => setCurrentDisplayPopup("CreateShelfDialog")}
+                >
+                  Create a new shelf
+                </Button>
+              </SidebarMenuItem> */}
+                <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
+                  <Button className="w-full bg-transparent hover:bg-transparent flex justify-between items-center select-none">
+                    Daily Routine
+                  </Button>
+                </SidebarMenuItem>
+                <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
+                  <Button className="w-full bg-transparent hover:bg-transparent flex justify-between items-center select-none">
+                    Community
+                  </Button>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarHeader>
         <SidebarSeparator className="w-full m-0 p-0" />
-        <SidebarContent>
-          <ShelfMenu></ShelfMenu>
+        <SidebarContent className="overflow-y-auto">
+          <SidebarGroup>
+            <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <Collapsible className="group/collapsible">
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="rounded-sm" asChild>
+                        <Button className="flex flex-row justify-start items-center gap-2 bg-transparent hover:bg-transparent">
+                          <BookOpenIcon size={16} />
+                          <span>Shelves</span>
+                        </Button>
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <SidebarMenuAction
+                      onClick={() =>
+                        setCurrentDisplayPopup("CreateShelfDialog")
+                      }
+                    >
+                      <PlusIcon />
+                    </SidebarMenuAction>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <ShelfMenu></ShelfMenu>
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
         <SidebarSeparator className="w-full m-0 p-0" />
         <SidebarFooter className="w-full p-0 m-0">

@@ -56,8 +56,8 @@ export const ShelfProvider = ({
   });
   const [_, setUpdateTrigger] = useState(0);
   const [currentExpandedRange, setCurrentExpandedRange] = useState({
-    start: 0,
-    end: maxNumOfExpandedShelves,
+    start: -1,
+    end: -1,
   });
   const [isExpanding, setIsExpanding] = useState<boolean>(false);
 
@@ -74,30 +74,29 @@ export const ShelfProvider = ({
         expandedShelvesRef.current.set(shelfId, shelf);
         forceUpdate();
       },
-      [forceUpdate]
+      [forceUpdate, expandedShelvesRef.current]
     ),
-    getShelf: useCallback((shelfId: string) => {
-      return expandedShelvesRef.current.get(shelfId);
-    }, []),
+    getShelf: useCallback(
+      (shelfId: string) => {
+        return expandedShelvesRef.current.get(shelfId);
+      },
+      [expandedShelvesRef.current]
+    ),
     deleteShelf: useCallback(
       (shelfId: string) => {
         expandedShelvesRef.current.delete(shelfId);
         forceUpdate();
       },
-      [forceUpdate]
+      [forceUpdate, expandedShelvesRef.current]
     ),
     clear: useCallback(() => {
       expandedShelvesRef.current.clear();
       forceUpdate();
-    }, [forceUpdate]),
+    }, [forceUpdate, expandedShelvesRef.current]),
   };
 
   const [executeSearch, { data, loading, error, fetchMore }] =
     useSearchShelvesLazyQuery();
-
-  const getSearchShelvesConnectionFromCache = useCallback(() => {
-    return data?.searchShelves;
-  }, [data]);
 
   const searchCompressedShelves = async () => {
     await executeSearch({
@@ -113,7 +112,7 @@ export const ShelfProvider = ({
   };
 
   const loadMoreCompressedShelves = async () => {
-    const searchShelvesConnection = getSearchShelvesConnectionFromCache();
+    const searchShelvesConnection = data?.searchShelves;
     if (
       !searchShelvesConnection ||
       searchShelvesConnection.searchEdges.length === 0
@@ -140,15 +139,16 @@ export const ShelfProvider = ({
       if (isExpanding) return;
       setIsExpanding(true);
 
-      const compressedShelves =
-        getSearchShelvesConnectionFromCache()?.searchEdges;
+      const compressedShelves = data?.searchShelves?.searchEdges;
       if (!compressedShelves) return;
-      let remaining = amount;
-      while (
-        remaining > 0 &&
-        currentExpandedRange.end < compressedShelves.length - 1
-      ) {
-        const targetIndex = currentExpandedRange.end + 1;
+      const decodedAmount = Math.min(
+        amount,
+        compressedShelves.length - currentExpandedRange.end - 1
+      );
+      if (currentExpandedRange.end >= compressedShelves.length - 1) return;
+
+      for (let i = 1; i <= decodedAmount; i++) {
+        const targetIndex = currentExpandedRange.end + i;
         const nextExpandedShelf = compressedShelves[targetIndex]
           .node as PrivateShelf;
         if (!nextExpandedShelf) return;
@@ -161,12 +161,7 @@ export const ShelfProvider = ({
                   nextExpandedShelf.encodedStructure
                 );
 
-                setCurrentExpandedRange(prev => ({
-                  start: prev.start + 1,
-                  end: prev.end + 1,
-                }));
-
-                expandedShelvesActions.setShelf(nextRoot.id, {
+                expandedShelvesActions.setShelf(nextRoot.Id, {
                   root: nextRoot,
                   encodedStructureByteSize:
                     nextExpandedShelf.encodedStructureByteSize,
@@ -177,11 +172,9 @@ export const ShelfProvider = ({
                   maxDepth: nextExpandedShelf.maxDepth,
                   uniqueMaterialIds: [],
                 });
-
-                console.log(`✅ Decoded next shelf at index ${targetIndex}`);
               } catch (error) {
                 console.error(
-                  `❌ Failed to decode shelf at index ${targetIndex}:`,
+                  `Failed to decode shelf at index ${targetIndex}:`,
                   error
                 );
               } finally {
@@ -190,21 +183,22 @@ export const ShelfProvider = ({
             }, 0);
           });
 
-          if (remaining > 0) {
-            await new Promise(resolve => setTimeout(resolve, 5));
-          }
+          await new Promise(resolve => setTimeout(resolve, 5));
         } catch (error) {
           console.error(
-            `❌ Error processing shelf at index ${targetIndex}:`,
+            `Error processing shelf at index ${targetIndex}:`,
             error
           );
-        } finally {
-          remaining--;
         }
       }
+      setCurrentExpandedRange(prev => ({
+        start: prev.start + decodedAmount,
+        end: prev.end + decodedAmount,
+      }));
       setIsExpanding(false);
     },
     [
+      data,
       isExpanding,
       currentExpandedRange,
       expandedShelvesActions,
@@ -217,11 +211,12 @@ export const ShelfProvider = ({
       if (isExpanding) return;
       setIsExpanding(true);
 
-      const compressedShelves =
-        getSearchShelvesConnectionFromCache()?.searchEdges;
+      const compressedShelves = data?.searchShelves?.searchEdges;
       if (!compressedShelves) return;
-      let remaining = amount;
-      while (remaining > 0 && currentExpandedRange.start > 0) {
+      let remaining = Math.min(amount, currentExpandedRange.start + 1);
+      if (currentExpandedRange.start <= 0) return;
+
+      while (remaining-- > 0) {
         const targetIndex = currentExpandedRange.start - 1;
         const previousExpandedShelf = compressedShelves[targetIndex]
           .node as PrivateShelf;
@@ -242,7 +237,7 @@ export const ShelfProvider = ({
                   end: prev.end - 1,
                 }));
 
-                expandedShelvesActions.setShelf(previousRoot.id, {
+                expandedShelvesActions.setShelf(previousRoot.Id.toString(), {
                   root: previousRoot,
                   encodedStructureByteSize:
                     previousExpandedShelf.encodedStructureByteSize,
@@ -268,8 +263,6 @@ export const ShelfProvider = ({
             }, 0); // set to 0 to give way the execution
           });
 
-          remaining--;
-
           // Make another tiny timeout for the frontend UI
           if (remaining > 0) {
             await new Promise(resolve => setTimeout(resolve, 5));
@@ -279,11 +272,11 @@ export const ShelfProvider = ({
             `❌ Error processing shelf at index ${targetIndex}:`,
             error
           );
-          remaining--;
         }
       }
     },
     [
+      data,
       isExpanding,
       currentExpandedRange,
       expandedShelvesActions,

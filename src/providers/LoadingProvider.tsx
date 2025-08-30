@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-} from "react";
+import React, { createContext, useCallback, useMemo, useReducer } from "react";
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -134,10 +128,6 @@ export const LoadingProvider = ({
     strictLoadingStates: {},
     laxLoadingStates: {},
   });
-
-  useEffect(() => {
-    console.log(state.strictLoadingStates);
-  }, [state.strictLoadingStates]);
 
   const setIsLoading = useCallback((loading: boolean) => {
     dispatch({ type: "SET_LOADING", payload: loading });

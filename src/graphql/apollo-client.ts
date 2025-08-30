@@ -23,6 +23,7 @@ export const makeClient = () => {
   });
 
   const errorLink = new ErrorLink(({ error, forward, operation, result }) => {
+    if (error.name === "AbortError") forward(operation);
     if (error) {
       console.error("[GraphQL error] GraphQL Errors:", error);
     }
