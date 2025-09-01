@@ -10,8 +10,8 @@ import {
   SynchronizeShelvesRequestSchema,
 } from "@shared/api/interfaces/shelf.interface";
 import { queryKeys } from "@shared/api/queryKeys";
-import { toUUID } from "@shared/types/uuid_v4.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UUID } from "crypto";
 import { ZodError } from "zod";
 
 export const useCreateShelf = () => {
@@ -24,7 +24,7 @@ export const useCreateShelf = () => {
     },
     onSuccess: response => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.shelf.myOrShared(toUUID(response.data.id)),
+        queryKey: queryKeys.shelf.myOrShared(response.data.id as UUID),
       });
     },
     onError: error => {
@@ -61,7 +61,7 @@ export const useSynchronizeShelves = () => {
     onSuccess: (_, variables) => {
       variables.body.shelfIds.forEach(shelfId => {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.shelf.other(toUUID(shelfId)),
+          queryKey: queryKeys.shelf.other(shelfId as UUID),
         });
       });
     },

@@ -1,10 +1,13 @@
 import { decode, encode } from "@msgpack/msgpack";
 import {
   DefaultShelfManipulatorIterations,
+  MaxShelfDepth,
   MaxShelfManipulatorIterations,
-} from "../constants";
-import { isValidUUID, UUID } from "../types/uuid_v4.type";
-import { ShelfNode } from "./shelfNode";
+  MaxShelfWidth,
+} from "@shared/constants";
+import { ShelfNode } from "@shared/lib/shelfNode";
+import { isValidUUID, uint8ArrayToUUID } from "@shared/types/uuid_v4.type";
+import { UUID } from "crypto";
 
 // This shelf summary structure maybe different from the backend,
 // Since we may require more information for the client user
@@ -21,23 +24,30 @@ export interface ShelfSummary {
 
 export class ShelfManipulator {
   private static maxTraverseCount: number = DefaultShelfManipulatorIterations;
-  private static maxShelfWidth: number = DefaultShelfManipulatorIterations;
-  private static maxShelfDepth: number = 100; // note that the maximum width is bounded by the msgpack encoding algorithm
+  private static maxShelfWidth: number = MaxShelfWidth;
+  private static maxShelfDepth: number = MaxShelfDepth; // note that the maximum width is bounded by the msgpack encoding algorithm
 
   constructor(maxTraverseCount: number = DefaultShelfManipulatorIterations) {
-    ShelfManipulator.maxTraverseCount = maxTraverseCount;
-    ShelfManipulator.maxShelfWidth = maxTraverseCount; // same as the iteration
+    ShelfManipulator.maxTraverseCount = Math.min(
+      MaxShelfManipulatorIterations,
+      maxTraverseCount
+    );
+    ShelfManipulator.maxShelfWidth = Math.min(MaxShelfWidth, maxTraverseCount);
+    ShelfManipulator.maxShelfWidth = Math.min(MaxShelfDepth, maxTraverseCount);
   }
 
-  private static estimateSingleNodeSize(node: ShelfNode): number {
+  private static estimateSingleNodeSize(
+    node: ShelfNode,
+    materialNameCharacterCount: number
+  ): number {
     // 36 bytes for UUID + 20 bytes for the approximate structure cost
     // + approximate estimate UTF-8 to be 2 bytes/char
     let size = 56 + node.Name.length * 2;
 
     const childrenCount = Object.keys(node.Children).length;
-    const materialCount = Object.keys(node.MaterialIds).length;
+    const materialCount = Object.keys(node.MaterialIdToName).length;
     size += (childrenCount + materialCount) * 36; // for each key of UUID data type
-    size += (childrenCount + materialCount) * 1; // null/reference overhead and boolean value
+    size += childrenCount + materialNameCharacterCount * 2; // null/reference overhead and string value with 10 characters
 
     return size;
   }
@@ -53,7 +63,9 @@ export class ShelfManipulator {
     );
   }
 
-  // Check if `desiredChild` is a child of `desiredParent`
+  /* ============================== Algorithms ============================== */
+
+  /* Check if `desiredChild` is a child of `desiredParent` */
   public static isChild(
     desiredParent: ShelfNode,
     desiredChild: ShelfNode
@@ -111,6 +123,145 @@ export class ShelfManipulator {
     }
 
     return false;
+  }
+
+  /* Try to get the information of the `desiredChild` from the `desiredParent`
+   * if the `desiredChild` is a child of `desiredParent`,
+   * then return the width of the layer of `desiredChild`, and the depth from the parent to the child as an object,
+   *      and the subWidth to indicate the width of the child layer of `desiredChild`
+   * else return { width: -1, subWidth: -1, depth: -1 } to indicate that the `desiredChild` is not a child of `desiredParent`.
+   * Note that if it return { width: 1, subWidth: x, depth: 0 }, x is the width of the child layer of `desiredParent`,
+   *      then the `desiredChild` == `desiredParent`.
+   */
+  public static getChildInformation(
+    desiredParent: ShelfNode,
+    desiredChild: ShelfNode
+  ): { width: number; subWidth: number; depth: number } {
+    if (desiredParent == desiredChild)
+      return {
+        width: 1,
+        subWidth: Object.entries(desiredParent.Children).length,
+        depth: 0,
+      };
+
+    let traverseCount: number = 0,
+      maxWidth: number = 0,
+      maxDepth: number = 0;
+
+    const visited: Set<UUID> = new Set<UUID>();
+    const queue: ShelfNode[] = [desiredParent];
+
+    while (queue.length > 0) {
+      let levelSize = queue.length;
+      const currentWidth = levelSize;
+      let isFound = false;
+      maxWidth = Math.max(maxWidth, levelSize);
+      maxDepth++;
+
+      if (maxDepth > ShelfManipulator.maxShelfDepth) {
+        throw new Error(
+          `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManipulator.maxShelfDepth}`
+        );
+      }
+      if (maxWidth > ShelfManipulator.maxShelfWidth) {
+        throw new Error(
+          `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManipulator.maxShelfWidth}`
+        );
+      }
+
+      while (levelSize--) {
+        if (traverseCount > ShelfManipulator.maxTraverseCount) {
+          throw new Error(
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManipulator.maxTraverseCount}`
+          );
+        }
+
+        const current = queue.shift()!;
+        traverseCount++;
+
+        if (visited.has(current.Id)) {
+          throw new Error(`Cycle detected at node: ${current.Id}`);
+        }
+        visited.add(current.Id);
+
+        if (current.Id == desiredChild.Id) {
+          isFound = true;
+          // don't return here, wait until the while(the current layer) done
+        }
+
+        for (const child of Object.values(current.Children)) {
+          if (child) {
+            queue.push(child);
+          }
+        }
+      }
+
+      if (isFound) {
+        return { width: currentWidth, subWidth: queue.length, depth: maxDepth };
+      }
+    }
+
+    return { width: -1, subWidth: -1, depth: -1 };
+  }
+
+  public static getAllMaterials(node: ShelfNode): { id: UUID; name: string }[] {
+    let traverseCount: number = 0,
+      maxWidth: number = 0,
+      maxDepth: number = 0;
+
+    const visited: Set<UUID> = new Set<UUID>();
+    const queue: ShelfNode[] = [node];
+    const uniqueMaterials: Record<UUID, string> = {};
+
+    while (queue.length > 0) {
+      let levelSize = queue.length;
+      maxWidth = Math.max(maxWidth, levelSize);
+      maxDepth++;
+
+      if (maxDepth > ShelfManipulator.maxShelfDepth) {
+        throw new Error(
+          `Maximum depth of ${maxDepth} exceeded the limit of ${ShelfManipulator.maxShelfDepth}`
+        );
+      }
+      if (maxWidth > ShelfManipulator.maxShelfWidth) {
+        throw new Error(
+          `Maximum width of ${maxWidth} exceeded the limit of ${ShelfManipulator.maxShelfWidth}`
+        );
+      }
+
+      while (levelSize--) {
+        if (traverseCount > ShelfManipulator.maxTraverseCount) {
+          throw new Error(
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfManipulator.maxTraverseCount}`
+          );
+        }
+
+        const current = queue.shift()!;
+        traverseCount++;
+
+        if (visited.has(current.Id)) {
+          return [];
+        }
+        visited.add(current.Id);
+
+        for (const [materialId, materialName] of Object.entries(
+          current.MaterialIdToName
+        )) {
+          uniqueMaterials[materialId as UUID] = materialName;
+        }
+
+        for (const child of Object.values(current.Children)) {
+          if (child) {
+            queue.push(child);
+          }
+        }
+      }
+    }
+
+    return Object.entries(uniqueMaterials).map(([id, name]) => ({
+      id: id as UUID,
+      name: name,
+    }));
   }
 
   public static isChildrenSimple(root: ShelfNode): {
@@ -207,8 +358,9 @@ export class ShelfManipulator {
         traverseCount++;
 
         // convert the id of Uint8Array to the actual UUID form
+        // console.log("test: ", current.Id);
         if (!isValidUUID(current.Id)) {
-          current.Id = Buffer.from(current.Id).toString("hex") as UUID;
+          current.Id = uint8ArrayToUUID(current.Id) as UUID;
         }
 
         if (visited.has(current.Id)) {
@@ -271,11 +423,33 @@ export class ShelfManipulator {
         }
         visited.add(current.Id);
 
-        encodedStructureByteSize += this.estimateSingleNodeSize(current);
+        const uniqueMaterialNamesSet: Set<string> = new Set<string>();
+        let materialNameCharacterCount: number = 0;
 
-        for (const materialId of Object.keys(current.MaterialIds)) {
+        for (const [materialId, materialName] of Object.entries(
+          current.MaterialIdToName
+        )) {
+          if (uniqueMaterialNamesSet.has(materialName)) {
+            throw new Error(
+              `Repeated material names detected in the same shelf`
+            );
+          }
+          uniqueMaterialNamesSet.add(materialName);
+
+          if (uniqueMaterialIdsSet.has(materialId as UUID)) {
+            throw new Error(
+              `Repeated material ids detected in the same shelf tree`
+            );
+          }
           uniqueMaterialIdsSet.add(materialId as UUID);
+
+          materialNameCharacterCount += materialName.length;
         }
+
+        encodedStructureByteSize += this.estimateSingleNodeSize(
+          current,
+          materialNameCharacterCount
+        );
 
         for (const child of Object.values(current.Children)) {
           if (child) queue.push(child);
@@ -295,18 +469,20 @@ export class ShelfManipulator {
     };
   }
 
-  public static encode(node: ShelfNode): Uint8Array {
+  /* ============================== Encoding & Decoding ============================== */
+
+  public static encode(root: ShelfNode): Uint8Array {
     // Make sure to do the circular check first by using
     // either isChildrenCircular or analysisAndGenerateSummary()
-    return encode(node);
+    return encode(root);
   }
 
-  public static safeEncode(node: ShelfNode): Uint8Array {
-    const { isSimple } = this.isChildrenSimple(node);
+  public static safeEncode(root: ShelfNode): Uint8Array {
+    const { isSimple } = this.isChildrenSimple(root);
     if (!isSimple) {
       throw new Error("Failed to encode, cycle detected");
     }
-    return encode(node);
+    return encode(root);
   }
 
   public static decode(data: Uint8Array): ShelfNode {
@@ -314,14 +490,13 @@ export class ShelfManipulator {
   }
 
   public static safeDecode(data: Uint8Array): ShelfNode {
-    const root = decode(data) as ShelfNode;
+    const root = decode(data, { rawStrings: false }) as ShelfNode;
     const { isSimple } = this.isChildrenSimpleWithUUIDConversion(root);
     if (!isSimple) {
       throw new Error("Failed to decode, cycle detected");
     }
     return root;
   }
-
   /*
    * This method will encode the shelf node
    * from shelf node data structure to base64 string
@@ -331,8 +506,8 @@ export class ShelfManipulator {
    * and the API will first serialize it to the json form
    * which is encoding it to base64 string
    */
-  public static encodeToBase64(node: ShelfNode): string {
-    const encoded = this.safeEncode(node);
+  public static encodeToBase64(root: ShelfNode): string {
+    const encoded = this.safeEncode(root);
     return Buffer.from(encoded).toString("base64");
   }
 
@@ -348,6 +523,19 @@ export class ShelfManipulator {
   public static decodeFromBase64(base64: string): ShelfNode {
     const buffer = Buffer.from(base64, "base64");
     return this.safeDecode(new Uint8Array(buffer));
+  }
+
+  /* ============================== CRUD operations ============================== */
+
+  public static createShelfNode(destination: ShelfNode, name: string) {
+    const newId = crypto.randomUUID() as UUID;
+    const newSubShelfNode: ShelfNode = {
+      Id: newId,
+      Name: name,
+      Children: {},
+      MaterialIdToName: {},
+    };
+    destination.Children[newId] = newSubShelfNode;
   }
 
   public static directlyInsertShelfNode(
@@ -367,5 +555,16 @@ export class ShelfManipulator {
     }
 
     destination.Children[target.Id] = target;
+  }
+
+  public static deleteShelfNode(
+    parent: ShelfNode,
+    target: ShelfNode
+  ): { id: UUID; name: string }[] {
+    if (parent == target) return [];
+
+    const deletedMaterials = this.getAllMaterials(target);
+    delete parent.Children[target.Id];
+    return deletedMaterials;
   }
 }

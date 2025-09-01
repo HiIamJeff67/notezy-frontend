@@ -29,15 +29,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
+  SidebarMenuSubItem,
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useShelf } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { BellIcon, BookOpenIcon, PlusIcon, SettingsIcon } from "lucide-react";
-import { useState } from "react";
+import { BellIcon, PlusIcon, SettingsIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import ShelfIcon from "../icons/ShelfIcon";
 import ShelfMenu from "./ShelfMenu";
 
 export function AppSidebar() {
@@ -45,6 +47,20 @@ export function AppSidebar() {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
+  const shelfManager = useShelf();
+
+  useEffect(() => {
+    const initSearchCompressedShelves = async () => {
+      await shelfManager.searchCompressedShelves();
+    };
+    initSearchCompressedShelves();
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      shelfManager.expandShelvesForward(50);
+    }, 1000);
+  }, [shelfManager.compressedShelves]);
 
   const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
     "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
@@ -78,14 +94,6 @@ export function AppSidebar() {
                     className="h-full bg-transparent hover:bg-primary/60"
                   />
                 </SidebarMenuItem>
-                {/* <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
-                <Button
-                  className="w-full bg-transparent hover:bg-primary/60 overflow-hidden flex justify-start select-none"
-                  onClick={() => setCurrentDisplayPopup("CreateShelfDialog")}
-                >
-                  Create a new shelf
-                </Button>
-              </SidebarMenuItem> */}
                 <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
                   <Button className="w-full bg-transparent hover:bg-transparent flex justify-between items-center select-none">
                     Daily Routine
@@ -111,7 +119,7 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton className="rounded-sm" asChild>
                         <Button className="flex flex-row justify-start items-center gap-2 bg-transparent hover:bg-transparent">
-                          <BookOpenIcon size={16} />
+                          <ShelfIcon size={16} />
                           <span>Shelves</span>
                         </Button>
                       </SidebarMenuButton>
@@ -125,7 +133,9 @@ export function AppSidebar() {
                     </SidebarMenuAction>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        <ShelfMenu></ShelfMenu>
+                        <SidebarMenuSubItem>
+                          <ShelfMenu />
+                        </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </SidebarMenuItem>

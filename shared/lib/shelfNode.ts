@@ -1,4 +1,4 @@
-import { UUID } from "../types/uuid_v4.type";
+import { UUID } from "crypto";
 
 /**
  * Since the Backend is using upper case letter as the field name,
@@ -9,5 +9,5 @@ export interface ShelfNode {
   Id: UUID;
   Name: string;
   Children: Record<UUID, ShelfNode | null>;
-  MaterialIds: Record<UUID, boolean>;
+  MaterialIdToName: Record<UUID, string>;
 }

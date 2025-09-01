@@ -7,76 +7,94 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useLoading, useShelf } from "@/hooks";
-import { useEffect } from "react";
+import { FolderSyncIcon } from "lucide-react";
+import { Suspense, useEffect } from "react";
+import ShelfMenuItem from "./ShelfMenuItem";
+import ShelfMenuSkeleton from "./SidebarMenuSkeleton";
 
 const ShelfMenu = () => {
   const loadingManager = useLoading();
   const shelfManager = useShelf();
 
   useEffect(() => {
-    const initSearchCompressedShelves = async () => {
-      await shelfManager.searchCompressedShelves();
-    };
-    initSearchCompressedShelves();
-
     loadingManager.setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    setTimeout(() => {
-      shelfManager.expandShelvesForward(50);
-    }, 1000);
-  }, [shelfManager.compressedShelves]);
-
-  useEffect(() => {
-    if (shelfManager.isExpanding === false) {
-      console.log("expanded shelves: ", shelfManager.expandedShelves);
-    }
-  }, [shelfManager.isExpanding]);
-
   return (
-    <SidebarMenuSubItem>
-      <SidebarMenu>
-        {shelfManager.compressedShelves.map((val, index) => (
-          <Collapsible key={index}>
-            <SidebarMenuItem>
-              <ContextMenu>
-                <ContextMenuTrigger asChild>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      className="rounded-sm"
-                      onContextMenu={() => console.log("test")}
+    <SidebarMenu>
+      {shelfManager.compressedShelves.map((val, index) => {
+        // console.log("id: ", val.node.id);
+        const summary = shelfManager.expandedShelves.get(val.node.id);
+        // console.log("summary: ", summary);
+
+        return (
+          summary && (
+            <Collapsible key={index}>
+              <SidebarMenuItem>
+                <ContextMenu>
+                  <ContextMenuTrigger asChild>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        className="rounded-sm"
+                        onContextMenu={() => console.log("test")}
+                      >
+                        {summary.root.Name}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                  </ContextMenuTrigger>
+                  {!summary.hasChanged && (
+                    <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
+                      <FolderSyncIcon className="max-w-3.5 max-h-3.5" />
+                    </SidebarMenuAction>
+                  )}
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      onClick={() =>
+                        shelfManager.createSubShelf(
+                          summary.root.Id,
+                          summary.root,
+                          "undefined"
+                        )
+                      }
                     >
-                      {val.node.name}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                </ContextMenuTrigger>
-                <ContextMenuContent>
-                  <ContextMenuItem>Add</ContextMenuItem>
-                  <ContextMenuItem>Delete</ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {/* recursive starts here */}
-                  <SidebarMenuSubItem> </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
-    </SidebarMenuSubItem>
+                      Create an new shelf
+                    </ContextMenuItem>
+                    <ContextMenuItem>Create an new material</ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem>Delete</ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <Suspense fallback={<ShelfMenuSkeleton />}>
+                      <SidebarMenuSubItem>
+                        <ShelfMenuItem
+                          summary={summary}
+                          current={summary.root}
+                          depth={0}
+                        />
+                      </SidebarMenuSubItem>
+                    </Suspense>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          )
+        );
+      })}
+    </SidebarMenu>
   );
 };
 

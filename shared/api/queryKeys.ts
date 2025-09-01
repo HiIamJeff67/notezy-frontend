@@ -1,4 +1,4 @@
-import { UUID } from "@shared/types/uuid_v4.type";
+import { UUID } from "crypto";
 
 export const queryKeys = {
   user: {

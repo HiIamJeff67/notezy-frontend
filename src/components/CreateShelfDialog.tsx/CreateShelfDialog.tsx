@@ -33,11 +33,12 @@ const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
         throw new Error("new shelf name must not be empty");
       }
 
-      await shelfManager.createShelf(newShelfName);
+      await shelfManager.createRootShelf(newShelfName);
       onClose();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
+      setNewShelfName("");
       loadingManager.setIsLoading(false);
     }
   }, [newShelfName, loadingManager, languageManager, shelfManager]);

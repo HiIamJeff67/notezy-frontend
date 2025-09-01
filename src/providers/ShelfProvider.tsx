@@ -9,12 +9,13 @@ import {
 } from "@/graphql/generated/graphql";
 import { useSearchShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import { useApolloClient } from "@apollo/client/react";
-
 import { useCreateShelf } from "@shared/api/hooks/shelf.hook";
 import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
+import { ShelfNode } from "@shared/lib/shelfNode";
 import { Range } from "@shared/types/range.type";
+import { UUID } from "crypto";
 import React, { createContext, useCallback, useRef, useState } from "react";
 
 interface ShelfContextType {
@@ -29,7 +30,12 @@ interface ShelfContextType {
   setSearchInput: (input: { query: string; after: string | null }) => void;
   expandShelvesForward: (amount?: number) => void;
   expandShelvesBackward: (amount?: number) => void;
-  createShelf: (name: string) => Promise<void>;
+  createSubShelf: (
+    rootShelfId: UUID,
+    parentShelf: ShelfNode,
+    name: string
+  ) => Promise<void>;
+  createRootShelf: (name: string) => Promise<void>;
   synchronizeShelves: (index: number) => Promise<void>;
 }
 
@@ -160,6 +166,9 @@ export const ShelfProvider = ({
                 const nextRoot = ShelfManipulator.decodeFromBase64(
                   nextExpandedShelf.encodedStructure
                 );
+                console.log("error id:", nextRoot.Id);
+                console.log("correct id:", nextExpandedShelf.id);
+                nextRoot.Id = nextExpandedShelf.id as UUID;
 
                 expandedShelvesActions.setShelf(nextRoot.Id, {
                   root: nextRoot,
@@ -284,7 +293,53 @@ export const ShelfProvider = ({
     ]
   );
 
-  const createShelf = async (name: string): Promise<void> => {
+  /* ============================== Local(Non-API included) operations ============================== */
+
+  const createSubShelf = async (
+    rootShelfId: UUID,
+    parentShelfNode: ShelfNode,
+    name: string
+  ): Promise<void> => {
+    const summary = expandedShelvesActions.getShelf(rootShelfId);
+    if (!summary) {
+      throw new Error(`rootShelfId is invalid`);
+    }
+    const information = ShelfManipulator.getChildInformation(
+      summary.root,
+      parentShelfNode
+    );
+    if (information.width === -1 || information.depth === -1) {
+      throw new Error(
+        `parentShelfNode not found in one of the children of rootShelf`
+      );
+    }
+
+    ShelfManipulator.createShelfNode(parentShelfNode, name);
+    summary.hasChanged = true;
+    summary.totalShelfNodes++;
+    summary.maxWidth = Math.max(
+      summary.maxWidth,
+      Math.max(information.width, information.subWidth + 1)
+    );
+    summary.maxDepth = Math.max(summary.maxDepth, information.depth + 1);
+  };
+
+  const renameSubShelf = async (
+    rootShelfId: UUID,
+    shelfNode: ShelfNode,
+    name: string
+  ) => {
+    const summary = expandedShelvesActions.getShelf(rootShelfId);
+    if (!summary) {
+      throw new Error(`rootShelfId is invalid`);
+    }
+    shelfNode.Name = name;
+    summary.hasChanged = true;
+  };
+
+  /* ============================== API Relative Operations ============================== */
+
+  const createRootShelf = async (name: string): Promise<void> => {
     const userAgent = navigator.userAgent;
     const responseOfCreateShelf = await createShelfMutator.mutateAsync({
       header: {
@@ -354,6 +409,8 @@ export const ShelfProvider = ({
 
   const synchronizeShelves = async (index: number): Promise<void> => {};
 
+  // const deleteShelf = async()
+
   const contextValue: ShelfContextType = {
     // we MUST export the `data` from GraphQL Query directly
     compressedShelves:
@@ -368,7 +425,8 @@ export const ShelfProvider = ({
     setSearchInput: setSearchInput,
     expandShelvesForward: expandShelvesForward,
     expandShelvesBackward: expandShelvesBackward,
-    createShelf: createShelf,
+    createSubShelf: createSubShelf,
+    createRootShelf: createRootShelf,
     synchronizeShelves: synchronizeShelves,
   };
 
