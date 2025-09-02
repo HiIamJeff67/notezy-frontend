@@ -26,11 +26,11 @@ import ShelfMenuSkeleton from "./SidebarMenuSkeleton";
 
 interface ShelfMenuItemProps {
   summary: ShelfSummary;
-  current: ShelfNode;
+  parent: ShelfNode;
   depth: number;
 }
 
-const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
+const ShelfMenuItem = ({ summary, parent, depth }: ShelfMenuItemProps) => {
   const shelfManager = useShelf();
 
   if (depth > MaxShelfDepth) {
@@ -43,10 +43,10 @@ const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
 
   return (
     <SidebarMenu>
-      {Object.entries(current.Children).map(
-        ([shelfId, child], index) =>
-          child && (
-            <Collapsible key={child.Id || index}>
+      {Object.entries(parent.Children).map(
+        ([shelfId, current], index) =>
+          current && (
+            <Collapsible key={current.Id || index}>
               <SidebarMenuItem>
                 <ContextMenu>
                   <ContextMenuTrigger asChild>
@@ -55,16 +55,16 @@ const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
                         className="rounded-sm"
                         onContextMenu={() => {}}
                       >
-                        {child.Name}
+                        {current.Name}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                   </ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem
                       onClick={() =>
-                        shelfManager.createSubShelf(
+                        shelfManager.createChildShelf(
                           summary.root.Id,
-                          child,
+                          current,
                           "undefined"
                         )
                       }
@@ -73,7 +73,13 @@ const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
                     </ContextMenuItem>
                     <ContextMenuItem>Create an new material</ContextMenuItem>
                     <ContextMenuSeparator />
-                    <ContextMenuItem>Delete</ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => {
+                        shelfManager.deleteRootShelf(current.Id);
+                      }}
+                    >
+                      Delete
+                    </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
                 <CollapsibleContent>
@@ -83,7 +89,7 @@ const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
                         <ShelfMenuItem
                           key={shelfId}
                           summary={summary}
-                          current={child}
+                          parent={current}
                           depth={depth + 1}
                         />
                       </SidebarMenuSubItem>
@@ -95,7 +101,7 @@ const ShelfMenuItem = ({ summary, current, depth }: ShelfMenuItemProps) => {
           )
       )}
 
-      {Object.entries(current.MaterialIdToName).map(
+      {Object.entries(parent.MaterialIdToName).map(
         ([materialId, materialName], index) =>
           materialName !== "" && (
             <SidebarMenuItem key={index} id={materialId}>

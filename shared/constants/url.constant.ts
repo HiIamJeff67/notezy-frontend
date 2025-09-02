@@ -49,6 +49,7 @@ export const APIURLPathDictionary = {
   shelf: {
     createShelf: "shelf/createShelf",
     synchronizeShelves: "shelf/synchronizeShelves",
+    deleteShelf: "shelf/deleteShelf",
   },
 };
 

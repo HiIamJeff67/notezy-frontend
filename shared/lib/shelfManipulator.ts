@@ -1,4 +1,4 @@
-import { decode, encode } from "@msgpack/msgpack";
+import * as msgpack from "@msgpack/msgpack";
 import {
   DefaultShelfManipulatorIterations,
   MaxShelfDepth,
@@ -358,7 +358,6 @@ export class ShelfManipulator {
         traverseCount++;
 
         // convert the id of Uint8Array to the actual UUID form
-        // console.log("test: ", current.Id);
         if (!isValidUUID(current.Id)) {
           current.Id = uint8ArrayToUUID(current.Id) as UUID;
         }
@@ -474,7 +473,7 @@ export class ShelfManipulator {
   public static encode(root: ShelfNode): Uint8Array {
     // Make sure to do the circular check first by using
     // either isChildrenCircular or analysisAndGenerateSummary()
-    return encode(root);
+    return msgpack.encode(root);
   }
 
   public static safeEncode(root: ShelfNode): Uint8Array {
@@ -482,15 +481,15 @@ export class ShelfManipulator {
     if (!isSimple) {
       throw new Error("Failed to encode, cycle detected");
     }
-    return encode(root);
+    return msgpack.encode(root);
   }
 
   public static decode(data: Uint8Array): ShelfNode {
-    return decode(data) as ShelfNode;
+    return msgpack.decode(data) as ShelfNode;
   }
 
   public static safeDecode(data: Uint8Array): ShelfNode {
-    const root = decode(data, { rawStrings: false }) as ShelfNode;
+    const root = msgpack.decode(data, { rawStrings: false }) as ShelfNode;
     const { isSimple } = this.isChildrenSimpleWithUUIDConversion(root);
     if (!isSimple) {
       throw new Error("Failed to decode, cycle detected");

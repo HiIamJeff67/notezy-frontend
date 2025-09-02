@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  FragmentedPrivateShelfFragmentDoc,
   PrivateShelf,
   SearchShelfEdge,
   SearchShelfSortBy,
@@ -9,7 +8,7 @@ import {
 } from "@/graphql/generated/graphql";
 import { useSearchShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import { useApolloClient } from "@apollo/client/react";
-import { useCreateShelf } from "@shared/api/hooks/shelf.hook";
+import { useCreateShelf, useDeleteShelf } from "@shared/api/hooks/shelf.hook";
 import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
@@ -30,13 +29,14 @@ interface ShelfContextType {
   setSearchInput: (input: { query: string; after: string | null }) => void;
   expandShelvesForward: (amount?: number) => void;
   expandShelvesBackward: (amount?: number) => void;
-  createSubShelf: (
+  createChildShelf: (
     rootShelfId: UUID,
     parentShelf: ShelfNode,
     name: string
   ) => Promise<void>;
   createRootShelf: (name: string) => Promise<void>;
-  synchronizeShelves: (index: number) => Promise<void>;
+  synchronizeRootShelves: (index: number) => Promise<void>;
+  deleteRootShelf: (shelfId: UUID) => Promise<void>;
 }
 
 export const ShelfContext = createContext<ShelfContextType | undefined>(
@@ -52,6 +52,7 @@ export const ShelfProvider = ({
 }) => {
   const apolloClient = useApolloClient();
   const createShelfMutator = useCreateShelf();
+  const deleteShelfMutator = useDeleteShelf();
 
   const [searchInput, setSearchInput] = useState<{
     query: string;
@@ -166,9 +167,6 @@ export const ShelfProvider = ({
                 const nextRoot = ShelfManipulator.decodeFromBase64(
                   nextExpandedShelf.encodedStructure
                 );
-                console.log("error id:", nextRoot.Id);
-                console.log("correct id:", nextExpandedShelf.id);
-                nextRoot.Id = nextExpandedShelf.id as UUID;
 
                 expandedShelvesActions.setShelf(nextRoot.Id, {
                   root: nextRoot,
@@ -246,7 +244,7 @@ export const ShelfProvider = ({
                   end: prev.end - 1,
                 }));
 
-                expandedShelvesActions.setShelf(previousRoot.Id.toString(), {
+                expandedShelvesActions.setShelf(previousRoot.Id, {
                   root: previousRoot,
                   encodedStructureByteSize:
                     previousExpandedShelf.encodedStructureByteSize,
@@ -295,7 +293,7 @@ export const ShelfProvider = ({
 
   /* ============================== Local(Non-API included) operations ============================== */
 
-  const createSubShelf = async (
+  const createChildShelf = async (
     rootShelfId: UUID,
     parentShelfNode: ShelfNode,
     name: string
@@ -324,7 +322,7 @@ export const ShelfProvider = ({
     summary.maxDepth = Math.max(summary.maxDepth, information.depth + 1);
   };
 
-  const renameSubShelf = async (
+  const renameChildShelf = async (
     rootShelfId: UUID,
     shelfNode: ShelfNode,
     name: string
@@ -335,6 +333,24 @@ export const ShelfProvider = ({
     }
     shelfNode.Name = name;
     summary.hasChanged = true;
+  };
+
+  const moveChildShelf = async () => {};
+
+  const deleteChildShelf = async (
+    rootShelfId: UUID,
+    parentShelfNode: ShelfNode,
+    shelfNode: ShelfNode
+  ) => {
+    const summary = expandedShelvesActions.getShelf(rootShelfId);
+    if (!summary) {
+      throw new Error(`rootShelfId is invalid`);
+    }
+
+    const deletedMaterials = ShelfManipulator.deleteShelfNode(
+      parentShelfNode,
+      shelfNode
+    );
   };
 
   /* ============================== API Relative Operations ============================== */
@@ -350,69 +366,42 @@ export const ShelfProvider = ({
       },
     });
 
-    const shelfNode: PrivateShelf = {
-      __typename: "PrivateShelf",
-      id: responseOfCreateShelf.data.id,
-      name: name,
-      encodedStructure: responseOfCreateShelf.data.encodedStructure,
+    const root = ShelfManipulator.decodeFromBase64(
+      responseOfCreateShelf.data.encodedStructure
+    );
+    expandedShelvesActions.setShelf(root.Id, {
+      root,
       encodedStructureByteSize: 36,
+      hasChanged: false,
       totalShelfNodes: 1,
       totalMaterials: 0,
       maxWidth: 1,
       maxDepth: 1,
-      lastAnalyzedAt: String(responseOfCreateShelf.data.lastAnalyzedAt),
-      updatedAt: String(responseOfCreateShelf.data.createdAt),
-      createdAt: String(responseOfCreateShelf.data.createdAt),
-      owner: [],
-    };
-    apolloClient.cache.modify({
-      fields: {
-        searchShelves(existing) {
-          if (!existing) return existing;
-          const edges = existing.searchEdges || [];
-          const exists = edges.some((e: any) => e.node.id === shelfNode.id);
-          if (exists) return existing;
-          const writtenRef = apolloClient.cache.writeFragment({
-            fragment: FragmentedPrivateShelfFragmentDoc,
-            fragmentName: "FragmentedPrivateShelf",
-            data: shelfNode,
-          });
-          const newEdge = {
-            __typename: "SearchShelfEdge",
-            encodedSearchCursor: "",
-            node: writtenRef,
-          };
-          return {
-            ...existing,
-            searchEdges: [newEdge, ...edges],
-          };
-        },
+      uniqueMaterialIds: [],
+    });
+  };
+
+  const synchronizeRootShelves = async (index: number): Promise<void> => {};
+
+  const deleteRootShelf = async (shelfId: UUID): Promise<void> => {
+    const userAgent = navigator.userAgent;
+    await deleteShelfMutator.mutateAsync({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        shelfId: shelfId,
       },
     });
 
-    try {
-      const root = ShelfManipulator.decodeFromBase64(
-        responseOfCreateShelf.data.encodedStructure
-      );
-      expandedShelvesActions.setShelf(responseOfCreateShelf.data.id, {
-        root,
-        encodedStructureByteSize: 36,
-        hasChanged: false,
-        totalShelfNodes: 1,
-        totalMaterials: 0,
-        maxWidth: 1,
-        maxDepth: 1,
-        uniqueMaterialIds: [],
-      });
-    } catch {}
+    // we don't have to call api to clean up some trash of materials
+    // since the backend will automatically handle this
+
+    expandedShelvesActions.deleteShelf(shelfId);
   };
 
-  const synchronizeShelves = async (index: number): Promise<void> => {};
-
-  // const deleteShelf = async()
-
   const contextValue: ShelfContextType = {
-    // we MUST export the `data` from GraphQL Query directly
+    // we "MUST" export the `data` from GraphQL Query directly
     compressedShelves:
       (data?.searchShelves?.searchEdges as SearchShelfEdge[]) || [],
     searchCompressedShelves: searchCompressedShelves,
@@ -425,9 +414,10 @@ export const ShelfProvider = ({
     setSearchInput: setSearchInput,
     expandShelvesForward: expandShelvesForward,
     expandShelvesBackward: expandShelvesBackward,
-    createSubShelf: createSubShelf,
+    createChildShelf: createChildShelf,
     createRootShelf: createRootShelf,
-    synchronizeShelves: synchronizeShelves,
+    synchronizeRootShelves: synchronizeRootShelves,
+    deleteRootShelf: deleteRootShelf,
   };
 
   return (

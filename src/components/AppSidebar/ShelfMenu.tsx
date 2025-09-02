@@ -35,9 +35,8 @@ const ShelfMenu = () => {
   return (
     <SidebarMenu>
       {shelfManager.compressedShelves.map((val, index) => {
-        // console.log("id: ", val.node.id);
         const summary = shelfManager.expandedShelves.get(val.node.id);
-        // console.log("summary: ", summary);
+        console.log(summary?.root.Id);
 
         return (
           summary && (
@@ -54,7 +53,7 @@ const ShelfMenu = () => {
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                   </ContextMenuTrigger>
-                  {!summary.hasChanged && (
+                  {summary.hasChanged && (
                     <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
                       <FolderSyncIcon className="max-w-3.5 max-h-3.5" />
                     </SidebarMenuAction>
@@ -62,7 +61,7 @@ const ShelfMenu = () => {
                   <ContextMenuContent>
                     <ContextMenuItem
                       onClick={() =>
-                        shelfManager.createSubShelf(
+                        shelfManager.createChildShelf(
                           summary.root.Id,
                           summary.root,
                           "undefined"
@@ -73,7 +72,13 @@ const ShelfMenu = () => {
                     </ContextMenuItem>
                     <ContextMenuItem>Create an new material</ContextMenuItem>
                     <ContextMenuSeparator />
-                    <ContextMenuItem>Delete</ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => {
+                        shelfManager.deleteRootShelf(summary.root.Id);
+                      }}
+                    >
+                      Delete
+                    </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
                 <CollapsibleContent>
@@ -82,7 +87,7 @@ const ShelfMenu = () => {
                       <SidebarMenuSubItem>
                         <ShelfMenuItem
                           summary={summary}
-                          current={summary.root}
+                          parent={summary.root}
                           depth={0}
                         />
                       </SidebarMenuSubItem>
