@@ -1,15 +1,15 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   CreateShelfRequest,
   CreateShelfResponse,
-  DeleteShelfRequest,
-  DeleteShelfResponse,
+  DeleteMyShelfByIdRequest,
+  DeleteMyShelfByIdResponse,
   SynchronizeShelvesRequest,
   SynchronizeShelvesResponse,
 } from "@shared/api/interfaces/shelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyAPIError, NotezyException } from "../exceptions";
 
 /* ============================== CreateShelf ============================== */
 
@@ -73,10 +73,10 @@ export async function SynchronizeShelves(
 /* ============================== Delete Shelf ============================== */
 
 export async function DeleteShelf(
-  request: DeleteShelfRequest
-): Promise<DeleteShelfResponse> {
+  request: DeleteMyShelfByIdRequest
+): Promise<DeleteMyShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.shelf.deleteShelf}`,
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.shelf.deleteMyShelfById}`,
     {
       method: "DELETE",
       headers: {
@@ -92,7 +92,7 @@ export async function DeleteShelf(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as DeleteShelfResponse;
+  const jsonResponse = (await response.json()) as DeleteMyShelfByIdResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }

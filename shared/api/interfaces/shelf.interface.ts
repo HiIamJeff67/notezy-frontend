@@ -64,7 +64,7 @@ export type SynchronizeShelvesResponse = z.infer<
 
 /* ============================== Delete Shelf ============================== */
 
-export const DeleteShelfRequestSchema = NotezyRequestSchema.extend({
+export const DeleteMyShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
@@ -74,12 +74,16 @@ export const DeleteShelfRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type DeleteShelfRequest = z.infer<typeof DeleteShelfRequestSchema>;
+export type DeleteMyShelfByIdRequest = z.infer<
+  typeof DeleteMyShelfByIdRequestSchema
+>;
 
-export const DeleteShelfResponseSchema = NotezyResponseSchema.extend({
+export const DeleteMyShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
 });
 
-export type DeleteShelfResponse = z.infer<typeof DeleteShelfResponseSchema>;
+export type DeleteMyShelfByIdResponse = z.infer<
+  typeof DeleteMyShelfByIdResponseSchema
+>;

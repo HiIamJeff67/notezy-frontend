@@ -12,7 +12,15 @@ export const queryKeys = {
   },
   shelf: {
     all: () => ["shelf"] as const,
-    myOrShared: (shelfId: UUID) => ["shelf", "myOrShared", shelfId],
-    other: (shelfId: UUID) => ["shelf", "other", shelfId],
+    myOrShared: (shelfId: UUID | undefined) =>
+      ["shelf", "myOrShared", shelfId] as const,
+    other: (shelfId: UUID | undefined) => ["shelf", "other", shelfId] as const,
+  },
+  material: {
+    all: () => ["material"] as const,
+    myOneOrSharedOne: (materialId: UUID | undefined) =>
+      ["material", "myOneOrSharedOne", materialId] as const,
+    myManyOrSharedMany: (rootShelfId: UUID | undefined) =>
+      ["material", "myManyOrSharedMany", rootShelfId] as const,
   },
 };

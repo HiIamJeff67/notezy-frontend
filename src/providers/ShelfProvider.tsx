@@ -8,7 +8,11 @@ import {
 } from "@/graphql/generated/graphql";
 import { useSearchShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import { useApolloClient } from "@apollo/client/react";
-import { useCreateShelf, useDeleteShelf } from "@shared/api/hooks/shelf.hook";
+import {
+  useCreateShelf,
+  useDeleteShelf,
+  useSynchronizeShelves,
+} from "@shared/api/hooks/shelf.hook";
 import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
@@ -52,7 +56,9 @@ export const ShelfProvider = ({
 }) => {
   const apolloClient = useApolloClient();
   const createShelfMutator = useCreateShelf();
+  const synchronizeShelvesMutator = useSynchronizeShelves();
   const deleteShelfMutator = useDeleteShelf();
+  // const deleteMaterialMutator = useDeleteMaterial();
 
   const [searchInput, setSearchInput] = useState<{
     query: string;
@@ -291,7 +297,34 @@ export const ShelfProvider = ({
     ]
   );
 
-  /* ============================== Local(Non-API included) operations ============================== */
+  /* ============================== Basic operations for Shelf and Material Structure ============================== */
+
+  // include API operation
+  const createRootShelf = async (name: string): Promise<void> => {
+    const userAgent = navigator.userAgent;
+    const responseOfCreateShelf = await createShelfMutator.mutateAsync({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        name: name,
+      },
+    });
+
+    const root = ShelfManipulator.decodeFromBase64(
+      responseOfCreateShelf.data.encodedStructure
+    );
+    expandedShelvesActions.setShelf(root.Id, {
+      root,
+      encodedStructureByteSize: 36,
+      hasChanged: false,
+      totalShelfNodes: 1,
+      totalMaterials: 0,
+      maxWidth: 1,
+      maxDepth: 1,
+      uniqueMaterialIds: [],
+    });
+  };
 
   const createChildShelf = async (
     rootShelfId: UUID,
@@ -326,7 +359,7 @@ export const ShelfProvider = ({
     rootShelfId: UUID,
     shelfNode: ShelfNode,
     name: string
-  ) => {
+  ): Promise<void> => {
     const summary = expandedShelvesActions.getShelf(rootShelfId);
     if (!summary) {
       throw new Error(`rootShelfId is invalid`);
@@ -335,13 +368,22 @@ export const ShelfProvider = ({
     summary.hasChanged = true;
   };
 
-  const moveChildShelf = async () => {};
+  const moveChildShelf = async (): Promise<void> => {};
+
+  // include API operation
+  const synchronizeRootShelves = async (index: number): Promise<void> => {
+    const edges = data?.searchShelves?.searchEdges as SearchShelfEdge[];
+
+    if (index < 0 || index >= edges.length) {
+      throw new Error(``);
+    }
+  };
 
   const deleteChildShelf = async (
     rootShelfId: UUID,
     parentShelfNode: ShelfNode,
     shelfNode: ShelfNode
-  ) => {
+  ): Promise<void> => {
     const summary = expandedShelvesActions.getShelf(rootShelfId);
     if (!summary) {
       throw new Error(`rootShelfId is invalid`);
@@ -353,36 +395,7 @@ export const ShelfProvider = ({
     );
   };
 
-  /* ============================== API Relative Operations ============================== */
-
-  const createRootShelf = async (name: string): Promise<void> => {
-    const userAgent = navigator.userAgent;
-    const responseOfCreateShelf = await createShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        name: name,
-      },
-    });
-
-    const root = ShelfManipulator.decodeFromBase64(
-      responseOfCreateShelf.data.encodedStructure
-    );
-    expandedShelvesActions.setShelf(root.Id, {
-      root,
-      encodedStructureByteSize: 36,
-      hasChanged: false,
-      totalShelfNodes: 1,
-      totalMaterials: 0,
-      maxWidth: 1,
-      maxDepth: 1,
-      uniqueMaterialIds: [],
-    });
-  };
-
-  const synchronizeRootShelves = async (index: number): Promise<void> => {};
-
+  // include API operation
   const deleteRootShelf = async (shelfId: UUID): Promise<void> => {
     const userAgent = navigator.userAgent;
     await deleteShelfMutator.mutateAsync({

@@ -47,9 +47,24 @@ export const APIURLPathDictionary = {
     updateMyInfo: "userInfo/updateMyInfo",
   },
   shelf: {
+    getMyShelfById: "shelf/getMyShelfById",
     createShelf: "shelf/createShelf",
     synchronizeShelves: "shelf/synchronizeShelves",
-    deleteShelf: "shelf/deleteShelf",
+    restoreMyShelfById: "shelf/restoreMyShelfById",
+    restoreMyShelvesByIds: "shelf/restoreMyShelvesByIds",
+    deleteMyShelfById: "shelf/deleteMyShelfById",
+    deleteMyShelvesByIds: "shelf/deleteMyShelvesByIds",
+  },
+  material: {
+    getMyMaterialById: "material/getMyMaterialById",
+    searchMyMaterialsByShelfId: "material/searchMyMaterialsByShelfId",
+    createTextbookMaterial: "material/createTextbookMaterial",
+    saveMyMaterialById: "material/saveMyMaterialById",
+    moveMyMaterialById: "material/moveMyMaterialById",
+    restoreMyMaterialById: "material/restoreMyMaterialById",
+    restoreMyMaterialsByIds: "material/restoreMyMaterialsByIds",
+    deleteMyMaterialById: "material/deleteMyMaterialById",
+    deleteMyMaterialsByIds: "material/deleteMyMaterialsByIds",
   },
 };
 

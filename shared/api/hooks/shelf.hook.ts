@@ -12,8 +12,8 @@ import {
 import {
   CreateShelfRequest,
   CreateShelfRequestSchema,
-  DeleteShelfRequest,
-  DeleteShelfRequestSchema,
+  DeleteMyShelfByIdRequest,
+  DeleteMyShelfByIdRequestSchema,
   SynchronizeShelvesRequest,
   SynchronizeShelvesRequestSchema,
 } from "@shared/api/interfaces/shelf.interface";
@@ -29,7 +29,7 @@ export const useCreateShelf = () => {
       return await CreateShelf(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const shelfNode: PrivateShelf = {
+      const newShelfNode: PrivateShelf = {
         __typename: "PrivateShelf",
         id: response.data.id,
         name: variables.body.name,
@@ -49,12 +49,14 @@ export const useCreateShelf = () => {
           searchShelves(existing) {
             if (!existing) return existing;
             const edges = existing.searchEdges || [];
-            const exists = edges.some((e: any) => e.node.id === shelfNode.id);
+            const exists = edges.some(
+              (e: any) => e.node.id === newShelfNode.id
+            );
             if (exists) return existing;
             const writtenRef = apolloClient.cache.writeFragment({
               fragment: FragmentedPrivateShelfFragmentDoc,
               fragmentName: "FragmentedPrivateShelf",
-              data: shelfNode,
+              data: newShelfNode,
             });
             const newEdge = {
               __typename: "SearchShelfEdge",
@@ -98,7 +100,9 @@ export const useSynchronizeShelves = () => {
       const validatedRequest = SynchronizeShelvesRequestSchema.parse(request);
       return await SynchronizeShelves(validatedRequest);
     },
-    onSuccess: (_, variables) => {},
+    onSuccess: (_, variables) => {
+      // maybe no need to update the apollo cache
+    },
     onError: error => {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -126,8 +130,8 @@ export const useDeleteShelf = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteShelfRequest) => {
-      const validatedRequest = DeleteShelfRequestSchema.parse(request);
+    mutationFn: async (request: DeleteMyShelfByIdRequest) => {
+      const validatedRequest = DeleteMyShelfByIdRequestSchema.parse(request);
       return await DeleteShelf(validatedRequest);
     },
     onSuccess: (_, variables) => {
