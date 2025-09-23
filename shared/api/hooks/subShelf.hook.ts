@@ -1,39 +1,41 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  CreateTextbookMaterial,
-  DeleteMyMaterialById,
-  DeleteMyMaterialsByIds,
-  GetAllMyMaterialsByParentSubShelfId,
-  GetAllMyMaterialsByRootShelfId,
-  GetMyMaterialById,
-  MoveMyMaterialById,
-  RestoreMyMaterialById,
-  RestoreMyMaterialsByIds,
-  SaveMyTextbookMaterialById,
-} from "@shared/api/functions/material.api";
+  CreateSubShelfByRootShelfId,
+  DeleteMySubShelfById,
+  DeleteMySubShelvesByIds,
+  GetAllMySubShelvesByRootShelfId,
+  GetMySubShelfById,
+  GetMySubShelvesByPrevSubShelfId,
+  MoveMySubShelf,
+  MoveMySubShelves,
+  RestoreMySubShelfById,
+  RestoreMySubShelvesByIds,
+  UpdateMySubShelfById,
+} from "@shared/api/functions/subShelf.api";
 import {
-  CreateMaterialRequest,
-  CreateMaterialRequestSchema,
-  DeleteMyMaterialByIdRequest,
-  DeleteMyMaterialByIdRequestSchema,
-  DeleteMyMaterialsByIdsRequest,
-  DeleteMyMaterialsByIdsRequestSchema,
-  GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdRequestSchema,
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdRequestSchema,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdRequestSchema,
-  MoveMyMaterialByIdRequest,
-  MoveMyMaterialByIdRequestSchema,
-  RestoreMyMaterialByIdRequest,
-  RestoreMyMaterialByIdRequestSchema,
-  RestoreMyMaterialsByIdsRequest,
-  RestoreMyMaterialsByIdsRequestSchema,
-  SaveMyTextbookMaterialByIdRequest,
-  SaveMyTextbookMaterialByIdRequestSchema,
-} from "@shared/api/interfaces/material.interface";
-import { queryKeys } from "@shared/api/queryKeys";
+  CreateSubShelfByRootShelfIdRequest,
+  CreateSubShelfByRootShelfIdRequestSchema,
+  DeleteMySubShelfByIdRequest,
+  DeleteMySubShelfByIdRequestSchema,
+  DeleteMySubShelvesByIdsRequest,
+  DeleteMySubShelvesByIdsRequestSchema,
+  GetAllMySubShelvesByRootShelfIdRequest,
+  GetAllMySubShelvesByRootShelfIdRequestSchema,
+  GetMySubShelfByIdRequest,
+  GetMySubShelfByIdRequestSchema,
+  GetMySubShelvesByPrevSubShelfIdRequest,
+  GetMySubShelvesByPrevSubShelfIdRequestSchema,
+  MoveMySubShelfRequest,
+  MoveMySubShelfRequestSchema,
+  MoveMySubShelvesRequest,
+  MoveMySubShelvesRequestSchema,
+  RestoreMySubShelfByIdRequest,
+  RestoreMySubShelfByIdRequestSchema,
+  RestoreMySubShelvesByIdsRequest,
+  RestoreMySubShelvesByIdsRequestSchema,
+  UpdateMySubShelfByIdRequest,
+  UpdateMySubShelfByIdRequestSchema,
+} from "@shared/api/interfaces/subShelf.interface";
 import {
   useMutation,
   useQuery,
@@ -42,20 +44,21 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
+import { queryKeys } from "../queryKeys";
 import { defaultQueryAsyncOptions, defaultQueryOptions } from "./hook";
 
-export const useGetMyMaterialById = (
-  hookRequest?: GetMyMaterialByIdRequest,
+export const useGetMySubShelfById = (
+  hookRequest?: GetMySubShelfByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = useQueryClient();
 
-  const queryFunction = async (request?: GetMyMaterialByIdRequest) => {
+  const queryFunction = async (request?: GetMySubShelfByIdRequest) => {
     if (!request) return;
 
     try {
-      const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
-      return await GetMyMaterialById(validatedRequest);
+      const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
+      return await GetMySubShelfById(validatedRequest);
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -74,8 +77,8 @@ export const useGetMyMaterialById = (
   };
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
-      hookRequest?.param.materialId as UUID | undefined
+    queryKey: queryKeys.subShelf.myOneById(
+      hookRequest?.param.subShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
     ...defaultQueryOptions,
@@ -83,10 +86,10 @@ export const useGetMyMaterialById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMyMaterialByIdRequest) => {
+  const queryAsync = async (callbackRequest: GetMySubShelfByIdRequest) => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
-        callbackRequest.param.materialId as UUID
+      queryKey: queryKeys.subShelf.myOneById(
+        callbackRequest.param.subShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
       ...defaultQueryAsyncOptions,
@@ -96,25 +99,25 @@ export const useGetMyMaterialById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_MATERIAL_BY_ID" as const,
+    name: "GET_MY_SUB_SHELF_BY_ID",
   };
 };
 
-export const useGetAllMyMaterialsByParentSubShelfId = (
-  hookRequest?: GetAllMyMaterialsByParentSubShelfIdRequest,
+export const useGetMySubShelvesByPrevSubShelfId = (
+  hookRequest?: GetMySubShelvesByPrevSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = useQueryClient();
 
   const queryFunction = async (
-    request?: GetAllMyMaterialsByParentSubShelfIdRequest
+    request?: GetMySubShelvesByPrevSubShelfIdRequest
   ) => {
     if (!request) return;
 
     try {
       const validatedRequest =
-        GetAllMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-      return await GetAllMyMaterialsByParentSubShelfId(validatedRequest);
+        GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
+      return await GetMySubShelvesByPrevSubShelfId(validatedRequest);
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -133,8 +136,8 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   };
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByParentSubShelfId(
-      hookRequest?.param.parentSubShelfId as UUID | undefined
+    queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
+      hookRequest?.param.prevSubShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
     ...defaultQueryOptions,
@@ -143,11 +146,11 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByParentSubShelfIdRequest
+    callbackRequest: GetMySubShelvesByPrevSubShelfIdRequest
   ) => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
-        callbackRequest.param.parentSubShelfId as UUID
+      queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
+        callbackRequest.param.prevSubShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
       ...defaultQueryAsyncOptions,
@@ -157,25 +160,25 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID" as const,
+    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID" as const,
   };
 };
 
-export const useGetAllMyMaterialsByRootShelfId = (
-  hookRequest?: GetAllMyMaterialsByRootShelfIdRequest,
+export const useGetAllMySubShelvesByRootShelfId = (
+  hookRequest?: GetAllMySubShelvesByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = useQueryClient();
 
   const queryFunction = async (
-    request?: GetAllMyMaterialsByRootShelfIdRequest
+    request?: GetAllMySubShelvesByRootShelfIdRequest
   ) => {
     if (!request) return;
 
     try {
       const validatedRequest =
-        GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
-      return await GetAllMyMaterialsByRootShelfId(validatedRequest);
+        GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
+      return await GetAllMySubShelvesByRootShelfId(validatedRequest);
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -194,7 +197,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
   };
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByRootShelfId(
+    queryKey: queryKeys.subShelf.myManyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
@@ -204,10 +207,10 @@ export const useGetAllMyMaterialsByRootShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
+    callbackRequest: GetAllMySubShelvesByRootShelfIdRequest
   ) => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.subShelf.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
@@ -218,81 +221,21 @@ export const useGetAllMyMaterialsByRootShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID" as const,
+    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID" as const,
   };
 };
 
-export const useCreateTextbookMaterial = () => {
+export const useCreateSubShelfByRootShelfId = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateMaterialRequest) => {
-      const validatedRequest = CreateMaterialRequestSchema.parse(request);
-      return await CreateTextbookMaterial(validatedRequest);
-    },
-    onSuccess: (_, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return false;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
-    },
-    onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    },
-  });
-
-  return {
-    ...mutation,
-    name: "CREATE_TEXTBOOK_MATERIAL" as const,
-  };
-};
-
-export const useSaveMyTextbookMaterialById = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (request: SaveMyTextbookMaterialByIdRequest) => {
+    mutationFn: async (request: CreateSubShelfByRootShelfIdRequest) => {
       const validatedRequest =
-        SaveMyTextbookMaterialByIdRequestSchema.parse(request);
-      return await SaveMyTextbookMaterialById(validatedRequest);
+        CreateSubShelfByRootShelfIdRequestSchema.parse(request);
+      return await CreateSubShelfByRootShelfId(validatedRequest);
     },
     onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
+      const prevSubShelfId = variables.affected.prevSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
@@ -302,12 +245,11 @@ export const useSaveMyTextbookMaterialById = () => {
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "material":
+            case "subShelf":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
+                case "myManyByPrevSubShelfId":
+                  if (prevSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
                   if (rootShelfId === k[2]) return true;
               }
@@ -337,23 +279,20 @@ export const useSaveMyTextbookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "SAVE_MY_MATERIAL_BY_ID" as const,
+    name: "CREATE_SUB_SHELF_BY_ROOT_SHELF_ID" as const,
   };
 };
 
-export const useMoveMyMaterialById = () => {
+export const useUpdateMySubShelfById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: MoveMyMaterialByIdRequest) => {
-      const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
-      return await MoveMyMaterialById(validatedRequest);
+    mutationFn: async (request: UpdateMySubShelfByIdRequest) => {
+      const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
+      return await UpdateMySubShelfById(validatedRequest);
     },
     onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId;
-      const destinationParentSubShelfId =
-        variables.body.destinationParentSubShelfId;
-      const sourceParentSubShelfId = variables.affected.sourceParentSubShelfId;
+      const prevSubShelfId = variables.affected.prevSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
@@ -364,25 +303,83 @@ export const useMoveMyMaterialById = () => {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
             case "subShelf":
-              if (
-                k[1] === "myOneById" &&
-                (sourceParentSubShelfId === k[2] ||
-                  destinationParentSubShelfId === k[2])
-              )
-                return true;
-            case "material":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
+                case "myManyByPrevSubShelfId":
+                  if (prevSubShelfId === k[2]) return true;
+                case "myManyByRootShelfId":
+                  if (rootShelfId === k[2]) return true;
+              }
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "UPDATE_MY_SUB_SHELF_BY_ID" as const,
+  };
+};
+
+export const useMoveMySubShelf = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: MoveMySubShelfRequest) => {
+      const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
+      return await MoveMySubShelf(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      const sourceSubShelfId = variables.body.sourceSubShelfId;
+      const destinationSubShelfId = variables.body.destinationSubShelfId;
+      const rootShelfId = variables.affected.rootShelfId;
+      const childSubShelfIdsSet = new Set(
+        (variables.affected.childSubShelfIds || []).filter(Boolean) as UUID[]
+      );
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+
+          switch (k[0]) {
+            case "rootShelf":
+              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
+            case "subShelf":
+              switch (k[1]) {
+                case "myOneById":
                   if (
-                    sourceParentSubShelfId === k[2] ||
-                    destinationParentSubShelfId === k[2]
+                    sourceSubShelfId === k[2] ||
+                    destinationSubShelfId === k[2] ||
+                    childSubShelfIdsSet.has(k[2])
                   )
                     return true;
+                case "myManyByPrevSubShelfId":
+                  if (destinationSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
                   if (rootShelfId === k[2]) return true;
               }
+            case "material":
+              if (k[1] === "myManyByRootShelfId" && rootShelfId === k[2])
+                return true;
           }
 
           return false;
@@ -409,23 +406,29 @@ export const useMoveMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_MATERIAL_BY_ID" as const,
+    name: "MOVE_MY_SUB_SHELF" as const,
   };
 };
 
-export const useRestoreMyMaterialById = () => {
+export const useMoveMySubShelves = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyMaterialByIdRequest) => {
-      const validatedRequest =
-        RestoreMyMaterialByIdRequestSchema.parse(request);
-      return await RestoreMyMaterialById(validatedRequest);
+    mutationFn: async (request: MoveMySubShelvesRequest) => {
+      const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
+      return await MoveMySubShelves(validatedRequest);
     },
     onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
+      const sourceSubShelfIdsSet = new Set(
+        (variables.body.sourceSubShelfIds || []).filter(Boolean) as UUID[]
+      );
+      const destinationSubShelfId = variables.body.destinationSubShelfId;
+      const rootShelfIdsSet = new Set(
+        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
+      );
+      const childSubShelfIdsSet = new Set(
+        (variables.affected.childSubShelfIds || []).filter(Boolean) as UUID[]
+      );
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
@@ -433,89 +436,25 @@ export const useRestoreMyMaterialById = () => {
 
           switch (k[0]) {
             case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
-    },
-    onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    },
-  });
-
-  return {
-    ...mutation,
-    name: "RESTORE_MY_MATERIAL_BY_ID" as const,
-  };
-};
-
-export const useRestoreMyMaterialsByIds = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (request: RestoreMyMaterialsByIdsRequest) => {
-      const validatedRequest =
-        RestoreMyMaterialsByIdsRequestSchema.parse(request);
-      return await RestoreMyMaterialsByIds(validatedRequest);
-    },
-    onSuccess: (_, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
-      );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
               if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
                 return true;
             case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
+                  if (
+                    sourceSubShelfIdsSet.has(k[2]) ||
+                    destinationSubShelfId === k[2] ||
+                    childSubShelfIdsSet.has(k[2])
+                  )
+                    return true;
+                case "myManyByPrevSubShelfId":
+                  if (destinationSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
                   if (rootShelfIdsSet.has(k[2])) return true;
               }
+            case "material":
+              if (k[1] === "myManyByRootShelfId" && rootShelfIdsSet.has(k[2]))
+                return true;
           }
 
           return false;
@@ -542,22 +481,20 @@ export const useRestoreMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_MATERIALS_BY_IDS" as const,
+    name: "MOVE_MY_SUB_SHELVES" as const,
   };
 };
 
-export const useDeleteMyMaterialById = () => {
+export const useRestoreMySubShelfById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyMaterialByIdRequest) => {
-      const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
-      return await DeleteMyMaterialById(validatedRequest);
+    mutationFn: async (request: RestoreMySubShelfByIdRequest) => {
+      const validatedRequest =
+        RestoreMySubShelfByIdRequestSchema.parse(request);
+      return await RestoreMySubShelfById(validatedRequest);
     },
     onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
@@ -565,19 +502,27 @@ export const useDeleteMyMaterialById = () => {
 
           switch (k[0]) {
             case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
+              if (
+                k[1] === "myOneById" &&
+                variables.affected.rootShelfId === k[2]
+              ) {
                 return true;
-            case "material":
+              }
+            case "subShelf":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
+                  if (variables.body.subShelfId === k[2]) return true;
+                case "myManyByPrevSubShelfId":
+                  if (variables.affected.prevSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
+                  if (variables.affected.rootShelfId === k[2]) return true;
               }
+            case "material":
+              if (
+                k[1] === "myManyByParentSubShelfId" &&
+                variables.body.subShelfId === k[2]
+              )
+                return true;
           }
 
           return false;
@@ -604,50 +549,51 @@ export const useDeleteMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIAL_BY_ID" as const,
+    name: "RESTORE_MY_SUB_SHELF_BY_ID" as const,
   };
 };
 
-export const useDeleteMyMaterialsByIds = () => {
+export const useRestoreMySubShelvesByIds = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyMaterialsByIdsRequest) => {
+    mutationFn: async (request: RestoreMySubShelvesByIdsRequest) => {
       const validatedRequest =
-        DeleteMyMaterialsByIdsRequestSchema.parse(request);
-      return await DeleteMyMaterialsByIds(validatedRequest);
+        RestoreMySubShelvesByIdsRequestSchema.parse(request);
+      return await RestoreMySubShelvesByIds(validatedRequest);
     },
     onSuccess: (_, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
-      );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
+      const subShelfIdsSet = new Set(
+        (variables.body.subShelfIds || []).filter(Boolean) as UUID[]
       );
       const rootShelfIdsSet = new Set(
         (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
       );
+      const prevSubShelfIdsSet = new Set(
+        (variables.affected.prevSubShelfIds || []).filter(Boolean) as UUID[]
+      );
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
+          if (!Array.isArray(k) || k.length < 3) return false;
 
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
                 return true;
             case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
               switch (k[1]) {
-                case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
+                case "myManyByPrevSubShelfId":
+                  if (prevSubShelfIdsSet.has(k[2])) return true;
                 case "myManyByRootShelfId":
                   if (rootShelfIdsSet.has(k[2])) return true;
               }
+            case "material":
+              if (
+                k[1] === "myManyByParentSubShelfId" &&
+                subShelfIdsSet.has(k[2])
+              )
+                return true;
           }
 
           return false;
@@ -674,6 +620,145 @@ export const useDeleteMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIALS_BY_IDS" as const,
+    name: "RESTORE_MY_SUB_SHELVES_BY_IDS" as const,
+  };
+};
+
+export const useDeleteMySubShelfById = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: DeleteMySubShelfByIdRequest) => {
+      const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
+      return await DeleteMySubShelfById(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+          switch (k[0]) {
+            case "rootShelf":
+              if (
+                k[1] === "myOneById" &&
+                variables.affected.rootShelfId === k[2]
+              ) {
+                return true;
+              }
+            case "subShelf":
+              switch (k[1]) {
+                case "myOneById":
+                  if (variables.body.subShelfId === k[2]) return true;
+                case "myManyByPrevSubShelfId":
+                  if (variables.affected.prevSubShelfId === k[2]) return true;
+                case "myManyByRootShelfId":
+                  if (variables.affected.rootShelfId === k[2]) return true;
+              }
+            case "material":
+              if (
+                k[1] === "myManyByParentSubShelfId" &&
+                variables.body.subShelfId === k[2]
+              )
+                return true;
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "DELETE_MY_SUB_SHELF_BY_ID" as const,
+  };
+};
+
+export const useDeleteMySubShelvesByIds = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: DeleteMySubShelvesByIdsRequest) => {
+      const validatedRequest =
+        DeleteMySubShelvesByIdsRequestSchema.parse(request);
+      return await DeleteMySubShelvesByIds(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      const subShelfIdsSet = new Set(
+        (variables.body.subShelfIds || []).filter(Boolean) as UUID[]
+      );
+      const rootShelfIdsSet = new Set(
+        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
+      );
+      const prevSubShelfIdsSet = new Set(
+        (variables.affected.prevSubShelfIds || []).filter(Boolean) as UUID[]
+      );
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+
+          switch (k[0]) {
+            case "rootShelf":
+              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
+                return false;
+            case "subShelf":
+              switch (k[1]) {
+                case "myOneById":
+                  if (subShelfIdsSet.has(k[2])) return true;
+                case "myManyByPrevSubShelfId":
+                  if (prevSubShelfIdsSet.has(k[2])) return true;
+                case "myManyByRootShelfId":
+                  if (rootShelfIdsSet.has(k[2])) return true;
+              }
+            case "material":
+              if (
+                k[1] === "myManyByParentSubShelfId" &&
+                subShelfIdsSet.has(k[2])
+              )
+                return true;
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "DELETE_MY_SUB_SHELVES_BY_IDS" as const,
   };
 };

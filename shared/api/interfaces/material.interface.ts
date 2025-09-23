@@ -1,9 +1,7 @@
 import {
-    NotezyRequestSchema,
-    NotezyResponseSchema,
+  NotezyRequestSchema,
+  NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { SimpleSearchParamSchema } from "@shared/api/interfaces/search.interface";
-import { partialUpdateSchemaFactory } from "@shared/lib/zodSchemaFactories";
 import { AllMaterialContentTypes, AllMaterialTypes } from "@shared/types/enums";
 import z from "zod";
 
@@ -14,9 +12,8 @@ export const GetMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
   }),
-  body: z.object({
+  param: z.object({
     materialId: z.uuidv4(),
-    rootShelfId: z.uuidv4(),
   }),
 });
 
@@ -27,12 +24,12 @@ export type GetMyMaterialByIdRequest = z.infer<
 export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
-    rootShelfId: z.uuidv4(),
-    parentShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
     name: z.string(),
     type: z.enum(AllMaterialTypes),
     downloadURL: z.url(),
     contentType: z.enum(AllMaterialContentTypes),
+    parseMediaType: z.string(),
     deletedAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
@@ -43,35 +40,34 @@ export type GetMyMaterialByIdResponse = z.infer<
   typeof GetMyMaterialByIdResponseSchema
 >;
 
-/* ============================== SearchMyMaterialsByShelfIds ============================== */
+/* ============================== GetAllMyMaterialsByParentSubShelfId ============================== */
 
-export const SearchMyMaterialsByShelfIdsRequestSchema =
+export const GetAllMyMaterialsByParentSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
       userAgent: z.string().min(1),
       authorization: z.string().optional(),
     }),
-    body: z.object({
-      rootShelfId: z.uuidv4(),
+    param: z.object({
+      parentSubShelfId: z.uuidv4(),
     }),
-    param: SimpleSearchParamSchema.optional(),
   });
 
-export type SearchMyMaterialsByShelfIdsRequest = z.infer<
-  typeof SearchMyMaterialsByShelfIdsRequestSchema
+export type GetAllMyMaterialsByParentSubShelfIdRequest = z.infer<
+  typeof GetAllMyMaterialsByParentSubShelfIdRequestSchema
 >;
 
-export const SearchMyMaterialsByShelfIdsResponseSchema =
+export const GetAllMyMaterialsByParentSubShelfIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.array(
       z.object({
         id: z.uuidv4(),
-        rootShelfId: z.uuidv4(),
-        parentShelfId: z.uuidv4(),
+        parentSubShelfId: z.uuidv4(),
         name: z.string(),
         type: z.enum(AllMaterialTypes),
         downloadURL: z.url(),
         contentType: z.enum(AllMaterialContentTypes),
+        parseMediaType: z.string(),
         deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
@@ -79,8 +75,47 @@ export const SearchMyMaterialsByShelfIdsResponseSchema =
     ),
   });
 
-export type SearchMyMaterialsByShelfIdsResponse = z.infer<
-  typeof SearchMyMaterialsByShelfIdsResponseSchema
+export type GetAllMyMaterialsByParentSubShelfIdResponse = z.infer<
+  typeof GetAllMyMaterialsByParentSubShelfIdResponseSchema
+>;
+
+/* ============================== GetAllMyMaterialsByRootShelfId ============================== */
+
+export const GetAllMyMaterialsByRootShelfIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    param: z.object({
+      rootShelfId: z.uuidv4(),
+    }),
+  });
+
+export type GetAllMyMaterialsByRootShelfIdRequest = z.infer<
+  typeof GetAllMyMaterialsByRootShelfIdRequestSchema
+>;
+
+export const GetAllMyMaterialsByRootShelfIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        parentSubShelfId: z.uuidv4(),
+        name: z.string(),
+        type: z.enum(AllMaterialTypes),
+        downloadURL: z.url(),
+        contentType: z.enum(AllMaterialContentTypes),
+        parseMediaType: z.string(),
+        deletedAt: z.coerce.date(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
+  });
+
+export type GetAllMyMaterialsByRootShelfIdResponse = z.infer<
+  typeof GetAllMyMaterialsByRootShelfIdResponseSchema
 >;
 
 /* ============================== CreateMaterial ============================== */
@@ -91,9 +126,12 @@ export const CreateMaterialRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
-    rootShelfId: z.uuidv4(),
-    parentShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
     name: z.string().min(1).max(128),
+  }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -109,37 +147,40 @@ export type CreateMaterialResponse = z.infer<
   typeof CreateMaterialResponseSchema
 >;
 
-/* ============================== SaveMyMaterialById ============================== */
+/* ============================== SaveMyTextbookMaterialById ============================== */
 
-export const SaveMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
-  body: z.object({
-    materialId: z.uuidv4(),
-    rootShelfId: z.uuidv4(),
-    partialUpdate: partialUpdateSchemaFactory(
-      z.object({
-        name: z.string().min(1).max(128),
-      })
-    ),
-    contentFile: z.file().optional(),
-  }),
-});
+export const SaveMyTextbookMaterialByIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      materialId: z.uuidv4(),
+      rootShelfId: z.uuidv4(),
+      name: z.string().min(1).max(128).optional(),
+      contentFile: z.file().optional(),
+      size: z.int64().optional(),
+    }),
+    affected: z.object({
+      rootShelfId: z.uuidv4(),
+      parentSubShelfId: z.uuidv4(),
+    }),
+  });
 
-export type SaveMyMaterialByIdRequest = z.infer<
-  typeof SaveMyMaterialByIdRequestSchema
+export type SaveMyTextbookMaterialByIdRequest = z.infer<
+  typeof SaveMyTextbookMaterialByIdRequestSchema
 >;
 
-export const SaveMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
-  data: z.object({
-    updatedAt: z.coerce.date(),
-  }),
-});
+export const SaveMyTextbookMaterialByIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
 
-export type SaveMyMaterialByIdResponse = z.infer<
-  typeof SaveMyMaterialByIdResponseSchema
+export type SaveMyTextbookMaterialByIdResponse = z.infer<
+  typeof SaveMyTextbookMaterialByIdResponseSchema
 >;
 
 /* ============================== MoveMyMaterialById ============================== */
@@ -151,9 +192,11 @@ export const MoveMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     materialId: z.uuidv4(),
-    sourceRootShelfId: z.uuidv4(),
-    destinationRootShelfId: z.uuidv4(),
-    destinationParentShelfId: z.uuidv4(),
+    destinationParentSubShelfId: z.uuidv4(),
+  }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    sourceParentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -171,6 +214,37 @@ export type MoveMyMaterialByIdResponse = z.infer<
   typeof MoveMyMaterialByIdResponseSchema
 >;
 
+/* ============================== MoveMyMaterialsByIds ============================== */
+
+export const MoveMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    materialIds: z.array(z.uuidv4()).min(1).max(128),
+    destinationParentSubShelfId: z.uuidv4(),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    sourceParentSubShelfIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type MoveMyMaterialsByIdsRequest = z.infer<
+  typeof MoveMyMaterialsByIdsRequestSchema
+>;
+
+export const MoveMyMaterialsByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type MoveMyMaterialsByIdsResponse = z.infer<
+  typeof MoveMyMaterialsByIdsResponseSchema
+>;
+
 /* ============================== RestoreMyMaterialById ============================== */
 
 export const RestoreMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
@@ -180,7 +254,10 @@ export const RestoreMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     materialId: z.uuidv4(),
+  }),
+  affected: z.object({
     rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -206,8 +283,11 @@ export const RestoreMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
-    materialIds: z.array(z.uuidv4()).min(1).max(32),
-    rootShelfId: z.uuidv4(),
+    materialIds: z.array(z.uuidv4()).min(1).max(128),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    parentSubShelfIds: z.array(z.uuidv4()),
   }),
 });
 
@@ -235,7 +315,10 @@ export const DeleteMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     materialId: z.uuidv4(),
+  }),
+  affected: z.object({
     rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -261,8 +344,11 @@ export const DeleteMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
-    materialIds: z.array(z.uuidv4()).min(1).max(32),
-    rootShelfId: z.uuidv4(),
+    materialIds: z.array(z.uuidv4()).min(1).max(128),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    parentSubShelfIds: z.array(z.uuidv4()),
   }),
 });
 

@@ -10,17 +10,30 @@ export const queryKeys = {
     all: () => ["userInfo"] as const,
     my: () => ["userInfo", "my"] as const,
   },
-  shelf: {
-    all: () => ["shelf"] as const,
-    myOrShared: (shelfId: UUID | undefined) =>
-      ["shelf", "myOrShared", shelfId] as const,
-    other: (shelfId: UUID | undefined) => ["shelf", "other", shelfId] as const,
+  rootShelf: {
+    all: () => ["rootShelf"] as const,
+    myOneById: (rootShelfId: UUID | undefined) =>
+      ["rootShelf", "myOne", rootShelfId?.toString()] as const,
+  },
+  subShelf: {
+    all: () => ["subShelf"] as const,
+    myOneById: (subShelfId?: UUID) =>
+      ["subShelf", "myOneById", subShelfId?.toString()] as const,
+    myManyByPrevSubShelfId: (prevSubShelfId?: UUID) =>
+      [
+        "subShelf",
+        "myManyByPrevSubShelfId",
+        prevSubShelfId?.toString(),
+      ] as const,
+    myManyByRootShelfId: (rootShelfId?: UUID) =>
+      ["subShelf", "myManyByRootShelfId", rootShelfId?.toString()] as const,
   },
   material: {
     all: () => ["material"] as const,
-    myOneOrSharedOne: (materialId: UUID | undefined) =>
-      ["material", "myOneOrSharedOne", materialId] as const,
-    myManyOrSharedMany: (rootShelfId: UUID | undefined) =>
-      ["material", "myManyOrSharedMany", rootShelfId] as const,
+    myOneById: (id?: UUID) => ["material", "myOneById", id] as const,
+    myManyByParentSubShelfId: (parentSubShelfId?: UUID) =>
+      ["material", "myManyByParentSubShelfId", parentSubShelfId] as const,
+    myManyByRootShelfId: (rootShelfId?: UUID) =>
+      ["material", "myManyByRootShelfId", rootShelfId] as const,
   },
 };

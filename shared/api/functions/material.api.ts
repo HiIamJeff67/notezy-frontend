@@ -7,18 +7,22 @@ import {
   DeleteMyMaterialByIdResponse,
   DeleteMyMaterialsByIdsRequest,
   DeleteMyMaterialsByIdsResponse,
+  GetAllMyMaterialsByParentSubShelfIdRequest,
+  GetAllMyMaterialsByParentSubShelfIdResponse,
+  GetAllMyMaterialsByRootShelfIdRequest,
+  GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdResponse,
+  MoveMyMaterialsByIdsRequest,
+  MoveMyMaterialsByIdsResponse,
   RestoreMyMaterialByIdRequest,
   RestoreMyMaterialByIdResponse,
   RestoreMyMaterialsByIdsRequest,
   RestoreMyMaterialsByIdsResponse,
-  SaveMyMaterialByIdRequest,
-  SaveMyMaterialByIdResponse,
-  SearchMyMaterialsByShelfIdsRequest,
-  SearchMyMaterialsByShelfIdsResponse,
+  SaveMyTextbookMaterialByIdRequest,
+  SaveMyTextbookMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -28,17 +32,20 @@ import { tKey } from "@shared/translations";
 export async function GetMyMaterialById(
   request: GetMyMaterialByIdRequest
 ): Promise<GetMyMaterialByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      credentials: "include",
-    }
-  );
+  const { materialId } = request.param;
+  const params = new URLSearchParams({
+    materialId: materialId,
+  }).toString();
+  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": request.header.userAgent,
+    },
+    credentials: "include",
+  });
 
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
@@ -52,38 +59,66 @@ export async function GetMyMaterialById(
   return jsonResponse;
 }
 
-/* ============================== SearchMyMaterialsByShelfIds ============================== */
+/* ============================== GetAllMyMaterialsByParentSubShelfId ============================== */
 
-export async function SearchMyMaterialsByShelfIds(
-  request: SearchMyMaterialsByShelfIdsRequest
-): Promise<SearchMyMaterialsByShelfIdsResponse> {
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.searchMyMaterialsByShelfId}`;
+export async function GetAllMyMaterialsByParentSubShelfId(
+  request: GetAllMyMaterialsByParentSubShelfIdRequest
+): Promise<GetAllMyMaterialsByParentSubShelfIdResponse> {
+  const { parentSubShelfId } = request.param;
+  const params = new URLSearchParams({
+    parentSubShelfId: parentSubShelfId,
+  }).toString();
 
-  if (request.param) {
-    const { query, limit, offset } = request.param;
-    const params = new URLSearchParams({
-      ...(query && { query }),
-      ...(limit !== undefined && { limit: String(limit) }),
-      ...(offset !== undefined && { offset: String(offset) }),
-    }).toString();
-    url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.searchMyMaterialsByShelfId}?${params}`;
-  }
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByParentSubShelfId}?${params}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      credentials: "include",
+    }
+  );
 
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
   const jsonResponse =
-    (await response.json()) as SearchMyMaterialsByShelfIdsResponse;
+    (await response.json()) as GetAllMyMaterialsByParentSubShelfIdResponse;
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  }
+  return jsonResponse;
+}
+
+/* ============================== GetAllMyMaterialsByRootShelfId ============================== */
+
+export async function GetAllMyMaterialsByRootShelfId(
+  request: GetAllMyMaterialsByRootShelfIdRequest
+): Promise<GetAllMyMaterialsByRootShelfIdResponse> {
+  const { rootShelfId } = request.param;
+  const params = new URLSearchParams({
+    rootShelfId: rootShelfId,
+  }).toString();
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByRootShelfId}?${params}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const jsonResponse =
+    (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
@@ -118,26 +153,26 @@ export async function CreateTextbookMaterial(
   return jsonResponse;
 }
 
-/* ============================== SaveMyMaterialById ============================== */
+/* ============================== SaveMyTextbookMaterialById ============================== */
 
-export async function SaveMyMaterialById(
-  request: SaveMyMaterialByIdRequest
-): Promise<SaveMyMaterialByIdResponse> {
+export async function SaveMyTextbookMaterialById(
+  request: SaveMyTextbookMaterialByIdRequest
+): Promise<SaveMyTextbookMaterialByIdResponse> {
   const formData = new FormData();
   formData.append("materialId", request.body.materialId);
   formData.append("rootShelfId", request.body.rootShelfId);
-  if (request.body.partialUpdate) {
-    formData.append(
-      "partialUpdate",
-      JSON.stringify(request.body.partialUpdate)
-    );
+  if (request.body.name) {
+    formData.append("name", request.body.name);
   }
   if (request.body.contentFile) {
     formData.append("contentFile", request.body.contentFile);
   }
+  if (request.body.size) {
+    formData.append("size", request.body.size.toString());
+  }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyMaterialById}`,
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyTextbookMaterialById}`,
     {
       method: "PUT",
       headers: {
@@ -151,7 +186,8 @@ export async function SaveMyMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as SaveMyMaterialByIdResponse;
+  const jsonResponse =
+    (await response.json()) as SaveMyTextbookMaterialByIdResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
@@ -180,6 +216,34 @@ export async function MoveMyMaterialById(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const jsonResponse = (await response.json()) as MoveMyMaterialByIdResponse;
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  }
+  return jsonResponse;
+}
+
+/* ============================== MoveMyMaterialsByIds ============================== */
+
+export async function MoveMyMaterialsByIds(
+  request: MoveMyMaterialsByIdsRequest
+): Promise<MoveMyMaterialsByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialsByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const jsonResponse = (await response.json()) as MoveMyMaterialsByIdsResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
@@ -251,7 +315,7 @@ export async function DeleteMyMaterialById(
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialById}`,
     {
-      method: "PATCH",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
@@ -279,7 +343,7 @@ export async function DeleteMyMaterialsByIds(
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialsByIds}`,
     {
-      method: "PATCH",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
