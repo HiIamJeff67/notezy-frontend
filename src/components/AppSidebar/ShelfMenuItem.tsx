@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useShelf } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
-import { ShelfSummary } from "@shared/lib/shelfManipulator";
-import { ShelfNode } from "@shared/lib/shelfNode";
+import { ShelfSummary } from "@shared/lib/shelfMaterialManipulator";
+import { ShelfNode } from "@shared/lib/shelfMaterialNodes";
 import { Suspense } from "react";
 import {
   Collapsible,

@@ -45,7 +45,6 @@ import {
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 import { queryKeys } from "../queryKeys";
-import { defaultQueryAsyncOptions, defaultQueryOptions } from "./hook";
 
 export const useGetMySubShelfById = (
   hookRequest?: GetMySubShelfByIdRequest,
@@ -81,7 +80,9 @@ export const useGetMySubShelfById = (
       hookRequest?.param.subShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -92,7 +93,7 @@ export const useGetMySubShelfById = (
         callbackRequest.param.subShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 
@@ -140,7 +141,9 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       hookRequest?.param.prevSubShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -153,7 +156,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
         callbackRequest.param.prevSubShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 
@@ -201,7 +204,9 @@ export const useGetAllMySubShelvesByRootShelfId = (
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -214,7 +219,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 
@@ -306,7 +311,8 @@ export const useUpdateMySubShelfById = () => {
               switch (k[1]) {
                 case "myOneById":
                 case "myManyByPrevSubShelfId":
-                  if (prevSubShelfId === k[2]) return true;
+                  if (prevSubShelfId !== null && prevSubShelfId === k[2])
+                    return true;
                 case "myManyByRootShelfId":
                   if (rootShelfId === k[2]) return true;
               }

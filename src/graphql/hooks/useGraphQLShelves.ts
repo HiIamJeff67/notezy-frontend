@@ -1,13 +1,13 @@
-import type {
-  SearchShelvesQuery,
-  SearchShelvesQueryVariables,
+import {
+  SearchRootShelvesDocument,
+  type SearchRootShelvesQuery,
+  type SearchRootShelvesQueryVariables,
 } from "@/graphql/generated/graphql";
-import { SearchShelvesDocument } from "@/graphql/generated/graphql";
 import { useLazyQuery, useQuery } from "@apollo/client/react";
 
-export const useSearchShelvesLazyQuery = () => {
-  return useLazyQuery<SearchShelvesQuery, SearchShelvesQueryVariables>(
-    SearchShelvesDocument,
+export const useSearchRootShelvesLazyQuery = () => {
+  return useLazyQuery<SearchRootShelvesQuery, SearchRootShelvesQueryVariables>(
+    SearchRootShelvesDocument,
     {
       notifyOnNetworkStatusChange: true,
     }
@@ -15,10 +15,10 @@ export const useSearchShelvesLazyQuery = () => {
 };
 
 export const useSearchShelvesQuery = (
-  variables: SearchShelvesQueryVariables
+  variables: SearchRootShelvesQueryVariables
 ) => {
-  return useQuery<SearchShelvesQuery, SearchShelvesQueryVariables>(
-    SearchShelvesDocument,
+  return useQuery<SearchRootShelvesQuery, SearchRootShelvesQueryVariables>(
+    SearchRootShelvesDocument,
     { variables: variables }
   );
 };

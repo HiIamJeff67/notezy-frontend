@@ -33,7 +33,6 @@ import {
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 import { queryKeys } from "../queryKeys";
-import { defaultQueryAsyncOptions, defaultQueryOptions } from "./hook";
 
 export const useGetMyRootShelfById = (
   hookRequest?: GetMyRootShelfByIdRequest,
@@ -69,7 +68,9 @@ export const useGetMyRootShelfById = (
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -80,7 +81,7 @@ export const useGetMyRootShelfById = (
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 

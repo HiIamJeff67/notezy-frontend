@@ -25,6 +25,7 @@ export const useGetUserData = (
 
   const queryFunction = async (request?: GetUserDataRequest) => {
     if (!request) return;
+
     try {
       const validatedRequest = GetUserDataRequestSchema.parse(request);
       return await GetUserData(validatedRequest);

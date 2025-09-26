@@ -1,65 +1,70 @@
-"use client";
-
 import {
-  PrivateShelf,
-  SearchShelfEdge,
-  SearchShelfSortBy,
+  PrivateRootShelf,
+  SearchRootShelfEdge,
+  SearchRootShelfSortBy,
   SearchSortOrder,
 } from "@/graphql/generated/graphql";
-import { useSearchShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
-import { useApolloClient } from "@apollo/client/react";
+import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
+import { useGetAllMyMaterialsByParentSubShelfId } from "@shared/api/hooks/material.hook";
 import {
-  useCreateShelf,
-  useDeleteShelf,
-  useSynchronizeShelves,
-} from "@shared/api/hooks/shelf.hook";
-import { MaxSearchNumOfShelves, MaxTriggerValue } from "@shared/constants";
+  useCreateRootShelf,
+  useDeleteMyRootShelfById,
+  useRestoreMyRootShelfById,
+  useUpdateMyRootShelfById,
+} from "@shared/api/hooks/rootShelf.hook";
+import {
+  useCreateSubShelfByRootShelfId,
+  useDeleteMySubShelfById,
+  useGetAllMySubShelvesByRootShelfId,
+  useRestoreMySubShelfById,
+  useUpdateMySubShelfById,
+} from "@shared/api/hooks/subShelf.hook";
+import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
+import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import {
+  MaxMaterialsOfRootShelf,
+  MaxSearchLimit,
+  MaxSubShelvesOfRootShelf,
+  MaxTriggerValue,
+} from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
-import { ShelfManipulator, ShelfSummary } from "@shared/lib/shelfManipulator";
-import { ShelfNode } from "@shared/lib/shelfNode";
-import { Range } from "@shared/types/range.type";
+import {
+  AnalysisStatus,
+  ShelfMaterialManipulator,
+  ShelfTreeSummary,
+} from "@shared/lib/shelfMaterialManipulator";
+import { RootShelfNode, SubShelfNode } from "@shared/lib/shelfMaterialNodes";
 import { UUID } from "crypto";
-import React, { createContext, useCallback, useRef, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 
 interface ShelfContextType {
-  compressedShelves: SearchShelfEdge[];
-  searchCompressedShelves: () => Promise<void>;
-  loadMoreCompressedShelves: () => Promise<void>;
+  rootShelfEdges: SearchRootShelfEdge[];
+  searchRootShelves: () => Promise<void>;
+  loadMoreRootShelves: () => Promise<void>;
   isFetching: boolean;
-  expandedShelves: LRUCache<string, ShelfSummary>;
-  currentExpandedRange: Range;
-  isExpanding: boolean;
+  expandedShelves: LRUCache<string, ShelfTreeSummary | null>;
   searchInput: { query: string; after: string | null };
   setSearchInput: (input: { query: string; after: string | null }) => void;
-  expandShelvesForward: (amount?: number) => void;
-  expandShelvesBackward: (amount?: number) => void;
-  createChildShelf: (
-    rootShelfId: UUID,
-    parentShelf: ShelfNode,
-    name: string
-  ) => Promise<void>;
-  createRootShelf: (name: string) => Promise<void>;
-  synchronizeRootShelves: (index: number) => Promise<void>;
-  deleteRootShelf: (shelfId: UUID) => Promise<void>;
 }
 
 export const ShelfContext = createContext<ShelfContextType | undefined>(
   undefined
 );
 
-export const ShelfProvider = ({
-  children,
-  maxNumOfExpandedShelves,
-}: {
-  children: React.ReactNode;
-  maxNumOfExpandedShelves: number;
-}) => {
-  const apolloClient = useApolloClient();
-  const createShelfMutator = useCreateShelf();
-  const synchronizeShelvesMutator = useSynchronizeShelves();
-  const deleteShelfMutator = useDeleteShelf();
-  // const deleteMaterialMutator = useDeleteMaterial();
+export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
+  const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
+  const getAllMyMaterialsBySubShelfQuerier =
+    useGetAllMyMaterialsByParentSubShelfId();
+  const createRootShelfMutator = useCreateRootShelf();
+  const createSubShelfMutator = useCreateSubShelfByRootShelfId();
+  const updateRootShelfMutator = useUpdateMyRootShelfById();
+  const updateSubShelfMutator = useUpdateMySubShelfById();
+  const restoreRootShelfMutator = useRestoreMyRootShelfById();
+  const restoreSubShelfMutator = useRestoreMySubShelfById();
+  const deleteRootShelfMutator = useDeleteMyRootShelfById();
+  const deleteSubShelfMutator = useDeleteMySubShelfById();
 
+  const [_, setUpdateTrigger] = useState(0);
   const [searchInput, setSearchInput] = useState<{
     query: string;
     after: string | null;
@@ -67,242 +72,144 @@ export const ShelfProvider = ({
     query: "",
     after: null,
   });
-  const [_, setUpdateTrigger] = useState(0);
-  const [currentExpandedRange, setCurrentExpandedRange] = useState({
-    start: -1,
-    end: -1,
-  });
-  const [isExpanding, setIsExpanding] = useState<boolean>(false);
-
   const expandedShelvesRef = useRef(
-    new LRUCache<string, ShelfSummary>(maxNumOfExpandedShelves)
-  ); // usually set to a ratio of the size of compressed shelves
+    new LRUCache<string, ShelfTreeSummary | null>(
+      MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf
+    )
+  );
+  const deletedShelvesRef = useRef(
+    new LRUCache<string, ShelfTreeSummary | null>(
+      MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf
+    )
+  );
 
   const forceUpdate = useCallback(() => {
     setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
   }, []);
-  const expandedShelvesActions = {
-    setShelf: useCallback(
-      (shelfId: string, shelf: ShelfSummary) => {
-        expandedShelvesRef.current.set(shelfId, shelf);
-        forceUpdate();
-      },
-      [forceUpdate, expandedShelvesRef.current]
-    ),
-    getShelf: useCallback(
-      (shelfId: string) => {
-        return expandedShelvesRef.current.get(shelfId);
-      },
-      [expandedShelvesRef.current]
-    ),
-    deleteShelf: useCallback(
-      (shelfId: string) => {
-        expandedShelvesRef.current.delete(shelfId);
-        forceUpdate();
-      },
-      [forceUpdate, expandedShelvesRef.current]
-    ),
-    clear: useCallback(() => {
-      expandedShelvesRef.current.clear();
-      forceUpdate();
-    }, [forceUpdate, expandedShelvesRef.current]),
-  };
 
   const [executeSearch, { data, loading, error, fetchMore }] =
-    useSearchShelvesLazyQuery();
+    useSearchRootShelvesLazyQuery();
 
-  const searchCompressedShelves = async () => {
+  useEffect(() => {
+    if (
+      data !== undefined &&
+      data.searchRootShelves !== undefined &&
+      data.searchRootShelves.searchEdges !== undefined
+    ) {
+      for (const edge of data.searchRootShelves
+        .searchEdges as SearchRootShelfEdge[]) {
+        if (expandedShelvesRef.current.get(edge.node.id) === undefined) {
+          expandedShelvesRef.current.set(edge.node.id, null);
+        }
+      }
+      forceUpdate();
+    }
+  }, [data]);
+
+  const searchRootShelves = useCallback(async () => {
     await executeSearch({
       variables: {
         input: {
           ...searchInput,
-          first: MaxSearchNumOfShelves,
-          sortBy: SearchShelfSortBy.LastUpdate,
-          sortOrder: SearchSortOrder.Desc,
+          first: MaxSearchLimit,
+          sortBy: SearchRootShelfSortBy.Name,
+          sortOrder: SearchSortOrder.Asc,
         },
       },
     });
-  };
+  }, [executeSearch, searchInput]);
 
-  const loadMoreCompressedShelves = async () => {
-    const searchShelvesConnection = data?.searchShelves;
+  const loadMoreRootShelves = useCallback(async () => {
+    const searchRootShelvesConnection = data?.searchRootShelves;
+
     if (
-      !searchShelvesConnection ||
-      searchShelvesConnection.searchEdges.length === 0
+      !searchRootShelvesConnection ||
+      searchRootShelvesConnection.searchEdges.length === 0
     )
       return;
-    const pageInfo = searchShelvesConnection?.searchPageInfo;
+
+    const pageInfo = searchRootShelvesConnection?.searchPageInfo;
     if (!pageInfo.hasNextPage) return;
 
     await fetchMore({
       variables: {
         input: {
           ...searchInput,
-          first: MaxSearchNumOfShelves,
-          sortBy: SearchShelfSortBy.LastUpdate,
-          sortOrder: SearchSortOrder.Desc,
+          first: MaxSearchLimit,
+          sortBy: SearchRootShelfSortBy.Name,
+          sortOrder: SearchSortOrder.Asc,
           after: pageInfo.endEncodedSearchCursor,
         },
       },
     });
+  }, [data, fetchMore, searchInput]);
+
+  const expandRootShelf = async (rootShelf: PrivateRootShelf) => {
+    if (expandedShelvesRef.current.get(rootShelf.id) === undefined) {
+      throw new Error(`root shelf does not exist`);
+    }
+    if (expandedShelvesRef.current.get(rootShelf.id) !== null) return;
+
+    const userAgent = navigator.userAgent;
+    const responseOfGetAllSubShelves =
+      (await getAllMySubShelvesQuerier.queryAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        param: {
+          rootShelfId: rootShelf.id,
+        },
+      })) as GetAllMySubShelvesByRootShelfIdResponse;
+
+    const rootShelfNode =
+      ShelfMaterialManipulator.initializeSubShelfNodeTreeByResponse(
+        {
+          id: rootShelf.id,
+          name: rootShelf.name,
+          totalShelfNodes: rootShelf.totalShelfNodes,
+          totalMaterials: rootShelf.totalMaterials,
+          lastAnalyzedAt: rootShelf.lastAnalyzedAt,
+          deletedAt: rootShelf.deletedAt ?? null,
+          updatedAt: rootShelf.updatedAt,
+          createdAt: rootShelf.createdAt,
+          children: {},
+        },
+        responseOfGetAllSubShelves
+      );
+    const shelfTreeSummary: ShelfTreeSummary = {
+      root: rootShelfNode,
+      estimatedByteSize: 0, // may use some field to store the size of rootShelf,
+      hasChanged: false,
+      analysisStatus: AnalysisStatus.Unexplored,
+      maxWidth: 0,
+      maxDepth: 0,
+      uniqueMaterialIds: [],
+    };
+    expandedShelvesRef.current.set(rootShelf.id, shelfTreeSummary);
+    forceUpdate();
   };
 
-  const expandShelvesForward = useCallback(
-    async (amount: number = Math.floor(maxNumOfExpandedShelves / 2)) => {
-      if (isExpanding) return;
-      setIsExpanding(true);
-
-      const compressedShelves = data?.searchShelves?.searchEdges;
-      if (!compressedShelves) return;
-      const decodedAmount = Math.min(
-        amount,
-        compressedShelves.length - currentExpandedRange.end - 1
-      );
-      if (currentExpandedRange.end >= compressedShelves.length - 1) return;
-
-      for (let i = 1; i <= decodedAmount; i++) {
-        const targetIndex = currentExpandedRange.end + i;
-        const nextExpandedShelf = compressedShelves[targetIndex]
-          .node as PrivateShelf;
-        if (!nextExpandedShelf) return;
-
-        try {
-          await new Promise<void>(resolve => {
-            setTimeout(() => {
-              try {
-                const nextRoot = ShelfManipulator.decodeFromBase64(
-                  nextExpandedShelf.encodedStructure
-                );
-
-                expandedShelvesActions.setShelf(nextRoot.Id, {
-                  root: nextRoot,
-                  encodedStructureByteSize:
-                    nextExpandedShelf.encodedStructureByteSize,
-                  hasChanged: false,
-                  totalShelfNodes: nextExpandedShelf.totalShelfNodes,
-                  totalMaterials: nextExpandedShelf.totalMaterials,
-                  maxWidth: nextExpandedShelf.maxWidth,
-                  maxDepth: nextExpandedShelf.maxDepth,
-                  uniqueMaterialIds: [],
-                });
-              } catch (error) {
-                console.error(
-                  `Failed to decode shelf at index ${targetIndex}:`,
-                  error
-                );
-              } finally {
-                resolve();
-              }
-            }, 0);
-          });
-
-          await new Promise(resolve => setTimeout(resolve, 5));
-        } catch (error) {
-          console.error(
-            `Error processing shelf at index ${targetIndex}:`,
-            error
-          );
-        }
-      }
-      setCurrentExpandedRange(prev => ({
-        start: prev.start + decodedAmount,
-        end: prev.end + decodedAmount,
-      }));
-      setIsExpanding(false);
-    },
-    [
-      data,
-      isExpanding,
-      currentExpandedRange,
-      expandedShelvesActions,
-      maxNumOfExpandedShelves,
-    ]
-  );
-
-  const expandShelvesBackward = useCallback(
-    async (amount: number = Math.floor(maxNumOfExpandedShelves / 2)) => {
-      if (isExpanding) return;
-      setIsExpanding(true);
-
-      const compressedShelves = data?.searchShelves?.searchEdges;
-      if (!compressedShelves) return;
-      let remaining = Math.min(amount, currentExpandedRange.start + 1);
-      if (currentExpandedRange.start <= 0) return;
-
-      while (remaining-- > 0) {
-        const targetIndex = currentExpandedRange.start - 1;
-        const previousExpandedShelf = compressedShelves[targetIndex]
-          .node as PrivateShelf;
-        if (!previousExpandedShelf) return;
-
-        try {
-          // Non-blocking decoding
-          await new Promise<void>(resolve => {
-            // use setTimeout to make the frontend UI have ability to work first
-            setTimeout(() => {
-              try {
-                const previousRoot = ShelfManipulator.decodeFromBase64(
-                  previousExpandedShelf.encodedStructure
-                );
-
-                setCurrentExpandedRange(prev => ({
-                  start: prev.start - 1,
-                  end: prev.end - 1,
-                }));
-
-                expandedShelvesActions.setShelf(previousRoot.Id, {
-                  root: previousRoot,
-                  encodedStructureByteSize:
-                    previousExpandedShelf.encodedStructureByteSize,
-                  hasChanged: false,
-                  totalShelfNodes: previousExpandedShelf.totalShelfNodes,
-                  totalMaterials: previousExpandedShelf.totalMaterials,
-                  maxWidth: previousExpandedShelf.maxWidth,
-                  maxDepth: previousExpandedShelf.maxDepth,
-                  uniqueMaterialIds: [],
-                });
-
-                console.log(
-                  `✅ Decoded previous shelf at index ${targetIndex}`
-                );
-              } catch (error) {
-                console.error(
-                  `❌ Failed to decode shelf at index ${targetIndex}:`,
-                  error
-                );
-              } finally {
-                resolve();
-              }
-            }, 0); // set to 0 to give way the execution
-          });
-
-          // Make another tiny timeout for the frontend UI
-          if (remaining > 0) {
-            await new Promise(resolve => setTimeout(resolve, 5));
-          }
-        } catch (error) {
-          console.error(
-            `❌ Error processing shelf at index ${targetIndex}:`,
-            error
-          );
-        }
-      }
-    },
-    [
-      data,
-      isExpanding,
-      currentExpandedRange,
-      expandedShelvesActions,
-      maxNumOfExpandedShelves,
-    ]
-  );
-
-  /* ============================== Basic operations for Shelf and Material Structure ============================== */
-
-  // include API operation
-  const createRootShelf = async (name: string): Promise<void> => {
+  const expandSubShelf = async (parentSubShelfNode: SubShelfNode) => {
     const userAgent = navigator.userAgent;
-    const responseOfCreateShelf = await createShelfMutator.mutateAsync({
+    const responseOfGetAllMaterials =
+      (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        param: {
+          parentSubShelfId: parentSubShelfNode.id,
+        },
+      })) as GetAllMyMaterialsByParentSubShelfIdResponse;
+
+    ShelfMaterialManipulator.initializeMaterialNodesByResponse(
+      parentSubShelfNode,
+      responseOfGetAllMaterials
+    );
+  };
+
+  const createRootShelf = async (name: string) => {
+    const userAgent = navigator.userAgent;
+    const responseOfCreateRootShelf = await createRootShelfMutator.mutateAsync({
       header: {
         userAgent: userAgent,
       },
@@ -311,131 +218,156 @@ export const ShelfProvider = ({
       },
     });
 
-    const root = ShelfManipulator.decodeFromBase64(
-      responseOfCreateShelf.data.encodedStructure
+    const shelfTreeSummary: ShelfTreeSummary =
+      ShelfMaterialManipulator.analysisAndGenerateSummary({
+        id: responseOfCreateRootShelf.data.id as UUID,
+        name: name,
+        totalShelfNodes: 0,
+        totalMaterials: 0,
+        lastAnalyzedAt: responseOfCreateRootShelf.data.lastAnalyzedAt,
+        deletedAt: null,
+        updatedAt: responseOfCreateRootShelf.data.createdAt,
+        createdAt: responseOfCreateRootShelf.data.createdAt,
+        children: {},
+      });
+    expandedShelvesRef.current.set(
+      responseOfCreateRootShelf.data.id as UUID,
+      shelfTreeSummary
     );
-    expandedShelvesActions.setShelf(root.Id, {
-      root,
-      encodedStructureByteSize: 36,
-      hasChanged: false,
-      totalShelfNodes: 1,
-      totalMaterials: 0,
-      maxWidth: 1,
-      maxDepth: 1,
-      uniqueMaterialIds: [],
-    });
   };
 
-  const createChildShelf = async (
+  const createSubShelf = async (
     rootShelfId: UUID,
-    parentShelfNode: ShelfNode,
+    prevSubShelfNode: SubShelfNode,
     name: string
-  ): Promise<void> => {
-    const summary = expandedShelvesActions.getShelf(rootShelfId);
-    if (!summary) {
-      throw new Error(`rootShelfId is invalid`);
-    }
-    const information = ShelfManipulator.getChildInformation(
-      summary.root,
-      parentShelfNode
-    );
-    if (information.width === -1 || information.depth === -1) {
+  ) => {
+    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
+    if (shelfTreeSummary === undefined || shelfTreeSummary === null) {
       throw new Error(
-        `parentShelfNode not found in one of the children of rootShelf`
+        `parentShelfNode not found in one of the children of rootShelfNode`
       );
     }
 
-    ShelfManipulator.createShelfNode(parentShelfNode, name);
-    summary.hasChanged = true;
-    summary.totalShelfNodes++;
-    summary.maxWidth = Math.max(
-      summary.maxWidth,
-      Math.max(information.width, information.subWidth + 1)
-    );
-    summary.maxDepth = Math.max(summary.maxDepth, information.depth + 1);
-  };
-
-  const renameChildShelf = async (
-    rootShelfId: UUID,
-    shelfNode: ShelfNode,
-    name: string
-  ): Promise<void> => {
-    const summary = expandedShelvesActions.getShelf(rootShelfId);
-    if (!summary) {
-      throw new Error(`rootShelfId is invalid`);
-    }
-    shelfNode.Name = name;
-    summary.hasChanged = true;
-  };
-
-  const moveChildShelf = async (): Promise<void> => {};
-
-  // include API operation
-  const synchronizeRootShelves = async (index: number): Promise<void> => {
-    const edges = data?.searchShelves?.searchEdges as SearchShelfEdge[];
-
-    if (index < 0 || index >= edges.length) {
-      throw new Error(``);
-    }
-  };
-
-  const deleteChildShelf = async (
-    rootShelfId: UUID,
-    parentShelfNode: ShelfNode,
-    shelfNode: ShelfNode
-  ): Promise<void> => {
-    const summary = expandedShelvesActions.getShelf(rootShelfId);
-    if (!summary) {
-      throw new Error(`rootShelfId is invalid`);
-    }
-
-    const deletedMaterials = ShelfManipulator.deleteShelfNode(
-      parentShelfNode,
-      shelfNode
-    );
-  };
-
-  // include API operation
-  const deleteRootShelf = async (shelfId: UUID): Promise<void> => {
     const userAgent = navigator.userAgent;
-    await deleteShelfMutator.mutateAsync({
+    const responseOfCreateSubShelf = await createSubShelfMutator.mutateAsync({
       header: {
         userAgent: userAgent,
       },
       body: {
-        shelfId: shelfId,
+        rootShelfId: rootShelfId,
+        prevSubShelfId: prevSubShelfNode.id,
+        name: name,
+      },
+      affected: {
+        rootShelfId: rootShelfId,
+        prevSubShelfId: prevSubShelfNode.id,
       },
     });
 
-    // we don't have to call api to clean up some trash of materials
-    // since the backend will automatically handle this
-
-    expandedShelvesActions.deleteShelf(shelfId);
+    shelfTreeSummary.hasChanged = true;
+    shelfTreeSummary.root.totalShelfNodes++;
+    shelfTreeSummary.maxDepth = Math.max(
+      shelfTreeSummary.maxDepth,
+      prevSubShelfNode.path.length + 1
+    );
+    shelfTreeSummary.maxWidth = Math.max(
+      shelfTreeSummary.maxWidth,
+      Object.entries(prevSubShelfNode.children).length + 1
+    );
+    const newPath = prevSubShelfNode.path;
+    newPath.push(prevSubShelfNode.id);
+    prevSubShelfNode.children[responseOfCreateSubShelf.data.id as UUID] = {
+      id: responseOfCreateSubShelf.data.id as UUID,
+      rootShelfId: rootShelfId,
+      prevSubShelfId: prevSubShelfNode.id as UUID,
+      name: name,
+      path: newPath,
+      deletedAt: null,
+      updatedAt: responseOfCreateSubShelf.data.createdAt,
+      createdAt: responseOfCreateSubShelf.data.createdAt,
+      children: {},
+      materialNodes: {},
+    };
   };
+
+  const renameRootShelf = async (
+    rootShelfNode: RootShelfNode,
+    name: string
+  ) => {
+    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfNode.id);
+    if (shelfTreeSummary === undefined || shelfTreeSummary === null) {
+      throw new Error(
+        `parentShelfNode not found in one of the children of rootShelfNode`
+      );
+    }
+
+    const userAgent = navigator.userAgent;
+    await updateRootShelfMutator.mutateAsync({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        rootShelfId: rootShelfNode.id,
+        values: {
+          name: name,
+        },
+      },
+    });
+
+    // TODO: make a general method(function) to put the updated data in partial update fields to the local variable
+    shelfTreeSummary.root.name = name;
+  };
+
+  const renameSubShelf = async (subShelfNode: SubShelfNode, name: string) => {
+    const shelfTreeSummary = expandedShelvesRef.current.get(
+      subShelfNode.rootShelfId
+    );
+    if (shelfTreeSummary === undefined || shelfTreeSummary === null) {
+      throw new Error(
+        `parentShelfNode not found in one of the children of rootShelfNode`
+      );
+    }
+
+    const userAgent = navigator.userAgent;
+    await updateSubShelfMutator.mutateAsync({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        subShelfId: subShelfNode.id,
+        values: {
+          name: name,
+        },
+      },
+      affected: {
+        rootShelfId: subShelfNode.rootShelfId,
+        prevSubShelfId: subShelfNode.prevSubShelfId,
+      },
+    });
+
+    subShelfNode.name = name;
+  };
+
+  const restoreRootShelf = async (rootShelfNode: RootShelfNode) => {};
+
+  const restoreSubShelf = async (subShelfNode: SubShelfNode) => {};
+
+  const deleteRootShelf = async (rootShelfNode: RootShelfNode) => {};
+
+  const deleteSubShelf = async (subShelfNode: SubShelfNode) => {};
+
+  const moveSubShelf = async () => {};
 
   const contextValue: ShelfContextType = {
-    // we "MUST" export the `data` from GraphQL Query directly
-    compressedShelves:
-      (data?.searchShelves?.searchEdges as SearchShelfEdge[]) || [],
-    searchCompressedShelves: searchCompressedShelves,
-    loadMoreCompressedShelves: loadMoreCompressedShelves,
+    rootShelfEdges:
+      (data?.searchRootShelves?.searchEdges as SearchRootShelfEdge[]) || [],
+    searchRootShelves: searchRootShelves,
+    loadMoreRootShelves: loadMoreRootShelves,
     isFetching: loading,
     expandedShelves: expandedShelvesRef.current,
-    currentExpandedRange: currentExpandedRange,
-    isExpanding: isExpanding,
     searchInput: searchInput,
     setSearchInput: setSearchInput,
-    expandShelvesForward: expandShelvesForward,
-    expandShelvesBackward: expandShelvesBackward,
-    createChildShelf: createChildShelf,
-    createRootShelf: createRootShelf,
-    synchronizeRootShelves: synchronizeRootShelves,
-    deleteRootShelf: deleteRootShelf,
   };
 
-  return (
-    <ShelfContext.Provider value={contextValue}>
-      {children}
-    </ShelfContext.Provider>
-  );
+  return <ShelfContext value={contextValue}>{children}</ShelfContext>;
 };

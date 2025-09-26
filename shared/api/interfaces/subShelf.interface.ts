@@ -1,4 +1,3 @@
-import { partialUpdateSchemaFactory } from "@shared/lib/zodSchemaFactories";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
@@ -135,6 +134,7 @@ export type CreateSubShelfByRootShelfIdRequest = z.infer<
 export const CreateSubShelfByRootShelfIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
+      id: z.uuidv4(),
       createdAt: z.coerce.date(),
     }),
   });
@@ -152,15 +152,16 @@ export const UpdateMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     subShelfId: z.uuidv4(),
-    ...partialUpdateSchemaFactory(
-      z.object({
+    values: z
+      .object({
         name: z.string().min(1).max(128),
       })
-    ),
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
   }),
   affected: z.object({
     rootShelfId: z.uuidv4(),
-    prevSubShelfId: z.uuidv4(),
+    prevSubShelfId: z.uuidv4().nullable(),
   }),
 });
 

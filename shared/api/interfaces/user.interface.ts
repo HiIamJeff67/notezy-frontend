@@ -1,4 +1,3 @@
-import { partialUpdateSchemaFactory } from "@shared/lib/zodSchemaFactories";
 import { UserStatus } from "@shared/types/enums";
 import { PrivateUserSchema, UserDataSchema } from "@shared/types/models";
 import { z } from "zod";
@@ -45,16 +44,19 @@ export const UpdateMeRequestSchema = NotezyRequestSchema.extend({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
   }),
-  body: partialUpdateSchemaFactory(
-    z.object({
-      displayName: z
-        .string()
-        .min(6)
-        .max(32)
-        .regex(/^[0-9]+/),
-      status: z.enum(UserStatus),
-    })
-  ),
+  body: z.object({
+    values: z
+      .object({
+        displayName: z
+          .string()
+          .min(6)
+          .max(32)
+          .regex(/^[0-9]+/),
+        status: z.enum(UserStatus),
+      })
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
+  }),
 });
 
 export type UpdateMeRequest = z.infer<typeof UpdateMeRequestSchema>;

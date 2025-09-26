@@ -42,7 +42,6 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
-import { defaultQueryAsyncOptions, defaultQueryOptions } from "./hook";
 
 export const useGetMyMaterialById = (
   hookRequest?: GetMyMaterialByIdRequest,
@@ -78,7 +77,9 @@ export const useGetMyMaterialById = (
       hookRequest?.param.materialId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -89,7 +90,7 @@ export const useGetMyMaterialById = (
         callbackRequest.param.materialId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 
@@ -137,7 +138,9 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -150,7 +153,7 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 
@@ -198,7 +201,9 @@ export const useGetAllMyMaterialsByRootShelfId = (
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    ...defaultQueryOptions,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -211,7 +216,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      ...defaultQueryAsyncOptions,
+      staleTime: 15 * 60 * 1000,
     });
   };
 

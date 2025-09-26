@@ -1,5 +1,5 @@
-import { ShelfManipulator } from "@shared/lib/shelfManipulator";
-import { ShelfNode } from "@shared/lib/shelfNode";
+import { ShelfManipulator } from "@shared/lib/shelfMaterialManipulator";
+import { ShelfNode } from "@shared/lib/shelfMaterialNodes";
 
 import { UUID } from "@shared/types/uuid_v4.type";
 

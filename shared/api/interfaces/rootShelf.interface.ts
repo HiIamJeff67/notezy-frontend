@@ -1,4 +1,3 @@
-import { partialUpdateSchemaFactory } from "@shared/lib/zodSchemaFactories";
 import z from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
@@ -110,11 +109,12 @@ export const UpdateMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     rootShelfId: z.uuidv4(),
-    ...partialUpdateSchemaFactory(
-      z.object({
+    values: z
+      .object({
         name: z.string().min(1).max(128),
       })
-    ),
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
   }),
 });
 

@@ -1,4 +1,3 @@
-import { partialUpdateSchemaFactory } from "@shared/lib/zodSchemaFactories";
 import { Country, UserGender } from "@shared/types/enums";
 import { PrivateUserInfoSchema } from "@shared/types/models";
 import { z } from "zod";
@@ -28,8 +27,8 @@ export const UpdateMyInfoRequestSchema = NotezyRequestSchema.extend({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
   }),
-  body: partialUpdateSchemaFactory(
-    z.object({
+  body: z.object({
+    values: z.object({
       avatarURL: z.url().nullable(),
       coverBackgroundURL: z.url().nullable(),
       header: z.string().min(0).max(64).nullable(),
@@ -37,8 +36,9 @@ export const UpdateMyInfoRequestSchema = NotezyRequestSchema.extend({
       gender: z.enum(UserGender),
       country: z.enum(Country).nullable(),
       birthDate: z.coerce.date().max(new Date()),
-    })
-  ),
+    }),
+    setNull: z.record(z.string(), z.boolean()).optional(),
+  }),
 });
 
 export type UpdateMyInfoRequest = z.infer<typeof UpdateMyInfoRequestSchema>;
