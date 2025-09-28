@@ -118,12 +118,12 @@ export const CreateSubShelfByRootShelfIdRequestSchema =
     }),
     body: z.object({
       rootShelfId: z.uuidv4(),
-      prevSubShelfId: z.uuidv4(),
+      prevSubShelfId: z.uuidv4().nullable(),
       name: z.string().min(1).max(128),
     }),
     affected: z.object({
       rootShelfId: z.uuidv4(),
-      prevSubShelfId: z.uuidv4(),
+      prevSubShelfId: z.uuidv4().nullable(),
     }),
   });
 
@@ -187,7 +187,9 @@ export const MoveMySubShelfRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
+    sourceRootShelfId: z.uuidv4(),
     sourceSubShelfId: z.uuidv4(),
+    destinationRootShelfId: z.uuidv4(),
     destinationSubShelfId: z.uuidv4(),
   }),
   affected: z.object({
@@ -216,7 +218,9 @@ export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
     authorization: z.string().optional(),
   }),
   body: z.object({
+    sourceRootShelfId: z.uuidv4(),
     sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
+    destinationRootShelfId: z.uuidv4(),
     destinationSubShelfId: z.uuidv4(),
   }),
   affected: z.object({
@@ -251,7 +255,7 @@ export const RestoreMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   affected: z.object({
     rootShelfId: z.uuidv4(),
-    prevSubShelfId: z.uuidv4(),
+    prevSubShelfId: z.uuidv4().nullable(),
   }),
 });
 
@@ -314,7 +318,7 @@ export const DeleteMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   affected: z.object({
     rootShelfId: z.uuidv4(),
-    prevSubShelfId: z.uuidv4(),
+    prevSubShelfId: z.uuidv4().nullable(),
   }),
 });
 

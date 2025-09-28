@@ -14,7 +14,6 @@ export interface MaterialNode {
   downloadURL: string;
   contentType: MaterialContentType;
   parseMediaType: string;
-  deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
 }
@@ -25,7 +24,7 @@ export interface SubShelfNode {
   prevSubShelfId: UUID | null;
   name: string;
   path: UUID[];
-  deletedAt: Date | null;
+  isExpanded: boolean;
   updatedAt: Date;
   createdAt: Date;
   children: Record<UUID, SubShelfNode>;
@@ -37,9 +36,28 @@ export interface RootShelfNode {
   name: string;
   totalShelfNodes: number;
   totalMaterials: number;
+  isExpanded: boolean;
   lastAnalyzedAt: Date;
-  deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
   children: Record<UUID, SubShelfNode>;
+}
+
+export enum AnalysisStatus {
+  Explored = "Explored",
+  OnlySubShelves = "OnlySubShelves",
+  OnlyMaterials = "OnlyMaterials",
+  Unexplored = "Unexplored",
+}
+
+// This shelf summary structure maybe different from the backend,
+// Since we may require more information for the client user
+export interface ShelfTreeSummary {
+  root: RootShelfNode;
+  estimatedByteSize: number;
+  maxWidth: number;
+  maxDepth: number;
+  hasChanged: boolean;
+  analysisStatus: AnalysisStatus;
+  uniqueMaterialIds: UUID[];
 }

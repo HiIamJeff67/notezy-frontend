@@ -1,3 +1,6 @@
+import RootShelfMenuItemSkeleton from "@/components/RootShelfMenu/RootShelfMenuItemSkeleton";
+import SubShelfMenu from "@/components/SubShelfMenu/SubShelfMenu";
+import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,15 +19,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useLoading, useShelf } from "@/hooks";
-import { FolderSyncIcon } from "lucide-react";
+import { FolderDotIcon } from "lucide-react";
 import { Suspense, useEffect } from "react";
-import ShelfMenuItem from "./ShelfMenuItem";
-import ShelfMenuSkeleton from "./SidebarMenuSkeleton";
 
-const ShelfMenu = () => {
+const RootShelfMenu = () => {
   const loadingManager = useLoading();
   const shelfManager = useShelf();
 
@@ -34,47 +34,49 @@ const ShelfMenu = () => {
 
   return (
     <SidebarMenu>
-      {shelfManager.compressedShelves.map((val, index) => {
-        const summary = shelfManager.expandedShelves.get(val.node.id);
-        console.log(summary?.root.Id);
+      {shelfManager.rootShelfEdges.map((edge, index) => {
+        const summary = shelfManager.expandedShelves.get(edge.node.id);
 
-        return (
-          summary && (
-            <Collapsible key={index}>
+        return summary === undefined ? (
+          <RootShelfMenuItemSkeleton key={index} />
+        ) : (
+          <Suspense fallback={<RootShelfMenuItemSkeleton />} key={index}>
+            <Collapsible>
               <SidebarMenuItem>
                 <ContextMenu>
                   <ContextMenuTrigger asChild>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         className="rounded-sm"
-                        onContextMenu={() => console.log("test")}
+                        onClick={async () => {
+                          await shelfManager.expandRootShelf(edge.node);
+                        }}
                       >
-                        {summary.root.Name}
+                        {summary.root.name}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                   </ContextMenuTrigger>
                   {summary.hasChanged && (
                     <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
-                      <FolderSyncIcon className="max-w-3.5 max-h-3.5" />
+                      <FolderDotIcon className="max-w-3.5 max-h-3.5" />
                     </SidebarMenuAction>
                   )}
                   <ContextMenuContent>
                     <ContextMenuItem
-                      onClick={() =>
-                        shelfManager.createChildShelf(
-                          summary.root.Id,
-                          summary.root,
+                      onClick={async () =>
+                        shelfManager.createSubShelf(
+                          summary.root.id,
+                          null,
                           "undefined"
                         )
                       }
                     >
                       Create an new shelf
                     </ContextMenuItem>
-                    <ContextMenuItem>Create an new material</ContextMenuItem>
                     <ContextMenuSeparator />
                     <ContextMenuItem
                       onClick={() => {
-                        shelfManager.deleteRootShelf(summary.root.Id);
+                        shelfManager.deleteRootShelf(summary.root);
                       }}
                     >
                       Delete
@@ -83,24 +85,24 @@ const ShelfMenu = () => {
                 </ContextMenu>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    <Suspense fallback={<ShelfMenuSkeleton />}>
-                      <SidebarMenuSubItem>
-                        <ShelfMenuItem
-                          summary={summary}
-                          parent={summary.root}
-                          depth={0}
-                        />
-                      </SidebarMenuSubItem>
-                    </Suspense>
+                    {!summary.root.isExpanded ? (
+                      <SubShelfMenuItemSkeleton />
+                    ) : (
+                      Object.keys(summary.root.children).length > 0 && (
+                        <Suspense fallback={<SubShelfMenuItemSkeleton />}>
+                          <SubShelfMenu summary={summary} root={summary.root} />
+                        </Suspense>
+                      )
+                    )}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-          )
+          </Suspense>
         );
       })}
     </SidebarMenu>
   );
 };
 
-export default ShelfMenu;
+export default RootShelfMenu;

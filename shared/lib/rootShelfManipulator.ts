@@ -1,65 +1,51 @@
-import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
 import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import {
+  BytesOfArrayHeader,
+  BytesOfDate,
+  BytesOfMapHeader,
+  BytesOfObjectHeader,
+  BytesOfPtr,
+  BytesOfUUIDString,
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
+import { UUID } from "crypto";
 import {
+  AnalysisStatus,
   MaterialNode,
   RootShelfNode,
+  ShelfTreeSummary,
   SubShelfNode,
-} from "@shared/lib/shelfMaterialNodes";
-import { UUID } from "crypto";
+} from "./shelfMaterialNodes";
 
-export enum AnalysisStatus {
-  Explored = "Explored",
-  OnlySubShelves = "OnlySubShelves",
-  OnlyMaterials = "OnlyMaterials",
-  Unexplored = "Unexplored",
-}
-
-// This shelf summary structure maybe different from the backend,
-// Since we may require more information for the client user
-export interface ShelfTreeSummary {
-  root: RootShelfNode;
-  estimatedByteSize: number;
-  hasChanged: boolean;
-  analysisStatus: AnalysisStatus;
-  maxWidth: number;
-  maxDepth: number;
-  uniqueMaterialIds: UUID[];
-}
-
-export class ShelfMaterialManipulator {
+export class RootShelfManipulator {
   private static maxTraverseCount: number =
     MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf;
-  private static readonly BYTES_UUID_STRING = 72; // 36 chars * 2 bytes
-  private static readonly BYTES_DATE = 24; // Date 物件粗估
-  private static readonly BYTES_PTR = 8; // 64-bit 指標/參考
-  private static readonly BYTES_OBJ_HEADER = 32; // 物件 header 粗估
-  private static readonly BYTES_ARRAY_HEADER = 24; // 陣列 header 粗估
-  private static readonly BYTES_MAP_HEADER = 32; // 物件作為 map 的粗估
 
   constructor(
     maxTraverseCount: number = MaxSubShelvesOfRootShelf +
       MaxMaterialsOfRootShelf
   ) {
-    ShelfMaterialManipulator.maxTraverseCount = Math.min(
+    RootShelfManipulator.maxTraverseCount = Math.min(
       MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf,
       maxTraverseCount
     );
   }
 
+  /* ============================== Max Traverse Count Getter & Setter ============================== */
+
   public static getMaxTraverseCount(): number {
-    return ShelfMaterialManipulator.maxTraverseCount;
+    return RootShelfManipulator.maxTraverseCount;
   }
 
   public static setMaxTraverseCount(value: number): void {
-    ShelfMaterialManipulator.maxTraverseCount = Math.min(
+    RootShelfManipulator.maxTraverseCount = Math.min(
       MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf,
       value
     );
   }
+
+  /* ============================== Estimate Functions ============================== */
 
   private static estimateSubShelfNode(subShelfNode: SubShelfNode): number {
     const nameBytes = (subShelfNode.name?.length ?? 0) * 2;
@@ -68,41 +54,35 @@ export class ShelfMaterialManipulator {
     const materialCount = Object.keys(subShelfNode.materialNodes).length;
 
     let size =
-      this.BYTES_OBJ_HEADER + // SubShelfNode 物件本身
-      this.BYTES_UUID_STRING + // id
-      this.BYTES_UUID_STRING + // rootShelfId
-      (subShelfNode.prevSubShelfId ? this.BYTES_UUID_STRING : this.BYTES_PTR) + // prevSubShelfId or null
-      3 * this.BYTES_DATE + // deletedAt/updatedAt/createdAt
+      BytesOfObjectHeader + // SubShelfNode 物件本身
+      BytesOfUUIDString + // id
+      BytesOfUUIDString + // rootShelfId
+      (subShelfNode.prevSubShelfId ? BytesOfUUIDString : BytesOfPtr) + // prevSubShelfId or null
+      3 * BytesOfDate + // deletedAt/updatedAt/createdAt
       nameBytes;
 
     // path: 陣列 header + 每個元素（ref + UUID 字串）
-    size +=
-      this.BYTES_ARRAY_HEADER +
-      pathCount * (this.BYTES_PTR + this.BYTES_UUID_STRING);
+    size += BytesOfArrayHeader + pathCount * (BytesOfPtr + BytesOfUUIDString);
 
     // children: 物件作為 map（header + 每個 entry：key(UUID字串) + value 指標）
-    size +=
-      this.BYTES_MAP_HEADER +
-      childrenCount * (this.BYTES_UUID_STRING + this.BYTES_PTR);
+    size += BytesOfMapHeader + childrenCount * (BytesOfUUIDString + BytesOfPtr);
 
     // materialNodes: 同上
-    size +=
-      this.BYTES_MAP_HEADER +
-      materialCount * (this.BYTES_UUID_STRING + this.BYTES_PTR);
+    size += BytesOfMapHeader + materialCount * (BytesOfUUIDString + BytesOfPtr);
 
     return size;
   }
 
   private static estimateMaterialNode(materialNode: MaterialNode): number {
     return (
-      this.BYTES_OBJ_HEADER + // 物件本身
-      2 * this.BYTES_UUID_STRING + // id + parentSubShelfId
+      BytesOfObjectHeader + // 物件本身
+      2 * BytesOfUUIDString + // id + parentSubShelfId
       (materialNode.name?.length ?? 0) * 2 +
       (materialNode.type?.toString()?.length ?? 0) * 2 +
       (materialNode.downloadURL?.length ?? 0) * 2 +
       (materialNode.contentType?.toString()?.length ?? 0) * 2 +
       (materialNode.parseMediaType?.length ?? 0) * 2 +
-      3 * this.BYTES_DATE // deletedAt/updatedAt/createdAt
+      3 * BytesOfDate // deletedAt/updatedAt/createdAt
     );
   }
 
@@ -132,7 +112,7 @@ export class ShelfMaterialManipulator {
         prevSubShelfId: null,
         name: subShelf.name,
         path: [],
-        deletedAt: subShelf.deletedAt,
+        isExpanded: false,
         updatedAt: subShelf.updatedAt,
         createdAt: subShelf.createdAt,
         children: {},
@@ -175,7 +155,7 @@ export class ShelfMaterialManipulator {
           prevSubShelfId: responseOfSubShelves.data[i].prevSubShelfId as UUID,
           name: responseOfSubShelves.data[i].name,
           path: responseOfSubShelves.data[i].path as UUID[],
-          deletedAt: responseOfSubShelves.data[i].deletedAt,
+          isExpanded: false,
           updatedAt: responseOfSubShelves.data[i].updatedAt,
           createdAt: responseOfSubShelves.data[i].createdAt,
           children: {},
@@ -206,48 +186,22 @@ export class ShelfMaterialManipulator {
     return newRootShelfNode;
   }
 
-  public static initializeMaterialNodesByResponse(
-    subShelfNode: SubShelfNode,
-    responseOfMaterials: GetAllMyMaterialsByParentSubShelfIdResponse
-  ): SubShelfNode {
-    for (const material of responseOfMaterials.data) {
-      if (material.parentSubShelfId !== subShelfNode.id) {
-        throw new Error(`Insert materials to wrong parent sub shelf`);
-      }
-
-      const newMaterialNode: MaterialNode = {
-        id: material.id as UUID,
-        parentSubShelfId: subShelfNode.id as UUID,
-        name: material.name,
-        type: material.type,
-        downloadURL: material.downloadURL,
-        contentType: material.contentType,
-        parseMediaType: material.parseMediaType,
-        deletedAt: material.deletedAt,
-        updatedAt: material.updatedAt,
-        createdAt: material.createdAt,
-      };
-      subShelfNode.materialNodes[material.id as UUID] = newMaterialNode;
-    }
-
-    return subShelfNode;
-  }
-
   /* ============================== Algorithms ============================== */
 
   /* Check if `desiredChild` is a child of `desiredParent` */
   public static isChild(
-    desiredParent: SubShelfNode,
+    desiredParent: RootShelfNode,
     desiredChild: SubShelfNode
   ): boolean {
-    if (desiredParent == desiredChild) return false;
-
     let traverseCount: number = 0,
       maxWidth: number = 0,
       maxDepth: number = 0;
 
     const visited: Set<UUID> = new Set<UUID>();
-    const queue: SubShelfNode[] = [desiredParent];
+    const queue: SubShelfNode[] = [];
+    for (const child of Object.values(desiredParent.children)) {
+      queue.push(child);
+    }
 
     while (queue.length > 0) {
       let levelSize = queue.length;
@@ -255,9 +209,9 @@ export class ShelfMaterialManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (traverseCount > ShelfMaterialManipulator.maxTraverseCount) {
+        if (traverseCount > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfMaterialManipulator.maxTraverseCount}`
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${RootShelfManipulator.maxTraverseCount}`
           );
         }
 
@@ -293,22 +247,18 @@ export class ShelfMaterialManipulator {
    *      then the `desiredChild` == `desiredParent`.
    */
   public static getChildInformation(
-    desiredParent: SubShelfNode,
+    desiredParent: RootShelfNode,
     desiredChild: SubShelfNode
   ): { width: number; subWidth: number; depth: number } {
-    if (desiredParent == desiredChild)
-      return {
-        width: 1,
-        subWidth: Object.entries(desiredParent.children).length,
-        depth: 0,
-      };
-
     let traverseCount: number = 0,
       maxWidth: number = 0,
       maxDepth: number = 0;
 
     const visited: Set<UUID> = new Set<UUID>();
-    const queue: SubShelfNode[] = [desiredParent];
+    const queue: SubShelfNode[] = [];
+    for (const child of Object.values(desiredParent.children)) {
+      queue.push(child);
+    }
 
     while (queue.length > 0) {
       let levelSize = queue.length;
@@ -318,9 +268,9 @@ export class ShelfMaterialManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (traverseCount > ShelfMaterialManipulator.maxTraverseCount) {
+        if (traverseCount > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfMaterialManipulator.maxTraverseCount}`
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${RootShelfManipulator.maxTraverseCount}`
           );
         }
 
@@ -352,16 +302,23 @@ export class ShelfMaterialManipulator {
     return { width: -1, subWidth: -1, depth: -1 };
   }
 
-  public static getAllMaterials(
-    node: SubShelfNode
-  ): { id: UUID; name: string }[] {
+  public static getAllChildSubShelfNodesAndMaterialNodes(
+    rootShelfNode: RootShelfNode
+  ): {
+    childSubShelfNodes: SubShelfNode[];
+    materialNodes: MaterialNode[];
+  } {
     let traverseCount: number = 0,
       maxWidth: number = 0,
       maxDepth: number = 0;
 
     const visited: Set<UUID> = new Set<UUID>();
-    const queue: SubShelfNode[] = [node];
-    const uniqueMaterials: Record<UUID, string> = {};
+    const uniqueSubShelfNodes: Record<UUID, SubShelfNode> = {};
+    const uniqueMaterialNodes: Record<UUID, MaterialNode> = {};
+    const queue: SubShelfNode[] = [];
+    for (const child of Object.values(rootShelfNode.children)) {
+      queue.push(child);
+    }
 
     while (queue.length > 0) {
       let levelSize = queue.length;
@@ -369,43 +326,41 @@ export class ShelfMaterialManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (traverseCount > ShelfMaterialManipulator.maxTraverseCount) {
+        if (traverseCount > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfMaterialManipulator.maxTraverseCount}`
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${RootShelfManipulator.maxTraverseCount}`
           );
         }
-
-        const current = queue.shift()!;
         traverseCount++;
 
+        const current = queue.shift();
+        if (current === undefined) continue; // this should be never executed
+
         if (visited.has(current.id)) {
-          return [];
+          return { childSubShelfNodes: [], materialNodes: [] };
         }
         visited.add(current.id);
 
-        for (const [materialId, material] of Object.entries(
+        for (const [materialId, materialNode] of Object.entries(
           current.materialNodes
         )) {
-          if (material !== null) {
-            uniqueMaterials[materialId as UUID] = material.name;
-          }
+          uniqueMaterialNodes[materialId as UUID] = materialNode;
         }
 
-        for (const child of Object.values(current.children)) {
-          if (child) {
-            queue.push(child);
-          }
+        for (const [childId, child] of Object.entries(current.children)) {
+          uniqueSubShelfNodes[childId as UUID] = child;
+          queue.push(child);
         }
       }
     }
 
-    return Object.entries(uniqueMaterials).map(([id, name]) => ({
-      id: id as UUID,
-      name: name,
-    }));
+    return {
+      childSubShelfNodes: Object.values(uniqueSubShelfNodes),
+      materialNodes: Object.values(uniqueMaterialNodes),
+    };
   }
 
-  public static isChildrenSimple(root: SubShelfNode): {
+  public static isChildrenSimple(rootShelfNode: RootShelfNode): {
     isSimple: boolean;
     cycleNode: SubShelfNode | null;
   } {
@@ -414,7 +369,10 @@ export class ShelfMaterialManipulator {
       maxDepth: number = 0;
 
     const visited: Set<UUID> = new Set<UUID>();
-    const queue: SubShelfNode[] = [root];
+    const queue: SubShelfNode[] = [];
+    for (const child of Object.values(rootShelfNode.children)) {
+      queue.push(child);
+    }
 
     while (queue.length > 0) {
       let levelSize = queue.length;
@@ -422,9 +380,9 @@ export class ShelfMaterialManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (traverseCount > ShelfMaterialManipulator.maxTraverseCount) {
+        if (traverseCount > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
-            `Maximum iterations of ${traverseCount} exceeded the limit of ${ShelfMaterialManipulator.maxTraverseCount}`
+            `Maximum iterations of ${traverseCount} exceeded the limit of ${RootShelfManipulator.maxTraverseCount}`
           );
         }
 
@@ -471,9 +429,9 @@ export class ShelfMaterialManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (totalShelfNodes > ShelfMaterialManipulator.maxTraverseCount) {
+        if (totalShelfNodes > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
-            `Maximum iterations (${ShelfMaterialManipulator.maxTraverseCount}) exceeded`
+            `Maximum iterations (${RootShelfManipulator.maxTraverseCount}) exceeded`
           );
         }
 

@@ -40,7 +40,7 @@ import { tKey } from "@shared/translations";
 import { BellIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ShelfIcon from "../icons/ShelfIcon";
-import ShelfMenu from "./ShelfMenu";
+import RootShelfMenu from "../RootShelfMenu/RootShelfMenu";
 
 export function AppSidebar() {
   const router = useAppRouter();
@@ -50,17 +50,11 @@ export function AppSidebar() {
   const shelfManager = useShelf();
 
   useEffect(() => {
-    const initSearchCompressedShelves = async () => {
-      await shelfManager.searchCompressedShelves();
+    const initialSearchRootShelves = async () => {
+      await shelfManager.searchRootShelves();
     };
-    initSearchCompressedShelves();
+    initialSearchRootShelves();
   }, []);
-
-  useEffect(() => {
-    setTimeout(() => {
-      shelfManager.expandShelvesForward(50);
-    }, 1000);
-  }, [shelfManager.compressedShelves]);
 
   const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
     "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
@@ -134,7 +128,7 @@ export function AppSidebar() {
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
-                          <ShelfMenu />
+                          <RootShelfMenu />
                         </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </CollapsibleContent>

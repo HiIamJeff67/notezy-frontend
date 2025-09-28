@@ -4,10 +4,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const ShelfMenuSkeleton = () => {
+const SubShelfMenuItemSkeleton = ({ number }: { number?: number }) => {
   return (
     <SidebarMenu>
-      {Array.from({ length: 4 }).map((_, index) => (
+      {Array.from({ length: number ?? 1 }).map((_, index) => (
         <SidebarMenuItem key={index}>
           <SidebarMenuButton className="rounded-sm animate-pulse">
             <div className="h-4 bg-gray-300 rounded w-3/4"></div>
@@ -18,4 +18,4 @@ const ShelfMenuSkeleton = () => {
   );
 };
 
-export default ShelfMenuSkeleton;
+export default SubShelfMenuItemSkeleton;

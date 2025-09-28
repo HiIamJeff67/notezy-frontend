@@ -1,3 +1,4 @@
+import { useApolloClient } from "@apollo/client/react";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   CreateRootShelf,
@@ -93,10 +94,45 @@ export const useGetMyRootShelfById = (
 };
 
 export const useCreateRootShelf = () => {
+  const apolloClient = useApolloClient();
+
   const mutation = useMutation({
     mutationFn: async (request: CreateRootShelfRequest) => {
       const validatedRequest = CreateRootShelfRequestSchema.parse(request);
       return await CreateRootShelf(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existingSearchRootShelves, { readField }) {
+            if (!existingSearchRootShelves) return existingSearchRootShelves;
+
+            const newEdge = {
+              __typename: "SearchRootShelfEdge",
+              node: {
+                __typename: "PrivateRootShelf",
+                id: response.data.id,
+                name: name,
+                totalShelfNodes: 0,
+                totalMaterials: 0,
+                lastAnalyzedAt: response.data.lastAnalyzedAt,
+                updatedAt: response.data.createdAt,
+                createdAt: response.data.createdAt,
+              },
+            };
+
+            const updatedEdges = [
+              newEdge,
+              ...existingSearchRootShelves.searchEdges,
+            ];
+
+            return {
+              ...existingSearchRootShelves,
+              searchEdges: updatedEdges,
+            };
+          },
+        },
+      });
     },
     onError: error => {
       if (error instanceof ZodError) {
