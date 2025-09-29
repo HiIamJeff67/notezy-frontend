@@ -15,11 +15,15 @@ import {
   useCreateSubShelfByRootShelfId,
   useDeleteMySubShelfById,
   useGetAllMySubShelvesByRootShelfId,
+  useGetMySubShelvesByPrevSubShelfId,
   useMoveMySubShelf,
   useUpdateMySubShelfById,
 } from "@shared/api/hooks/subShelf.hook";
 import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
-import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import {
+  GetAllMySubShelvesByRootShelfIdResponse,
+  GetMySubShelvesByPrevSubShelfIdResponse,
+} from "@shared/api/interfaces/subShelf.interface";
 import {
   MaxMaterialsOfRootShelf,
   MaxSearchLimit,
@@ -54,7 +58,10 @@ interface ShelfContextType {
   searchInput: { query: string; after: string | null };
   setSearchInput: (input: { query: string; after: string | null }) => void;
   expandRootShelf: (rootShelf: PrivateRootShelf) => Promise<ShelfTreeSummary>;
-  expandSubShelf: (subShelfNode: SubShelfNode) => Promise<void>;
+  expandSubShelf: (
+    rootShelfNode: RootShelfNode,
+    subShelfNode: SubShelfNode
+  ) => Promise<void>;
   createRootShelf: (name: string) => Promise<void>;
   createSubShelf: (
     rootShelfId: UUID,
@@ -67,12 +74,14 @@ interface ShelfContextType {
   setEditRootShelfName: (editRootShelfName: string) => void;
   isNewRootShelfName: () => boolean;
   isRootShelfNodeEditing: (rootShelfNode: RootShelfNode) => boolean;
+  isAnyRootShelfNodeEditing: boolean;
   startRenamingRootShelf: (rootShelfNode: RootShelfNode) => void;
   cancelRenamingRootShelf: () => void;
   renameRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
   editSubShelfName: string;
   setEditSubShelfName: (editSubShelfName: string) => void;
   isNewSubShelfName: () => boolean;
+  isAnySubShelfNodeEditing: boolean;
   isSubShelfNodeEditing: (subShelfNode: SubShelfNode) => boolean;
   startRenamingSubShelf: (subShelfNode: SubShelfNode) => void;
   cancelRenamingSubShelf: () => void;
@@ -96,6 +105,7 @@ export const ShelfContext = createContext<ShelfContextType | undefined>(
 
 export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
   const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
+  const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
   const getAllMyMaterialsBySubShelfQuerier =
     useGetAllMyMaterialsByParentSubShelfId();
   const createRootShelfMutator = useCreateRootShelf();
@@ -312,7 +322,10 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     return shelfTreeSummary;
   };
 
-  const expandSubShelf = async (subShelfNode: SubShelfNode): Promise<void> => {
+  const expandSubShelf = async (
+    rootShelfNode: RootShelfNode,
+    subShelfNode: SubShelfNode
+  ): Promise<void> => {
     const userAgent = navigator.userAgent;
     const responseOfGetAllMaterials =
       (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
@@ -328,6 +341,26 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       subShelfNode,
       responseOfGetAllMaterials
     );
+
+    // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
+    if (!subShelfNode.isExpanded) {
+      const responseOfGetAllSubShelves =
+        (await getMySubShelvesBySubShelfQuerier.queryAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          param: {
+            prevSubShelfId: subShelfNode.id,
+          },
+        })) as GetMySubShelvesByPrevSubShelfIdResponse;
+
+      SubShelfManipulator.initializeSubShelfNodesByResponse(
+        rootShelfNode,
+        subShelfNode,
+        responseOfGetAllSubShelves
+      );
+    }
+
     forceUpdate();
   };
 
@@ -698,7 +731,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       body: {
         sourceRootShelfId: sourceSubShelfNode.rootShelfId,
         sourceSubShelfId: sourceSubShelfNode.id,
-        destinationRootShelfId: sourceSubShelfNode.rootShelfId,
+        destinationRootShelfId: destinationRootShelfNode.id,
         destinationSubShelfId: destinationSubShelfNode?.id ?? null,
       },
       affected: {
@@ -718,6 +751,10 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       destinationSubShelfNode,
       deletedSubShelfNode
     );
+    if (sourceSubShelfNode.rootShelfId !== destinationRootShelfNode.id) {
+      deletedSubShelfNode.rootShelfId = destinationRootShelfNode.id;
+    }
+    deletedSubShelfNode.prevSubShelfId = destinationSubShelfNode?.id ?? null;
     forceUpdate();
   };
 
@@ -744,12 +781,14 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     setEditRootShelfName: setEditRootShelfName,
     isNewRootShelfName: isNewRootShelfName,
     isRootShelfNodeEditing: isRootShelfNodeEditing,
+    isAnyRootShelfNodeEditing: editingRootShelfNode !== undefined,
     startRenamingRootShelf: startRenamingRootShelf,
     cancelRenamingRootShelf: cancelRenamingRootShelf,
     editSubShelfName: editSubShelfName,
     setEditSubShelfName: setEditSubShelfName,
     isNewSubShelfName: isNewSubShelfName,
     isSubShelfNodeEditing: isSubShelfNodeEditing,
+    isAnySubShelfNodeEditing: editingSubShelfNode !== undefined,
     startRenamingSubShelf: startRenamingSubShelf,
     cancelRenamingSubShelf: cancelRenamingSubShelf,
     renameSubShelf: renameSubShelf,

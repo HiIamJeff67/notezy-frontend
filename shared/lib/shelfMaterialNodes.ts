@@ -4,6 +4,9 @@ import { UUID } from "crypto";
 /**
  * Since the Backend is using upper case letter as the field name,
  * so we are forced to use it as well
+ * Note that we don't implement the deletedAt field here,
+ *           since if the node is deleted, it should be put in the trash can
+ *           in the frontend scenario
  */
 
 export interface MaterialNode {

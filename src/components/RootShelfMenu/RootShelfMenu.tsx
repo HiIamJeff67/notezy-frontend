@@ -21,9 +21,15 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelf } from "@/hooks";
-import { RootShelfNode } from "@shared/lib/shelfMaterialNodes";
+import {
+  RootShelfNode,
+  ShelfTreeSummary,
+  SubShelfNode,
+} from "@shared/lib/shelfMaterialNodes";
+import { DNDType } from "@shared/types/enums/dndType.enum";
 import { CheckIcon, FolderDotIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
+import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
 
 const RootShelfMenu = () => {
@@ -50,10 +56,33 @@ const RootShelfMenu = () => {
     <SidebarMenu>
       {shelfManager.rootShelfEdges.map((edge, index) => {
         const summary = shelfManager.expandedShelves.get(edge.node.id);
+        if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
 
-        return summary === undefined ? ( // render the skeleton if the summary is still generating
-          <RootShelfMenuItemSkeleton key={index} />
-        ) : (
+        const [{ isOver }, drop] = useDrop(() => ({
+          accept: DNDType.DraggableSubShelf.toString(),
+          drop: async (draggedItem: {
+            summary: ShelfTreeSummary;
+            prev: SubShelfNode | null;
+            current: SubShelfNode;
+            depth: number;
+          }) => {
+            if (draggedItem.prev === null) {
+              return;
+            }
+
+            await shelfManager.moveSubShelf(
+              draggedItem.prev,
+              draggedItem.current,
+              summary.root,
+              null
+            );
+          },
+          collect: monitor => ({
+            isOver: monitor.isOver(),
+          }),
+        }));
+
+        return (
           <Suspense fallback={<RootShelfMenuItemSkeleton />} key={index}>
             <Collapsible>
               <SidebarMenuItem>
@@ -80,9 +109,10 @@ const RootShelfMenu = () => {
                       />
                       {shelfManager.isNewRootShelfName() && (
                         <button
-                          onClick={() =>
-                            handleRenameRootShelfOnSubmit(summary.root)
-                          }
+                          onClick={async e => {
+                            await handleRenameRootShelfOnSubmit(summary.root);
+                            e.stopPropagation();
+                          }}
                           className="rounded hover:bg-primary/60 absolute w-4 h-4"
                           onMouseDown={e => e.stopPropagation()}
                         >
@@ -94,7 +124,10 @@ const RootShelfMenu = () => {
                     <ContextMenuTrigger asChild>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
-                          className="rounded-sm"
+                          ref={node => {
+                            drop(node);
+                          }}
+                          className="rounded-sm border-2 border-secondary hover:border-transparent"
                           onClick={async () => {
                             await shelfManager.expandRootShelf(edge.node);
                           }}
@@ -111,13 +144,13 @@ const RootShelfMenu = () => {
                   )}
                   <ContextMenuContent>
                     <ContextMenuItem
-                      onClick={async () =>
-                        shelfManager.createSubShelf(
+                      onClick={async () => {
+                        await shelfManager.createSubShelf(
                           summary.root.id,
                           null,
                           "undefined"
-                        )
-                      }
+                        );
+                      }}
                     >
                       Create an new shelf
                     </ContextMenuItem>
@@ -131,8 +164,8 @@ const RootShelfMenu = () => {
                     </ContextMenuItem>
                     <ContextMenuSeparator />
                     <ContextMenuItem
-                      onClick={() => {
-                        shelfManager.deleteRootShelf(summary.root);
+                      onClick={async () => {
+                        await shelfManager.deleteRootShelf(summary.root);
                       }}
                     >
                       Delete

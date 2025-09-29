@@ -57,7 +57,7 @@ export const GetMySubShelvesByPrevSubShelfIdResponseSchema =
       z.object({
         id: z.uuidv4(),
         name: z.string(),
-        rooShelfId: z.uuidv4(),
+        rootShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
         deletedAt: z.coerce.date(),

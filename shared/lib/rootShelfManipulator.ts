@@ -136,7 +136,7 @@ export class RootShelfManipulator {
       i < n && pathLength <= maxPathLength;
       pathLength++
     ) {
-      if (responseOfSubShelves.data[i].path.length !== pathLength) break; // it is impossible that lhs < rhs
+      if (responseOfSubShelves.data[i].path.length !== pathLength) continue; // it is impossible that lhs < rhs
 
       while (i < n && responseOfSubShelves.data[i].path.length === pathLength) {
         if (responseOfSubShelves.data[i].prevSubShelfId === null) {
@@ -163,10 +163,10 @@ export class RootShelfManipulator {
         };
 
         if (
-          prevSubShelfNodes[newSubShelfNode.prevSubShelfId as UUID] === null ||
-          prevSubShelfNodes[
+          !prevSubShelfNodes[newSubShelfNode.prevSubShelfId as UUID] ||
+          !prevSubShelfNodes[
             newSubShelfNode.path[newSubShelfNode.path.length - 1]
-          ] === null
+          ]
         ) {
           throw new Error(
             `Parent subShelf with ID ${newSubShelfNode.prevSubShelfId} not found for child ${newSubShelfNode.id}`

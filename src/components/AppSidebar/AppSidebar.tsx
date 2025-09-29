@@ -129,7 +129,7 @@ export function AppSidebar() {
                       <PlusIcon />
                     </SidebarMenuAction>
                     <CollapsibleContent>
-                      <SidebarMenuSub>
+                      <SidebarMenuSub className="w-full pr-4">
                         <SidebarMenuSubItem>
                           <RootShelfMenu />
                         </SidebarMenuSubItem>

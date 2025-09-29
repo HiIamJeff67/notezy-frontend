@@ -1,4 +1,5 @@
 import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
+import { GetMySubShelvesByPrevSubShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
@@ -6,6 +7,7 @@ import {
 import {
   AnalysisStatus,
   MaterialNode,
+  RootShelfNode,
   ShelfTreeSummary,
   SubShelfNode,
 } from "@shared/lib/shelfMaterialNodes";
@@ -39,6 +41,42 @@ export class SubShelfManipulator {
   }
 
   /* ============================== Initialization ============================== */
+
+  public static initializeSubShelfNodesByResponse(
+    rootShelfNode: RootShelfNode,
+    subShelfNode: SubShelfNode | null,
+    responseOfSubShelves: GetMySubShelvesByPrevSubShelfIdResponse
+  ): SubShelfNode | null {
+    for (const subShelf of responseOfSubShelves.data) {
+      if (subShelfNode && subShelf.prevSubShelfId !== subShelfNode.id) {
+        throw new Error(`Insert sub shelves to wrong parent sub shelf`);
+      }
+      if (subShelf.rootShelfId !== rootShelfNode.id) {
+        throw new Error(`Insert sub shelves to wrong root shelf`);
+      }
+
+      const newSubShelfNode: SubShelfNode = {
+        id: subShelf.id as UUID,
+        rootShelfId: subShelf.rootShelfId as UUID,
+        prevSubShelfId: subShelf.prevSubShelfId as UUID,
+        name: subShelf.name,
+        path: subShelf.path as UUID[],
+        updatedAt: subShelf.updatedAt,
+        createdAt: subShelf.createdAt,
+        isExpanded: false,
+        children: {},
+        materialNodes: {},
+      };
+
+      if (subShelfNode) {
+        subShelfNode.children[newSubShelfNode.id as UUID] = newSubShelfNode;
+      } else {
+        rootShelfNode.children[newSubShelfNode.id as UUID] = newSubShelfNode;
+      }
+    }
+
+    return subShelfNode;
+  }
 
   public static initializeMaterialNodesByResponse(
     subShelfNode: SubShelfNode,
