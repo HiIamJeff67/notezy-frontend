@@ -24,9 +24,10 @@ export interface SubShelfNode {
   prevSubShelfId: UUID | null;
   name: string;
   path: UUID[];
-  isExpanded: boolean;
   updatedAt: Date;
   createdAt: Date;
+
+  isExpanded: boolean;
   children: Record<UUID, SubShelfNode>;
   materialNodes: Record<UUID, MaterialNode>;
 }
@@ -36,10 +37,11 @@ export interface RootShelfNode {
   name: string;
   totalShelfNodes: number;
   totalMaterials: number;
-  isExpanded: boolean;
   lastAnalyzedAt: Date;
   updatedAt: Date;
   createdAt: Date;
+
+  isExpanded: boolean;
   children: Record<UUID, SubShelfNode>;
 }
 

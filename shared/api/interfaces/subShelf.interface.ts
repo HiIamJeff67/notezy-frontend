@@ -190,7 +190,7 @@ export const MoveMySubShelfRequestSchema = NotezyRequestSchema.extend({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfId: z.uuidv4(),
     destinationRootShelfId: z.uuidv4(),
-    destinationSubShelfId: z.uuidv4(),
+    destinationSubShelfId: z.uuidv4().nullable(),
   }),
   affected: z.object({
     rootShelfId: z.uuidv4(),

@@ -29,7 +29,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/components/RootShelfMenu",
-    "src/components/SubShelfMenu"
+    "src/components/SubShelfMenu",
+    "shared/types/dndType.enumts"
   ],
   "exclude": ["node_modules"]
 }

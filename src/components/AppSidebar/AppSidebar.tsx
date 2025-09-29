@@ -1,7 +1,7 @@
 import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
-import CreateShelfDialog from "@/components/CreateShelfDialog.tsx/CreateShelfDialog";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
+import CreateRootShelfDialog from "@/components/ShelfDialog.tsx/CreateRootShelfDialog";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -57,7 +57,10 @@ export function AppSidebar() {
   }, []);
 
   const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
-    "None" | "AccountSettingsPanel" | "PreferencesPanel" | "CreateShelfDialog"
+    | "None"
+    | "AccountSettingsPanel"
+    | "PreferencesPanel"
+    | "CreateRootShelfDialog"
   >("None");
 
   return (
@@ -71,8 +74,8 @@ export function AppSidebar() {
           isOpen={currentDisplayPopup === "PreferencesPanel"}
           onClose={() => setCurrentDisplayPopup("None")}
         />
-        <CreateShelfDialog
-          isOpen={currentDisplayPopup === "CreateShelfDialog"}
+        <CreateRootShelfDialog
+          isOpen={currentDisplayPopup === "CreateRootShelfDialog"}
           onClose={() => setCurrentDisplayPopup("None")}
         />
         <SidebarHeader className="flex flex-col justify-center items-center p-0">
@@ -120,7 +123,7 @@ export function AppSidebar() {
                     </CollapsibleTrigger>
                     <SidebarMenuAction
                       onClick={() =>
-                        setCurrentDisplayPopup("CreateShelfDialog")
+                        setCurrentDisplayPopup("CreateRootShelfDialog")
                       }
                     >
                       <PlusIcon />

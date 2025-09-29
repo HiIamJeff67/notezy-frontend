@@ -36,7 +36,14 @@ import {
 } from "@shared/lib/shelfMaterialNodes";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { UUID } from "crypto";
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface ShelfContextType {
   rootShelfEdges: SearchRootShelfEdge[];
@@ -54,11 +61,22 @@ interface ShelfContextType {
     prevSubShelfNode: SubShelfNode | null,
     name: string
   ) => Promise<void>;
-  renameRootShelf: (
-    rootShelfNode: RootShelfNode,
-    name: string
-  ) => Promise<void>;
-  renameSubShelf: (subShelfNode: SubShelfNode, name: string) => Promise<void>;
+
+  inputRef: RefObject<HTMLInputElement | null>;
+  editRootShelfName: string;
+  setEditRootShelfName: (editRootShelfName: string) => void;
+  isNewRootShelfName: () => boolean;
+  isRootShelfNodeEditing: (rootShelfNode: RootShelfNode) => boolean;
+  startRenamingRootShelf: (rootShelfNode: RootShelfNode) => void;
+  cancelRenamingRootShelf: () => void;
+  renameRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
+  editSubShelfName: string;
+  setEditSubShelfName: (editSubShelfName: string) => void;
+  isNewSubShelfName: () => boolean;
+  isSubShelfNodeEditing: (subShelfNode: SubShelfNode) => boolean;
+  startRenamingSubShelf: (subShelfNode: SubShelfNode) => void;
+  cancelRenamingSubShelf: () => void;
+  renameSubShelf: (subShelfNode: SubShelfNode) => Promise<void>;
   deleteRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
   deleteSubShelf: (
     prevSubShelfNode: SubShelfNode | null,
@@ -66,8 +84,9 @@ interface ShelfContextType {
   ) => Promise<void>;
   moveSubShelf: (
     prevSubShelfNode: SubShelfNode | null,
-    subShelfNode: SubShelfNode,
-    destinationSubShelfNode: SubShelfNode
+    sourceSubShelfNode: SubShelfNode,
+    destinationRootShelfNode: RootShelfNode,
+    destinationSubShelfNode: SubShelfNode | null
   ) => Promise<void>;
 }
 
@@ -97,6 +116,19 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     query: "",
     after: null,
   });
+  const [editingRootShelfNode, setEditingRootShelfNode] = useState<
+    RootShelfNode | undefined
+  >(undefined);
+  const [originalRootShelfName, setOriginalRootShelfName] =
+    useState<string>("");
+  const [editRootShelfName, setEditRootShelfName] = useState<string>("");
+  const [editingSubShelfNode, setEditingSubShelfNode] = useState<
+    SubShelfNode | undefined
+  >(undefined);
+  const [originalSubShelfName, setOriginalSubShelfName] = useState<string>("");
+  const [editSubShelfName, setEditSubShelfName] = useState<string>("");
+
+  const inputRef = useRef<HTMLInputElement>(null);
   const expandedShelvesRef = useRef(
     new LRUCache<string, ShelfTreeSummary>(
       MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf
@@ -107,6 +139,66 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       MaxSubShelvesOfRootShelf + MaxMaterialsOfRootShelf
     )
   );
+
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        editingRootShelfNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setEditingRootShelfNode(undefined);
+        setEditRootShelfName("");
+      }
+    };
+
+    if (editingRootShelfNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    setTimeout(() => {
+      if (editingRootShelfNode && inputRef.current) {
+        inputRef.current?.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [editRootShelfName]);
+
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        editingSubShelfNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setEditingSubShelfNode(undefined);
+        setEditSubShelfName("");
+      }
+    };
+
+    if (editingSubShelfNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    setTimeout(() => {
+      if (editingSubShelfNode && inputRef.current) {
+        inputRef.current?.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [editingSubShelfNode]);
 
   const forceUpdate = useCallback(() => {
     setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
@@ -326,69 +418,166 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     forceUpdate();
   };
 
-  const renameRootShelf = async (
-    rootShelfNode: RootShelfNode,
-    name: string
-  ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfNode.id);
-    if (shelfTreeSummary === undefined) {
-      throw new Error(
-        `parentShelfNode not found in one of the children of rootShelfNode`
-      );
-    }
-
-    const userAgent = navigator.userAgent;
-    await updateRootShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        rootShelfId: rootShelfNode.id,
-        values: {
-          name: name,
-        },
-      },
-    });
-
-    // TODO: make a general method(function) to put the updated data in partial update fields to the local variable
-    shelfTreeSummary.root.name = name;
-    rootShelfNode.name = name;
-    forceUpdate();
-  };
-
-  const renameSubShelf = async (
-    subShelfNode: SubShelfNode,
-    name: string
-  ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(
-      subShelfNode.rootShelfId
+  /* =============== Rename Methods =============== */
+  const isNewRootShelfName = useCallback(() => {
+    return (
+      editRootShelfName !== originalRootShelfName &&
+      editRootShelfName.trim() !== ""
     );
-    if (shelfTreeSummary === undefined) {
-      throw new Error(
-        `subShelfNode not found in one of the children of rootShelfNode`
-      );
-    }
+  }, [editRootShelfName, originalRootShelfName]);
+  const isRootShelfNodeEditing = useCallback(
+    (rootShelfNode: RootShelfNode) => {
+      return rootShelfNode === editingRootShelfNode;
+    },
+    [editingRootShelfNode]
+  );
 
-    const userAgent = navigator.userAgent;
-    await updateSubShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        subShelfId: subShelfNode.id,
-        values: {
-          name: name,
-        },
-      },
-      affected: {
-        rootShelfId: subShelfNode.rootShelfId,
-        prevSubShelfId: subShelfNode.prevSubShelfId,
-      },
-    });
+  const startRenamingRootShelf = useCallback(
+    (rootShelfNode: RootShelfNode) => {
+      setEditingRootShelfNode(rootShelfNode);
+      setOriginalRootShelfName(rootShelfNode.name);
+      setEditRootShelfName(rootShelfNode.name);
+    },
+    [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]
+  );
 
-    subShelfNode.name = name;
-    forceUpdate();
-  };
+  const cancelRenamingRootShelf = useCallback(() => {
+    setEditingRootShelfNode(undefined);
+    setOriginalRootShelfName("");
+    setEditRootShelfName("");
+  }, [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]);
+
+  const renameRootShelf = useCallback(
+    async (rootShelfNode: RootShelfNode): Promise<void> => {
+      try {
+        if (!isNewRootShelfName()) {
+          throw new Error("the name of the given root shelf node is invalid");
+        }
+        const shelfTreeSummary = expandedShelvesRef.current.get(
+          rootShelfNode.id
+        );
+        if (shelfTreeSummary === undefined) {
+          throw new Error(
+            `parentShelfNode not found in one of the children of rootShelfNode`
+          );
+        }
+
+        const userAgent = navigator.userAgent;
+        await updateRootShelfMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            rootShelfId: rootShelfNode.id,
+            values: {
+              name: editRootShelfName,
+            },
+          },
+        });
+
+        shelfTreeSummary.root.name = editRootShelfName;
+        rootShelfNode.name = editRootShelfName;
+        forceUpdate();
+      } catch (error) {
+        throw error;
+      } finally {
+        setEditingRootShelfNode(undefined);
+        setEditRootShelfName("");
+        setOriginalRootShelfName("");
+      }
+    },
+    [
+      editRootShelfName,
+      setEditingRootShelfNode,
+      setEditRootShelfName,
+      setOriginalRootShelfName,
+      expandedShelvesRef,
+      updateRootShelfMutator,
+    ]
+  );
+
+  const isNewSubShelfName = useCallback(() => {
+    return (
+      editSubShelfName !== originalSubShelfName &&
+      editSubShelfName.trim() !== ""
+    );
+  }, [editSubShelfName, originalSubShelfName]);
+
+  const isSubShelfNodeEditing = useCallback(
+    (subShelfNode: SubShelfNode) => {
+      return subShelfNode === editingSubShelfNode;
+    },
+    [editingSubShelfNode]
+  );
+
+  const startRenamingSubShelf = useCallback(
+    (subShelfNode: SubShelfNode) => {
+      setEditingSubShelfNode(subShelfNode);
+      setOriginalSubShelfName(subShelfNode.name);
+      setEditSubShelfName(subShelfNode.name);
+    },
+    [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]
+  );
+
+  const cancelRenamingSubShelf = useCallback(() => {
+    setEditingSubShelfNode(undefined);
+    setOriginalSubShelfName("");
+    setEditSubShelfName("");
+  }, [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]);
+
+  const renameSubShelf = useCallback(
+    async (subShelfNode: SubShelfNode): Promise<void> => {
+      try {
+        if (!isNewSubShelfName()) {
+          throw new Error("the name of the given sub shelf node is invalid");
+        }
+        if (editSubShelfName === originalSubShelfName) return;
+
+        const shelfTreeSummary = expandedShelvesRef.current.get(
+          subShelfNode.rootShelfId
+        );
+        if (shelfTreeSummary === undefined) {
+          throw new Error(
+            `subShelfNode not found in one of the children of rootShelfNode`
+          );
+        }
+
+        const userAgent = navigator.userAgent;
+        await updateSubShelfMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            subShelfId: subShelfNode.id,
+            values: {
+              name: editSubShelfName,
+            },
+          },
+          affected: {
+            rootShelfId: subShelfNode.rootShelfId,
+            prevSubShelfId: subShelfNode.prevSubShelfId,
+          },
+        });
+
+        subShelfNode.name = editSubShelfName;
+        forceUpdate();
+      } catch (error) {
+        throw error;
+      } finally {
+        setEditingSubShelfNode(undefined);
+        setEditSubShelfName("");
+        setOriginalSubShelfName("");
+      }
+    },
+    [
+      editSubShelfName,
+      setEditingSubShelfNode,
+      setEditSubShelfName,
+      setOriginalSubShelfName,
+      expandedShelvesRef,
+      updateSubShelfMutator,
+    ]
+  );
 
   const deleteRootShelf = async (
     rootShelfNode: RootShelfNode
@@ -459,21 +648,45 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
 
   const moveSubShelf = async (
     prevSubShelfNode: SubShelfNode | null,
-    subShelfNode: SubShelfNode,
-    destinationSubShelfNode: SubShelfNode
+    sourceSubShelfNode: SubShelfNode,
+    destinationRootShelfNode: RootShelfNode,
+    destinationSubShelfNode: SubShelfNode | null
   ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(
-      subShelfNode.rootShelfId
+    const sourceSummary = expandedShelvesRef.current.get(
+      sourceSubShelfNode.rootShelfId
     );
-    if (shelfTreeSummary === undefined) {
+    if (sourceSummary === undefined) {
       throw new Error(
-        `subShelfNode not found in one of the children of rootShelfNode`
+        `the sourceSubShelfNode does not belong to any valid root shelf node`
       );
+    }
+    const destinationSummary = expandedShelvesRef.current.get(
+      destinationRootShelfNode.id
+    );
+    if (destinationSummary === undefined) {
+      throw new Error(
+        `the destinationSubShelfNode does not belong to any valid root shelf node or destinationRootShelfNode does not exist`
+      );
+    }
+
+    if (
+      destinationSubShelfNode !== null &&
+      destinationSummary.root.id !== destinationSubShelfNode.rootShelfId
+    ) {
+      throw new Error(
+        `the destinationSummary does not contain destinationSubShelfNode`
+      );
+    }
+    if (
+      sourceSubShelfNode !== null &&
+      sourceSummary.root.id !== sourceSubShelfNode.rootShelfId
+    ) {
+      throw new Error(`the sourceSummary does not contain sourceSubShelfNode`);
     }
 
     const { childSubShelfNodes } =
       SubShelfManipulator.getAllChildSubShelfNodesAndMaterialNodes(
-        subShelfNode
+        sourceSubShelfNode
       );
     const childSubShelfIds = childSubShelfNodes.map(val => val.id);
 
@@ -483,23 +696,29 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
         userAgent: userAgent,
       },
       body: {
-        sourceRootShelfId: subShelfNode.rootShelfId,
-        sourceSubShelfId: subShelfNode.id,
-        destinationRootShelfId: subShelfNode.rootShelfId,
-        destinationSubShelfId: destinationSubShelfNode.id,
+        sourceRootShelfId: sourceSubShelfNode.rootShelfId,
+        sourceSubShelfId: sourceSubShelfNode.id,
+        destinationRootShelfId: sourceSubShelfNode.rootShelfId,
+        destinationSubShelfId: destinationSubShelfNode?.id ?? null,
       },
       affected: {
-        rootShelfId: subShelfNode.rootShelfId,
+        rootShelfId: sourceSubShelfNode.rootShelfId,
         childSubShelfIds: childSubShelfIds,
       },
     });
 
-    if (prevSubShelfNode === null) {
-      delete shelfTreeSummary.root.children[subShelfNode.id];
-    } else {
-      delete prevSubShelfNode.children[subShelfNode.id];
-    }
-    destinationSubShelfNode.children[subShelfNode.id] = subShelfNode;
+    const deletedSubShelfNode = sourceSubShelfNode;
+    SubShelfManipulator.deleteSubShelfNode(
+      sourceSummary,
+      prevSubShelfNode,
+      sourceSubShelfNode
+    );
+    SubShelfManipulator.insertSubShelfNode(
+      destinationSummary,
+      destinationSubShelfNode,
+      deletedSubShelfNode
+    );
+    forceUpdate();
   };
 
   /* ============================== Methods about Garbage ============================== */
@@ -517,8 +736,24 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     expandSubShelf: expandSubShelf,
     createRootShelf: createRootShelf,
     createSubShelf: createSubShelf,
+
+    // rename shelf feature
+    inputRef: inputRef,
     renameRootShelf: renameRootShelf,
+    editRootShelfName: editRootShelfName,
+    setEditRootShelfName: setEditRootShelfName,
+    isNewRootShelfName: isNewRootShelfName,
+    isRootShelfNodeEditing: isRootShelfNodeEditing,
+    startRenamingRootShelf: startRenamingRootShelf,
+    cancelRenamingRootShelf: cancelRenamingRootShelf,
+    editSubShelfName: editSubShelfName,
+    setEditSubShelfName: setEditSubShelfName,
+    isNewSubShelfName: isNewSubShelfName,
+    isSubShelfNodeEditing: isSubShelfNodeEditing,
+    startRenamingSubShelf: startRenamingSubShelf,
+    cancelRenamingSubShelf: cancelRenamingSubShelf,
     renameSubShelf: renameSubShelf,
+
     deleteRootShelf: deleteRootShelf,
     deleteSubShelf: deleteSubShelf,
     moveSubShelf: moveSubShelf,

@@ -3,7 +3,12 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { MaterialNode, SubShelfNode } from "@shared/lib/shelfMaterialNodes";
+import {
+  AnalysisStatus,
+  MaterialNode,
+  ShelfTreeSummary,
+  SubShelfNode,
+} from "@shared/lib/shelfMaterialNodes";
 import { UUID } from "crypto";
 
 export class SubShelfManipulator {
@@ -108,6 +113,26 @@ export class SubShelfManipulator {
           }
         }
       }
+    }
+
+    return false;
+  }
+
+  public static isChildByPath(
+    desiredParent: SubShelfNode,
+    desiredChild: SubShelfNode
+  ): boolean {
+    if (desiredParent === desiredChild) return false;
+
+    let remaining = desiredChild.path.length; // early break
+    for (const parentId of desiredChild.path) {
+      if (parentId === desiredParent.id) {
+        return true;
+      }
+      if (remaining <= desiredParent.path.length) {
+        return false;
+      }
+      remaining--;
     }
 
     return false;
@@ -279,5 +304,59 @@ export class SubShelfManipulator {
       isSimple: true,
       cycleNode: null,
     };
+  }
+
+  public static insertSubShelfNode(
+    parentSummary: ShelfTreeSummary,
+    parentSubShelfNode: SubShelfNode | null,
+    newSubShelfNode: SubShelfNode
+  ) {
+    if (parentSubShelfNode !== null) {
+      if (parentSummary.root.id !== parentSubShelfNode.rootShelfId) {
+        throw new Error(
+          `the root id of parentSummary is not equal to the root id of parentSubShelfNode`
+        );
+      }
+    }
+
+    // insert the `subShelfNode` into `parentSubShelfNode`
+    if (parentSubShelfNode === null) {
+      parentSummary.root.children[newSubShelfNode.id] = newSubShelfNode;
+    } else {
+      parentSubShelfNode.children[newSubShelfNode.id] = newSubShelfNode;
+    }
+
+    parentSummary.analysisStatus = AnalysisStatus.Unexplored;
+    parentSummary.hasChanged = true;
+  }
+
+  public static deleteSubShelfNode(
+    summary: ShelfTreeSummary,
+    parentSubShelfNode: SubShelfNode | null,
+    subShelfNode: SubShelfNode
+  ) {
+    if (summary.root.id !== subShelfNode.rootShelfId) {
+      throw new Error(
+        `the root id of summary is not equal to the root id of subShelfNode`
+      );
+    }
+    if (
+      parentSubShelfNode !== null &&
+      summary.root.id !== parentSubShelfNode.rootShelfId
+    ) {
+      throw new Error(
+        `the root id of summary is not equal to the root id of parentSubShelfNode`
+      );
+    }
+
+    const deletedSubShelfNode = subShelfNode;
+
+    if (parentSubShelfNode === null) {
+      delete summary.root.children[subShelfNode.id];
+    } else {
+      delete parentSubShelfNode.children[subShelfNode.id];
+    }
+
+    return deletedSubShelfNode;
   }
 }

@@ -13,19 +13,22 @@ import { useLanguage, useLoading, useShelf } from "@/hooks";
 import { Suspense, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
-interface CreateShelfDialogProps {
+interface CreateRootShelfDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
+const CreateRootShelfDialog = ({
+  isOpen,
+  onClose,
+}: CreateRootShelfDialogProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const shelfManager = useShelf();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
 
-  const handleCreateShelfOnSubmit = useCallback(async (): Promise<void> => {
+  const handleCreateRootShelfOnSubmit = useCallback(async (): Promise<void> => {
     loadingManager.setIsLoading(true);
 
     try {
@@ -49,7 +52,7 @@ const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
         <DialogTitle />
         <DialogContent className="w-4/5">
           <DialogHeader className="w-full">
-            Create Shelf by Typing an New Name
+            Create a Root Shelf by Typing an New Name
           </DialogHeader>
           <Input
             placeholder="type your new and unique shelf name here"
@@ -61,7 +64,7 @@ const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
           <div className="w-full flex flex-row justify-center gap-4">
             <Button
               type="submit"
-              onClick={handleCreateShelfOnSubmit}
+              onClick={handleCreateRootShelfOnSubmit}
               className="w-3/10"
             >
               Create
@@ -82,4 +85,4 @@ const CreateShelfDialog = ({ isOpen, onClose }: CreateShelfDialogProps) => {
   );
 };
 
-export default CreateShelfDialog;
+export default CreateRootShelfDialog;
