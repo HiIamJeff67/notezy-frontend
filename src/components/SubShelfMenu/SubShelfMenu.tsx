@@ -2,7 +2,6 @@ import { useLanguage, useLoading, useShelf } from "@/hooks";
 import {
   RootShelfNode,
   ShelfTreeSummary,
-  SubShelfNode,
 } from "@shared/lib/shelfMaterialNodes";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
@@ -23,20 +22,17 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const languageManager = useLanguage();
   const shelfManager = useShelf();
 
-  const handleRenameRootShelfOnSubmit = useCallback(
-    async (subShelfNode: SubShelfNode): Promise<void> => {
-      loadingManager.setIsLoading(true);
+  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
+    loadingManager.setIsLoading(true);
 
-      try {
-        await shelfManager.renameSubShelf(subShelfNode);
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      } finally {
-        loadingManager.setIsLoading(false);
-      }
-    },
-    [loadingManager, languageManager, shelfManager]
-  );
+    try {
+      await shelfManager.renameEditingSubShelf();
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    } finally {
+      loadingManager.setIsLoading(false);
+    }
+  }, [loadingManager, languageManager, shelfManager]);
 
   return (
     <SidebarMenu>
@@ -59,7 +55,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
                   onKeyDown={async e => {
                     switch (e.key) {
                       case "Enter":
-                        await handleRenameRootShelfOnSubmit(subShelfNode);
+                        await handleRenameSubShelfOnSubmit();
                       case "Escape":
                         shelfManager.cancelRenamingSubShelf();
                     }
@@ -70,9 +66,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
                 {shelfManager.isNewSubShelfName() && (
                   <button
                     className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                    onClick={async () =>
-                      await handleRenameRootShelfOnSubmit(subShelfNode)
-                    }
+                    onClick={async () => await handleRenameSubShelfOnSubmit()}
                     onMouseDown={e => e.stopPropagation()}
                   >
                     <CheckIcon className="w-full h-full" />

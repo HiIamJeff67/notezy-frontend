@@ -16,6 +16,10 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query";
 import { ZodError } from "zod";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "../interfaces/queryHookOptions";
 
 export const useGetUserData = (
   hookRequest?: GetUserDataRequest,
@@ -49,9 +53,9 @@ export const useGetUserData = (
   const query = useQuery({
     queryKey: queryKeys.user.data(),
     queryFn: async () => await queryFunction(hookRequest), // use the request from the param of useGetUserData()
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -60,7 +64,7 @@ export const useGetUserData = (
     return await queryClient.fetchQuery({
       queryKey: queryKeys.user.data(),
       queryFn: async () => await queryFunction(callbackRequest), // use the request from the param of useGetUserData.queryAsync()
-      staleTime: 15 * 60 * 1000,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number as number,
     });
   };
 
@@ -71,33 +75,51 @@ export const useGetUserData = (
   };
 };
 
-export const useGetMe = (request: GetMeRequest) => {
+export const useGetMe = (
+  hookRequest?: GetMeRequest,
+  options?: UseQueryOptions
+) => {
+  const queryClient = useQueryClient();
+
+  const queryFunction = async (request?: GetMeRequest) => {
+    if (!request) return;
+    try {
+      const validatedRequest = GetMeRequestSchema.parse(request);
+      return await GetMe(validatedRequest);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    }
+  };
+
   const query = useQuery({
     queryKey: queryKeys.user.me(),
-    queryFn: async () => {
-      try {
-        const validatedRequest = GetMeRequestSchema.parse(request);
-        return await GetMe(validatedRequest);
-      } catch (error) {
-        if (error instanceof ZodError) {
-          const errorMessage = error.issues
-            .map(issue => issue.message)
-            .join(", ");
-          throw new Error(`validation failed : ${errorMessage}`);
-        }
-        if (error instanceof NotezyAPIError) {
-          switch (error.unWrap.reason) {
-            default:
-              throw new Error(error.unWrap.message);
-          }
-        }
-        throw error;
-      }
-    },
-    staleTime: 15 * 60 * 1000, // sync with the access token expired duration
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    queryFn: async () => await queryFunction(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime, // sync with the access token expired duration
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
   });
+
+  const queryAsync = async (callbackRequest: GetMeRequest) => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.user.me(),
+      queryFn: async () => await queryFunction(callbackRequest),
+      staleTime: QueryAsyncDefaultOptions.staleTime as number as number,
+    });
+  };
 
   return {
     ...query,

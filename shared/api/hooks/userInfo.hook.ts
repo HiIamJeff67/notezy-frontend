@@ -7,6 +7,7 @@ import {
   UpdateMyInfoRequestSchema,
 } from "@shared/api/interfaces/userInfo.interface";
 import { queryKeys } from "@shared/api/queryKeys";
+
 import {
   useMutation,
   useQuery,
@@ -14,6 +15,10 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query";
 import { ZodError } from "zod";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "../interfaces/queryHookOptions";
 
 export const useGetMyInfo = (
   hookRequest?: GetMyInfoRequest,
@@ -46,9 +51,9 @@ export const useGetMyInfo = (
   const query = useQuery({
     queryKey: queryKeys.userInfo.my(),
     queryFn: async () => await queryFunction(hookRequest),
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -57,7 +62,7 @@ export const useGetMyInfo = (
     return await queryClient.fetchQuery({
       queryKey: queryKeys.userInfo.my(),
       queryFn: async () => await queryFunction(callbackRequest),
-      staleTime: 15 * 60 * 1000,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
 

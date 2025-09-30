@@ -44,6 +44,10 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "../interfaces/queryHookOptions";
 import { queryKeys } from "../queryKeys";
 
 export const useGetMySubShelfById = (
@@ -80,9 +84,9 @@ export const useGetMySubShelfById = (
       hookRequest?.param.subShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -93,7 +97,7 @@ export const useGetMySubShelfById = (
         callbackRequest.param.subShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      staleTime: 15 * 60 * 1000,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
 
@@ -141,9 +145,9 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       hookRequest?.param.prevSubShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -156,7 +160,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
         callbackRequest.param.prevSubShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      staleTime: 15 * 60 * 1000,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
 
@@ -204,9 +208,9 @@ export const useGetAllMySubShelvesByRootShelfId = (
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFunction(hookRequest),
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
     enabled: !!hookRequest && options && options.enabled,
   });
@@ -219,7 +223,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFunction(callbackRequest),
-      staleTime: 15 * 60 * 1000,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
 

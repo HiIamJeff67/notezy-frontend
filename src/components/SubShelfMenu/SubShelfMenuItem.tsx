@@ -98,20 +98,17 @@ const SubShelfMenuItem = ({
     </SidebarMenuSubItem>;
   }
 
-  const handleRenameRootShelfOnSubmit = useCallback(
-    async (subShelfNode: SubShelfNode): Promise<void> => {
-      loadingManager.setIsLoading(true);
+  const handleRenameRootShelfOnSubmit = useCallback(async (): Promise<void> => {
+    loadingManager.setIsLoading(true);
 
-      try {
-        await shelfManager.renameSubShelf(subShelfNode);
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      } finally {
-        loadingManager.setIsLoading(false);
-      }
-    },
-    [loadingManager, languageManager, shelfManager]
-  );
+    try {
+      await shelfManager.renameEditingSubShelf();
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    } finally {
+      loadingManager.setIsLoading(false);
+    }
+  }, [loadingManager, languageManager, shelfManager]);
 
   return (
     <Collapsible>
@@ -128,7 +125,7 @@ const SubShelfMenuItem = ({
                 ref={node => {
                   drop(node);
                 }}
-                className="rounded-sm"
+                className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
                 onClick={() => shelfManager.expandSubShelf(root, current)}
               >
                 {current.name}
@@ -198,9 +195,7 @@ const SubShelfMenuItem = ({
                               onKeyDown={async e => {
                                 switch (e.key) {
                                   case "Enter":
-                                    await handleRenameRootShelfOnSubmit(
-                                      subShelfNode
-                                    );
+                                    await handleRenameRootShelfOnSubmit();
                                   case "Escape":
                                     shelfManager.cancelRenamingSubShelf();
                                 }
@@ -211,9 +206,7 @@ const SubShelfMenuItem = ({
                             {shelfManager.isNewSubShelfName() && (
                               <button
                                 onClick={async e => {
-                                  await handleRenameRootShelfOnSubmit(
-                                    subShelfNode
-                                  );
+                                  await handleRenameRootShelfOnSubmit();
                                   e.stopPropagation();
                                 }}
                                 className="rounded hover:bg-primary/60 absolute w-4 h-4"

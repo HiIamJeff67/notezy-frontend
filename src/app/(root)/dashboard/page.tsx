@@ -66,9 +66,9 @@ const DashboardPage = () => {
         condition={getUserDataQuerier.isFetching || router.isNavigating}
       />
       <div className="w-full h-full p-0 m-0">
-        <AppSidebar />
+        <AppSidebar /> {/* Sidebar 在 panel 內 */}
         <SidebarTrigger className="fixed top-2 left-2" />
-        <div className="fixed top-2 right-2 z-50"></div>
+        <div className="w-full h-full">test</div>
       </div>
     </Suspense>
   );

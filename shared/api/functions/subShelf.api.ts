@@ -81,7 +81,7 @@ export async function GetMySubShelvesByPrevSubShelfId(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const jsonResponse =
-    (await response.json()) as GetAllMySubShelvesByRootShelfIdResponse;
+    (await response.json()) as GetMySubShelvesByPrevSubShelfIdResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }
