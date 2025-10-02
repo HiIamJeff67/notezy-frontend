@@ -3,11 +3,11 @@ import { useShelf } from "@/hooks";
 import RootShelfMenuItem from "./RootShelfMenuItem";
 
 const RootShelfMenu = () => {
-  const shelfManager = useShelf();
+  const shelfMaterialManager = useShelf();
 
   return (
     <SidebarMenu className="overflow-hidden">
-      {shelfManager.rootShelfEdges.map((edge, index) => (
+      {shelfMaterialManager.rootShelfEdges.map((edge, index) => (
         <RootShelfMenuItem key={index} rootShelfEdge={edge} index={index} />
       ))}
     </SidebarMenu>

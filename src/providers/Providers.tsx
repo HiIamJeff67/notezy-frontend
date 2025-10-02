@@ -9,7 +9,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { ApolloWrapper } from "./ApolloProvider";
 import { LanguageProvider } from "./LanguageProvider";
 import { LoadingProvider } from "./LoadingProvider";
-import { ShelfProvider } from "./ShelfProvider";
+import { ShelfMaterialProvider } from "./ShelfMaterialProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { UserDataProvider } from "./UserDataProvider";
 
@@ -22,9 +22,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <ThemeProvider>
               <UserDataProvider>
                 <DndProvider backend={HTML5Backend}>
-                  <ShelfProvider>
+                  <ShelfMaterialProvider>
                     <SidebarProvider>{children}</SidebarProvider>
-                  </ShelfProvider>
+                  </ShelfMaterialProvider>
                 </DndProvider>
               </UserDataProvider>
             </ThemeProvider>

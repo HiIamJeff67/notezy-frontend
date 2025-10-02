@@ -10,6 +10,7 @@ import {
   RestoreMyMaterialById,
   RestoreMyMaterialsByIds,
   SaveMyTextbookMaterialById,
+  UpdateMyTextbookMaterialById,
 } from "@shared/api/functions/material.api";
 import {
   CreateMaterialRequest,
@@ -32,7 +33,13 @@ import {
   RestoreMyMaterialsByIdsRequestSchema,
   SaveMyTextbookMaterialByIdRequest,
   SaveMyTextbookMaterialByIdRequestSchema,
+  UpdateMyTextbookMaterialByIdRequest,
+  UpdateMyTextbookMaterialByIdRequestSchema,
 } from "@shared/api/interfaces/material.interface";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/interfaces/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import {
   useMutation,
@@ -42,10 +49,6 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "../interfaces/queryHookOptions";
 
 export const useGetMyMaterialById = (
   hookRequest?: GetMyMaterialByIdRequest,
@@ -290,35 +293,30 @@ export const useCreateTextbookMaterial = () => {
   };
 };
 
-export const useSaveMyTextbookMaterialById = () => {
+export const useUpdateMyTextbookMaterialById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: SaveMyTextbookMaterialByIdRequest) => {
+    mutationFn: async (request: UpdateMyTextbookMaterialByIdRequest) => {
       const validatedRequest =
-        SaveMyTextbookMaterialByIdRequestSchema.parse(request);
-      return await SaveMyTextbookMaterialById(validatedRequest);
+        UpdateMyTextbookMaterialByIdRequestSchema.parse(request);
+      return await UpdateMyTextbookMaterialById(validatedRequest);
     },
     onSuccess: (_, variables) => {
       const materialId = variables.body.materialId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
           if (!Array.isArray(k) || k.length < 3) return false;
 
           switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
             case "material":
               switch (k[1]) {
                 case "myOneById":
                   if (materialId === k[2]) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
               }
           }
 
@@ -346,7 +344,62 @@ export const useSaveMyTextbookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "SAVE_MY_MATERIAL_BY_ID" as const,
+    name: "UPDATE_MY_TEXTBOOK_MATERIAL_BY_ID" as const,
+  };
+};
+
+export const useSaveMyTextbookMaterialById = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: SaveMyTextbookMaterialByIdRequest) => {
+      const validatedRequest =
+        SaveMyTextbookMaterialByIdRequestSchema.parse(request);
+      return await SaveMyTextbookMaterialById(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      const materialId = variables.body.materialId;
+      const parentSubShelfId = variables.affected.parentSubShelfId;
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+
+          switch (k[0]) {
+            case "material":
+              switch (k[1]) {
+                case "myOneById":
+                  if (materialId === k[2]) return true;
+                case "myManyByParentSubShelfId":
+                  if (parentSubShelfId === k[2]) return true;
+              }
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "SAVE_MY_TEXTBOOK_MATERIAL_BY_ID" as const,
   };
 };
 

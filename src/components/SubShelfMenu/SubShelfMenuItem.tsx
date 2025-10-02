@@ -1,3 +1,4 @@
+import MapPlaceholder from "@/components/MapPlaceholder/MapPlaceholder";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
 import {
   Collapsible,
@@ -30,7 +31,6 @@ import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
-import MapPlaceholder from "../MapPlaceholder/MapPlaceholder";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -49,14 +49,14 @@ const SubShelfMenuItem = ({
 }: SubShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfManager = useShelf();
+  const shelfMaterialManager = useShelf();
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DNDType.DraggableSubShelf.toString(),
     item: { summary, prev, current, depth },
     canDrag:
-      !shelfManager.isAnyRootShelfNodeEditing &&
-      !shelfManager.isAnySubShelfNodeEditing,
+      !shelfMaterialManager.isAnyRootShelfNodeEditing &&
+      !shelfMaterialManager.isAnySubShelfNodeEditing,
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
@@ -78,7 +78,7 @@ const SubShelfMenuItem = ({
         return;
       }
 
-      await shelfManager.moveSubShelf(
+      await shelfMaterialManager.moveSubShelf(
         draggedItem.prev,
         draggedItem.current,
         root,
@@ -102,13 +102,13 @@ const SubShelfMenuItem = ({
     loadingManager.setIsLoading(true);
 
     try {
-      await shelfManager.renameEditingSubShelf();
+      await shelfMaterialManager.renameEditingSubShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
       loadingManager.setIsLoading(false);
     }
-  }, [loadingManager, languageManager, shelfManager]);
+  }, [loadingManager, languageManager, shelfMaterialManager]);
 
   return (
     <Collapsible>
@@ -126,7 +126,11 @@ const SubShelfMenuItem = ({
                   drop(node);
                 }}
                 className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
-                onClick={() => shelfManager.expandSubShelf(root, current)}
+                onClick={async () => {
+                  if (!current.isExpanded) {
+                    await shelfMaterialManager.expandSubShelf(root, current);
+                  }
+                }}
               >
                 {current.name}
               </SidebarMenuButton>
@@ -135,29 +139,44 @@ const SubShelfMenuItem = ({
           <ContextMenuContent>
             <ContextMenuItem
               onClick={async () => {
-                await shelfManager.createSubShelf(
+                await shelfMaterialManager.createSubShelf(
                   summary.root.id,
                   current,
                   "undefined"
                 );
-                await shelfManager.expandSubShelf(root, current);
+                if (!current.isExpanded) {
+                  await shelfMaterialManager.expandSubShelf(root, current);
+                }
               }}
             >
               Create an new sub shelf
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => {}}>
+            <ContextMenuItem
+              onClick={async () => {
+                await shelfMaterialManager.createTextbookMaterial(
+                  root.id,
+                  current,
+                  "undefined"
+                );
+                if (!current.isExpanded) {
+                  await shelfMaterialManager.expandSubShelf(root, current);
+                }
+              }}
+            >
               Create an new material
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={() => shelfManager.startRenamingSubShelf(current)}
+              onClick={() =>
+                shelfMaterialManager.startRenamingSubShelfNode(current)
+              }
             >
               Rename
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
               onClick={async () => {
-                await shelfManager.deleteSubShelf(prev, current);
+                await shelfMaterialManager.deleteSubShelf(prev, current);
               }}
             >
               Delete
@@ -179,31 +198,35 @@ const SubShelfMenuItem = ({
                         fallback={<SubShelfMenuItemSkeleton />}
                         key={subShelfId}
                       >
-                        {shelfManager.isSubShelfNodeEditing(subShelfNode) ? (
+                        {shelfMaterialManager.isSubShelfNodeEditing(
+                          subShelfNode
+                        ) ? (
                           <SidebarMenuItem
                             key={subShelfId}
                             className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
                           >
                             <input
-                              ref={shelfManager.inputRef}
+                              ref={shelfMaterialManager.inputRef}
                               type="text"
-                              value={shelfManager.editSubShelfName}
+                              value={shelfMaterialManager.editSubShelfNodeName}
                               className="flex-1 bg-transparent w-full h-6 outline-none caret-foreground overflow-hidden"
                               onChange={e =>
-                                shelfManager.setEditSubShelfName(e.target.value)
+                                shelfMaterialManager.setEditSubShelfNodeName(
+                                  e.target.value
+                                )
                               }
                               onKeyDown={async e => {
                                 switch (e.key) {
                                   case "Enter":
                                     await handleRenameRootShelfOnSubmit();
                                   case "Escape":
-                                    shelfManager.cancelRenamingSubShelf();
+                                    shelfMaterialManager.cancelRenamingSubShelfNode();
                                 }
                               }}
                               // note that autoFocus doesn't work in this case,
                               // bcs the user clicked context menu trigger before the input element rendering
                             />
-                            {shelfManager.isNewSubShelfName() && (
+                            {shelfMaterialManager.isNewSubShelfNodeName() && (
                               <button
                                 onClick={async e => {
                                   await handleRenameRootShelfOnSubmit();
@@ -232,9 +255,7 @@ const SubShelfMenuItem = ({
                 )}
               </Suspense>
             )}
-            {!current.isExpanded ? (
-              <SubShelfMenuItemSkeleton />
-            ) : (
+            {Object.keys(current.materialNodes).length > 0 && (
               <Suspense fallback={<SubShelfMenuItemSkeleton />}>
                 {Object.entries(current.materialNodes).map(
                   ([materialId, materialNode], index) =>

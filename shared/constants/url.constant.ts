@@ -84,6 +84,7 @@ export const APIURLPathDictionary = {
       "material/getAllMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
     createTextbookMaterial: "material/createTextbookMaterial",
+    updateMyTextbookMaterialById: "material/updateMyTextbookMaterialById",
     saveMyTextbookMaterialById: "material/saveMyTextbookMaterialById",
     moveMyMaterialById: "material/moveMyMaterialById",
     moveMyMaterialsByIds: "material/moveMyMaterialsByIds",

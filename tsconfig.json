@@ -30,7 +30,8 @@
     ".next/types/**/*.ts",
     "src/components/RootShelfMenu",
     "src/components/SubShelfMenu",
-    "shared/types/dndType.enumts"
+    "shared/types/dndType.enumts",
+    "src/components/ShelfDialog"
   ],
   "exclude": ["node_modules"]
 }

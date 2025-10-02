@@ -24,7 +24,7 @@ const CreateRootShelfDialog = ({
 }: CreateRootShelfDialogProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfManager = useShelf();
+  const shelfMaterialManager = useShelf();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
 
@@ -36,7 +36,7 @@ const CreateRootShelfDialog = ({
         throw new Error("new shelf name must not be empty");
       }
 
-      await shelfManager.createRootShelf(newShelfName);
+      await shelfMaterialManager.createRootShelf(newShelfName);
       onClose();
     } catch (error) {
       toast.error(languageManager.tError(error));
@@ -44,7 +44,7 @@ const CreateRootShelfDialog = ({
       setNewShelfName("");
       loadingManager.setIsLoading(false);
     }
-  }, [newShelfName, loadingManager, languageManager, shelfManager]);
+  }, [newShelfName, loadingManager, languageManager, shelfMaterialManager]);
 
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>

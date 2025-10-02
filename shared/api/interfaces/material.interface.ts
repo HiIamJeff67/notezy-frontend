@@ -139,12 +139,51 @@ export type CreateMaterialRequest = z.infer<typeof CreateMaterialRequestSchema>;
 
 export const CreateMaterialResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    id: z.uuidv4(),
+    downloadURL: z.string(),
     createdAt: z.coerce.date(),
   }),
 });
 
 export type CreateMaterialResponse = z.infer<
   typeof CreateMaterialResponseSchema
+>;
+
+/* ============================== UpdateMyTextbookMaterialById ============================== */
+
+export const UpdateMyTextbookMaterialByIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      materialId: z.uuidv4(),
+      values: z
+        .object({
+          name: z.string().min(1).max(128),
+        })
+        .partial(),
+      setNull: z.record(z.string(), z.boolean()).optional(),
+    }),
+    affected: z.object({
+      parentSubShelfId: z.uuidv4(),
+    }),
+  });
+
+export type UpdateMyTextbookMaterialByIdRequest = z.infer<
+  typeof UpdateMyTextbookMaterialByIdRequestSchema
+>;
+
+export const UpdateMyTextbookMaterialByIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type UpdateMyTextbookMaterialByIdResponse = z.infer<
+  typeof UpdateMyTextbookMaterialByIdResponseSchema
 >;
 
 /* ============================== SaveMyTextbookMaterialById ============================== */
@@ -157,13 +196,9 @@ export const SaveMyTextbookMaterialByIdRequestSchema =
     }),
     body: z.object({
       materialId: z.uuidv4(),
-      rootShelfId: z.uuidv4(),
-      name: z.string().min(1).max(128).optional(),
       contentFile: z.file().optional(),
-      size: z.int64().optional(),
     }),
     affected: z.object({
-      rootShelfId: z.uuidv4(),
       parentSubShelfId: z.uuidv4(),
     }),
   });

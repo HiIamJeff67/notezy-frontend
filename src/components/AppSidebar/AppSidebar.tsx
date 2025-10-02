@@ -1,7 +1,9 @@
 import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import AvatarIcon from "@/components/icons/AvatarIcon";
+import ShelfIcon from "@/components/icons/ShelfIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
-import CreateRootShelfDialog from "@/components/ShelfDialog.tsx/CreateRootShelfDialog";
+import RootShelfMenu from "@/components/RootShelfMenu/RootShelfMenu";
+import CreateRootShelfDialog from "@/components/ShelfDialog/CreateRootShelfDialog";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -32,28 +34,35 @@ import {
   SidebarMenuSubItem,
   SidebarSeparator,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useShelf } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { BellIcon, PlusIcon, SettingsIcon } from "lucide-react";
+import {
+  BellIcon,
+  CalendarIcon,
+  LayoutDashboardIcon,
+  MessageSquareIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import ShelfIcon from "../icons/ShelfIcon";
-import RootShelfMenu from "../RootShelfMenu/RootShelfMenu";
 
 export function AppSidebar() {
   const router = useAppRouter();
+  const sidebarManager = useSidebar();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
-  const shelfManager = useShelf();
+  const shelfMaterialManager = useShelf();
 
   useEffect(() => {
     const initialSearchRootShelves = async () => {
       try {
-        await shelfManager.searchRootShelves();
+        await shelfMaterialManager.searchRootShelves();
       } catch (error) {
         toast.error(languageManager.tError(error));
       }
@@ -69,7 +78,11 @@ export function AppSidebar() {
   >("None");
 
   return (
-    <Sidebar className="block p-0 m-0">
+    <Sidebar
+      variant="sidebar"
+      collapsible="icon"
+      className="p-0 m-0 overflow-hidden"
+    >
       <AccountSettingsPanel
         isOpen={currentDisplayPopup === "AccountSettingsPanel"}
         onClose={() => setCurrentDisplayPopup("None")}
@@ -86,23 +99,42 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem className="flex justify-between items-center hover:bg-primary/50 rounded-sm pr-1">
-                <Button className="w-4/5 bg-transparent hover:bg-transparent flex justify-between items-center select-none">
-                  Dashboard
-                </Button>
+              <SidebarMenuItem
+                className={`${
+                  sidebarManager.open ? "flex-row pr-2" : "flex-col-reverse"
+                } flex justify-between items-center gap-1 hover:bg-accent rounded-sm`}
+              >
+                <SidebarMenuButton asChild>
+                  <Button className="w-9/10 bg-transparent flex justify-start items-center select-none">
+                    <LayoutDashboardIcon />
+                    {sidebarManager.open && (
+                      <span className="truncate">Dashboard</span>
+                    )}
+                  </Button>
+                </SidebarMenuButton>
                 <SidebarTrigger
                   variant={"secondary"}
-                  className=" bg-transparent hover:bg-primary/60"
+                  className="bg-transparent hover:bg-primary/60 select-none"
                 />
               </SidebarMenuItem>
               <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
-                <Button className="w-full bg-transparent hover:bg-transparent flex justify-between items-center select-none">
-                  Daily Routine
+                <Button
+                  className={`w-full bg-transparent hover:bg-transparent flex ${
+                    sidebarManager.open ? "justify-start" : "justify-center"
+                  } items-center select-none`}
+                >
+                  <CalendarIcon />
+                  {sidebarManager.open && <span>Daily Routine</span>}
                 </Button>
               </SidebarMenuItem>
               <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
-                <Button className="w-full bg-transparent hover:bg-transparent flex justify-between items-center select-none">
-                  Community
+                <Button
+                  className={`w-full bg-transparent hover:bg-transparent flex ${
+                    sidebarManager.open ? "justify-start" : "justify-center"
+                  } items-center select-none`}
+                >
+                  <MessageSquareIcon />
+                  {sidebarManager.open && <span>Community</span>}
                 </Button>
               </SidebarMenuItem>
             </SidebarMenu>

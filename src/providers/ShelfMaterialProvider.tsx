@@ -5,7 +5,11 @@ import {
   SearchSortOrder,
 } from "@/graphql/generated/graphql";
 import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
-import { useGetAllMyMaterialsByParentSubShelfId } from "@shared/api/hooks/material.hook";
+import {
+  useCreateTextbookMaterial,
+  useGetAllMyMaterialsByParentSubShelfId,
+  useUpdateMyTextbookMaterialById,
+} from "@shared/api/hooks/material.hook";
 import {
   useCreateRootShelf,
   useDeleteMyRootShelfById,
@@ -34,11 +38,13 @@ import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import {
   AnalysisStatus,
+  MaterialNode,
   RootShelfNode,
   ShelfTreeSummary,
   SubShelfNode,
 } from "@shared/lib/shelfMaterialNodes";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
+import { MaterialContentType, MaterialType } from "@shared/types/enums";
 import { UUID } from "crypto";
 import {
   createContext,
@@ -49,44 +55,48 @@ import {
   useState,
 } from "react";
 
-interface ShelfContextType {
+interface ShelfMaterialContextType {
+  // general
+  inputRef: RefObject<HTMLInputElement | null>;
+  searchInput: { query: string; after: string | null };
+  setSearchInput: (input: { query: string; after: string | null }) => void;
+  expandedShelves: LRUCache<string, ShelfTreeSummary>;
+
+  // for root shelf
   rootShelfEdges: SearchRootShelfEdge[];
   searchRootShelves: () => Promise<void>;
   loadMoreRootShelves: () => Promise<void>;
   isFetching: boolean;
-  expandedShelves: LRUCache<string, ShelfTreeSummary>;
-  searchInput: { query: string; after: string | null };
-  setSearchInput: (input: { query: string; after: string | null }) => void;
   expandRootShelf: (rootShelf: PrivateRootShelf) => Promise<ShelfTreeSummary>;
+  createRootShelf: (name: string) => Promise<void>;
+  editRootShelfNodeName: string;
+  setEditRootShelfNodeName: (editRootShelfNodeName: string) => void;
+  isNewRootShelfNodeName: () => boolean;
+  isRootShelfNodeEditing: (rootShelfNode: RootShelfNode) => boolean;
+  isAnyRootShelfNodeEditing: boolean;
+  startRenamingRootShelfNode: (rootShelfNode: RootShelfNode) => void;
+  cancelRenamingRootShelfNode: () => void;
+  renameEditingRootShelf: () => Promise<void>;
+  deleteRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
+
+  // for sub shelf
   expandSubShelf: (
     rootShelfNode: RootShelfNode,
     subShelfNode: SubShelfNode
   ) => Promise<void>;
-  createRootShelf: (name: string) => Promise<void>;
   createSubShelf: (
     rootShelfId: UUID,
     prevSubShelfNode: SubShelfNode | null,
     name: string
   ) => Promise<void>;
-
-  inputRef: RefObject<HTMLInputElement | null>;
-  editRootShelfName: string;
-  setEditRootShelfName: (editRootShelfName: string) => void;
-  isNewRootShelfName: () => boolean;
-  isRootShelfNodeEditing: (rootShelfNode: RootShelfNode) => boolean;
-  isAnyRootShelfNodeEditing: boolean;
-  startRenamingRootShelf: (rootShelfNode: RootShelfNode) => void;
-  cancelRenamingRootShelf: () => void;
-  renameEditingRootShelf: () => Promise<void>;
-  editSubShelfName: string;
-  setEditSubShelfName: (editSubShelfName: string) => void;
-  isNewSubShelfName: () => boolean;
+  editSubShelfNodeName: string;
+  setEditSubShelfNodeName: (editSubShelfNodeName: string) => void;
+  isNewSubShelfNodeName: () => boolean;
   isAnySubShelfNodeEditing: boolean;
   isSubShelfNodeEditing: (subShelfNode: SubShelfNode) => boolean;
-  startRenamingSubShelf: (subShelfNode: SubShelfNode) => void;
-  cancelRenamingSubShelf: () => void;
+  startRenamingSubShelfNode: (subShelfNode: SubShelfNode) => void;
+  cancelRenamingSubShelfNode: () => void;
   renameEditingSubShelf: () => Promise<void>;
-  deleteRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
   deleteSubShelf: (
     prevSubShelfNode: SubShelfNode | null,
     subShelfNode: SubShelfNode
@@ -97,21 +107,42 @@ interface ShelfContextType {
     destinationRootShelfNode: RootShelfNode,
     destinationSubShelfNode: SubShelfNode | null
   ) => Promise<void>;
+
+  // for material
+  createTextbookMaterial: (
+    rootShelfId: UUID,
+    parentSubShelfNode: SubShelfNode,
+    name: string
+  ) => Promise<void>;
+  editMaterialNodeName: string;
+  setEditMaterialNodeName: (materialName: string) => void;
+  isNewMaterialNodeName: () => boolean;
+  isAnyMaterialNodeEditing: boolean;
+  isMaterialNodeEditing: (materialNode: MaterialNode) => boolean;
+  startRenamingMaterialNode: (materialNode: MaterialNode) => void;
+  cancelRenamingMaterialNode: () => void;
+  renameEditingMaterial: () => Promise<void>;
 }
 
-export const ShelfContext = createContext<ShelfContextType | undefined>(
-  undefined
-);
+export const ShelfMaterialContext = createContext<
+  ShelfMaterialContextType | undefined
+>(undefined);
 
-export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
+export const ShelfMaterialProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
   const getAllMyMaterialsBySubShelfQuerier =
     useGetAllMyMaterialsByParentSubShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const createSubShelfMutator = useCreateSubShelfByRootShelfId();
+  const createTextbookMaterialMutator = useCreateTextbookMaterial();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const updateSubShelfMutator = useUpdateMySubShelfById();
+  const updateTextbookMaterialMutator = useUpdateMyTextbookMaterialById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
   const deleteSubShelfMutator = useDeleteMySubShelfById();
   const moveSubShelfMutator = useMoveMySubShelf();
@@ -129,14 +160,21 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
   const [editingRootShelfNode, setEditingRootShelfNode] = useState<
     RootShelfNode | undefined
   >(undefined);
+  const [editRootShelfNodeName, setEditRootShelfNodeName] =
+    useState<string>("");
   const [originalRootShelfName, setOriginalRootShelfName] =
     useState<string>("");
-  const [editRootShelfName, setEditRootShelfName] = useState<string>("");
   const [editingSubShelfNode, setEditingSubShelfNode] = useState<
     SubShelfNode | undefined
   >(undefined);
+  const [editSubShelfNodeName, setEditSubShelfNodeName] = useState<string>("");
   const [originalSubShelfName, setOriginalSubShelfName] = useState<string>("");
-  const [editSubShelfName, setEditSubShelfName] = useState<string>("");
+  const [editingMaterialNode, setEditingMaterialNode] = useState<
+    MaterialNode | undefined
+  >(undefined);
+  const [editMaterialNodeName, setEditMaterialNodeName] = useState<string>("");
+  const [originalMaterialNodeName, setOriginalMaterialNodeName] =
+    useState<string>("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const expandedShelvesRef = useRef(
@@ -161,7 +199,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       ) {
         await renameEditingRootShelf();
         setEditingRootShelfNode(undefined);
-        setEditRootShelfName("");
+        setEditRootShelfNodeName("");
         setOriginalRootShelfName("");
       }
     };
@@ -182,10 +220,10 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [
     editingRootShelfNode,
-    editRootShelfName, // will be used in renameEditingRootShelf
+    editRootShelfNodeName, // will be used in renameEditingRootShelf
     originalRootShelfName, // will be used in renameEditingRootShelf
     setEditingRootShelfNode,
-    setEditRootShelfName,
+    setEditRootShelfNodeName,
     setOriginalRootShelfName,
   ]);
 
@@ -200,7 +238,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       ) {
         await renameEditingSubShelf();
         setEditingSubShelfNode(undefined);
-        setEditSubShelfName("");
+        setEditSubShelfNodeName("");
         setOriginalSubShelfName("");
       }
     };
@@ -221,10 +259,10 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [
     editingSubShelfNode,
-    editSubShelfName, // will be used in renameEditingSubShelf
+    editSubShelfNodeName, // will be used in renameEditingSubShelf
     originalSubShelfName, // will be used in renameEditingSubShelf
     setEditingSubShelfNode,
-    setEditSubShelfName,
+    setEditSubShelfNodeName,
     setOriginalSubShelfName,
   ]);
 
@@ -344,24 +382,24 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     rootShelfNode: RootShelfNode,
     subShelfNode: SubShelfNode
   ): Promise<void> => {
-    const userAgent = navigator.userAgent;
-    const responseOfGetAllMaterials =
-      (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
-        header: {
-          userAgent: userAgent,
-        },
-        param: {
-          parentSubShelfId: subShelfNode.id,
-        },
-      })) as GetAllMyMaterialsByParentSubShelfIdResponse;
-
-    SubShelfManipulator.initializeMaterialNodesByResponse(
-      subShelfNode,
-      responseOfGetAllMaterials
-    );
-
     // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
     if (!subShelfNode.isExpanded) {
+      const userAgent = navigator.userAgent;
+      const responseOfGetAllMaterials =
+        (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          param: {
+            parentSubShelfId: subShelfNode.id,
+          },
+        })) as GetAllMyMaterialsByParentSubShelfIdResponse;
+
+      SubShelfManipulator.initializeMaterialNodesByResponse(
+        subShelfNode,
+        responseOfGetAllMaterials
+      );
+
       const responseOfGetAllSubShelves =
         (await getMySubShelvesBySubShelfQuerier.queryAsync({
           header: {
@@ -377,6 +415,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
         subShelfNode,
         responseOfGetAllSubShelves
       );
+      subShelfNode.isExpanded = true;
     }
 
     forceUpdate();
@@ -420,7 +459,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
     if (shelfTreeSummary === undefined) {
       throw new Error(
-        `parentShelfNode not found in one of the children of rootShelfNode`
+        `The given rootShelfId is not exist in the expandedShelvesRef`
       );
     }
 
@@ -449,7 +488,9 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       );
       shelfTreeSummary.maxWidth = Math.max(
         shelfTreeSummary.maxWidth,
-        Object.entries(prevSubShelfNode.children).length + 1
+        Object.entries(prevSubShelfNode.children).length +
+          Object.entries(prevSubShelfNode.materialNodes).length +
+          1
       );
       const newPath = prevSubShelfNode.path;
       newPath.push(prevSubShelfNode.id);
@@ -465,17 +506,95 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
         children: {},
         materialNodes: {},
       };
+    } else {
+      shelfTreeSummary.maxDepth = Math.max(shelfTreeSummary.maxDepth, 1);
+      shelfTreeSummary.maxWidth = Math.max(shelfTreeSummary.maxWidth, 1);
+      shelfTreeSummary.root.children[responseOfCreateSubShelf.data.id as UUID] =
+        {
+          id: responseOfCreateSubShelf.data.id as UUID,
+          rootShelfId: rootShelfId,
+          prevSubShelfId: null,
+          name: name,
+          path: [],
+          isExpanded: true,
+          updatedAt: responseOfCreateSubShelf.data.createdAt,
+          createdAt: responseOfCreateSubShelf.data.createdAt,
+          children: {},
+          materialNodes: {},
+        };
     }
     forceUpdate();
   };
 
-  /* =============== Rename Methods =============== */
-  const isNewRootShelfName = useCallback(() => {
-    return (
-      editRootShelfName !== originalRootShelfName &&
-      editRootShelfName.trim() !== ""
+  const createTextbookMaterial = async (
+    rootShelfId: UUID,
+    parentSubShelfNode: SubShelfNode,
+    name: string
+  ): Promise<void> => {
+    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
+    if (shelfTreeSummary === undefined) {
+      throw new Error(
+        `The given rootShelfId is not exist in the expandedShelvesRef`
+      );
+    }
+
+    const userAgent = navigator.userAgent;
+    const responseOfCreateMaterial =
+      await createTextbookMaterialMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          parentSubShelfId: parentSubShelfNode.id,
+          name: name,
+        },
+        affected: {
+          rootShelfId: rootShelfId,
+          parentSubShelfId: parentSubShelfNode.id,
+        },
+      });
+    shelfTreeSummary.hasChanged = true;
+    shelfTreeSummary.uniqueMaterialIds.push(
+      responseOfCreateMaterial.data.id as UUID
     );
-  }, [editRootShelfName, originalRootShelfName]);
+    shelfTreeSummary.root.totalMaterials++;
+    if (parentSubShelfNode !== null) {
+      shelfTreeSummary.maxDepth = Math.max(
+        shelfTreeSummary.maxDepth,
+        parentSubShelfNode.path.length + 1
+      );
+      shelfTreeSummary.maxWidth = Math.max(
+        shelfTreeSummary.maxWidth,
+        Object.entries(parentSubShelfNode.children).length +
+          Object.entries(parentSubShelfNode.materialNodes).length +
+          1
+      );
+      parentSubShelfNode.materialNodes[
+        responseOfCreateMaterial.data.id as UUID
+      ] = {
+        id: responseOfCreateMaterial.data.id as UUID,
+        parentSubShelfId: parentSubShelfNode.id,
+        name: name,
+        type: MaterialType.Textbook,
+        downloadURL: responseOfCreateMaterial.data.downloadURL,
+        contentType: MaterialContentType.PlainText,
+        parseMediaType: "utf-8",
+        updatedAt: responseOfCreateMaterial.data.createdAt,
+        createdAt: responseOfCreateMaterial.data.createdAt,
+      };
+      forceUpdate();
+    }
+  };
+
+  /* =============== Rename Methods =============== */
+
+  const isNewRootShelfNodeName = useCallback(() => {
+    return (
+      editRootShelfNodeName !== originalRootShelfName &&
+      editRootShelfNodeName.trim() !== ""
+    );
+  }, [editRootShelfNodeName, originalRootShelfName]);
+
   const isRootShelfNodeEditing = useCallback(
     (rootShelfNode: RootShelfNode) => {
       return rootShelfNode === editingRootShelfNode;
@@ -483,24 +602,32 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
     [editingRootShelfNode]
   );
 
-  const startRenamingRootShelf = useCallback(
+  const startRenamingRootShelfNode = useCallback(
     (rootShelfNode: RootShelfNode) => {
       setEditingRootShelfNode(rootShelfNode);
       setOriginalRootShelfName(rootShelfNode.name);
-      setEditRootShelfName(rootShelfNode.name);
+      setEditRootShelfNodeName(rootShelfNode.name);
     },
-    [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]
+    [
+      setEditingRootShelfNode,
+      setOriginalRootShelfName,
+      setEditRootShelfNodeName,
+    ]
   );
 
-  const cancelRenamingRootShelf = useCallback(() => {
+  const cancelRenamingRootShelfNode = useCallback(() => {
     setEditingRootShelfNode(undefined);
     setOriginalRootShelfName("");
-    setEditRootShelfName("");
-  }, [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]);
+    setEditRootShelfNodeName("");
+  }, [
+    setEditingRootShelfNode,
+    setOriginalRootShelfName,
+    setEditRootShelfNodeName,
+  ]);
 
   const renameEditingRootShelf = useCallback(async (): Promise<void> => {
     try {
-      if (!isNewRootShelfName() || !editingRootShelfNode) {
+      if (!isNewRootShelfNodeName() || !editingRootShelfNode) {
         throw new Error("the name of the given root shelf node is invalid");
       }
 
@@ -521,76 +648,72 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
         body: {
           rootShelfId: editingRootShelfNode.id,
           values: {
-            name: editRootShelfName,
+            name: editRootShelfNodeName,
           },
         },
       });
 
-      shelfTreeSummary.root.name = editRootShelfName;
+      shelfTreeSummary.root.name = editRootShelfNodeName;
+      editingRootShelfNode.name = editRootShelfNodeName;
       setEditingRootShelfNode(prev =>
-        prev ? { ...prev, name: editRootShelfName } : undefined
+        prev ? { ...prev, name: editRootShelfNodeName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingRootShelfNode(undefined);
-      setEditRootShelfName("");
+      setEditRootShelfNodeName("");
       setOriginalRootShelfName("");
     }
   }, [
     editingRootShelfNode,
-    editRootShelfName,
+    editRootShelfNodeName,
     originalRootShelfName,
     setEditingRootShelfNode,
-    setEditRootShelfName,
+    setEditRootShelfNodeName,
     setOriginalRootShelfName,
     expandedShelvesRef,
     updateRootShelfMutator,
   ]);
 
-  const isNewSubShelfName = useCallback(() => {
+  const isNewSubShelfNodeName = useCallback((): boolean => {
     return (
-      editSubShelfName !== originalSubShelfName &&
-      editSubShelfName.trim() !== ""
+      editSubShelfNodeName !== originalSubShelfName &&
+      editSubShelfNodeName.trim() !== ""
     );
-  }, [editSubShelfName, originalSubShelfName]);
+  }, [editSubShelfNodeName, originalSubShelfName]);
 
   const isSubShelfNodeEditing = useCallback(
-    (subShelfNode: SubShelfNode) => {
+    (subShelfNode: SubShelfNode): boolean => {
       return subShelfNode === editingSubShelfNode;
     },
     [editingSubShelfNode]
   );
 
-  const startRenamingSubShelf = useCallback(
-    (subShelfNode: SubShelfNode) => {
+  const startRenamingSubShelfNode = useCallback(
+    (subShelfNode: SubShelfNode): void => {
       setEditingSubShelfNode(subShelfNode);
       setOriginalSubShelfName(subShelfNode.name);
-      setEditSubShelfName(subShelfNode.name);
+      setEditSubShelfNodeName(subShelfNode.name);
     },
-    [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]
+    [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfNodeName]
   );
 
-  const cancelRenamingSubShelf = useCallback(() => {
+  const cancelRenamingSubShelfNode = useCallback((): void => {
     setEditingSubShelfNode(undefined);
     setOriginalSubShelfName("");
-    setEditSubShelfName("");
-  }, [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]);
+    setEditSubShelfNodeName("");
+  }, [
+    setEditingSubShelfNode,
+    setOriginalSubShelfName,
+    setEditSubShelfNodeName,
+  ]);
 
   const renameEditingSubShelf = useCallback(async (): Promise<void> => {
     try {
-      if (!isNewSubShelfName() || !editingSubShelfNode) {
+      if (!isNewSubShelfNodeName() || !editingSubShelfNode) {
         throw new Error("the name of the given sub shelf node is invalid");
-      }
-
-      const shelfTreeSummary = expandedShelvesRef.current.get(
-        editingSubShelfNode.rootShelfId
-      );
-      if (shelfTreeSummary === undefined) {
-        throw new Error(
-          `editingSubShelfNode not found in one of the children of rootShelfNode`
-        );
       }
 
       const userAgent = navigator.userAgent;
@@ -601,7 +724,7 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
         body: {
           subShelfId: editingSubShelfNode.id,
           values: {
-            name: editSubShelfName,
+            name: editSubShelfNodeName,
           },
         },
         affected: {
@@ -611,27 +734,107 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       // update the reference value stored in the useState value of `editingSubShelfNode`
-      editingSubShelfNode.name = editSubShelfName;
+      editingSubShelfNode.name = editSubShelfNodeName;
       setEditingSubShelfNode(prev =>
-        prev ? { ...prev, name: editSubShelfName } : undefined
+        prev ? { ...prev, name: editSubShelfNodeName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingSubShelfNode(undefined);
-      setEditSubShelfName("");
+      setEditSubShelfNodeName("");
       setOriginalSubShelfName("");
     }
   }, [
     editingSubShelfNode,
-    editSubShelfName,
+    editSubShelfNodeName,
     originalSubShelfName,
     setEditingSubShelfNode,
-    setEditSubShelfName,
+    setEditSubShelfNodeName,
     setOriginalSubShelfName,
-    expandedShelvesRef,
     updateSubShelfMutator,
+  ]);
+
+  const isNewMaterialNodeName = useCallback((): boolean => {
+    return (
+      editMaterialNodeName !== originalMaterialNodeName &&
+      editMaterialNodeName.trim() !== ""
+    );
+  }, [editMaterialNodeName, originalMaterialNodeName]);
+
+  const isMaterialNodeEditing = useCallback(
+    (materialNode: MaterialNode): boolean => {
+      return editingMaterialNode === materialNode;
+    },
+    [editingMaterialNode]
+  );
+
+  const startRenamingMaterialNode = useCallback(
+    (materialNode: MaterialNode): void => {
+      setEditingMaterialNode(materialNode);
+      setOriginalMaterialNodeName(materialNode.name);
+      setEditMaterialNodeName(materialNode.name);
+    },
+    [
+      setEditingMaterialNode,
+      setOriginalMaterialNodeName,
+      setEditMaterialNodeName,
+    ]
+  );
+
+  const cancelRenamingMaterialNode = useCallback((): void => {
+    setEditingMaterialNode(undefined);
+    setOriginalMaterialNodeName("");
+    setEditMaterialNodeName("");
+  }, [
+    setEditingMaterialNode,
+    setOriginalMaterialNodeName,
+    setEditMaterialNodeName,
+  ]);
+
+  const renameEditingMaterial = useCallback(async (): Promise<void> => {
+    try {
+      if (!isNewMaterialNodeName() || !editingMaterialNode) {
+        throw new Error("the name of the given material node is invalid");
+      }
+
+      const userAgent = navigator.userAgent;
+      await updateTextbookMaterialMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          materialId: editingMaterialNode.id,
+          values: {
+            name: editMaterialNodeName,
+          },
+        },
+        affected: {
+          parentSubShelfId: editingMaterialNode.parentSubShelfId,
+        },
+      });
+
+      editingMaterialNode.name = editMaterialNodeName;
+      setEditingMaterialNode(prev =>
+        prev ? { ...prev, name: editMaterialNodeName } : undefined
+      );
+      forceUpdate();
+    } catch (error) {
+      throw error;
+    } finally {
+      setEditingMaterialNode(undefined);
+      setEditMaterialNodeName("");
+      setOriginalMaterialNodeName("");
+    }
+  }, [
+    editingMaterialNode,
+    editMaterialNodeName,
+    originalMaterialNodeName,
+    setEditingMaterialNode,
+    setEditMaterialNodeName,
+    setOriginalMaterialNodeName,
+    updateTextbookMaterialMutator,
   ]);
 
   const deleteRootShelf = async (
@@ -782,43 +985,57 @@ export const ShelfProvider = ({ children }: { children: React.ReactNode }) => {
 
   /* ============================== Methods about Garbage ============================== */
 
-  const contextValue: ShelfContextType = {
+  const contextValue: ShelfMaterialContextType = {
+    // general
+    inputRef: inputRef,
+    searchInput: searchInput,
+    setSearchInput: setSearchInput,
+    expandedShelves: expandedShelvesRef.current,
     rootShelfEdges:
+      // for root shelf
       (data?.searchRootShelves?.searchEdges as SearchRootShelfEdge[]) || [],
     searchRootShelves: searchRootShelves,
     loadMoreRootShelves: loadMoreRootShelves,
     isFetching: loading,
-    expandedShelves: expandedShelvesRef.current,
-    searchInput: searchInput,
-    setSearchInput: setSearchInput,
     expandRootShelf: expandRootShelf,
-    expandSubShelf: expandSubShelf,
     createRootShelf: createRootShelf,
-    createSubShelf: createSubShelf,
-
-    // rename shelf feature
-    inputRef: inputRef,
-    editRootShelfName: editRootShelfName,
-    setEditRootShelfName: setEditRootShelfName,
-    isNewRootShelfName: isNewRootShelfName,
+    editRootShelfNodeName: editRootShelfNodeName,
+    setEditRootShelfNodeName: setEditRootShelfNodeName,
+    isNewRootShelfNodeName: isNewRootShelfNodeName,
     isRootShelfNodeEditing: isRootShelfNodeEditing,
     isAnyRootShelfNodeEditing: editingRootShelfNode !== undefined,
-    startRenamingRootShelf: startRenamingRootShelf,
-    cancelRenamingRootShelf: cancelRenamingRootShelf,
+    startRenamingRootShelfNode: startRenamingRootShelfNode,
+    cancelRenamingRootShelfNode: cancelRenamingRootShelfNode,
     renameEditingRootShelf: renameEditingRootShelf,
-    editSubShelfName: editSubShelfName,
-    setEditSubShelfName: setEditSubShelfName,
-    isNewSubShelfName: isNewSubShelfName,
+    deleteRootShelf: deleteRootShelf,
+
+    // for sub shelf
+    expandSubShelf: expandSubShelf,
+    createSubShelf: createSubShelf,
+    editSubShelfNodeName: editSubShelfNodeName,
+    setEditSubShelfNodeName: setEditSubShelfNodeName,
+    isNewSubShelfNodeName: isNewSubShelfNodeName,
     isSubShelfNodeEditing: isSubShelfNodeEditing,
     isAnySubShelfNodeEditing: editingSubShelfNode !== undefined,
-    startRenamingSubShelf: startRenamingSubShelf,
-    cancelRenamingSubShelf: cancelRenamingSubShelf,
+    startRenamingSubShelfNode: startRenamingSubShelfNode,
+    cancelRenamingSubShelfNode: cancelRenamingSubShelfNode,
     renameEditingSubShelf: renameEditingSubShelf,
-
-    deleteRootShelf: deleteRootShelf,
     deleteSubShelf: deleteSubShelf,
     moveSubShelf: moveSubShelf,
+
+    // for material
+    createTextbookMaterial: createTextbookMaterial,
+    editMaterialNodeName: editMaterialNodeName,
+    setEditMaterialNodeName: setEditMaterialNodeName,
+    isNewMaterialNodeName: isNewMaterialNodeName,
+    isMaterialNodeEditing: isMaterialNodeEditing,
+    isAnyMaterialNodeEditing: editingMaterialNode !== undefined,
+    startRenamingMaterialNode: startRenamingMaterialNode,
+    cancelRenamingMaterialNode: cancelRenamingMaterialNode,
+    renameEditingMaterial: renameEditingMaterial,
   };
 
-  return <ShelfContext value={contextValue}>{children}</ShelfContext>;
+  return (
+    <ShelfMaterialContext value={contextValue}>{children}</ShelfMaterialContext>
+  );
 };

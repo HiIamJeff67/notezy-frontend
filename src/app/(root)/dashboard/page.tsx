@@ -2,7 +2,6 @@
 
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryClient } from "@shared/api/queryClient";
@@ -65,10 +64,11 @@ const DashboardPage = () => {
       <StrictLoadingOutlay
         condition={getUserDataQuerier.isFetching || router.isNavigating}
       />
-      <div className="w-full h-full p-0 m-0">
-        <AppSidebar /> {/* Sidebar 在 panel 內 */}
-        <SidebarTrigger className="fixed top-2 left-2" />
-        <div className="w-full h-full">test</div>
+      <div className="min-h-screen">
+        <AppSidebar />
+        <div className="w-full h-full flex justify-center items-center">
+          test
+        </div>
       </div>
     </Suspense>
   );

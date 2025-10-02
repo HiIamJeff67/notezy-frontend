@@ -1,3 +1,5 @@
+import MapPlaceholder from "@/components/MapPlaceholder/MapPlaceholder";
+import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelf } from "@/hooks";
 import {
   RootShelfNode,
@@ -6,8 +8,6 @@ import {
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";
-import MapPlaceholder from "../MapPlaceholder/MapPlaceholder";
-import { SidebarMenu, SidebarMenuItem } from "../ui/sidebar";
 import SubShelfMenuItem from "./SubShelfMenuItem";
 import SubShelfMenuItemSkeleton from "./SubShelfMenuItemSkeleton";
 
@@ -20,19 +20,19 @@ interface SubShelfMenuProps {
 const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfManager = useShelf();
+  const shelfMaterialManager = useShelf();
 
   const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
     loadingManager.setIsLoading(true);
 
     try {
-      await shelfManager.renameEditingSubShelf();
+      await shelfMaterialManager.renameEditingSubShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
       loadingManager.setIsLoading(false);
     }
-  }, [loadingManager, languageManager, shelfManager]);
+  }, [loadingManager, languageManager, shelfMaterialManager]);
 
   return (
     <SidebarMenu>
@@ -42,28 +42,28 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
 
         return (
           <Suspense fallback={<SubShelfMenuItemSkeleton />} key={subShelfId}>
-            {shelfManager.isSubShelfNodeEditing(subShelfNode) ? (
+            {shelfMaterialManager.isSubShelfNodeEditing(subShelfNode) ? (
               <SidebarMenuItem className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative">
                 <input
-                  ref={shelfManager.inputRef}
+                  ref={shelfMaterialManager.inputRef}
                   type="text"
-                  value={shelfManager.editSubShelfName}
+                  value={shelfMaterialManager.editSubShelfNodeName}
                   className="flex-1 bg-transparent w-full h-6 outline-none caret-foreground overflow-hidden"
                   onChange={e =>
-                    shelfManager.setEditSubShelfName(e.target.value)
+                    shelfMaterialManager.setEditSubShelfNodeName(e.target.value)
                   }
                   onKeyDown={async e => {
                     switch (e.key) {
                       case "Enter":
                         await handleRenameSubShelfOnSubmit();
                       case "Escape":
-                        shelfManager.cancelRenamingSubShelf();
+                        shelfMaterialManager.cancelRenamingSubShelfNode();
                     }
                   }}
                   // note that autoFocus doesn't work in this case,
                   // bcs the user clicked context menu trigger before the input element rendering
                 />
-                {shelfManager.isNewSubShelfName() && (
+                {shelfMaterialManager.isNewSubShelfNodeName() && (
                   <button
                     className="rounded hover:bg-primary/60 absolute w-4 h-4"
                     onClick={async () => await handleRenameSubShelfOnSubmit()}

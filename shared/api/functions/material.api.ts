@@ -23,6 +23,8 @@ import {
   RestoreMyMaterialsByIdsResponse,
   SaveMyTextbookMaterialByIdRequest,
   SaveMyTextbookMaterialByIdResponse,
+  UpdateMyTextbookMaterialByIdRequest,
+  UpdateMyTextbookMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -153,6 +155,35 @@ export async function CreateTextbookMaterial(
   return jsonResponse;
 }
 
+/* ============================== UpdateMyTextbookMaterialById ============================== */
+
+export async function UpdateMyTextbookMaterialById(
+  request: UpdateMyTextbookMaterialByIdRequest
+): Promise<UpdateMyTextbookMaterialByIdResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyTextbookMaterialById}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const jsonResponse =
+    (await response.json()) as UpdateMyTextbookMaterialByIdResponse;
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  }
+  return jsonResponse;
+}
+
 /* ============================== SaveMyTextbookMaterialById ============================== */
 
 export async function SaveMyTextbookMaterialById(
@@ -160,15 +191,8 @@ export async function SaveMyTextbookMaterialById(
 ): Promise<SaveMyTextbookMaterialByIdResponse> {
   const formData = new FormData();
   formData.append("materialId", request.body.materialId);
-  formData.append("rootShelfId", request.body.rootShelfId);
-  if (request.body.name) {
-    formData.append("name", request.body.name);
-  }
   if (request.body.contentFile) {
     formData.append("contentFile", request.body.contentFile);
-  }
-  if (request.body.size) {
-    formData.append("size", request.body.size.toString());
   }
 
   const response = await fetch(
