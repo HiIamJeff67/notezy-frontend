@@ -1,9 +1,9 @@
 import { SidebarMenu } from "@/components/ui/sidebar";
-import { useShelf } from "@/hooks";
+import { useShelfMaterial } from "@/hooks";
 import RootShelfMenuItem from "./RootShelfMenuItem";
 
 const RootShelfMenu = () => {
-  const shelfMaterialManager = useShelf();
+  const shelfMaterialManager = useShelfMaterial();
 
   return (
     <SidebarMenu className="overflow-hidden">

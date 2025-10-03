@@ -2,6 +2,11 @@
 
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import {
+  SidebarInset,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryClient } from "@shared/api/queryClient";
@@ -13,6 +18,7 @@ import toast from "react-hot-toast";
 
 const DashboardPage = () => {
   const router = useAppRouter();
+  const sidebarManager = useSidebar();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
@@ -64,12 +70,13 @@ const DashboardPage = () => {
       <StrictLoadingOutlay
         condition={getUserDataQuerier.isFetching || router.isNavigating}
       />
-      <div className="min-h-screen">
-        <AppSidebar />
-        <div className="w-full h-full flex justify-center items-center">
-          test
+      <AppSidebar />
+      <SidebarInset>
+        {sidebarManager.isMobile && <SidebarTrigger className="fixed m-2" />}
+        <div className="w-full h-full flex justify-center items-center min-h-[calc(100vh-4rem)]">
+          Dashboard
         </div>
-      </div>
+      </SidebarInset>
     </Suspense>
   );
 };

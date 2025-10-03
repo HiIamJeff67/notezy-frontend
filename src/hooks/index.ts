@@ -4,7 +4,7 @@ export * from "./useDebounce";
 export * from "./useLanguage";
 export * from "./useLoading";
 export * from "./useLocalStorage";
-export * from "./useShelf";
+export * from "./useShelfMaterial";
 export * from "./useTheme";
 export * from "./useThemeStore";
 export * from "./useUserData";

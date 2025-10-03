@@ -66,6 +66,7 @@ export class SubShelfManipulator {
         isExpanded: false,
         children: {},
         materialNodes: {},
+        isOpen: false,
       };
 
       if (subShelfNode) {
@@ -97,6 +98,7 @@ export class SubShelfManipulator {
         parseMediaType: material.parseMediaType,
         updatedAt: material.updatedAt,
         createdAt: material.createdAt,
+        isOpen: false,
       };
       subShelfNode.materialNodes[material.id as UUID] = newMaterialNode;
     }

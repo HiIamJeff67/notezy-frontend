@@ -3,9 +3,11 @@
 import { ShelfMaterialContext } from "@/providers";
 import { useContext } from "react";
 
-export const useShelf = () => {
+export const useShelfMaterial = () => {
   const ctx = useContext(ShelfMaterialContext);
   if (!ctx)
-    throw new Error("useShelf must be used within ShelfMaterialProvider");
+    throw new Error(
+      "useShelfMaterial must be used within ShelfMaterialProvider"
+    );
   return ctx;
 };

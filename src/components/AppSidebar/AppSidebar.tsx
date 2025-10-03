@@ -1,6 +1,5 @@
 import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import AvatarIcon from "@/components/icons/AvatarIcon";
-import ShelfIcon from "@/components/icons/ShelfIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import RootShelfMenu from "@/components/RootShelfMenu/RootShelfMenu";
 import CreateRootShelfDialog from "@/components/ShelfDialog/CreateRootShelfDialog";
@@ -36,7 +35,12 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useLoading, useShelf } from "@/hooks";
+import {
+  useAppRouter,
+  useLanguage,
+  useLoading,
+  useShelfMaterial,
+} from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -50,6 +54,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ShelfCaseIcon from "../icons/ShelfCaseIcon";
 
 export function AppSidebar() {
   const router = useAppRouter();
@@ -57,7 +62,7 @@ export function AppSidebar() {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
-  const shelfMaterialManager = useShelf();
+  const shelfMaterialManager = useShelfMaterial();
 
   useEffect(() => {
     const initialSearchRootShelves = async () => {
@@ -124,7 +129,9 @@ export function AppSidebar() {
                   } items-center select-none`}
                 >
                   <CalendarIcon />
-                  {sidebarManager.open && <span>Daily Routine</span>}
+                  {sidebarManager.open && (
+                    <span className="truncate">Daily Routine</span>
+                  )}
                 </Button>
               </SidebarMenuItem>
               <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
@@ -134,7 +141,9 @@ export function AppSidebar() {
                   } items-center select-none`}
                 >
                   <MessageSquareIcon />
-                  {sidebarManager.open && <span>Community</span>}
+                  {sidebarManager.open && (
+                    <span className="truncate">Community</span>
+                  )}
                 </Button>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -152,7 +161,7 @@ export function AppSidebar() {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="rounded-sm" asChild>
                       <Button className="flex flex-row justify-start items-center gap-2 bg-transparent hover:bg-transparent">
-                        <ShelfIcon size={16} />
+                        <ShelfCaseIcon size={16} />
                         <span>Shelves</span>
                       </Button>
                     </SidebarMenuButton>

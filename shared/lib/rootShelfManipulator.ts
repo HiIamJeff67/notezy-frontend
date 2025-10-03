@@ -47,7 +47,7 @@ export class RootShelfManipulator {
 
   /* ============================== Estimate Functions ============================== */
 
-  private static estimateSubShelfNode(subShelfNode: SubShelfNode): number {
+  public static estimateSubShelfNode(subShelfNode: SubShelfNode): number {
     const nameBytes = (subShelfNode.name?.length ?? 0) * 2;
     const pathCount = subShelfNode.path?.length ?? 0;
     const childrenCount = Object.keys(subShelfNode.children).length;
@@ -73,7 +73,7 @@ export class RootShelfManipulator {
     return size;
   }
 
-  private static estimateMaterialNode(materialNode: MaterialNode): number {
+  public static estimateMaterialNode(materialNode: MaterialNode): number {
     return (
       BytesOfObjectHeader + // 物件本身
       2 * BytesOfUUIDString + // id + parentSubShelfId
@@ -112,11 +112,12 @@ export class RootShelfManipulator {
         prevSubShelfId: null,
         name: subShelf.name,
         path: [],
-        isExpanded: false,
         updatedAt: subShelf.updatedAt,
         createdAt: subShelf.createdAt,
+        isExpanded: false,
         children: {},
         materialNodes: {},
+        isOpen: false,
       };
       newRootShelfNode.children[subShelf.id as UUID] = newSubShelfNode;
       prevSubShelfNodes[newSubShelfNode.id] =
@@ -155,11 +156,12 @@ export class RootShelfManipulator {
           prevSubShelfId: responseOfSubShelves.data[i].prevSubShelfId as UUID,
           name: responseOfSubShelves.data[i].name,
           path: responseOfSubShelves.data[i].path as UUID[],
-          isExpanded: false,
           updatedAt: responseOfSubShelves.data[i].updatedAt,
           createdAt: responseOfSubShelves.data[i].createdAt,
+          isExpanded: false,
           children: {},
           materialNodes: {},
+          isOpen: false,
         };
 
         if (
@@ -482,7 +484,6 @@ export class RootShelfManipulator {
       analysisStatus: AnalysisStatus.Explored,
       maxWidth: maxWidth,
       maxDepth: maxDepth,
-      uniqueMaterialIds: Array.from(uniqueMaterialIdsSet),
     };
   }
 }

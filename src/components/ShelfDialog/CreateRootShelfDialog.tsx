@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useLanguage, useLoading, useShelf } from "@/hooks";
+import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { Suspense, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -24,7 +24,7 @@ const CreateRootShelfDialog = ({
 }: CreateRootShelfDialogProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelf();
+  const shelfMaterialManager = useShelfMaterial();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
 

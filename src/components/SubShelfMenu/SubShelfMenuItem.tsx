@@ -1,4 +1,4 @@
-import MapPlaceholder from "@/components/MapPlaceholder/MapPlaceholder";
+import CheckIcon from "@/components/icons/CheckIcon";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
 import {
   Collapsible,
@@ -18,7 +18,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelf } from "@/hooks";
+import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
 import {
   RootShelfNode,
@@ -27,10 +27,12 @@ import {
 } from "@shared/lib/shelfMaterialNodes";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { DNDType } from "@shared/types/enums/dndType.enum";
-import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
+import ChevronDownIcon from "../icons/ChevronDownIcon";
+import ChevronRightIcon from "../icons/ChevronRightIcon";
+import MaterialMenu from "../MaterialMenu/MaterialMenu";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -49,7 +51,7 @@ const SubShelfMenuItem = ({
 }: SubShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelf();
+  const shelfMaterialManager = useShelfMaterial();
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DNDType.DraggableSubShelf.toString(),
@@ -62,7 +64,7 @@ const SubShelfMenuItem = ({
     }),
   }));
 
-  const [{ isOver }, drop] = useDrop(() => ({
+  const [{}, drop] = useDrop(() => ({
     accept: DNDType.DraggableSubShelf.toString(),
     drop: async (draggedItem: {
       summary: ShelfTreeSummary;
@@ -98,7 +100,7 @@ const SubShelfMenuItem = ({
     </SidebarMenuSubItem>;
   }
 
-  const handleRenameRootShelfOnSubmit = useCallback(async (): Promise<void> => {
+  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
     loadingManager.setIsLoading(true);
 
     try {
@@ -130,9 +132,11 @@ const SubShelfMenuItem = ({
                   if (!current.isExpanded) {
                     await shelfMaterialManager.expandSubShelf(root, current);
                   }
+                  shelfMaterialManager.toggleSubShelf(current);
                 }}
               >
-                {current.name}
+                {current.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                <span>{current.name}</span>
               </SidebarMenuButton>
             </CollapsibleTrigger>
           </ContextMenuTrigger>
@@ -190,9 +194,6 @@ const SubShelfMenuItem = ({
                 {/* this part can be executed before the current sub shelf being expanded */}
                 {Object.entries(current.children).map(
                   ([subShelfId, subShelfNode]) => {
-                    if (subShelfNode === undefined)
-                      return <MapPlaceholder key={subShelfId} />;
-
                     return (
                       <Suspense
                         fallback={<SubShelfMenuItemSkeleton />}
@@ -218,7 +219,7 @@ const SubShelfMenuItem = ({
                               onKeyDown={async e => {
                                 switch (e.key) {
                                   case "Enter":
-                                    await handleRenameRootShelfOnSubmit();
+                                    await handleRenameSubShelfOnSubmit();
                                   case "Escape":
                                     shelfMaterialManager.cancelRenamingSubShelfNode();
                                 }
@@ -229,7 +230,7 @@ const SubShelfMenuItem = ({
                             {shelfMaterialManager.isNewSubShelfNodeName() && (
                               <button
                                 onClick={async e => {
-                                  await handleRenameRootShelfOnSubmit();
+                                  await handleRenameSubShelfOnSubmit();
                                   e.stopPropagation();
                                 }}
                                 className="rounded hover:bg-primary/60 absolute w-4 h-4"
@@ -255,23 +256,7 @@ const SubShelfMenuItem = ({
                 )}
               </Suspense>
             )}
-            {Object.keys(current.materialNodes).length > 0 && (
-              <Suspense fallback={<SubShelfMenuItemSkeleton />}>
-                {Object.entries(current.materialNodes).map(
-                  ([materialId, materialNode], index) =>
-                    materialNode && (
-                      <SidebarMenuItem key={index} id={materialId}>
-                        <SidebarMenuButton
-                          className="rounded-sm"
-                          onClick={() => {}}
-                        >
-                          {materialNode.name}
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    )
-                )}
-              </Suspense>
-            )}
+            <MaterialMenu summary={summary} parent={current} />
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>

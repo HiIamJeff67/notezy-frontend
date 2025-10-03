@@ -7,6 +7,7 @@ import {
 import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import {
   useCreateTextbookMaterial,
+  useDeleteMyMaterialById,
   useGetAllMyMaterialsByParentSubShelfId,
   useUpdateMyTextbookMaterialById,
 } from "@shared/api/hooks/material.hook";
@@ -54,6 +55,7 @@ import {
   useRef,
   useState,
 } from "react";
+import toast from "react-hot-toast";
 
 interface ShelfMaterialContextType {
   // general
@@ -68,6 +70,7 @@ interface ShelfMaterialContextType {
   loadMoreRootShelves: () => Promise<void>;
   isFetching: boolean;
   expandRootShelf: (rootShelf: PrivateRootShelf) => Promise<ShelfTreeSummary>;
+  toggleRootShelf: (rootShelfNode: RootShelfNode) => void;
   createRootShelf: (name: string) => Promise<void>;
   editRootShelfNodeName: string;
   setEditRootShelfNodeName: (editRootShelfNodeName: string) => void;
@@ -84,6 +87,7 @@ interface ShelfMaterialContextType {
     rootShelfNode: RootShelfNode,
     subShelfNode: SubShelfNode
   ) => Promise<void>;
+  toggleSubShelf: (subShelfNode: SubShelfNode) => void;
   createSubShelf: (
     rootShelfId: UUID,
     prevSubShelfNode: SubShelfNode | null,
@@ -109,6 +113,7 @@ interface ShelfMaterialContextType {
   ) => Promise<void>;
 
   // for material
+  toggleMaterial: (materialNode: MaterialNode) => void;
   createTextbookMaterial: (
     rootShelfId: UUID,
     parentSubShelfNode: SubShelfNode,
@@ -122,6 +127,10 @@ interface ShelfMaterialContextType {
   startRenamingMaterialNode: (materialNode: MaterialNode) => void;
   cancelRenamingMaterialNode: () => void;
   renameEditingMaterial: () => Promise<void>;
+  deleteMaterial: (
+    parentSubShelfNode: SubShelfNode,
+    materialNode: MaterialNode
+  ) => Promise<void>;
 }
 
 export const ShelfMaterialContext = createContext<
@@ -135,19 +144,22 @@ export const ShelfMaterialProvider = ({
 }) => {
   const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
+  const createRootShelfMutator = useCreateRootShelf();
+  const updateRootShelfMutator = useUpdateMyRootShelfById();
+  const deleteRootShelfMutator = useDeleteMyRootShelfById();
+
   const getAllMyMaterialsBySubShelfQuerier =
     useGetAllMyMaterialsByParentSubShelfId();
-  const createRootShelfMutator = useCreateRootShelf();
   const createSubShelfMutator = useCreateSubShelfByRootShelfId();
-  const createTextbookMaterialMutator = useCreateTextbookMaterial();
-  const updateRootShelfMutator = useUpdateMyRootShelfById();
   const updateSubShelfMutator = useUpdateMySubShelfById();
-  const updateTextbookMaterialMutator = useUpdateMyTextbookMaterialById();
-  const deleteRootShelfMutator = useDeleteMyRootShelfById();
   const deleteSubShelfMutator = useDeleteMySubShelfById();
   const moveSubShelfMutator = useMoveMySubShelf();
   // const restoreRootShelfMutator = useRestoreMyRootShelfById();
   // const restoreSubShelfMutator = useRestoreMySubShelfById();
+
+  const createTextbookMaterialMutator = useCreateTextbookMaterial();
+  const updateTextbookMaterialMutator = useUpdateMyTextbookMaterialById();
+  const deleteMaterialMutator = useDeleteMyMaterialById();
 
   const [_, setUpdateTrigger] = useState(0);
   const [searchInput, setSearchInput] = useState<{
@@ -266,10 +278,11 @@ export const ShelfMaterialProvider = ({
     setOriginalSubShelfName,
   ]);
 
-  const forceUpdate = useCallback(() => {
+  const forceUpdate = () => {
     setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
-  }, []);
+  };
 
+  /* ============================== Methods for Root Shelf ============================== */
   const [executeSearch, { data, loading, error, fetchMore }] =
     useSearchRootShelvesLazyQuery();
 
@@ -288,18 +301,18 @@ export const ShelfMaterialProvider = ({
               name: edge.node.name,
               totalShelfNodes: edge.node.totalShelfNodes,
               totalMaterials: edge.node.totalMaterials,
-              isExpanded: false,
               lastAnalyzedAt: edge.node.lastAnalyzedAt,
               updatedAt: edge.node.updatedAt,
               createdAt: edge.node.createdAt,
+              isExpanded: false,
               children: {},
+              isOpen: false,
             },
             estimatedByteSize: 0, // may use some field to store the size of rootShelf,
             hasChanged: false,
             analysisStatus: AnalysisStatus.Unexplored,
             maxWidth: 0,
             maxDepth: 0,
-            uniqueMaterialIds: [],
           };
           expandedShelvesRef.current.set(edge.node.id, shelfTreeSummary);
         }
@@ -378,46 +391,8 @@ export const ShelfMaterialProvider = ({
     return shelfTreeSummary;
   };
 
-  const expandSubShelf = async (
-    rootShelfNode: RootShelfNode,
-    subShelfNode: SubShelfNode
-  ): Promise<void> => {
-    // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
-    if (!subShelfNode.isExpanded) {
-      const userAgent = navigator.userAgent;
-      const responseOfGetAllMaterials =
-        (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
-          header: {
-            userAgent: userAgent,
-          },
-          param: {
-            parentSubShelfId: subShelfNode.id,
-          },
-        })) as GetAllMyMaterialsByParentSubShelfIdResponse;
-
-      SubShelfManipulator.initializeMaterialNodesByResponse(
-        subShelfNode,
-        responseOfGetAllMaterials
-      );
-
-      const responseOfGetAllSubShelves =
-        (await getMySubShelvesBySubShelfQuerier.queryAsync({
-          header: {
-            userAgent: userAgent,
-          },
-          param: {
-            prevSubShelfId: subShelfNode.id,
-          },
-        })) as GetMySubShelvesByPrevSubShelfIdResponse;
-
-      SubShelfManipulator.initializeSubShelfNodesByResponse(
-        rootShelfNode,
-        subShelfNode,
-        responseOfGetAllSubShelves
-      );
-      subShelfNode.isExpanded = true;
-    }
-
+  const toggleRootShelf = (rootShelfNode: RootShelfNode) => {
+    rootShelfNode.isOpen = !rootShelfNode.isOpen;
     forceUpdate();
   };
 
@@ -438,16 +413,187 @@ export const ShelfMaterialProvider = ({
         name: name,
         totalShelfNodes: 0,
         totalMaterials: 0,
-        isExpanded: true,
         lastAnalyzedAt: responseOfCreateRootShelf.data.lastAnalyzedAt,
         updatedAt: responseOfCreateRootShelf.data.createdAt,
         createdAt: responseOfCreateRootShelf.data.createdAt,
+        isExpanded: true,
         children: {},
+        isOpen: false,
       });
     expandedShelvesRef.current.set(
       responseOfCreateRootShelf.data.id as UUID,
       shelfTreeSummary
     );
+    forceUpdate();
+  };
+
+  const isNewRootShelfNodeName = useCallback(() => {
+    return (
+      editRootShelfNodeName !== originalRootShelfName &&
+      editRootShelfNodeName.trim() !== ""
+    );
+  }, [editRootShelfNodeName, originalRootShelfName]);
+
+  const isRootShelfNodeEditing = useCallback(
+    (rootShelfNode: RootShelfNode) => {
+      return rootShelfNode === editingRootShelfNode;
+    },
+    [editingRootShelfNode]
+  );
+
+  const startRenamingRootShelfNode = useCallback(
+    (rootShelfNode: RootShelfNode) => {
+      setEditingRootShelfNode(rootShelfNode);
+      setOriginalRootShelfName(rootShelfNode.name);
+      setEditRootShelfNodeName(rootShelfNode.name);
+    },
+    [
+      setEditingRootShelfNode,
+      setOriginalRootShelfName,
+      setEditRootShelfNodeName,
+    ]
+  );
+
+  const cancelRenamingRootShelfNode = useCallback(() => {
+    setEditingRootShelfNode(undefined);
+    setOriginalRootShelfName("");
+    setEditRootShelfNodeName("");
+  }, [
+    setEditingRootShelfNode,
+    setOriginalRootShelfName,
+    setEditRootShelfNodeName,
+  ]);
+
+  const renameEditingRootShelf = useCallback(async (): Promise<void> => {
+    try {
+      if (!isNewRootShelfNodeName() || !editingRootShelfNode) {
+        toast.error("the name of the given root shelf node is invalid");
+        return;
+      }
+
+      const shelfTreeSummary = expandedShelvesRef.current.get(
+        editingRootShelfNode.id
+      );
+      if (shelfTreeSummary === undefined) {
+        throw new Error(
+          `parentShelfNode not found in one of the children of editingRootShelfNode`
+        );
+      }
+
+      const userAgent = navigator.userAgent;
+      await updateRootShelfMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          rootShelfId: editingRootShelfNode.id,
+          values: {
+            name: editRootShelfNodeName,
+          },
+        },
+      });
+
+      shelfTreeSummary.root.name = editRootShelfNodeName;
+      editingRootShelfNode.name = editRootShelfNodeName;
+      setEditingRootShelfNode(prev =>
+        prev ? { ...prev, name: editRootShelfNodeName } : undefined
+      );
+      forceUpdate();
+    } catch (error) {
+      throw error;
+    } finally {
+      setEditingRootShelfNode(undefined);
+      setEditRootShelfNodeName("");
+      setOriginalRootShelfName("");
+    }
+  }, [
+    editingRootShelfNode,
+    editRootShelfNodeName,
+    originalRootShelfName,
+    setEditingRootShelfNode,
+    setEditRootShelfNodeName,
+    setOriginalRootShelfName,
+    expandedShelvesRef,
+    updateRootShelfMutator,
+  ]);
+
+  const deleteRootShelf = useCallback(
+    async (rootShelfNode: RootShelfNode): Promise<void> => {
+      const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfNode.id);
+      if (shelfTreeSummary === undefined) {
+        throw new Error(`rootShelfNode not found in expandedShelves`);
+      }
+
+      const { childSubShelfNodes, materialNodes } =
+        RootShelfManipulator.getAllChildSubShelfNodesAndMaterialNodes(
+          rootShelfNode
+        );
+      const subShelfIds = childSubShelfNodes.map(val => val.id);
+      const materialIds = materialNodes.map(val => val.id);
+
+      const userAgent = navigator.userAgent;
+      await deleteRootShelfMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          rootShelfId: rootShelfNode.id,
+        },
+        affected: {
+          subShelfIds: subShelfIds,
+          materialIds: materialIds,
+        },
+      });
+      expandedShelvesRef.current.delete(rootShelfNode.id);
+      forceUpdate();
+    },
+    [expandedShelvesRef, deleteRootShelfMutator, RootShelfManipulator]
+  );
+
+  /* ============================== Methods for Sub Shelf ============================== */
+
+  const expandSubShelf = async (
+    rootShelfNode: RootShelfNode,
+    subShelfNode: SubShelfNode
+  ): Promise<void> => {
+    // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
+    const userAgent = navigator.userAgent;
+    const responseOfGetAllMaterials =
+      (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        param: {
+          parentSubShelfId: subShelfNode.id,
+        },
+      })) as GetAllMyMaterialsByParentSubShelfIdResponse;
+
+    SubShelfManipulator.initializeMaterialNodesByResponse(
+      subShelfNode,
+      responseOfGetAllMaterials
+    );
+
+    const responseOfGetAllSubShelves =
+      (await getMySubShelvesBySubShelfQuerier.queryAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        param: {
+          prevSubShelfId: subShelfNode.id,
+        },
+      })) as GetMySubShelvesByPrevSubShelfIdResponse;
+
+    SubShelfManipulator.initializeSubShelfNodesByResponse(
+      rootShelfNode,
+      subShelfNode,
+      responseOfGetAllSubShelves
+    );
+    subShelfNode.isExpanded = true;
+    forceUpdate();
+  };
+
+  const toggleSubShelf = (subShelfNode: SubShelfNode) => {
+    subShelfNode.isOpen = !subShelfNode.isOpen;
     forceUpdate();
   };
 
@@ -500,11 +646,12 @@ export const ShelfMaterialProvider = ({
         prevSubShelfId: prevSubShelfNode.id as UUID,
         name: name,
         path: newPath,
-        isExpanded: true,
         updatedAt: responseOfCreateSubShelf.data.createdAt,
         createdAt: responseOfCreateSubShelf.data.createdAt,
+        isExpanded: true,
         children: {},
         materialNodes: {},
+        isOpen: false,
       };
     } else {
       shelfTreeSummary.maxDepth = Math.max(shelfTreeSummary.maxDepth, 1);
@@ -516,166 +663,16 @@ export const ShelfMaterialProvider = ({
           prevSubShelfId: null,
           name: name,
           path: [],
-          isExpanded: true,
           updatedAt: responseOfCreateSubShelf.data.createdAt,
           createdAt: responseOfCreateSubShelf.data.createdAt,
+          isExpanded: true,
           children: {},
           materialNodes: {},
+          isOpen: false,
         };
     }
     forceUpdate();
   };
-
-  const createTextbookMaterial = async (
-    rootShelfId: UUID,
-    parentSubShelfNode: SubShelfNode,
-    name: string
-  ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
-    if (shelfTreeSummary === undefined) {
-      throw new Error(
-        `The given rootShelfId is not exist in the expandedShelvesRef`
-      );
-    }
-
-    const userAgent = navigator.userAgent;
-    const responseOfCreateMaterial =
-      await createTextbookMaterialMutator.mutateAsync({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          parentSubShelfId: parentSubShelfNode.id,
-          name: name,
-        },
-        affected: {
-          rootShelfId: rootShelfId,
-          parentSubShelfId: parentSubShelfNode.id,
-        },
-      });
-    shelfTreeSummary.hasChanged = true;
-    shelfTreeSummary.uniqueMaterialIds.push(
-      responseOfCreateMaterial.data.id as UUID
-    );
-    shelfTreeSummary.root.totalMaterials++;
-    if (parentSubShelfNode !== null) {
-      shelfTreeSummary.maxDepth = Math.max(
-        shelfTreeSummary.maxDepth,
-        parentSubShelfNode.path.length + 1
-      );
-      shelfTreeSummary.maxWidth = Math.max(
-        shelfTreeSummary.maxWidth,
-        Object.entries(parentSubShelfNode.children).length +
-          Object.entries(parentSubShelfNode.materialNodes).length +
-          1
-      );
-      parentSubShelfNode.materialNodes[
-        responseOfCreateMaterial.data.id as UUID
-      ] = {
-        id: responseOfCreateMaterial.data.id as UUID,
-        parentSubShelfId: parentSubShelfNode.id,
-        name: name,
-        type: MaterialType.Textbook,
-        downloadURL: responseOfCreateMaterial.data.downloadURL,
-        contentType: MaterialContentType.PlainText,
-        parseMediaType: "utf-8",
-        updatedAt: responseOfCreateMaterial.data.createdAt,
-        createdAt: responseOfCreateMaterial.data.createdAt,
-      };
-      forceUpdate();
-    }
-  };
-
-  /* =============== Rename Methods =============== */
-
-  const isNewRootShelfNodeName = useCallback(() => {
-    return (
-      editRootShelfNodeName !== originalRootShelfName &&
-      editRootShelfNodeName.trim() !== ""
-    );
-  }, [editRootShelfNodeName, originalRootShelfName]);
-
-  const isRootShelfNodeEditing = useCallback(
-    (rootShelfNode: RootShelfNode) => {
-      return rootShelfNode === editingRootShelfNode;
-    },
-    [editingRootShelfNode]
-  );
-
-  const startRenamingRootShelfNode = useCallback(
-    (rootShelfNode: RootShelfNode) => {
-      setEditingRootShelfNode(rootShelfNode);
-      setOriginalRootShelfName(rootShelfNode.name);
-      setEditRootShelfNodeName(rootShelfNode.name);
-    },
-    [
-      setEditingRootShelfNode,
-      setOriginalRootShelfName,
-      setEditRootShelfNodeName,
-    ]
-  );
-
-  const cancelRenamingRootShelfNode = useCallback(() => {
-    setEditingRootShelfNode(undefined);
-    setOriginalRootShelfName("");
-    setEditRootShelfNodeName("");
-  }, [
-    setEditingRootShelfNode,
-    setOriginalRootShelfName,
-    setEditRootShelfNodeName,
-  ]);
-
-  const renameEditingRootShelf = useCallback(async (): Promise<void> => {
-    try {
-      if (!isNewRootShelfNodeName() || !editingRootShelfNode) {
-        throw new Error("the name of the given root shelf node is invalid");
-      }
-
-      const shelfTreeSummary = expandedShelvesRef.current.get(
-        editingRootShelfNode.id
-      );
-      if (shelfTreeSummary === undefined) {
-        throw new Error(
-          `parentShelfNode not found in one of the children of editingRootShelfNode`
-        );
-      }
-
-      const userAgent = navigator.userAgent;
-      await updateRootShelfMutator.mutateAsync({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          rootShelfId: editingRootShelfNode.id,
-          values: {
-            name: editRootShelfNodeName,
-          },
-        },
-      });
-
-      shelfTreeSummary.root.name = editRootShelfNodeName;
-      editingRootShelfNode.name = editRootShelfNodeName;
-      setEditingRootShelfNode(prev =>
-        prev ? { ...prev, name: editRootShelfNodeName } : undefined
-      );
-      forceUpdate();
-    } catch (error) {
-      throw error;
-    } finally {
-      setEditingRootShelfNode(undefined);
-      setEditRootShelfNodeName("");
-      setOriginalRootShelfName("");
-    }
-  }, [
-    editingRootShelfNode,
-    editRootShelfNodeName,
-    originalRootShelfName,
-    setEditingRootShelfNode,
-    setEditRootShelfNodeName,
-    setOriginalRootShelfName,
-    expandedShelvesRef,
-    updateRootShelfMutator,
-  ]);
 
   const isNewSubShelfNodeName = useCallback((): boolean => {
     return (
@@ -713,7 +710,8 @@ export const ShelfMaterialProvider = ({
   const renameEditingSubShelf = useCallback(async (): Promise<void> => {
     try {
       if (!isNewSubShelfNodeName() || !editingSubShelfNode) {
-        throw new Error("the name of the given sub shelf node is invalid");
+        toast.error("the name of the given sub shelf node is invalid");
+        return;
       }
 
       const userAgent = navigator.userAgent;
@@ -755,6 +753,189 @@ export const ShelfMaterialProvider = ({
     setOriginalSubShelfName,
     updateSubShelfMutator,
   ]);
+
+  const deleteSubShelf = useCallback(
+    async (
+      prevSubShelfNode: SubShelfNode | null,
+      subShelfNode: SubShelfNode
+    ): Promise<void> => {
+      const shelfTreeSummary = expandedShelvesRef.current.get(
+        subShelfNode.rootShelfId
+      );
+      if (shelfTreeSummary === undefined) {
+        throw new Error(
+          `subShelfNode not found in one of the children of rootShelfNode`
+        );
+      }
+
+      const userAgent = navigator.userAgent;
+      await deleteSubShelfMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          subShelfId: subShelfNode.id,
+        },
+        affected: {
+          rootShelfId: subShelfNode.rootShelfId,
+          prevSubShelfId: subShelfNode.prevSubShelfId,
+        },
+      });
+
+      if (prevSubShelfNode === null) {
+        delete shelfTreeSummary.root.children[subShelfNode.id];
+      } else {
+        delete prevSubShelfNode.children[subShelfNode.id];
+      }
+      shelfTreeSummary.hasChanged = true;
+      forceUpdate();
+    },
+    [expandedShelvesRef, deleteSubShelfMutator]
+  );
+
+  const moveSubShelf = async (
+    prevSubShelfNode: SubShelfNode | null,
+    sourceSubShelfNode: SubShelfNode,
+    destinationRootShelfNode: RootShelfNode,
+    destinationSubShelfNode: SubShelfNode | null
+  ): Promise<void> => {
+    const sourceSummary = expandedShelvesRef.current.get(
+      sourceSubShelfNode.rootShelfId
+    );
+    if (sourceSummary === undefined) {
+      throw new Error(
+        `the sourceSubShelfNode does not belong to any valid root shelf node`
+      );
+    }
+    const destinationSummary = expandedShelvesRef.current.get(
+      destinationRootShelfNode.id
+    );
+    if (destinationSummary === undefined) {
+      throw new Error(
+        `the destinationSubShelfNode does not belong to any valid root shelf node or destinationRootShelfNode does not exist`
+      );
+    }
+
+    if (
+      destinationSubShelfNode !== null &&
+      destinationSummary.root.id !== destinationSubShelfNode.rootShelfId
+    ) {
+      throw new Error(
+        `the destinationSummary does not contain destinationSubShelfNode`
+      );
+    }
+    if (
+      sourceSubShelfNode !== null &&
+      sourceSummary.root.id !== sourceSubShelfNode.rootShelfId
+    ) {
+      throw new Error(`the sourceSummary does not contain sourceSubShelfNode`);
+    }
+
+    const { childSubShelfNodes } =
+      SubShelfManipulator.getAllChildSubShelfNodesAndMaterialNodes(
+        sourceSubShelfNode
+      );
+    const childSubShelfIds = childSubShelfNodes.map(val => val.id);
+
+    const userAgent = navigator.userAgent;
+    await moveSubShelfMutator.mutateAsync({
+      header: {
+        userAgent: userAgent,
+      },
+      body: {
+        sourceRootShelfId: sourceSubShelfNode.rootShelfId,
+        sourceSubShelfId: sourceSubShelfNode.id,
+        destinationRootShelfId: destinationRootShelfNode.id,
+        destinationSubShelfId: destinationSubShelfNode?.id ?? null,
+      },
+      affected: {
+        rootShelfId: sourceSubShelfNode.rootShelfId,
+        childSubShelfIds: childSubShelfIds,
+      },
+    });
+
+    const deletedSubShelfNode = sourceSubShelfNode;
+    SubShelfManipulator.deleteSubShelfNode(
+      sourceSummary,
+      prevSubShelfNode,
+      sourceSubShelfNode
+    );
+    SubShelfManipulator.insertSubShelfNode(
+      destinationSummary,
+      destinationSubShelfNode,
+      deletedSubShelfNode
+    );
+    if (sourceSubShelfNode.rootShelfId !== destinationRootShelfNode.id) {
+      deletedSubShelfNode.rootShelfId = destinationRootShelfNode.id;
+    }
+    deletedSubShelfNode.prevSubShelfId = destinationSubShelfNode?.id ?? null;
+    forceUpdate();
+  };
+
+  /* ============================== Methods for Material ============================== */
+
+  const toggleMaterial = (materialNode: MaterialNode) => {
+    materialNode.isOpen = !materialNode.isOpen;
+    forceUpdate();
+  };
+
+  const createTextbookMaterial = async (
+    rootShelfId: UUID,
+    parentSubShelfNode: SubShelfNode,
+    name: string
+  ): Promise<void> => {
+    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
+    if (shelfTreeSummary === undefined) {
+      throw new Error(
+        `The given rootShelfId is not exist in the expandedShelvesRef`
+      );
+    }
+
+    const userAgent = navigator.userAgent;
+    const responseOfCreateMaterial =
+      await createTextbookMaterialMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          parentSubShelfId: parentSubShelfNode.id,
+          name: name,
+        },
+        affected: {
+          rootShelfId: rootShelfId,
+          parentSubShelfId: parentSubShelfNode.id,
+        },
+      });
+    shelfTreeSummary.hasChanged = true;
+    shelfTreeSummary.root.totalMaterials++;
+    if (parentSubShelfNode !== null) {
+      shelfTreeSummary.maxDepth = Math.max(
+        shelfTreeSummary.maxDepth,
+        parentSubShelfNode.path.length + 1
+      );
+      shelfTreeSummary.maxWidth = Math.max(
+        shelfTreeSummary.maxWidth,
+        Object.entries(parentSubShelfNode.children).length +
+          Object.entries(parentSubShelfNode.materialNodes).length +
+          1
+      );
+      parentSubShelfNode.materialNodes[
+        responseOfCreateMaterial.data.id as UUID
+      ] = {
+        id: responseOfCreateMaterial.data.id as UUID,
+        parentSubShelfId: parentSubShelfNode.id,
+        name: name,
+        type: MaterialType.Textbook,
+        downloadURL: responseOfCreateMaterial.data.downloadURL,
+        contentType: MaterialContentType.PlainText,
+        parseMediaType: "utf-8",
+        updatedAt: responseOfCreateMaterial.data.createdAt,
+        createdAt: responseOfCreateMaterial.data.createdAt,
+        isOpen: false,
+      };
+      forceUpdate();
+    }
+  };
 
   const isNewMaterialNodeName = useCallback((): boolean => {
     return (
@@ -837,153 +1018,50 @@ export const ShelfMaterialProvider = ({
     updateTextbookMaterialMutator,
   ]);
 
-  const deleteRootShelf = async (
-    rootShelfNode: RootShelfNode
-  ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfNode.id);
-    if (shelfTreeSummary === undefined) {
-      throw new Error(`rootShelfNode not found in expandedShelves`);
-    }
-
-    const { childSubShelfNodes, materialNodes } =
-      RootShelfManipulator.getAllChildSubShelfNodesAndMaterialNodes(
-        rootShelfNode
+  const deleteMaterial = useCallback(
+    async (
+      parentSubShelfNode: SubShelfNode,
+      materialNode: MaterialNode
+    ): Promise<void> => {
+      const shelfTreeSummary = expandedShelvesRef.current.get(
+        parentSubShelfNode.rootShelfId as UUID
       );
-    const subShelfIds = childSubShelfNodes.map(val => val.id);
-    const materialIds = materialNodes.map(val => val.id);
+      if (shelfTreeSummary === undefined) {
+        throw new Error(
+          `parentSubShelfNode not found in one of the children of rootShelfNode`
+        );
+      }
 
-    const userAgent = navigator.userAgent;
-    await deleteRootShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        rootShelfId: rootShelfNode.id,
-      },
-      affected: {
-        subShelfIds: subShelfIds,
-        materialIds: materialIds,
-      },
-    });
-    expandedShelvesRef.current.delete(rootShelfNode.id);
-    forceUpdate();
-  };
+      const userAgent = navigator.userAgent;
+      await deleteMaterialMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          materialId: materialNode.id,
+        },
+        affected: {
+          rootShelfId: parentSubShelfNode.rootShelfId,
+          parentSubShelfId: parentSubShelfNode.id,
+        },
+      });
 
-  const deleteSubShelf = async (
-    prevSubShelfNode: SubShelfNode | null,
-    subShelfNode: SubShelfNode
-  ): Promise<void> => {
-    const shelfTreeSummary = expandedShelvesRef.current.get(
-      subShelfNode.rootShelfId
-    );
-    if (shelfTreeSummary === undefined) {
-      throw new Error(
-        `subShelfNode not found in one of the children of rootShelfNode`
+      delete parentSubShelfNode.materialNodes[materialNode.id];
+      shelfTreeSummary.hasChanged = true;
+      shelfTreeSummary.estimatedByteSize = Math.max(
+        0,
+        RootShelfManipulator.estimateMaterialNode(materialNode)
       );
-    }
-
-    const userAgent = navigator.userAgent;
-    await deleteSubShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        subShelfId: subShelfNode.id,
-      },
-      affected: {
-        rootShelfId: subShelfNode.rootShelfId,
-        prevSubShelfId: subShelfNode.prevSubShelfId,
-      },
-    });
-
-    if (prevSubShelfNode === null) {
-      delete shelfTreeSummary.root.children[subShelfNode.id];
-    } else {
-      delete prevSubShelfNode.children[subShelfNode.id];
-    }
-    forceUpdate();
-  };
-
-  const moveSubShelf = async (
-    prevSubShelfNode: SubShelfNode | null,
-    sourceSubShelfNode: SubShelfNode,
-    destinationRootShelfNode: RootShelfNode,
-    destinationSubShelfNode: SubShelfNode | null
-  ): Promise<void> => {
-    const sourceSummary = expandedShelvesRef.current.get(
-      sourceSubShelfNode.rootShelfId
-    );
-    if (sourceSummary === undefined) {
-      throw new Error(
-        `the sourceSubShelfNode does not belong to any valid root shelf node`
-      );
-    }
-    const destinationSummary = expandedShelvesRef.current.get(
-      destinationRootShelfNode.id
-    );
-    if (destinationSummary === undefined) {
-      throw new Error(
-        `the destinationSubShelfNode does not belong to any valid root shelf node or destinationRootShelfNode does not exist`
-      );
-    }
-
-    if (
-      destinationSubShelfNode !== null &&
-      destinationSummary.root.id !== destinationSubShelfNode.rootShelfId
-    ) {
-      throw new Error(
-        `the destinationSummary does not contain destinationSubShelfNode`
-      );
-    }
-    if (
-      sourceSubShelfNode !== null &&
-      sourceSummary.root.id !== sourceSubShelfNode.rootShelfId
-    ) {
-      throw new Error(`the sourceSummary does not contain sourceSubShelfNode`);
-    }
-
-    const { childSubShelfNodes } =
-      SubShelfManipulator.getAllChildSubShelfNodesAndMaterialNodes(
-        sourceSubShelfNode
-      );
-    const childSubShelfIds = childSubShelfNodes.map(val => val.id);
-
-    const userAgent = navigator.userAgent;
-    await moveSubShelfMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-      },
-      body: {
-        sourceRootShelfId: sourceSubShelfNode.rootShelfId,
-        sourceSubShelfId: sourceSubShelfNode.id,
-        destinationRootShelfId: destinationRootShelfNode.id,
-        destinationSubShelfId: destinationSubShelfNode?.id ?? null,
-      },
-      affected: {
-        rootShelfId: sourceSubShelfNode.rootShelfId,
-        childSubShelfIds: childSubShelfIds,
-      },
-    });
-
-    const deletedSubShelfNode = sourceSubShelfNode;
-    SubShelfManipulator.deleteSubShelfNode(
-      sourceSummary,
-      prevSubShelfNode,
-      sourceSubShelfNode
-    );
-    SubShelfManipulator.insertSubShelfNode(
-      destinationSummary,
-      destinationSubShelfNode,
-      deletedSubShelfNode
-    );
-    if (sourceSubShelfNode.rootShelfId !== destinationRootShelfNode.id) {
-      deletedSubShelfNode.rootShelfId = destinationRootShelfNode.id;
-    }
-    deletedSubShelfNode.prevSubShelfId = destinationSubShelfNode?.id ?? null;
-    forceUpdate();
-  };
+      // the maxWidth and maxDepth is unknown in this point
+      shelfTreeSummary.analysisStatus = AnalysisStatus.OnlySubShelves;
+      forceUpdate();
+    },
+    [expandedShelvesRef, deleteMaterialMutator, RootShelfManipulator]
+  );
 
   /* ============================== Methods about Garbage ============================== */
+
+  /* ============================== Context Values ============================== */
 
   const contextValue: ShelfMaterialContextType = {
     // general
@@ -994,6 +1072,7 @@ export const ShelfMaterialProvider = ({
     rootShelfEdges:
       // for root shelf
       (data?.searchRootShelves?.searchEdges as SearchRootShelfEdge[]) || [],
+    toggleRootShelf: toggleRootShelf,
     searchRootShelves: searchRootShelves,
     loadMoreRootShelves: loadMoreRootShelves,
     isFetching: loading,
@@ -1011,6 +1090,7 @@ export const ShelfMaterialProvider = ({
 
     // for sub shelf
     expandSubShelf: expandSubShelf,
+    toggleSubShelf: toggleSubShelf,
     createSubShelf: createSubShelf,
     editSubShelfNodeName: editSubShelfNodeName,
     setEditSubShelfNodeName: setEditSubShelfNodeName,
@@ -1024,6 +1104,7 @@ export const ShelfMaterialProvider = ({
     moveSubShelf: moveSubShelf,
 
     // for material
+    toggleMaterial: toggleMaterial,
     createTextbookMaterial: createTextbookMaterial,
     editMaterialNodeName: editMaterialNodeName,
     setEditMaterialNodeName: setEditMaterialNodeName,
@@ -1033,6 +1114,7 @@ export const ShelfMaterialProvider = ({
     startRenamingMaterialNode: startRenamingMaterialNode,
     cancelRenamingMaterialNode: cancelRenamingMaterialNode,
     renameEditingMaterial: renameEditingMaterial,
+    deleteMaterial: deleteMaterial,
   };
 
   return (

@@ -1,3 +1,5 @@
+import CheckIcon from "@/components/icons/CheckIcon";
+import ModifyDotIcon from "@/components/icons/ModifyDotIcon";
 import RootShelfMenuItemSkeleton from "@/components/RootShelfMenu/RootShelfMenuItemSkeleton";
 import SubShelfMenu from "@/components/SubShelfMenu/SubShelfMenu";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -20,13 +22,14 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
-import { useLanguage, useLoading, useShelf } from "@/hooks";
+import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { ShelfTreeSummary, SubShelfNode } from "@shared/lib/shelfMaterialNodes";
 import { DNDType } from "@shared/types/enums/dndType.enum";
-import { CheckIcon, FolderDotIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
+import EmptyShelfIcon from "../icons/EmptyShelfIcon";
+import ShelfIcon from "../icons/ShelfIcon";
 
 interface RootShelfMenuItemProps {
   rootShelfEdge: SearchRootShelfEdge;
@@ -39,7 +42,7 @@ const RootShelfMenuItem = ({
 }: RootShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelf();
+  const shelfMaterialManager = useShelfMaterial();
 
   const summary = shelfMaterialManager.expandedShelves.get(
     rootShelfEdge.node.id
@@ -137,9 +140,15 @@ const RootShelfMenuItem = ({
                       await shelfMaterialManager.expandRootShelf(
                         rootShelfEdge.node
                       );
+                      shelfMaterialManager.toggleRootShelf(summary.root);
                     }}
                   >
-                    {summary.root.name}
+                    {summary.root.isOpen ? (
+                      <EmptyShelfIcon size={16} />
+                    ) : (
+                      <ShelfIcon size={16} />
+                    )}
+                    <span>{summary.root.name}</span>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
               </ContextMenuTrigger>
@@ -147,7 +156,7 @@ const RootShelfMenuItem = ({
             {!shelfMaterialManager.isNewRootShelfNodeName() &&
               summary.hasChanged && (
                 <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
-                  <FolderDotIcon className="max-w-3.5 max-h-3.5" />
+                  <ModifyDotIcon className="max-w-3.5 max-h-3.5" />
                 </SidebarMenuAction>
               )}
             <ContextMenuContent>
@@ -185,11 +194,7 @@ const RootShelfMenuItem = ({
               {!summary.root.isExpanded ? (
                 <SubShelfMenuItemSkeleton />
               ) : (
-                Object.keys(summary.root.children).length > 0 && (
-                  <Suspense fallback={<SubShelfMenuItemSkeleton />}>
-                    <SubShelfMenu summary={summary} root={summary.root} />
-                  </Suspense>
-                )
+                <SubShelfMenu summary={summary} root={summary.root} />
               )}
             </SidebarMenuSub>
           </CollapsibleContent>
