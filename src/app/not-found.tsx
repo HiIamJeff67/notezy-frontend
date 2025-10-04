@@ -1,4 +1,4 @@
-const NotFound = () => {
+const AppNotFoundPage = () => {
   return (
     <div className="w-full min-h-screen flex justify-center items-center">
       <div className="text-center">404 not found</div>
@@ -6,4 +6,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default AppNotFoundPage;

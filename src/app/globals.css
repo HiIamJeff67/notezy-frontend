@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Path to  */
+@source "../../node_modules/@blocknote/shadcn";
+
 @custom-variant standard (&:is(.standard *));
 @custom-variant dark (&:is(.dark *));
 @custom-variant light (&:is(.light *));
@@ -206,9 +209,7 @@ input[type="number"] {
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    /* since the caret is everywhere in ShadCN component, so we make it transparent */
-    /* once you need a caret in some component such as input box, then you should specified the caret-color */
-    caret-color: transparent;
+    caret-color: var(--foreground);
   }
   body {
     @apply bg-background text-foreground;

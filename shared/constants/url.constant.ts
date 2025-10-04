@@ -1,3 +1,4 @@
+import { UUID } from "crypto";
 import {
   APIDevelopmentVersion,
   APIProductionVersion,
@@ -116,6 +117,10 @@ export const WebURLPathDictionary = {
     forgetPassword: "forgetPassword",
   },
   root: {
+    materialEditor: {
+      byId: (materialId: UUID) => `material-editor/${materialId}`,
+      notFound: "material-editor/not-found",
+    },
     documents: "documents",
     dashboard: "dashboard",
   },

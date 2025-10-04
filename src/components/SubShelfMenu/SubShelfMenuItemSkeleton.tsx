@@ -3,14 +3,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const SubShelfMenuItemSkeleton = ({ number }: { number?: number }) => {
+const SubShelfMenuItemSkeleton = ({ number = 1 }: { number?: number }) => {
   return (
     <SidebarMenu>
-      {Array.from({ length: number ?? 1 }).map((_, index) => (
+      {Array.from({ length: number }).map((_, index) => (
         <SidebarMenuItem key={index}>
           <SidebarMenuButton className="rounded-sm animate-pulse">
-            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+            <Skeleton className="h-4 bg-gray-300 rounded w-3/4"></Skeleton>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}

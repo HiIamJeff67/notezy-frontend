@@ -1,17 +1,18 @@
-import { useShelfMaterial } from "@/hooks";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { useAppRouter, useLoading, useShelfMaterial } from "@/hooks";
+import { WebURLPathDictionary } from "@shared/constants";
 import {
   MaterialNode,
   RootShelfNode,
   ShelfTreeSummary,
   SubShelfNode,
 } from "@shared/lib/shelfMaterialNodes";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "../ui/context-menu";
-import { SidebarMenuButton } from "../ui/sidebar";
 
 interface MaterialMenuItemProps {
   summary: ShelfTreeSummary;
@@ -26,6 +27,8 @@ const MaterialMenuItem = ({
   parent,
   current,
 }: MaterialMenuItemProps) => {
+  const loadingManager = useLoading();
+  const router = useAppRouter();
   const shelfMaterialManager = useShelfMaterial();
 
   return (
@@ -35,7 +38,13 @@ const MaterialMenuItem = ({
           className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden 
             ${current.isOpen ? "bg-primary/60" : "bg-transparent"}`}
           onClick={() => {
-            // open the file and place it to the background
+            loadingManager.setIsLoading(true);
+            const nextPath = WebURLPathDictionary.root.materialEditor.byId(
+              current.id
+            );
+            if (router.isSamePath(router.currentPath, nextPath)) {
+              loadingManager.setIsLoading(false);
+            } else router.push(nextPath);
             shelfMaterialManager.toggleMaterial(current);
           }}
         >
@@ -51,9 +60,12 @@ const MaterialMenuItem = ({
           Rename
         </ContextMenuItem>
         <ContextMenuItem
-          onClick={async () =>
-            await shelfMaterialManager.deleteMaterial(parent, current)
-          }
+          onClick={async () => {
+            await shelfMaterialManager.deleteMaterial(parent, current);
+            if (current.id === (router.params.materialId as string)) {
+              router.push(WebURLPathDictionary.root.materialEditor.notFound);
+            }
+          }}
         >
           Delete
         </ContextMenuItem>

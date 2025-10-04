@@ -70,7 +70,7 @@ interface ShelfMaterialContextType {
   loadMoreRootShelves: () => Promise<void>;
   isFetching: boolean;
   expandRootShelf: (rootShelf: PrivateRootShelf) => Promise<ShelfTreeSummary>;
-  toggleRootShelf: (rootShelfNode: RootShelfNode) => void;
+  toggleRootShelf: (rootShelfNode: RootShelfNode, reset?: boolean) => void;
   createRootShelf: (name: string) => Promise<void>;
   editRootShelfNodeName: string;
   setEditRootShelfNodeName: (editRootShelfNodeName: string) => void;
@@ -87,7 +87,7 @@ interface ShelfMaterialContextType {
     rootShelfNode: RootShelfNode,
     subShelfNode: SubShelfNode
   ) => Promise<void>;
-  toggleSubShelf: (subShelfNode: SubShelfNode) => void;
+  toggleSubShelf: (subShelfNode: SubShelfNode, reset?: boolean) => void;
   createSubShelf: (
     rootShelfId: UUID,
     prevSubShelfNode: SubShelfNode | null,
@@ -113,7 +113,7 @@ interface ShelfMaterialContextType {
   ) => Promise<void>;
 
   // for material
-  toggleMaterial: (materialNode: MaterialNode) => void;
+  toggleMaterial: (materialNode: MaterialNode, reset?: boolean) => void;
   createTextbookMaterial: (
     rootShelfId: UUID,
     parentSubShelfNode: SubShelfNode,
@@ -391,8 +391,11 @@ export const ShelfMaterialProvider = ({
     return shelfTreeSummary;
   };
 
-  const toggleRootShelf = (rootShelfNode: RootShelfNode) => {
-    rootShelfNode.isOpen = !rootShelfNode.isOpen;
+  const toggleRootShelf = (
+    rootShelfNode: RootShelfNode,
+    reset: boolean = false
+  ) => {
+    rootShelfNode.isOpen = reset ? false : !rootShelfNode.isOpen;
     forceUpdate();
   };
 
@@ -592,8 +595,11 @@ export const ShelfMaterialProvider = ({
     forceUpdate();
   };
 
-  const toggleSubShelf = (subShelfNode: SubShelfNode) => {
-    subShelfNode.isOpen = !subShelfNode.isOpen;
+  const toggleSubShelf = (
+    subShelfNode: SubShelfNode,
+    reset: boolean = false
+  ) => {
+    subShelfNode.isOpen = reset ? false : !subShelfNode.isOpen;
     forceUpdate();
   };
 
@@ -874,8 +880,11 @@ export const ShelfMaterialProvider = ({
 
   /* ============================== Methods for Material ============================== */
 
-  const toggleMaterial = (materialNode: MaterialNode) => {
-    materialNode.isOpen = !materialNode.isOpen;
+  const toggleMaterial = (
+    materialNode: MaterialNode,
+    reset: boolean = false
+  ) => {
+    materialNode.isOpen = reset ? false : !materialNode.isOpen;
     forceUpdate();
   };
 

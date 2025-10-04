@@ -110,7 +110,13 @@ export function AppSidebar() {
                 } flex justify-between items-center gap-1 hover:bg-accent rounded-sm`}
               >
                 <SidebarMenuButton asChild>
-                  <Button className="w-9/10 bg-transparent flex justify-start items-center select-none">
+                  <Button
+                    className="w-9/10 bg-transparent flex justify-start items-center select-none"
+                    onClick={() => {
+                      loadingManager.setIsLoading(true);
+                      router.push(WebURLPathDictionary.root.dashboard);
+                    }}
+                  >
                     <LayoutDashboardIcon />
                     {sidebarManager.open && (
                       <span className="truncate">Dashboard</span>

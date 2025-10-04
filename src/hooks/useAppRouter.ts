@@ -1,11 +1,18 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export const useAppRouter = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const params = useParams();
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const prevPathsRef = useRef<string[]>([]);
 
@@ -42,6 +49,16 @@ export const useAppRouter = () => {
     refresh: () => {
       router.refresh();
     },
+    params: params,
+    isSamePath: (a: string, b: string) => {
+      if (a.length === 0 || b.length === 0) return false;
+      if (a[0] === "/") {
+        return b[0] === "/" ? a === b : a === "/" + b;
+      }
+      return b[0] === "/" ? "/" + a === b : a === b;
+    },
+    currentPath:
+      pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ""),
     getPrevPaths: (): string[] => [...prevPathsRef.current],
   };
 

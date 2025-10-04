@@ -16,6 +16,9 @@
   "dependencies": {
     "@apollo/client": "^4.0.2",
     "@apollo/client-integration-nextjs": "^0.13.0",
+    "@blocknote/core": "^0.40.0",
+    "@blocknote/react": "^0.40.0",
+    "@blocknote/shadcn": "^0.40.0",
     "@hookform/resolvers": "^5.2.1",
     "@msgpack/msgpack": "^3.1.2",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
