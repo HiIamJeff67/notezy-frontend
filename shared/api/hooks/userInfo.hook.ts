@@ -3,6 +3,7 @@ import { GetMyInfo, UpdateMyInfo } from "@shared/api/functions/userInfo.api";
 import {
   GetMyInfoRequest,
   GetMyInfoRequestSchema,
+  GetMyInfoResponse,
   UpdateMyInfoRequest,
   UpdateMyInfoRequestSchema,
 } from "@shared/api/interfaces/userInfo.interface";
@@ -58,7 +59,9 @@ export const useGetMyInfo = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMyInfoRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetMyInfoRequest
+  ): Promise<GetMyInfoResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.userInfo.my(),
       queryFn: async () => await queryFunction(callbackRequest),

@@ -6,7 +6,7 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useAppRouter = () => {
   const router = useRouter();
@@ -27,39 +27,79 @@ export const useAppRouter = () => {
     prevPathsRef.current.push(pathname);
   }
 
-  const appRouter = {
-    isNavigating: isNavigating,
-    push: (path: string) => {
-      // use router.push() directly, let Next.js handle the base path
-      setIsNavigating(true);
-      router.push(path.startsWith("/") ? path : "/" + path);
+  const isSamePath = (a: string, b: string): boolean => {
+    if (a.length === 0 || b.length === 0) return false;
+    if (a[0] === "/") {
+      return b[0] === "/" ? a === b : a === "/" + b;
+    }
+    return b[0] === "/" ? "/" + a === b : a === b;
+  };
+
+  const getCurrentPath = useCallback((): string => {
+    return (
+      pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
+    );
+  }, [pathname, searchParams]);
+
+  const getPrevPaths = useCallback((): string[] => {
+    return [...prevPathsRef.current];
+  }, [prevPathsRef]);
+
+  const push = useCallback(
+    (path: string): boolean => {
+      if (!isSamePath(getCurrentPath(), path)) {
+        setIsNavigating(true);
+        router.push(path.startsWith("/") ? path : "/" + path);
+        return true;
+      }
+      return false;
     },
-    replace: (path: string) => {
-      setIsNavigating(true);
-      router.replace(path.startsWith("/") ? path : "/" + path);
+    [isSamePath, setIsNavigating, router]
+  );
+
+  const replace = useCallback(
+    (path: string): boolean => {
+      if (!isSamePath(getCurrentPath(), path)) {
+        setIsNavigating(true);
+        router.replace(path.startsWith("/") ? path : "/" + path);
+        return true;
+      }
+      return false;
     },
-    back: (steps: number = 1) => {
+    [isSamePath, setIsNavigating, router]
+  );
+
+  const back = useCallback(
+    (steps: number = 1): void => {
       setIsNavigating(true);
       while (steps-- > 0) router.back();
     },
-    forward: (steps: number = 1) => {
+    [setIsNavigating, router]
+  );
+
+  const forward = useCallback(
+    (steps: number = 1): void => {
       setIsNavigating(true);
       while (steps-- > 0) router.forward();
     },
-    refresh: () => {
-      router.refresh();
-    },
+    [setIsNavigating, router]
+  );
+
+  const refresh = useCallback((): void => {
+    router.refresh();
+  }, [router]);
+
+  const appRouter = {
+    isNavigating: isNavigating,
     params: params,
-    isSamePath: (a: string, b: string) => {
-      if (a.length === 0 || b.length === 0) return false;
-      if (a[0] === "/") {
-        return b[0] === "/" ? a === b : a === "/" + b;
-      }
-      return b[0] === "/" ? "/" + a === b : a === b;
-    },
-    currentPath:
-      pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ""),
-    getPrevPaths: (): string[] => [...prevPathsRef.current],
+    isSamePath: isSamePath,
+    getCurrentPath: getCurrentPath,
+    getPrevPaths: getPrevPaths,
+    push: push,
+    replace: replace,
+    back: back,
+    forward: forward,
+    refresh: refresh,
   };
 
   return appRouter;

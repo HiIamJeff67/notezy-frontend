@@ -21,10 +21,13 @@ import {
   DeleteMySubShelvesByIdsRequestSchema,
   GetAllMySubShelvesByRootShelfIdRequest,
   GetAllMySubShelvesByRootShelfIdRequestSchema,
+  GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
   GetMySubShelfByIdRequestSchema,
+  GetMySubShelfByIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdRequestSchema,
+  GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfRequestSchema,
   MoveMySubShelvesRequest,
@@ -91,7 +94,9 @@ export const useGetMySubShelfById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMySubShelfByIdRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetMySubShelfByIdRequest
+  ): Promise<GetMySubShelfByIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.myOneById(
         callbackRequest.param.subShelfId as UUID
@@ -154,7 +159,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
 
   const queryAsync = async (
     callbackRequest: GetMySubShelvesByPrevSubShelfIdRequest
-  ) => {
+  ): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
         callbackRequest.param.prevSubShelfId as UUID
@@ -217,7 +222,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
 
   const queryAsync = async (
     callbackRequest: GetAllMySubShelvesByRootShelfIdRequest
-  ) => {
+  ): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID

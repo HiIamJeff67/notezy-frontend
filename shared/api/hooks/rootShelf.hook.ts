@@ -18,6 +18,7 @@ import {
   DeleteMyRootShelvesByIdsRequestSchema,
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdRequestSchema,
+  GetMyRootShelfByIdResponse,
   RestoreMyRootShelfByIdRequest,
   RestoreMyRootShelfByIdRequestSchema,
   RestoreMyRootShelvesByIdsRequest,
@@ -80,7 +81,9 @@ export const useGetMyRootShelfById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMyRootShelfByIdRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetMyRootShelfByIdRequest
+  ): Promise<GetMyRootShelfByIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.rootShelf.myOneById(
         callbackRequest.param.rootShelfId as UUID

@@ -50,17 +50,6 @@ const LoginPage = () => {
           },
         });
 
-        if (
-          !responseOfGettingUserData ||
-          responseOfGettingUserData.data.accessToken !==
-            responseOfLoggingIn.data.accessToken // since the user may register failed, but using existing cookies to get his/her data
-        ) {
-          console.log(responseOfLoggingIn);
-          throw new Error(
-            languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-          );
-        }
-
         setAccount("");
         setPassword("");
         userDataManager.setUserData(responseOfGettingUserData.data);
@@ -71,6 +60,7 @@ const LoginPage = () => {
         router.push(WebURLPathDictionary.root.dashboard);
       } catch (error) {
         setPassword("");
+        console.error(error);
         toast.error(languageManager.tError(error));
       }
     },

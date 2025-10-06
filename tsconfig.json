@@ -28,10 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/components/RootShelfMenu",
-    "src/components/SubShelfMenu",
-    "shared/types/dndType.enumts",
-    "src/components/ShelfDialog"
+    "src/components/**/*.tsx",
+    "shared/**/*.enums.ts"
   ],
   "exclude": ["node_modules"]
 }

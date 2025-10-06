@@ -1,5 +1,8 @@
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import { ShelfTreeSummary, SubShelfNode } from "@shared/lib/shelfMaterialNodes";
+import {
+  ShelfTreeSummary,
+  SubShelfNode,
+} from "@shared/types/shelfMaterialNodes";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";
 import CheckIcon from "../icons/CheckIcon";

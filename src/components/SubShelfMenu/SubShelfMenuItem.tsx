@@ -20,13 +20,13 @@ import {
 } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
+import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
+import { DNDType } from "@shared/types/enums/dndType.enum";
 import {
   RootShelfNode,
   ShelfTreeSummary,
   SubShelfNode,
-} from "@shared/lib/shelfMaterialNodes";
-import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
-import { DNDType } from "@shared/types/enums/dndType.enum";
+} from "@shared/types/shelfMaterialNodes";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";

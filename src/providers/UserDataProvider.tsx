@@ -1,8 +1,8 @@
 "use client";
 
-import { Logout } from "@shared/api/functions/auth.api";
+import { useLogout } from "@shared/api/hooks/auth.hook";
 import { UserData } from "@shared/types/models";
-import React, { createContext, useState } from "react";
+import React, { createContext, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 interface UserDataContextType {
@@ -21,6 +21,8 @@ export const UserDataProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const logoutMutator = useLogout();
+
   const [userData, setUserData] = useState<UserData | null>(null);
 
   /**
@@ -36,15 +38,15 @@ export const UserDataProvider = ({
     return true;
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const userAgent = navigator.userAgent;
     // logout without showing error if there is one
-    await Logout({
+    await logoutMutator.mutateAsync({
       header: { userAgent: userAgent },
     });
     setUserData(null);
     toast.success("Logout successfully, see you next time ~");
-  };
+  }, [logoutMutator, setUserData]);
 
   const contextValue: UserDataContextType = {
     userData: userData,

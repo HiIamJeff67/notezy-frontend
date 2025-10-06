@@ -12,7 +12,7 @@ import {
   RootShelfNode,
   ShelfTreeSummary,
   SubShelfNode,
-} from "@shared/lib/shelfMaterialNodes";
+} from "@shared/types/shelfMaterialNodes";
 
 interface MaterialMenuItemProps {
   summary: ShelfTreeSummary;
@@ -38,13 +38,12 @@ const MaterialMenuItem = ({
           className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden 
             ${current.isOpen ? "bg-primary/60" : "bg-transparent"}`}
           onClick={() => {
-            loadingManager.setIsLoading(true);
-            const nextPath = WebURLPathDictionary.root.materialEditor.byId(
+            const nextPath = WebURLPathDictionary.root.materialEditor.textbook(
               current.id
             );
-            if (router.isSamePath(router.currentPath, nextPath)) {
-              loadingManager.setIsLoading(false);
-            } else router.push(nextPath);
+            if (router.push(nextPath)) {
+              loadingManager.setIsLoading(true);
+            }
             shelfMaterialManager.toggleMaterial(current);
           }}
         >

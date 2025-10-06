@@ -9,14 +9,14 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { UUID } from "crypto";
+import { AnalysisStatus } from "@shared/types/enums";
 import {
-  AnalysisStatus,
   MaterialNode,
   RootShelfNode,
-  ShelfTreeSummary,
   SubShelfNode,
-} from "./shelfMaterialNodes";
+} from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { UUID } from "crypto";
 
 export class RootShelfManipulator {
   private static maxTraverseCount: number =
@@ -80,8 +80,6 @@ export class RootShelfManipulator {
       (materialNode.name?.length ?? 0) * 2 +
       (materialNode.type?.toString()?.length ?? 0) * 2 +
       (materialNode.downloadURL?.length ?? 0) * 2 +
-      (materialNode.contentType?.toString()?.length ?? 0) * 2 +
-      (materialNode.parseMediaType?.length ?? 0) * 2 +
       3 * BytesOfDate // deletedAt/updatedAt/createdAt
     );
   }

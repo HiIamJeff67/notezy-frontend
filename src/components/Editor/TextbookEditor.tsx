@@ -4,94 +4,95 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useLanguage, useLoading } from "@/hooks";
 import { loadFileFromDownloadURL } from "@/util/loadFiles";
-import { Block, BlockNoteEditor } from "@blocknote/core";
+import { choiceRandom } from "@/util/random";
+import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { GetMyMaterialById } from "@shared/api/functions/material.api";
+import { AllDefaultTextbookInitialContents } from "@shared/constants";
+import { EditableMaterial } from "@shared/types/editableMaterial.type";
+import { MaterialType } from "@shared/types/enums";
+import { UUID } from "crypto";
 import { Download, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import MaterialEditorNotFoundPage from "./not-found";
 
-interface MaterialEditorContainerProps {
-  materialId: string;
+interface TextbookEditorProps {
+  materialId: UUID;
 }
 
-const MaterialEditorContainer = ({
-  materialId,
-}: MaterialEditorContainerProps) => {
+const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
   const router = useRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
 
-  const [editor, setEditor] = useState<BlockNoteEditor | null>(null);
-  const [rendering, setRendering] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [editor, setEditor] = useState<BlockNoteEditor | undefined>(undefined);
+
+  const [saving, setSaving] = useState<boolean>(false);
+  const [fileName, setFileName] = useState<string>("Untitled");
 
   useEffect(() => {
-    const initEditor = async () => {
-      setRendering(true);
+    const initializeMaterial = async () => {
       try {
-        const userAgent = navigator.userAgent;
-        const responseOfGettingMaterial = await GetMyMaterialById({
-          header: {
-            userAgent: userAgent,
-          },
-          param: {
-            materialId: materialId,
-          },
-        });
-
-        setFileName(responseOfGettingMaterial.data.name || "Untitled");
-
-        console.log(responseOfGettingMaterial.data.downloadURL);
-        const fileContentString = await loadFileFromDownloadURL(
-          responseOfGettingMaterial.data.downloadURL
-        );
-        const fileContent = convertTextToBlocks(fileContentString);
-
-        const newEditor = BlockNoteEditor.create({
-          initialContent: fileContent,
-          editable: true,
-          animations: true,
-        });
-
-        setEditor(newEditor);
+        loadingManager.setIsLoading(true);
+        const editableMaterial = await loadTextbookMaterial(materialId as UUID);
+        if (editableMaterial) {
+          console.log(editableMaterial);
+          setFileName(editableMaterial.name);
+          setEditor(
+            BlockNoteEditor.create({
+              initialContent:
+                editableMaterial.initialContent ?? ([] as PartialBlock[]),
+            })
+          );
+        }
       } catch (error) {
         toast.error(languageManager.tError(error));
-        setEditor(null);
+        console.error(error);
       } finally {
-        setRendering(false);
         loadingManager.setIsLoading(false);
       }
     };
 
-    if (materialId) {
-      initEditor();
-    }
+    initializeMaterial();
   }, [materialId]);
 
-  const convertTextToBlocks = (text: string): Block[] => {
-    const lines = text.split("\n");
-    return lines.map((line, index) => ({
-      type: "paragraph" as const,
-      content: [
-        {
-          type: "text",
-          text: line || " ",
-          styles: {}, // Add empty styles object to satisfy StyledText type
-        },
-      ],
-      id: `block-${index}`,
-      props: {
-        backgroundColor: "default",
-        textColor: "default",
-        textAlignment: "left",
+  const loadTextbookMaterial = async (
+    materialId: UUID
+  ): Promise<EditableMaterial | undefined> => {
+    const userAgent = navigator.userAgent;
+    const responseOfGettingMaterial = await GetMyMaterialById({
+      header: {
+        userAgent: userAgent,
       },
-    })) as Block[];
+      param: {
+        materialId: materialId,
+      },
+    });
+    if (responseOfGettingMaterial.data.type !== MaterialType.Textbook) {
+      return undefined;
+    }
+
+    const fileContentString = await loadFileFromDownloadURL(
+      responseOfGettingMaterial.data.downloadURL
+    );
+    const parsedContent = (
+      fileContentString && fileContentString.trim() !== ""
+        ? JSON.parse(fileContentString)
+        : choiceRandom(AllDefaultTextbookInitialContents)
+    ) as PartialBlock[];
+    if (!Array.isArray(parsedContent)) return undefined;
+
+    return {
+      id: responseOfGettingMaterial.data.id as UUID,
+      name: responseOfGettingMaterial.data.name,
+      type: responseOfGettingMaterial.data.type,
+      initialContent: parsedContent,
+      updatedAt: responseOfGettingMaterial.data.updatedAt,
+      createdAt: responseOfGettingMaterial.data.createdAt,
+    };
   };
 
   const handleSave = async () => {
@@ -140,7 +141,7 @@ const MaterialEditorContainer = ({
   };
 
   if (!editor) {
-    return <MaterialEditorNotFoundPage />;
+    return undefined;
   }
 
   return (
@@ -164,10 +165,10 @@ const MaterialEditorContainer = ({
       </header>
 
       <div className="w-full h-full rounded-none p-8">
-        {editor && <BlockNoteView editor={editor} />}
+        <BlockNoteView editor={editor} />
       </div>
     </div>
   );
 };
 
-export default MaterialEditorContainer;
+export default TextbookEditor;

@@ -37,15 +37,14 @@ import {
 } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
+import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
+import { AnalysisStatus, MaterialType } from "@shared/types/enums";
 import {
-  AnalysisStatus,
   MaterialNode,
   RootShelfNode,
-  ShelfTreeSummary,
   SubShelfNode,
-} from "@shared/lib/shelfMaterialNodes";
-import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
-import { MaterialContentType, MaterialType } from "@shared/types/enums";
+} from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import {
   createContext,
@@ -936,8 +935,6 @@ export const ShelfMaterialProvider = ({
         name: name,
         type: MaterialType.Textbook,
         downloadURL: responseOfCreateMaterial.data.downloadURL,
-        contentType: MaterialContentType.PlainText,
-        parseMediaType: "utf-8",
         updatedAt: responseOfCreateMaterial.data.createdAt,
         createdAt: responseOfCreateMaterial.data.createdAt,
         isOpen: false,

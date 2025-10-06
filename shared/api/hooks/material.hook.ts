@@ -21,10 +21,13 @@ import {
   DeleteMyMaterialsByIdsRequestSchema,
   GetAllMyMaterialsByParentSubShelfIdRequest,
   GetAllMyMaterialsByParentSubShelfIdRequestSchema,
+  GetAllMyMaterialsByParentSubShelfIdResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdRequestSchema,
+  GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdRequestSchema,
+  GetMyMaterialByIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdRequestSchema,
   RestoreMyMaterialByIdRequest,
@@ -91,7 +94,9 @@ export const useGetMyMaterialById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMyMaterialByIdRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetMyMaterialByIdRequest
+  ): Promise<GetMyMaterialByIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.material.myOneById(
         callbackRequest.param.materialId as UUID
@@ -154,7 +159,7 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
 
   const queryAsync = async (
     callbackRequest: GetAllMyMaterialsByParentSubShelfIdRequest
-  ) => {
+  ): Promise<GetAllMyMaterialsByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.material.myManyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
@@ -217,7 +222,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
 
   const queryAsync = async (
     callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
-  ) => {
+  ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.material.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID

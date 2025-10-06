@@ -3,7 +3,7 @@ import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import {
   RootShelfNode,
   ShelfTreeSummary,
-} from "@shared/lib/shelfMaterialNodes";
+} from "@shared/types/shelfMaterialNodes";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";

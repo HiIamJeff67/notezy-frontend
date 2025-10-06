@@ -4,13 +4,13 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
+import { AnalysisStatus } from "@shared/types/enums";
 import {
-  AnalysisStatus,
   MaterialNode,
   RootShelfNode,
-  ShelfTreeSummary,
   SubShelfNode,
-} from "@shared/lib/shelfMaterialNodes";
+} from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 
 export class SubShelfManipulator {
@@ -94,8 +94,6 @@ export class SubShelfManipulator {
         name: material.name,
         type: material.type,
         downloadURL: material.downloadURL,
-        contentType: material.contentType,
-        parseMediaType: material.parseMediaType,
         updatedAt: material.updatedAt,
         createdAt: material.createdAt,
         isOpen: false,

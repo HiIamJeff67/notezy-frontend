@@ -23,8 +23,11 @@ import {
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import { ShelfTreeSummary, SubShelfNode } from "@shared/lib/shelfMaterialNodes";
 import { DNDType } from "@shared/types/enums/dndType.enum";
+import {
+  ShelfTreeSummary,
+  SubShelfNode,
+} from "@shared/types/shelfMaterialNodes";
 import { Suspense, useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";

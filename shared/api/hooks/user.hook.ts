@@ -1,14 +1,20 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
 import { GetMe, GetUserData, UpdateMe } from "@shared/api/functions/user.api";
 import {
   GetMeRequest,
   GetMeRequestSchema,
+  GetMeResponse,
   GetUserDataRequest,
   GetUserDataRequestSchema,
+  GetUserDataResponse,
   UpdateMeRequest,
   UpdateMeRequestSchema,
 } from "@shared/api/interfaces/user.interface";
 import { queryKeys } from "@shared/api/queryKeys";
+import { tKey } from "@shared/translations";
 import {
   useMutation,
   useQuery,
@@ -42,6 +48,8 @@ export const useGetUserData = (
       }
       if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
           default:
             throw new Error(error.unWrap.message);
         }
@@ -60,7 +68,9 @@ export const useGetUserData = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetUserDataRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetUserDataRequest
+  ): Promise<GetUserDataResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.user.data(),
       queryFn: async () => await queryFunction(callbackRequest), // use the request from the param of useGetUserData.queryAsync()
@@ -113,7 +123,9 @@ export const useGetMe = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (callbackRequest: GetMeRequest) => {
+  const queryAsync = async (
+    callbackRequest: GetMeRequest
+  ): Promise<GetMeResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.user.me(),
       queryFn: async () => await queryFunction(callbackRequest),
@@ -123,6 +135,7 @@ export const useGetMe = (
 
   return {
     ...query,
+    queryAsync,
     name: "GET_ME_HOOK" as const,
   };
 };

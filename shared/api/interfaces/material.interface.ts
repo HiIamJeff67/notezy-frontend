@@ -2,7 +2,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialContentTypes, AllMaterialTypes } from "@shared/types/enums";
+import { AllMaterialTypes } from "@shared/types/enums";
 import z from "zod";
 
 /* ============================== GetMyMaterialById ============================== */
@@ -28,9 +28,6 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     name: z.string(),
     type: z.enum(AllMaterialTypes),
     downloadURL: z.url(),
-    contentType: z.enum(AllMaterialContentTypes),
-    parseMediaType: z.string(),
-    deletedAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -66,9 +63,6 @@ export const GetAllMyMaterialsByParentSubShelfIdResponseSchema =
         name: z.string(),
         type: z.enum(AllMaterialTypes),
         downloadURL: z.url(),
-        contentType: z.enum(AllMaterialContentTypes),
-        parseMediaType: z.string(),
-        deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -105,9 +99,6 @@ export const GetAllMyMaterialsByRootShelfIdResponseSchema =
         name: z.string(),
         type: z.enum(AllMaterialTypes),
         downloadURL: z.url(),
-        contentType: z.enum(AllMaterialContentTypes),
-        parseMediaType: z.string(),
-        deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
