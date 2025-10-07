@@ -1,12 +1,12 @@
 "use client";
 
-import TextbookEditor from "@/components/Editor/TextbookEditor";
+import NotebookEditor from "@/components/Editor/NotebookEditor";
 import { MaterialType } from "@shared/types/enums";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
 import { UUID } from "crypto";
 import { useSearchParams } from "next/navigation";
 import { Suspense, use } from "react";
-import MaterialEditorNotFoundPage from "./not-found";
+import MaterialEditorNotFoundPage from "../not-found";
 
 interface MaterialEditorPageProps {
   params: Promise<{
@@ -18,12 +18,20 @@ const MaterialEditorPage = ({ params }: MaterialEditorPageProps) => {
   const { materialId } = use(params);
   const searchParams = useSearchParams();
   const type = (searchParams.get("type") as MaterialType) || undefined;
-  if (!type || !isValidUUID(materialId)) return <MaterialEditorNotFoundPage />;
+  const parentSubShelfId =
+    (searchParams.get("parentSubShelfId") as UUID) || undefined;
+  if (!type || !parentSubShelfId || !isValidUUID(materialId))
+    return <MaterialEditorNotFoundPage />;
 
   let content: React.ReactNode;
   switch (type) {
-    case MaterialType.Textbook:
-      content = <TextbookEditor materialId={materialId as UUID} />;
+    case MaterialType.Notebook:
+      content = (
+        <NotebookEditor
+          materialId={materialId as UUID}
+          parentSubShelfId={parentSubShelfId}
+        />
+      );
       break;
     default:
       content = undefined;

@@ -6,19 +6,15 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useTransition } from "react";
 
 export const useAppRouter = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
-  const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [isNavigating, _startTransition] = useTransition();
   const prevPathsRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    setIsNavigating(false);
-  }, [pathname]);
 
   if (
     typeof window !== "undefined" &&
@@ -46,43 +42,43 @@ export const useAppRouter = () => {
   }, [prevPathsRef]);
 
   const push = useCallback(
-    (path: string): boolean => {
+    (path: string) => {
       if (!isSamePath(getCurrentPath(), path)) {
-        setIsNavigating(true);
-        router.push(path.startsWith("/") ? path : "/" + path);
-        return true;
+        _startTransition(() => {
+          router.push(path.startsWith("/") ? path : "/" + path);
+        });
       }
-      return false;
     },
-    [isSamePath, setIsNavigating, router]
+    [getCurrentPath, isSamePath, _startTransition, router]
   );
 
   const replace = useCallback(
-    (path: string): boolean => {
+    (path: string) => {
       if (!isSamePath(getCurrentPath(), path)) {
-        setIsNavigating(true);
-        router.replace(path.startsWith("/") ? path : "/" + path);
-        return true;
+        _startTransition(() => {
+          router.replace(path.startsWith("/") ? path : "/" + path);
+        });
       }
-      return false;
     },
-    [isSamePath, setIsNavigating, router]
+    [getCurrentPath, isSamePath, _startTransition, router]
   );
 
   const back = useCallback(
     (steps: number = 1): void => {
-      setIsNavigating(true);
-      while (steps-- > 0) router.back();
+      _startTransition(() => {
+        while (steps-- > 0) router.back();
+      });
     },
-    [setIsNavigating, router]
+    [_startTransition, router]
   );
 
   const forward = useCallback(
     (steps: number = 1): void => {
-      setIsNavigating(true);
-      while (steps-- > 0) router.forward();
+      _startTransition(() => {
+        while (steps-- > 0) router.forward();
+      });
     },
-    [setIsNavigating, router]
+    [_startTransition, router]
   );
 
   const refresh = useCallback((): void => {

@@ -4,11 +4,11 @@ import { useLoading, useTheme } from "@/hooks";
 import { useEffect } from "react";
 
 const LoadingOverlay = () => {
-  const { isLoading, isAnyStrictLoading } = useLoading();
+  const { isAnyLoading } = useLoading();
   const themeManager = useTheme();
 
   useEffect(() => {
-    if (isLoading || isAnyStrictLoading) {
+    if (isAnyLoading) {
       document.body.style.overflow = "hidden";
       document.body.style.pointerEvents = "none";
     } else {
@@ -20,9 +20,9 @@ const LoadingOverlay = () => {
       document.body.style.overflow = "unset";
       document.body.style.pointerEvents = "auto";
     };
-  }, [isLoading, isAnyStrictLoading]);
+  }, [isAnyLoading]);
 
-  if (!isLoading && !isAnyStrictLoading) return <></>;
+  if (!isAnyLoading) return <></>;
 
   return (
     <div

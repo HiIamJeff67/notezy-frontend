@@ -60,9 +60,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       tryGetUser();
     }
 
-    loadingManager.setIsLoading(false);
-    loadingManager.clearInactiveStrictLoadingStates();
-    loadingManager.clearInactiveLaxLoadingStates();
+    loadingManager.setIsStrictLoading(false);
   }, []);
 
   return (

@@ -29,7 +29,7 @@ const CreateRootShelfDialog = ({
   const [newShelfName, setNewShelfName] = useState<string>("");
 
   const handleCreateRootShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsLoading(true);
+    loadingManager.setIsStrictLoading(true);
 
     try {
       if (newShelfName.replaceAll(" ", "") === "") {
@@ -42,7 +42,7 @@ const CreateRootShelfDialog = ({
       toast.error(languageManager.tError(error));
     } finally {
       setNewShelfName("");
-      loadingManager.setIsLoading(false);
+      loadingManager.setIsStrictLoading(false);
     }
   }, [newShelfName, loadingManager, languageManager, shelfMaterialManager]);
 

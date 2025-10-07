@@ -85,9 +85,9 @@ export const APIURLPathDictionary = {
     getAllMyMaterialsByParentSubShelfId:
       "material/getAllMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
-    createTextbookMaterial: "material/createTextbookMaterial",
-    updateMyTextbookMaterialById: "material/updateMyTextbookMaterialById",
-    saveMyTextbookMaterialById: "material/saveMyTextbookMaterialById",
+    createNotebookMaterial: "material/createNotebookMaterial",
+    updateMyNotebookMaterialById: "material/updateMyNotebookMaterialById",
+    saveMyNotebookMaterialById: "material/saveMyNotebookMaterialById",
     moveMyMaterialById: "material/moveMyMaterialById",
     moveMyMaterialsByIds: "material/moveMyMaterialsByIds",
     restoreMyMaterialById: "material/restoreMyMaterialById",
@@ -119,8 +119,10 @@ export const WebURLPathDictionary = {
   },
   root: {
     materialEditor: {
-      textbook: (materialId: UUID) =>
-        `material-editor/${materialId}?type=${MaterialType.Textbook}`,
+      notebook: (materialId: UUID, parentSubShelfId: UUID) =>
+        `material-editor/${materialId}?parentSubShelfId=${parentSubShelfId}&type=${MaterialType.Notebook}`,
+      textbook: (materialId: UUID, parentSubShelfId: UUID) =>
+        `material-editor/${materialId}?parentSubShelfId=${parentSubShelfId}&type=${MaterialType.Textbook}`,
       notFound: "material-editor/not-found",
     },
     documents: "documents",

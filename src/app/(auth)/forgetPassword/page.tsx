@@ -28,9 +28,7 @@ const ForgetPasswordPage = () => {
     useState<number>(0);
 
   useEffect(() => {
-    loadingManager.setIsLoading(false);
-    loadingManager.clearInactiveStrictLoadingStates();
-    loadingManager.clearInactiveLaxLoadingStates();
+    loadingManager.setIsStrictLoading(false);
   }, []);
 
   useEffect(() => {
@@ -50,6 +48,8 @@ const ForgetPasswordPage = () => {
 
   const handleSendAuthCodeOnClick = useCallback(
     async function (): Promise<void> {
+      loadingManager.setIsStrictLoading(true);
+
       try {
         const userAgent = navigator.userAgent;
         const responseOfSendingAuthCode = await sendAuthCodeMutator.mutateAsync(
@@ -73,7 +73,7 @@ const ForgetPasswordPage = () => {
       } catch (error) {
         toast.error(languageManager.tError(error));
       } finally {
-        loadingManager.setIsLoading(false);
+        loadingManager.setIsStrictLoading(false);
       }
     },
     [email, loadingManager, languageManager, sendAuthCodeMutator]
@@ -81,7 +81,7 @@ const ForgetPasswordPage = () => {
 
   const handleResetPasswordOnSubmit = useCallback(
     async function (): Promise<void> {
-      loadingManager.setIsLoading(true);
+      loadingManager.setIsStrictLoading(true);
 
       try {
         if (newPassword !== confirmNewPassword) {
@@ -110,6 +110,8 @@ const ForgetPasswordPage = () => {
         router.push(WebURLPathDictionary.auth.login);
       } catch (error) {
         toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsStrictLoading(false);
       }
     },
     [
@@ -194,13 +196,13 @@ const ForgetPasswordPage = () => {
               ),
               title: languageManager.t(tKey.auth.register),
               onClick: () => {
-                loadingManager.setIsLoading(true);
+                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
           ]}
           statusDetail={"System Ready"}
-          isLoading={loadingManager.isLoading}
+          isLoading={loadingManager.isStrictLoading}
         />
       </Suspense>
     </GridBackground>

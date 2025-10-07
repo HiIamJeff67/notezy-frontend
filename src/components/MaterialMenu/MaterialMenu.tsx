@@ -1,8 +1,6 @@
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import {
-  ShelfTreeSummary,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";
 import CheckIcon from "../icons/CheckIcon";
@@ -21,13 +19,13 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
   const shelfMaterialManager = useShelfMaterial();
 
   const handleRenameMaterialOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsLoading(true);
+    loadingManager.setIsStrictLoading(true);
     try {
       await shelfMaterialManager.renameEditingMaterial();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
-      loadingManager.setIsLoading(false);
+      loadingManager.setIsStrictLoading(false);
     }
   }, [loadingManager, languageManager, shelfMaterialManager]);
 
@@ -37,7 +35,7 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
         ([materialId, materialNode]) => {
           return (
             <Suspense fallback={<MaterialMenuItemSkeleton />} key={materialId}>
-              {shelfMaterialManager.isMaterialNodeEditing(materialNode) ? (
+              {shelfMaterialManager.isMaterialNodeEditing(materialNode.id) ? (
                 <SidebarMenuItem
                   key={materialId}
                   className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"

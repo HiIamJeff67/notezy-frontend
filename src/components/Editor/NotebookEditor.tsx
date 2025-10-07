@@ -2,66 +2,79 @@
 
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useLanguage, useLoading } from "@/hooks";
+import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { loadFileFromDownloadURL } from "@/util/loadFiles";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { GetMyMaterialById } from "@shared/api/functions/material.api";
-import { AllDefaultTextbookInitialContents } from "@shared/constants";
-import { EditableMaterial } from "@shared/types/editableMaterial.type";
+import { useSaveMyNotebookMaterialById } from "@shared/api/hooks/material.hook";
+import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
+import { EditableNotebookMaterial } from "@shared/types/editableMaterial.type";
 import { MaterialType } from "@shared/types/enums";
 import { UUID } from "crypto";
 import { Download, Save } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import { Spinner } from "../ui/spinner";
 
-interface TextbookEditorProps {
+interface NotebookEditorProps {
   materialId: UUID;
+  parentSubShelfId: UUID;
 }
 
-const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
-  const router = useRouter();
+const NotebookEditor = ({
+  materialId,
+  parentSubShelfId,
+}: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
+  const shelfMaterialManager = useShelfMaterial();
+
+  const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
 
   const [editor, setEditor] = useState<BlockNoteEditor | undefined>(undefined);
-
-  const [saving, setSaving] = useState<boolean>(false);
+  const [isSaving, startSavingTransition] = useTransition();
   const [fileName, setFileName] = useState<string>("Untitled");
+
+  // update the file name in this page
+  useEffect(() => {
+    if (shelfMaterialManager.isMaterialNodeEditing(materialId)) {
+      setFileName(shelfMaterialManager.editMaterialNodeName);
+    }
+  }, [shelfMaterialManager.editMaterialNodeName]);
 
   useEffect(() => {
     const initializeMaterial = async () => {
       try {
-        loadingManager.setIsLoading(true);
-        const editableMaterial = await loadTextbookMaterial(materialId as UUID);
-        if (editableMaterial) {
-          console.log(editableMaterial);
-          setFileName(editableMaterial.name);
-          setEditor(
-            BlockNoteEditor.create({
-              initialContent:
-                editableMaterial.initialContent ?? ([] as PartialBlock[]),
-            })
+        loadingManager.startTransactionLoading(async () => {
+          const editableMaterial = await loadNotebookMaterial(
+            materialId as UUID
           );
-        }
+
+          if (editableMaterial) {
+            setFileName(editableMaterial.name);
+            setEditor(
+              BlockNoteEditor.create({
+                initialContent:
+                  editableMaterial.initialContent ?? ([] as PartialBlock[]),
+              })
+            );
+          }
+        });
       } catch (error) {
         toast.error(languageManager.tError(error));
-        console.error(error);
-      } finally {
-        loadingManager.setIsLoading(false);
       }
     };
 
     initializeMaterial();
   }, [materialId]);
 
-  const loadTextbookMaterial = async (
+  const loadNotebookMaterial = async (
     materialId: UUID
-  ): Promise<EditableMaterial | undefined> => {
+  ): Promise<EditableNotebookMaterial | undefined> => {
     const userAgent = navigator.userAgent;
     const responseOfGettingMaterial = await GetMyMaterialById({
       header: {
@@ -71,7 +84,7 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
         materialId: materialId,
       },
     });
-    if (responseOfGettingMaterial.data.type !== MaterialType.Textbook) {
+    if (responseOfGettingMaterial.data.type !== MaterialType.Notebook) {
       return undefined;
     }
 
@@ -81,7 +94,7 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
     const parsedContent = (
       fileContentString && fileContentString.trim() !== ""
         ? JSON.parse(fileContentString)
-        : choiceRandom(AllDefaultTextbookInitialContents)
+        : choiceRandom(AllDefaultNotebookInitialContents)
     ) as PartialBlock[];
     if (!Array.isArray(parsedContent)) return undefined;
 
@@ -95,31 +108,36 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
     };
   };
 
-  const handleSave = async () => {
+  const handleSaveNotebookMaterial = async () => {
     if (!editor) return;
 
-    setSaving(true);
     try {
-      const content = editor.document;
+      startSavingTransition(async () => {
+        const blocks = editor.document;
+        const json = JSON.stringify(blocks, null, 2);
+        const filename = `${fileName || materialId}.notebook.json`;
+        const contentFile = new File([json], filename, {
+          type: "application/json",
+        });
 
-      // 調用儲存 API
-      const response = await fetch(`/api/materials/${materialId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
+        const userAgent = navigator.userAgent;
+        await saveMyNotebookMaterialMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            materialId: materialId,
+            contentFile: contentFile,
+          },
+          affected: {
+            parentSubShelfId: parentSubShelfId,
+          },
+        });
       });
 
-      if (!response.ok) {
-        throw new Error("儲存失敗");
-      }
-
-      console.log("檔案已儲存");
+      toast.success("Successfully saving the notebook");
     } catch (error) {
-      console.error("儲存錯誤:", error);
-    } finally {
-      setSaving(false);
+      toast.error(languageManager.tError(error));
     }
   };
 
@@ -136,7 +154,7 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("匯出失敗:", error);
+      toast.error(languageManager.tError(error));
     }
   };
 
@@ -150,14 +168,18 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
         {sidebarManager.isMobile && <SidebarTrigger />}
         <h1 className="font-semibold">{fileName}</h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            <Save />
-          </Button>
+          {isSaving ? (
+            <Spinner />
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleSaveNotebookMaterial}
+              disabled={isSaving}
+            >
+              <Save />
+            </Button>
+          )}
           <Button variant="outline" size="icon" onClick={handleExportMarkdown}>
             <Download />
           </Button>
@@ -171,4 +193,4 @@ const TextbookEditor = ({ materialId }: TextbookEditorProps) => {
   );
 };
 
-export default TextbookEditor;
+export default NotebookEditor;

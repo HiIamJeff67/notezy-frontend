@@ -101,9 +101,7 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    loadingManager.setIsLoading(false);
-    loadingManager.clearInactiveStrictLoadingStates();
-    loadingManager.clearInactiveLaxLoadingStates();
+    loadingManager.setIsStrictLoading(false);
     startCycle();
     return () => clearAllTimers();
   }, []);
@@ -198,7 +196,7 @@ const HomePage = () => {
                 variant="secondary"
                 className="cursor-pointer font-bold hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
                 onClick={() => {
-                  loadingManager.setIsLoading(true);
+                  loadingManager.setIsStrictLoading(true);
                   router.push(WebURLPathDictionary.root.documents);
                 }}
               >
@@ -209,7 +207,7 @@ const HomePage = () => {
                 variant="default"
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
-                  loadingManager.setIsLoading(true);
+                  loadingManager.setIsStrictLoading(true);
                   router.push(WebURLPathDictionary.auth.login);
                 }}
               >

@@ -27,9 +27,7 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
-    loadingManager.setIsLoading(false);
-    loadingManager.clearInactiveStrictLoadingStates();
-    loadingManager.clearInactiveLaxLoadingStates();
+    loadingManager.setIsStrictLoading(false);
   }, []);
 
   const handleRegisterOnSubmit = useCallback(
@@ -156,13 +154,13 @@ const RegisterPage = () => {
               description: languageManager.t(tKey.auth.alreadyHaveAnAccount),
               title: languageManager.t(tKey.auth.login),
               onClick: () => {
-                loadingManager.setIsLoading(true);
+                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.login);
               },
             },
           ]}
           statusDetail={"System Ready"}
-          isLoading={loadingManager.isLoading}
+          isLoading={loadingManager.isStrictLoading}
         />
       </Suspense>
     </GridBackground>

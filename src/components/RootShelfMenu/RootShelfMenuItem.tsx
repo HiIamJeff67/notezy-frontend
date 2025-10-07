@@ -24,10 +24,8 @@ import {
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { DNDType } from "@shared/types/enums/dndType.enum";
-import {
-  ShelfTreeSummary,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
@@ -79,14 +77,14 @@ const RootShelfMenuItem = ({
   }));
 
   const handleRenameRootShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsLoading(true);
+    loadingManager.setIsStrictLoading(true);
 
     try {
       await shelfMaterialManager.renameEditingRootShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
-      loadingManager.setIsLoading(false);
+      loadingManager.setIsStrictLoading(false);
     }
   }, [loadingManager, languageManager, shelfMaterialManager]);
 
@@ -95,7 +93,7 @@ const RootShelfMenuItem = ({
       <Collapsible>
         <SidebarMenuItem>
           <ContextMenu>
-            {shelfMaterialManager.isRootShelfNodeEditing(summary.root) ? (
+            {shelfMaterialManager.isRootShelfNodeEditing(summary.root.id) ? (
               <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative">
                 <input
                   ref={shelfMaterialManager.inputRef}
@@ -172,7 +170,7 @@ const RootShelfMenuItem = ({
                   );
                 }}
               >
-                Create an new shelf
+                Create Sub Shelf
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem

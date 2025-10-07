@@ -10,6 +10,9 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
@@ -22,11 +25,8 @@ import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { DNDType } from "@shared/types/enums/dndType.enum";
-import {
-  RootShelfNode,
-  ShelfTreeSummary,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
@@ -101,14 +101,14 @@ const SubShelfMenuItem = ({
   }
 
   const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsLoading(true);
+    loadingManager.setIsStrictLoading(true);
 
     try {
       await shelfMaterialManager.renameEditingSubShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
-      loadingManager.setIsLoading(false);
+      loadingManager.setIsStrictLoading(false);
     }
   }, [loadingManager, languageManager, shelfMaterialManager]);
 
@@ -141,6 +141,28 @@ const SubShelfMenuItem = ({
             </CollapsibleTrigger>
           </ContextMenuTrigger>
           <ContextMenuContent>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>Create Material</ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                <ContextMenuItem>Textbook</ContextMenuItem>
+                <ContextMenuItem
+                  onClick={async () => {
+                    await shelfMaterialManager.createNotebookMaterial(
+                      root.id,
+                      current,
+                      "undefined"
+                    );
+                    if (!current.isExpanded) {
+                      await shelfMaterialManager.expandSubShelf(root, current);
+                    }
+                  }}
+                >
+                  Notebook
+                </ContextMenuItem>
+                <ContextMenuItem>Learning Card</ContextMenuItem>
+                <ContextMenuItem>Workflow</ContextMenuItem>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
             <ContextMenuItem
               onClick={async () => {
                 await shelfMaterialManager.createSubShelf(
@@ -153,21 +175,7 @@ const SubShelfMenuItem = ({
                 }
               }}
             >
-              Create an new sub shelf
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={async () => {
-                await shelfMaterialManager.createTextbookMaterial(
-                  root.id,
-                  current,
-                  "undefined"
-                );
-                if (!current.isExpanded) {
-                  await shelfMaterialManager.expandSubShelf(root, current);
-                }
-              }}
-            >
-              Create an new material
+              Create Sub Shelf
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
@@ -200,7 +208,7 @@ const SubShelfMenuItem = ({
                         key={subShelfId}
                       >
                         {shelfMaterialManager.isSubShelfNodeEditing(
-                          subShelfNode
+                          subShelfNode.id
                         ) ? (
                           <SidebarMenuItem
                             key={subShelfId}

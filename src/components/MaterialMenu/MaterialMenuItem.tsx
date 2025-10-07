@@ -5,14 +5,14 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useAppRouter, useLoading, useShelfMaterial } from "@/hooks";
+import { useAppRouter, useShelfMaterial } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import {
   MaterialNode,
   RootShelfNode,
-  ShelfTreeSummary,
   SubShelfNode,
 } from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 
 interface MaterialMenuItemProps {
   summary: ShelfTreeSummary;
@@ -27,7 +27,6 @@ const MaterialMenuItem = ({
   parent,
   current,
 }: MaterialMenuItemProps) => {
-  const loadingManager = useLoading();
   const router = useAppRouter();
   const shelfMaterialManager = useShelfMaterial();
 
@@ -36,14 +35,17 @@ const MaterialMenuItem = ({
       <ContextMenuTrigger asChild>
         <SidebarMenuButton
           className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden 
-            ${current.isOpen ? "bg-primary/60" : "bg-transparent"}`}
+            ${
+              shelfMaterialManager.isFocused(current.id)
+                ? "bg-primary/60"
+                : "bg-transparent"
+            }`}
           onClick={() => {
-            const nextPath = WebURLPathDictionary.root.materialEditor.textbook(
-              current.id
+            const nextPath = WebURLPathDictionary.root.materialEditor.notebook(
+              current.id,
+              parent.id
             );
-            if (router.push(nextPath)) {
-              loadingManager.setIsLoading(true);
-            }
+            router.push(nextPath);
             shelfMaterialManager.toggleMaterial(current);
           }}
         >

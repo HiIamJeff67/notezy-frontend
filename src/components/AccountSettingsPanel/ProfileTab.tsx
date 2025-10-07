@@ -102,7 +102,7 @@ const ProfileTab = memo(({ userInfo }: ProfileTabProps) => {
 
   const handleSaveUserInfoOnSubmit = useCallback(
     async (userInfo: PrivateUserInfo): Promise<void> => {
-      loadingManager.setIsLoading(true);
+      loadingManager.setIsStrictLoading(true);
 
       try {
         const userAgent = navigator.userAgent;
@@ -140,7 +140,7 @@ const ProfileTab = memo(({ userInfo }: ProfileTabProps) => {
       } catch (error) {
         toast.error(languageManager.tError(error));
       } finally {
-        loadingManager.setIsLoading(false);
+        loadingManager.setIsStrictLoading(false);
       }
     },
     [loadingManager, userDataManager, languageManager]

@@ -111,7 +111,7 @@ export type GetAllMyMaterialsByRootShelfIdResponse = z.infer<
 
 /* ============================== CreateMaterial ============================== */
 
-export const CreateMaterialRequestSchema = NotezyRequestSchema.extend({
+export const CreateNotebookMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
@@ -126,23 +126,27 @@ export const CreateMaterialRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type CreateMaterialRequest = z.infer<typeof CreateMaterialRequestSchema>;
-
-export const CreateMaterialResponseSchema = NotezyResponseSchema.extend({
-  data: z.object({
-    id: z.uuidv4(),
-    downloadURL: z.string(),
-    createdAt: z.coerce.date(),
-  }),
-});
-
-export type CreateMaterialResponse = z.infer<
-  typeof CreateMaterialResponseSchema
+export type CreateNotebookMaterialRequest = z.infer<
+  typeof CreateNotebookMaterialRequestSchema
 >;
 
-/* ============================== UpdateMyTextbookMaterialById ============================== */
+export const CreateNotebookMaterialResponseSchema = NotezyResponseSchema.extend(
+  {
+    data: z.object({
+      id: z.uuidv4(),
+      downloadURL: z.string(),
+      createdAt: z.coerce.date(),
+    }),
+  }
+);
 
-export const UpdateMyTextbookMaterialByIdRequestSchema =
+export type CreateNotebookMaterialResponse = z.infer<
+  typeof CreateNotebookMaterialResponseSchema
+>;
+
+/* ============================== UpdateMyMaterialById ============================== */
+
+export const UpdateMyNotebookMaterialByIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
       userAgent: z.string().min(1),
@@ -162,24 +166,24 @@ export const UpdateMyTextbookMaterialByIdRequestSchema =
     }),
   });
 
-export type UpdateMyTextbookMaterialByIdRequest = z.infer<
-  typeof UpdateMyTextbookMaterialByIdRequestSchema
+export type UpdateMyNotebookMaterialByIdRequest = z.infer<
+  typeof UpdateMyNotebookMaterialByIdRequestSchema
 >;
 
-export const UpdateMyTextbookMaterialByIdResponseSchema =
+export const UpdateMyNotebookMaterialByIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
   });
 
-export type UpdateMyTextbookMaterialByIdResponse = z.infer<
-  typeof UpdateMyTextbookMaterialByIdResponseSchema
+export type UpdateMyNotebookMaterialByIdResponse = z.infer<
+  typeof UpdateMyNotebookMaterialByIdResponseSchema
 >;
 
-/* ============================== SaveMyTextbookMaterialById ============================== */
+/* ============================== SaveMyMaterialById ============================== */
 
-export const SaveMyTextbookMaterialByIdRequestSchema =
+export const SaveMyNotebookMaterialByIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
       userAgent: z.string().min(1),
@@ -194,19 +198,19 @@ export const SaveMyTextbookMaterialByIdRequestSchema =
     }),
   });
 
-export type SaveMyTextbookMaterialByIdRequest = z.infer<
-  typeof SaveMyTextbookMaterialByIdRequestSchema
+export type SaveMyNotebookMaterialByIdRequest = z.infer<
+  typeof SaveMyNotebookMaterialByIdRequestSchema
 >;
 
-export const SaveMyTextbookMaterialByIdResponseSchema =
+export const SaveMyNotebookMaterialByIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
   });
 
-export type SaveMyTextbookMaterialByIdResponse = z.infer<
-  typeof SaveMyTextbookMaterialByIdResponseSchema
+export type SaveMyNotebookMaterialByIdResponse = z.infer<
+  typeof SaveMyNotebookMaterialByIdResponseSchema
 >;
 
 /* ============================== MoveMyMaterialById ============================== */

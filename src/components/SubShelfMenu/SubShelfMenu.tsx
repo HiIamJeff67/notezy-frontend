@@ -1,9 +1,7 @@
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import {
-  RootShelfNode,
-  ShelfTreeSummary,
-} from "@shared/types/shelfMaterialNodes";
+import { RootShelfNode } from "@shared/types/shelfMaterialNodes";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";
@@ -22,14 +20,14 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const shelfMaterialManager = useShelfMaterial();
 
   const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsLoading(true);
+    loadingManager.setIsStrictLoading(true);
 
     try {
       await shelfMaterialManager.renameEditingSubShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
-      loadingManager.setIsLoading(false);
+      loadingManager.setIsStrictLoading(false);
     }
   }, [loadingManager, languageManager, shelfMaterialManager]);
 
@@ -39,7 +37,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
         {Object.entries(root.children).map(([subShelfId, subShelfNode]) => {
           return (
             <Suspense fallback={<SubShelfMenuItemSkeleton />} key={subShelfId}>
-              {shelfMaterialManager.isSubShelfNodeEditing(subShelfNode) ? (
+              {shelfMaterialManager.isSubShelfNodeEditing(subShelfNode.id) ? (
                 <SidebarMenuItem className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative">
                   <input
                     ref={shelfMaterialManager.inputRef}

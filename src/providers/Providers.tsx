@@ -22,9 +22,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <ThemeProvider>
               <UserDataProvider>
                 <DndProvider backend={HTML5Backend}>
-                  <ShelfMaterialProvider>
-                    <SidebarProvider>{children}</SidebarProvider>
-                  </ShelfMaterialProvider>
+                  <SidebarProvider>
+                    <ShelfMaterialProvider>{children}</ShelfMaterialProvider>
+                  </SidebarProvider>
                 </DndProvider>
               </UserDataProvider>
             </ThemeProvider>

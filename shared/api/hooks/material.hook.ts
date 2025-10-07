@@ -1,6 +1,6 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  CreateTextbookMaterial,
+  CreateNotebookMaterial,
   DeleteMyMaterialById,
   DeleteMyMaterialsByIds,
   GetAllMyMaterialsByParentSubShelfId,
@@ -9,12 +9,12 @@ import {
   MoveMyMaterialById,
   RestoreMyMaterialById,
   RestoreMyMaterialsByIds,
-  SaveMyTextbookMaterialById,
-  UpdateMyTextbookMaterialById,
+  SaveMyNotebookMaterialById,
+  UpdateMyNotebookMaterialById,
 } from "@shared/api/functions/material.api";
 import {
-  CreateMaterialRequest,
-  CreateMaterialRequestSchema,
+  CreateNotebookMaterialRequest,
+  CreateNotebookMaterialRequestSchema,
   DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdRequestSchema,
   DeleteMyMaterialsByIdsRequest,
@@ -34,10 +34,10 @@ import {
   RestoreMyMaterialByIdRequestSchema,
   RestoreMyMaterialsByIdsRequest,
   RestoreMyMaterialsByIdsRequestSchema,
-  SaveMyTextbookMaterialByIdRequest,
-  SaveMyTextbookMaterialByIdRequestSchema,
-  UpdateMyTextbookMaterialByIdRequest,
-  UpdateMyTextbookMaterialByIdRequestSchema,
+  SaveMyNotebookMaterialByIdRequest,
+  SaveMyNotebookMaterialByIdRequestSchema,
+  UpdateMyNotebookMaterialByIdRequest,
+  UpdateMyNotebookMaterialByIdRequestSchema,
 } from "@shared/api/interfaces/material.interface";
 import {
   QueryAsyncDefaultOptions,
@@ -239,13 +239,14 @@ export const useGetAllMyMaterialsByRootShelfId = (
   };
 };
 
-export const useCreateTextbookMaterial = () => {
+export const useCreateNotebookMaterial = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateMaterialRequest) => {
-      const validatedRequest = CreateMaterialRequestSchema.parse(request);
-      return await CreateTextbookMaterial(validatedRequest);
+    mutationFn: async (request: CreateNotebookMaterialRequest) => {
+      const validatedRequest =
+        CreateNotebookMaterialRequestSchema.parse(request);
+      return await CreateNotebookMaterial(validatedRequest);
     },
     onSuccess: (_, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId;
@@ -294,18 +295,18 @@ export const useCreateTextbookMaterial = () => {
 
   return {
     ...mutation,
-    name: "CREATE_TEXTBOOK_MATERIAL" as const,
+    name: "CREATE_NOTEBOOK_MATERIAL" as const,
   };
 };
 
-export const useUpdateMyTextbookMaterialById = () => {
+export const useUpdateMyNotebookMaterialById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMyTextbookMaterialByIdRequest) => {
+    mutationFn: async (request: UpdateMyNotebookMaterialByIdRequest) => {
       const validatedRequest =
-        UpdateMyTextbookMaterialByIdRequestSchema.parse(request);
-      return await UpdateMyTextbookMaterialById(validatedRequest);
+        UpdateMyNotebookMaterialByIdRequestSchema.parse(request);
+      return await UpdateMyNotebookMaterialById(validatedRequest);
     },
     onSuccess: (_, variables) => {
       const materialId = variables.body.materialId;
@@ -349,18 +350,18 @@ export const useUpdateMyTextbookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "UPDATE_MY_TEXTBOOK_MATERIAL_BY_ID" as const,
+    name: "UPDATE_MY_NOTEBOOK_MATERIAL_BY_ID" as const,
   };
 };
 
-export const useSaveMyTextbookMaterialById = () => {
+export const useSaveMyNotebookMaterialById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: SaveMyTextbookMaterialByIdRequest) => {
+    mutationFn: async (request: SaveMyNotebookMaterialByIdRequest) => {
       const validatedRequest =
-        SaveMyTextbookMaterialByIdRequestSchema.parse(request);
-      return await SaveMyTextbookMaterialById(validatedRequest);
+        SaveMyNotebookMaterialByIdRequestSchema.parse(request);
+      return await SaveMyNotebookMaterialById(validatedRequest);
     },
     onSuccess: (_, variables) => {
       const materialId = variables.body.materialId;
@@ -404,7 +405,7 @@ export const useSaveMyTextbookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "SAVE_MY_TEXTBOOK_MATERIAL_BY_ID" as const,
+    name: "SAVE_MY_NOTEBOOK_MATERIAL_BY_ID" as const,
   };
 };
 

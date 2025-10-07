@@ -25,9 +25,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    loadingManager.setIsLoading(false);
-    loadingManager.clearInactiveStrictLoadingStates();
-    loadingManager.clearInactiveLaxLoadingStates();
+    loadingManager.setIsStrictLoading(false);
   }, []);
 
   const handleLoginOnSubmit = useCallback(
@@ -118,7 +116,7 @@ const LoginPage = () => {
               ),
               title: languageManager.t(tKey.auth.register),
               onClick: () => {
-                loadingManager.setIsLoading(true);
+                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
@@ -126,13 +124,13 @@ const LoginPage = () => {
               description: languageManager.t(tKey.auth.oopsIForgotMyAccount),
               title: languageManager.t(tKey.auth.resetPassword),
               onClick: () => {
-                loadingManager.setIsLoading(true);
+                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.forgetPassword);
               },
             },
           ]}
           statusDetail={"System Ready"}
-          isLoading={loadingManager.isLoading}
+          isLoading={loadingManager.isStrictLoading}
         />
       </Suspense>
     </GridBackground>

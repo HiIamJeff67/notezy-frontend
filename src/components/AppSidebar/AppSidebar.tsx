@@ -113,9 +113,7 @@ export function AppSidebar() {
                   <Button
                     className="w-9/10 bg-transparent flex justify-start items-center select-none"
                     onClick={() => {
-                      if (router.push(WebURLPathDictionary.root.dashboard)) {
-                        loadingManager.setIsLoading(true);
-                      }
+                      router.push(WebURLPathDictionary.root.dashboard);
                     }}
                   >
                     <LayoutDashboardIcon />
@@ -233,9 +231,7 @@ export function AppSidebar() {
               <MenubarItem
                 className="cursor-pointer text-destructive focus:text-destructive"
                 onClick={async () => {
-                  if (router.push(WebURLPathDictionary.home)) {
-                    loadingManager.setIsLoading(true);
-                  }
+                  router.push(WebURLPathDictionary.home);
                   await userDataManager.logout();
                 }}
               >

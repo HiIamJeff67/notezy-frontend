@@ -56,7 +56,7 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
 
   const handleSaveUserOnSubmit = useCallback(
     async (user: PrivateUser) => {
-      loadingManager.setIsLoading(true);
+      loadingManager.setIsStrictLoading(true);
 
       try {
         const userAgent = navigator.userAgent;
@@ -87,7 +87,7 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
       } catch (error) {
         toast.error(languageManager.tError(error));
       } finally {
-        loadingManager.setIsLoading(false);
+        loadingManager.setIsStrictLoading(false);
       }
     },
     [loadingManager, userDataManager, languageManager]

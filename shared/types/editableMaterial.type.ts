@@ -5,7 +5,7 @@ import { MaterialType } from "./enums";
 /*
  * This is only used as the interface between NotezyAPI and BlockNoteEditor
  */
-export interface EditableMaterial {
+export interface EditableNotebookMaterial {
   id: UUID;
   name: string;
   type: MaterialType;
