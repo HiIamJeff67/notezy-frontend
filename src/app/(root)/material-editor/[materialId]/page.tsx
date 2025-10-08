@@ -1,6 +1,6 @@
 "use client";
 
-import NotebookEditor from "@/components/Editor/NotebookEditor";
+import NotebookEditor from "@/components/Editors/NotebookEditor";
 import { MaterialType } from "@shared/types/enums";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
 import { UUID } from "crypto";

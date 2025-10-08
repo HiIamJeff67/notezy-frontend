@@ -1,6 +1,6 @@
-export const loadFileFromDownloadURL = async (
+export async function loadFileFromDownloadURL(
   downloadURL: string
-): Promise<string> => {
+): Promise<string> {
   const response = await fetch(downloadURL);
 
   if (!response.ok) {
@@ -18,4 +18,4 @@ export const loadFileFromDownloadURL = async (
   } else {
     throw new Error(`unsupported file type of ${contentType}`);
   }
-};
+}
