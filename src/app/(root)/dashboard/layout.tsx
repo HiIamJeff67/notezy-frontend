@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
-import { queryClient } from "@shared/api/queryClient";
-import { queryKeys } from "@shared/api/queryKeys";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import React, { Suspense, useEffect } from "react";
@@ -45,10 +43,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           }
 
           userDataManager.setUserData(responseOfGettingUserData.data);
-          queryClient.setQueryData(
-            queryKeys.user.data(),
-            responseOfGettingUserData
-          );
         } catch {
           toast.error(
             "Your account has been logged out, please try to log in again."

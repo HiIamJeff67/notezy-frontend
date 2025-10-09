@@ -6,13 +6,29 @@ import { MaterialType } from "./enums";
  * This is only used as the interface between NotezyAPI and BlockNoteEditor
  */
 export interface NotebookMaterialMeta {
-  id: UUID | undefined;
+  id: UUID;
+  parentId: UUID;
   name: string;
   type: MaterialType;
   initialContent: PartialBlock[] | undefined;
   updatedAt: Date | undefined;
   createdAt: Date | undefined;
 }
+
+export const getDefaultNotebookMaterialMeta = (
+  materialId: UUID,
+  parentSubShelfId: UUID
+): NotebookMaterialMeta => {
+  return {
+    id: materialId,
+    parentId: parentSubShelfId,
+    name: "Untitled",
+    type: MaterialType.Notebook,
+    initialContent: undefined,
+    updatedAt: undefined,
+    createdAt: undefined,
+  };
+};
 
 export type NotebookMaterialMetaAction =
   | {
@@ -27,15 +43,6 @@ export type NotebookMaterialMetaAction =
     }
   | { type: "setUpdatedAt"; newUpdatedAt: Date }
   | { type: "setCreatedAt"; newCreatedAt: Date };
-
-export const DefaultNotebookMaterialMeta: NotebookMaterialMeta = {
-  id: undefined,
-  name: "Untitled",
-  type: MaterialType.Notebook,
-  initialContent: undefined,
-  updatedAt: undefined,
-  createdAt: undefined,
-};
 
 export function notebookMaterialMetaReducer(
   state: NotebookMaterialMeta,

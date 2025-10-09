@@ -1,10 +1,12 @@
 "use client";
 
-import { useLoading, useTheme } from "@/hooks";
+import { useAppRouter, useLoading, useTheme } from "@/hooks";
 import { useEffect } from "react";
 
 const LoadingOverlay = () => {
-  const { isAnyLoading } = useLoading();
+  const { isStrictLoading } = useLoading();
+  const { isNavigating } = useAppRouter();
+  const isAnyLoading = isStrictLoading || isNavigating;
   const themeManager = useTheme();
 
   useEffect(() => {

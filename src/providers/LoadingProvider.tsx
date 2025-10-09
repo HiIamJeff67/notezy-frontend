@@ -1,11 +1,12 @@
 "use client";
 
-import { useAppRouter } from "@/hooks";
 import React, { createContext, useState } from "react";
 
 interface LoadingContextType {
   isStrictLoading: boolean;
   setIsStrictLoading: (state: boolean) => void;
+  isLaxLoading: boolean;
+  setIsLaxLoading: (state: boolean) => void;
   startTransactionLoading: <T>(fn: () => Promise<T>) => Promise<T>;
   isAnyLoading: boolean;
 }
@@ -19,9 +20,8 @@ export const LoadingProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const router = useAppRouter();
-
   const [isStrictLoading, setIsStrictLoading] = useState<boolean>(false); // the strict loading states
+  const [isLaxLoading, setIsLaxLoading] = useState<boolean>(false);
 
   const startLoadingTransaction = async <T,>(fn: () => Promise<T>) => {
     setIsStrictLoading(true);
@@ -35,8 +35,10 @@ export const LoadingProvider = ({
   const contextValue: LoadingContextType = {
     isStrictLoading: isStrictLoading,
     setIsStrictLoading: setIsStrictLoading,
+    isLaxLoading: isLaxLoading,
+    setIsLaxLoading: setIsLaxLoading,
     startTransactionLoading: startLoadingTransaction,
-    isAnyLoading: isStrictLoading || router.isNavigating,
+    isAnyLoading: isStrictLoading || isLaxLoading,
   };
 
   return (

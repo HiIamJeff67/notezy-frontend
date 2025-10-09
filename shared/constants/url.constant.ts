@@ -1,5 +1,4 @@
 import { UUID } from "crypto";
-import { MaterialType } from "../types/enums";
 import {
   APIDevelopmentVersion,
   APIProductionVersion,
@@ -120,9 +119,9 @@ export const WebURLPathDictionary = {
   root: {
     materialEditor: {
       notebook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/${materialId}?parentSubShelfId=${parentSubShelfId}&type=${MaterialType.Notebook}`,
+        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
       textbook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/${materialId}?parentSubShelfId=${parentSubShelfId}&type=${MaterialType.Textbook}`,
+        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
       notFound: "material-editor/not-found",
     },
     documents: "documents",

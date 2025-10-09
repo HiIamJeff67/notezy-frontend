@@ -54,6 +54,13 @@ export async function convertBlocksToPlainText(
   return blob;
 }
 
+export async function convertBlocksToJSON(
+  editor: BlockNoteEditor
+): Promise<Blob> {
+  const json = JSON.stringify(editor.document);
+  return new Blob([json], { type: "application/json" });
+}
+
 export async function convertBlocksToPDF(
   editor: BlockNoteEditor
 ): Promise<Blob> {

@@ -1,3 +1,5 @@
+"use client";
+
 import { UserDataContext } from "@/providers/UserDataProvider";
 import { useContext } from "react";
 

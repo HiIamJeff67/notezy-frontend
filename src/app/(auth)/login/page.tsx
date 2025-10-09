@@ -6,8 +6,6 @@ import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay"
 import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
-import { queryClient } from "@shared/api/queryClient";
-import { queryKeys } from "@shared/api/queryKeys";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -51,10 +49,6 @@ const LoginPage = () => {
         setAccount("");
         setPassword("");
         userDataManager.setUserData(responseOfGettingUserData.data);
-        queryClient.setQueryData(
-          queryKeys.user.data(),
-          responseOfGettingUserData
-        );
         router.push(WebURLPathDictionary.root.dashboard);
       } catch (error) {
         setPassword("");

@@ -1,10 +1,15 @@
 "use client";
 
+import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
+import ChevronUpIcon from "@/components/icons/ChevronUpIcon";
+import TruncatedText from "@/components/TruncatedText/TruncatedText";
+import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
+  convertBlocksToJSON,
   convertBlocksToMarkdown,
   convertBlocksToPDF,
   convertBlocksToPlainText,
@@ -21,17 +26,13 @@ import {
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
 import { MaterialType } from "@shared/types/enums";
 import {
-  DefaultNotebookMaterialMeta,
   NotebookMaterialMeta,
   notebookMaterialMetaReducer,
 } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import ChevronDownIcon from "../icons/ChevronDownIcon";
-import ChevronUpIcon from "../icons/ChevronUpIcon";
-import TruncatedText from "../TruncatedText/TruncatedText";
-import { Button } from "../ui/button";
+import DropFileZone from "../DropFileZone/DropFileZone";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,14 +49,10 @@ import {
 import { Spinner } from "../ui/spinner";
 
 interface NotebookEditorProps {
-  materialId: UUID;
-  parentSubShelfId: UUID;
+  defaultMeta: NotebookMaterialMeta;
 }
 
-const NotebookEditor = ({
-  materialId,
-  parentSubShelfId,
-}: NotebookEditorProps) => {
+const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
@@ -71,12 +68,12 @@ const NotebookEditor = ({
   const [isExporting, startExportingTransition] = useTransition();
   const [meta, dispatchMeta] = useReducer(
     notebookMaterialMetaReducer,
-    DefaultNotebookMaterialMeta
+    defaultMeta
   );
 
   // update the file name in this page
   useEffect(() => {
-    if (shelfMaterialManager.isMaterialNodeEditing(materialId)) {
+    if (shelfMaterialManager.isMaterialNodeEditing(meta.id)) {
       dispatchMeta({
         type: "setName",
         newName: shelfMaterialManager.editMaterialNodeName,
@@ -89,7 +86,7 @@ const NotebookEditor = ({
       try {
         loadingManager.startTransactionLoading(async () => {
           const notebookMaterialMeta = await loadNotebookMaterial(
-            materialId as UUID
+            meta.id as UUID
           );
 
           if (notebookMaterialMeta) {
@@ -111,7 +108,7 @@ const NotebookEditor = ({
     };
 
     initializeMaterial();
-  }, [materialId]);
+  }, []);
 
   const loadNotebookMaterial = async (
     materialId: UUID
@@ -141,6 +138,7 @@ const NotebookEditor = ({
 
     return {
       id: responseOfGettingMaterial.data.id as UUID,
+      parentId: responseOfGettingMaterial.data.parentSubShelfId as UUID,
       name: responseOfGettingMaterial.data.name,
       type: responseOfGettingMaterial.data.type,
       initialContent: parsedContent,
@@ -149,7 +147,7 @@ const NotebookEditor = ({
     };
   };
 
-  if (!editor) {
+  if (!editor || !meta.parentId) {
     return undefined;
   }
 
@@ -167,7 +165,7 @@ const NotebookEditor = ({
       startSavingTransition(async () => {
         const blocks = editor.document;
         const json = JSON.stringify(blocks, null, 2);
-        const filename = `${meta.name || materialId}.notebook.json`;
+        const filename = `${meta.name || meta.id}.notebook.json`;
         const contentFile = new File([json], filename, {
           type: "application/json",
         });
@@ -183,11 +181,11 @@ const NotebookEditor = ({
             userAgent: userAgent,
           },
           body: {
-            materialId: materialId,
+            materialId: meta.id,
             contentFile: contentFile,
           },
           affected: {
-            parentSubShelfId: parentSubShelfId,
+            parentSubShelfId: meta.parentId as UUID,
           },
         });
       });
@@ -196,6 +194,16 @@ const NotebookEditor = ({
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
+  };
+
+  const handleImportFiles = async (files: File[]) => {
+    if (!files.length) return;
+    const file = files[0];
+    const text = await file.text();
+    const blocks = JSON.parse(text) as PartialBlock[];
+    editor.replaceBlocks([editor.document[0]?.id], blocks);
+    dispatchMeta({ type: "setInitialContent", newInitialContent: blocks });
+    toast.success(`Imported ${file.name}`);
   };
 
   const handleExportAsMarkdown = async () => {
@@ -238,6 +246,22 @@ const NotebookEditor = ({
         const a = document.createElement("a");
         a.href = url;
         a.download = `${meta.name}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
+  };
+
+  const handleExportAsJSON = async () => {
+    try {
+      startExportingTransition(async () => {
+        const blob = await convertBlocksToJSON(editor);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${meta.name}.json`;
         a.click();
         URL.revokeObjectURL(url);
       });
@@ -294,19 +318,26 @@ const NotebookEditor = ({
               onClick={() => {
                 if (meta.id) copyToClipboard(meta.id.toString());
               }}
+              className="hover:cursor-pointer"
             >
               <span className="font-semibold">Id</span>
               <TruncatedText width="200px" className="text-muted-foreground">
                 {meta.id}
               </TruncatedText>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => copyToClipboard(meta.name)}>
+            <DropdownMenuItem
+              onClick={() => copyToClipboard(meta.name)}
+              className="hover:cursor-pointer"
+            >
               <span className="font-semibold">Name</span>
               <TruncatedText width="200px" className="text-muted-foreground">
                 {meta.name}
               </TruncatedText>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => copyToClipboard(meta.type)}>
+            <DropdownMenuItem
+              onClick={() => copyToClipboard(meta.type)}
+              className="hover:cursor-pointer"
+            >
               <span className="font-semibold">Type</span>
               <TruncatedText width="200px" className="text-muted-foreground">
                 {meta.type}
@@ -318,6 +349,7 @@ const NotebookEditor = ({
                   if (meta.updatedAt)
                     copyToClipboard(meta.updatedAt.toLocaleString());
                 }}
+                className="hover:cursor-pointer"
               >
                 <span className="font-semibold">UpdatedAt</span>
                 <span className="text-muted-foreground">
@@ -331,6 +363,7 @@ const NotebookEditor = ({
                   if (meta.createdAt)
                     copyToClipboard(meta.createdAt.toLocaleString());
                 }}
+                className="hover:cursor-pointer"
               >
                 <span className="font-semibold">CreatedAt</span>
                 <span className="text-muted-foreground">
@@ -353,12 +386,20 @@ const NotebookEditor = ({
             <MenubarTrigger>
               <span>Import</span>
             </MenubarTrigger>
+            <MenubarContent align="end" side="bottom">
+              <DropFileZone
+                disabled={!editor}
+                width="300px"
+                height="200px"
+                onDrop={handleImportFiles}
+              />
+            </MenubarContent>
           </MenubarMenu>
           <MenubarMenu>
             <MenubarTrigger>
               {isExporting ? <Spinner /> : <span>Export</span>}
             </MenubarTrigger>
-            <MenubarContent>
+            <MenubarContent align="end" side="bottom">
               <MenubarItem onClick={handleExportAsMarkdown}>
                 <span className="font-semibold">Markdown</span>
                 <span className="text-muted-foreground">(.md)</span>
@@ -370,6 +411,10 @@ const NotebookEditor = ({
               <MenubarItem onClick={handleExportAsPlainText}>
                 <span className="font-semibold">Plain Text</span>
                 <span className="text-muted-foreground">(.txt)</span>
+              </MenubarItem>
+              <MenubarItem onClick={handleExportAsJSON}>
+                <span className="font-semibold">Raw JSON</span>
+                <span className="text-muted-foreground">(.json)</span>
               </MenubarItem>
               <MenubarItem onClick={handleExportAsPDF}>
                 <span className="font-semibold">PDF</span>
