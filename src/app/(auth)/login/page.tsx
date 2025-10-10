@@ -3,63 +3,64 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useUserData } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const router = useAppRouter();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
+
   const loginMutator = useLogin();
   const getUserDataQuerier = useGetUserData();
 
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    loadingManager.setIsStrictLoading(false);
-  }, []);
+  const [isLoginPending, startLoginTransition] = useTransition();
 
   const handleLoginOnSubmit = useCallback(
     async function (): Promise<void> {
-      try {
-        const userAgent = navigator.userAgent;
-        const responseOfLoggingIn = await loginMutator.mutateAsync({
-          header: {
-            userAgent: userAgent,
-          },
-          body: {
-            account: account,
-            password: password,
-          },
-        });
+      startLoginTransition(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          await loginMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+            },
+            body: {
+              account: account,
+              password: password,
+            },
+          });
 
-        const responseOfGettingUserData = await getUserDataQuerier.queryAsync({
-          header: {
-            userAgent: userAgent,
-          },
-        });
+          const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
+            {
+              header: {
+                userAgent: userAgent,
+              },
+            }
+          );
 
-        setAccount("");
-        setPassword("");
-        userDataManager.setUserData(responseOfGettingUserData.data);
-        router.push(WebURLPathDictionary.root.dashboard);
-      } catch (error) {
-        setPassword("");
-        console.error(error);
-        toast.error(languageManager.tError(error));
-      }
+          setAccount("");
+          setPassword("");
+          userDataManager.setUserData(responseOfGettingUserData.data);
+          router.push(WebURLPathDictionary.root.dashboard);
+        } catch (error) {
+          setPassword("");
+          console.error(error);
+          toast.error(languageManager.tError(error));
+        }
+      });
     },
     [
       account,
       password,
-      loadingManager,
       languageManager,
       userDataManager,
       loginMutator,
@@ -72,11 +73,7 @@ const LoginPage = () => {
     <GridBackground>
       <Suspense fallback={<StrictLoadingOutlay />}>
         <StrictLoadingOutlay
-          condition={
-            loginMutator.isPending ||
-            getUserDataQuerier.isFetching ||
-            router.isNavigating
-          }
+          condition={loginMutator.isPending || getUserDataQuerier.isFetching}
         />
         <AuthPanel
           title={languageManager.t(tKey.auth.login)}
@@ -110,7 +107,6 @@ const LoginPage = () => {
               ),
               title: languageManager.t(tKey.auth.register),
               onClick: () => {
-                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
@@ -118,13 +114,12 @@ const LoginPage = () => {
               description: languageManager.t(tKey.auth.oopsIForgotMyAccount),
               title: languageManager.t(tKey.auth.resetPassword),
               onClick: () => {
-                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.forgetPassword);
               },
             },
           ]}
           statusDetail={"System Ready"}
-          isLoading={loadingManager.isStrictLoading}
+          isLoading={isLoginPending}
         />
       </Suspense>
     </GridBackground>

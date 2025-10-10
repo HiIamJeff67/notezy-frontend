@@ -29,21 +29,20 @@ const CreateRootShelfDialog = ({
   const [newShelfName, setNewShelfName] = useState<string>("");
 
   const handleCreateRootShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsStrictLoading(true);
+    await loadingManager.startTransactionLoading(async () => {
+      try {
+        if (newShelfName.replaceAll(" ", "") === "") {
+          throw new Error("new shelf name must not be empty");
+        }
 
-    try {
-      if (newShelfName.replaceAll(" ", "") === "") {
-        throw new Error("new shelf name must not be empty");
+        await shelfMaterialManager.createRootShelf(newShelfName);
+        onClose();
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      } finally {
+        setNewShelfName("");
       }
-
-      await shelfMaterialManager.createRootShelf(newShelfName);
-      onClose();
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    } finally {
-      setNewShelfName("");
-      loadingManager.setIsStrictLoading(false);
-    }
+    });
   }, [newShelfName, loadingManager, languageManager, shelfMaterialManager]);
 
   return (
@@ -58,7 +57,7 @@ const CreateRootShelfDialog = ({
             placeholder="type your new and unique shelf name here"
             value={newShelfName}
             onChange={e => setNewShelfName(e.target.value)}
-            className="w-full caret-foreground"
+            className="w-full"
           />
 
           <div className="w-full flex flex-row justify-center gap-4">

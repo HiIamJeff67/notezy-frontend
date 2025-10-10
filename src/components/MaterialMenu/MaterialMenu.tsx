@@ -44,7 +44,7 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
                     ref={shelfMaterialManager.inputRef}
                     type="text"
                     value={shelfMaterialManager.editMaterialNodeName}
-                    className="flex-1 bg-transparent w-full h-6 outline-none caret-foreground overflow-hidden"
+                    className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
                     onChange={e =>
                       shelfMaterialManager.setEditMaterialNodeName(
                         e.target.value

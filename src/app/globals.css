@@ -56,9 +56,9 @@
   --switch-thumb: var(--background);
 }
 
-/* ============================== Default Themes ============================== */
+/* ============================== Main Themes ============================== */
 /* 
-Note: We will always apply one of the default themes
+Note: We will always apply one of the default themes as the main theme
 since both of them offer some default colors in ShadCN component
 */
 
@@ -96,6 +96,7 @@ since both of them offer some default colors in ShadCN component
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --switch-thumb: oklch(0.985 0 0);
+  /* don't add a field of caret here, since it will cause the other sub theme broken */
 }
 
 .light {
@@ -132,9 +133,10 @@ since both of them offer some default colors in ShadCN component
   --sidebar-border: oklch(0.9 0 0);
   --sidebar-ring: oklch(0.556 0 0);
   --switch-thumb: oklch(0.15 0 0);
+  /* don't add a field of caret here, since it will cause the other sub theme broken */
 }
 
-/* ============================== Customized Themes ============================== */
+/* ============================== Customized Sub Themes ============================== */
 
 .standard {
   --primary: oklch(0.4 0.06 45);
@@ -147,32 +149,35 @@ since both of them offer some default colors in ShadCN component
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --ring: oklch(0.4 0.06 45);
   --switch-thumb: oklch(0.985 0 0);
+  --caret: oklch(0.985 0 0);
 }
 
 .neon {
-  --primary: oklch(0.35 0.08 280);
-  --primary-foreground: oklch(0.985 0 0);
-  --accent: oklch(0.22 0.04 200);
-  --accent-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.35 0.08 280);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.28 0.06 200);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.4 0.08 280);
-  --switch-thumb: oklch(0.985 0 0);
+  --primary: oklch(0.72 0.23 212);
+  --primary-foreground: oklch(0.18 0 0);
+  --accent: oklch(0.66 0.26 320);
+  --accent-foreground: oklch(0.18 0 0);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --ring: oklch(0.78 0.24 208);
+  --switch-thumb: oklch(0.96 0.04 210);
+  --caret: oklch(0.96 0.04 210);
 }
 
 .ocean {
-  --primary: oklch(0.35 0.04 220);
-  --primary-foreground: oklch(0.985 0 0);
-  --accent: oklch(0.18 0.01 200);
-  --accent-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.35 0.04 220);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.32 0.03 200);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.35 0.04 220);
-  --switch-thumb: oklch(0.985 0 0);
+  --primary: oklch(0.71 0.08 210);
+  --primary-foreground: oklch(0.23 0.05 215);
+  --accent: oklch(0.82 0.07 208);
+  --accent-foreground: oklch(0.22 0.04 215);
+  --sidebar-primary: oklch(0.71 0.08 210);
+  --sidebar-primary-foreground: oklch(0.97 0.01 210);
+  --sidebar-accent: oklch(0.62 0.085 210);
+  --sidebar-accent-foreground: oklch(0.2 0.04 215);
+  --ring: oklch(0.52 0.09 210);
+  --switch-thumb: oklch(0.52 0.09 210);
+  --caret: oklch(0.23 0.05 215);
 }
 
 /* ==================== Global Scrollbar Styles ==================== */
@@ -209,7 +214,7 @@ input[type="number"] {
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    caret-color: var(--foreground);
+    caret-color: var(--caret, var(--foreground));
   }
   body {
     @apply bg-background text-foreground;

@@ -2,8 +2,12 @@
 
 // the sub type to indicate the content type of material files
 export enum MaterialContentType {
+  Markdown = "text/plain",
   PlainText = "text/plain",
   HTML = "text/html",
+  JSON = "application/json",
+  PDF = "application/pdf",
+  DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   PNG = "image/png",
   JPG = "image/jpg",
   JPEG = "image/jpeg",
@@ -24,20 +28,30 @@ export enum MaterialType {
 
 export const AllMaterialTypes = Object.values(MaterialType);
 
-export const MaterialTypeToAllowedMaterialContentTypes: Record<
-  MaterialType,
-  MaterialContentType[]
-> = {
+export const MaterialTypeToAllowedMaterialContentTypes = {
   [MaterialType.Textbook]: [
     MaterialContentType.PlainText,
     MaterialContentType.HTML,
+    MaterialContentType.JSON,
+    MaterialContentType.PDF,
+    MaterialContentType.DOCX,
   ],
-  [MaterialType.Notebook]: [MaterialContentType.PlainText],
-  [MaterialType.LearningCard]: [MaterialContentType.HTML],
+  [MaterialType.Notebook]: [
+    MaterialContentType.Markdown,
+    MaterialContentType.PlainText,
+    MaterialContentType.HTML,
+    MaterialContentType.JSON,
+    MaterialContentType.PDF,
+    MaterialContentType.DOCX,
+  ],
+  [MaterialType.LearningCard]: [
+    MaterialContentType.HTML,
+    MaterialContentType.JSON,
+  ],
   [MaterialType.Workflow]: [
     MaterialContentType.PNG,
     MaterialContentType.JPG,
     MaterialContentType.JPEG,
     MaterialContentType.SVG,
   ],
-};
+} as const satisfies Record<MaterialType, readonly MaterialContentType[]>;

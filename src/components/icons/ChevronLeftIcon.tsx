@@ -1,6 +1,10 @@
 import { IconProps } from "@shared/types/iconProps.type";
 
-const ChevronUpIcon = ({ size = 24, className = "", ...props }: IconProps) => {
+const ChevronLeftIcon = ({
+  size = 24,
+  className = "",
+  ...props
+}: IconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -12,12 +16,12 @@ const ChevronUpIcon = ({ size = 24, className = "", ...props }: IconProps) => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="lucide lucide-chevron-up-icon lucide-chevron-up"
+      className="lucide lucide-chevron-left-icon lucide-chevron-left"
       {...props}
     >
-      <path d="m18 15-6-6-6 6" />
+      <path d="m15 18-6-6 6-6" />
     </svg>
   );
 };
 
-export default ChevronUpIcon;
+export default ChevronLeftIcon;

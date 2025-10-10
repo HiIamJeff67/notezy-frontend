@@ -1,8 +1,12 @@
 "use client";
 
+import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { useLogout } from "@shared/api/hooks/auth.hook";
+import { useGetUserData } from "@shared/api/hooks/user.hook";
+import { WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
 import { UserData } from "@shared/types/models";
-import React, { createContext, useCallback, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 interface UserDataContextType {
@@ -21,9 +25,46 @@ export const UserDataProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const router = useAppRouter();
+  const loadingManager = useLoading();
+  const languageManager = useLanguage();
+
+  const getUserDataQuerier = useGetUserData();
   const logoutMutator = useLogout();
 
   const [userData, setUserData] = useState<UserData | null>(null);
+
+  // For maintaining the basic user data in the context
+  useEffect(() => {
+    if (userData === null) {
+      loadingManager.startTransactionLoading(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
+            {
+              header: {
+                userAgent: userAgent,
+              },
+              body: {},
+            }
+          );
+
+          if (!responseOfGettingUserData) {
+            throw new Error(
+              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
+            );
+          }
+
+          setUserData(responseOfGettingUserData.data);
+        } catch {
+          toast.error(
+            "Your account has been logged out, please try to log in again."
+          );
+          router.push(WebURLPathDictionary.auth.login);
+        }
+      });
+    }
+  }, []);
 
   /**
    * A method within useUserData() to update the user data of the current user
@@ -45,7 +86,6 @@ export const UserDataProvider = ({
       header: { userAgent: userAgent },
     });
     setUserData(null);
-    toast.success("Logout successfully, see you next time ~");
   }, [logoutMutator, setUserData]);
 
   const contextValue: UserDataContextType = {

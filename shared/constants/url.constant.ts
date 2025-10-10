@@ -118,13 +118,16 @@ export const WebURLPathDictionary = {
   },
   root: {
     materialEditor: {
+      _: "material-editor",
       notebook: (materialId: UUID, parentSubShelfId: UUID) =>
         `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
       textbook: (materialId: UUID, parentSubShelfId: UUID) =>
         `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
       notFound: "material-editor/not-found",
     },
-    documents: "documents",
+    documents: {
+      _: "documents",
+    },
     dashboard: "dashboard",
   },
 };

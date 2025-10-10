@@ -1,10 +1,8 @@
 "use client";
 
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
-import ChevronUpIcon from "@/components/icons/ChevronUpIcon";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import {
   convertBlocksToDOCX,
@@ -24,7 +22,11 @@ import {
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
-import { MaterialType } from "@shared/types/enums";
+import {
+  MaterialContentType,
+  MaterialType,
+  MaterialTypeToAllowedMaterialContentTypes,
+} from "@shared/types/enums";
 import {
   NotebookMaterialMeta,
   notebookMaterialMetaReducer,
@@ -55,7 +57,6 @@ interface NotebookEditorProps {
 const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const sidebarManager = useSidebar();
   const shelfMaterialManager = useShelfMaterial();
 
   const getMyMaterialQuerier = useGetMyMaterialById();
@@ -206,94 +207,48 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     toast.success(`Imported ${file.name}`);
   };
 
-  const handleExportAsMarkdown = async () => {
+  const handleExportFiles = async (
+    contentType: (typeof MaterialTypeToAllowedMaterialContentTypes)[MaterialType.Notebook][number]
+  ) => {
     try {
       startExportingTransition(async () => {
-        const blob = await convertBlocksToMarkdown(editor);
-        const url = URL.createObjectURL(blob);
+        let blob: Blob | undefined = undefined;
         const a = document.createElement("a");
-        a.href = url;
-        a.download = `${meta.name}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
 
-  const handleExportAsHTML = async () => {
-    try {
-      startExportingTransition(async () => {
-        const blob = await convertBlocksToHTML(editor);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${meta.name}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
+        switch (contentType) {
+          case MaterialContentType.Markdown:
+            blob = await convertBlocksToMarkdown(editor);
+            a.download = `${meta.name}.md`;
+            break;
+          case MaterialContentType.HTML:
+            blob = await convertBlocksToHTML(editor);
+            a.download = `${meta.name}.html`;
+            break;
+          case MaterialContentType.PlainText:
+            blob = await convertBlocksToPlainText(editor);
+            a.download = `${meta.name}.txt`;
+            break;
+          case MaterialContentType.JSON:
+            blob = await convertBlocksToJSON(editor);
+            a.download = `${meta.name}.json`;
+            break;
+          case MaterialContentType.PDF:
+            blob = await convertBlocksToPDF(editor);
+            a.download = `${meta.name}.pdf`;
+            break;
+          case MaterialContentType.DOCX:
+            blob = await convertBlocksToDOCX(editor);
+            a.download = `${meta.name}.docx`;
+            break;
+          default:
+            blob = undefined;
+        }
+        if (!blob) {
+          throw new Error(`Unexpected content type received`);
+        }
 
-  const handleExportAsPlainText = async () => {
-    try {
-      startExportingTransition(async () => {
-        const blob = await convertBlocksToPlainText(editor);
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
         a.href = url;
-        a.download = `${meta.name}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
-
-  const handleExportAsJSON = async () => {
-    try {
-      startExportingTransition(async () => {
-        const blob = await convertBlocksToJSON(editor);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${meta.name}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
-
-  const handleExportAsPDF = async () => {
-    try {
-      startExportingTransition(async () => {
-        const blob = await convertBlocksToPDF(editor);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${meta.name}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
-
-  const handleExportAsDOCX = async () => {
-    try {
-      startExportingTransition(async () => {
-        const blob = await convertBlocksToDOCX(editor);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${meta.name}.docx`;
         a.click();
         URL.revokeObjectURL(url);
       });
@@ -304,13 +259,14 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center">
-      <header className="w-full h-12 flex shrink-0 justify-between items-center pt-4 p-2 gap-2 bg-transparent">
-        {sidebarManager.isMobile && <SidebarTrigger />}
+      <header className="w-full h-12 flex shrink-0 justify-between items-center pt-4 p-2 pl-8 gap-2 bg-transparent">
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button className="font-semibold text-2xl border-none border-transparent bg-transparent hover:bg-muted/50 focus-visible:ring-0 focus-visible:ring-offset-0">
-              <span>{meta.name}</span>
-              {isDropdownOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              <TruncatedText width="1/2">{meta.name}</TruncatedText>
+              <ChevronDownIcon
+                className={`transition ${isDropdownOpen ? "-rotate-180" : ""}`}
+              />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="bottom">
@@ -400,27 +356,51 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
               {isExporting ? <Spinner /> : <span>Export</span>}
             </MenubarTrigger>
             <MenubarContent align="end" side="bottom">
-              <MenubarItem onClick={handleExportAsMarkdown}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.Markdown)
+                }
+              >
                 <span className="font-semibold">Markdown</span>
                 <span className="text-muted-foreground">(.md)</span>
               </MenubarItem>
-              <MenubarItem onClick={handleExportAsHTML}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.HTML)
+                }
+              >
                 <span className="font-semibold">HTML</span>
                 <span className="text-muted-foreground">(.html)</span>
               </MenubarItem>
-              <MenubarItem onClick={handleExportAsPlainText}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.PlainText)
+                }
+              >
                 <span className="font-semibold">Plain Text</span>
                 <span className="text-muted-foreground">(.txt)</span>
               </MenubarItem>
-              <MenubarItem onClick={handleExportAsJSON}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.JSON)
+                }
+              >
                 <span className="font-semibold">Raw JSON</span>
                 <span className="text-muted-foreground">(.json)</span>
               </MenubarItem>
-              <MenubarItem onClick={handleExportAsPDF}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.PDF)
+                }
+              >
                 <span className="font-semibold">PDF</span>
                 <span className="text-muted-foreground">(.pdf)</span>
               </MenubarItem>
-              <MenubarItem onClick={handleExportAsDOCX}>
+              <MenubarItem
+                onClick={async () =>
+                  await handleExportFiles(MaterialContentType.DOCX)
+                }
+              >
                 <span className="font-semibold">Word</span>
                 <span className="text-muted-foreground">(.docx)</span>
               </MenubarItem>
@@ -428,9 +408,8 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           </MenubarMenu>
         </Menubar>
       </header>
-
       <div className="w-full h-full rounded-none p-8">
-        <BlockNoteView editor={editor} />
+        <BlockNoteView editor={editor} className="caret-foreground" />
       </div>
     </div>
   );

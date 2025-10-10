@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { useLanguage, useTheme } from "@/hooks";
 import { Bell, Database, Info, Palette, Shield, Users } from "lucide-react";
 import { useState } from "react";
 
@@ -47,6 +48,8 @@ interface PreferencesPanelProps {
 }
 
 const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
+  const languageManager = useLanguage();
+  const themeManager = useTheme();
   const [currentPage, setCurrentPage] = useState<PreferencePage>("appearance");
 
   // fake data
@@ -101,14 +104,29 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
               <form className="space-y-6">
                 <div>
                   <Label>主題</Label>
-                  <Select>
+                  <Select
+                    value={themeManager.currentTheme.id}
+                    onValueChange={async value =>
+                      await themeManager.switchCurrentTheme(value)
+                    }
+                  >
                     <SelectTrigger className="w-40 mt-1">
                       <SelectValue placeholder="選擇主題" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">淺色</SelectItem>
-                      <SelectItem value="dark">深色</SelectItem>
-                      <SelectItem value="system">跟隨系統</SelectItem>
+                      {themeManager.availableThemes.map((theme, index) => {
+                        return (
+                          <SelectItem
+                            key={index}
+                            value={theme.id}
+                            defaultChecked={
+                              themeManager.currentTheme.id === theme.id
+                            }
+                          >
+                            {languageManager.t(theme.translationKey)}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description: "A note-taking application",
 };
 
-export default function RootLayout({
+export default function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

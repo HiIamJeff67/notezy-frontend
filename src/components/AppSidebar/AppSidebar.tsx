@@ -1,9 +1,10 @@
+"use client";
+
 import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import RootShelfMenu from "@/components/RootShelfMenu/RootShelfMenu";
 import CreateRootShelfDialog from "@/components/ShelfDialog/CreateRootShelfDialog";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,12 +36,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  useAppRouter,
-  useLanguage,
-  useLoading,
-  useShelfMaterial,
-} from "@/hooks";
+import { useAppRouter, useLanguage, useShelfMaterial } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -56,10 +52,15 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ShelfCaseIcon from "../icons/ShelfCaseIcon";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  disabled?: boolean;
+}
+
+export function AppSidebar({ disabled = false }: AppSidebarProps) {
+  if (disabled) return <></>;
+
   const router = useAppRouter();
   const sidebarManager = useSidebar();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
   const shelfMaterialManager = useShelfMaterial();
@@ -106,50 +107,48 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem
                 className={`${
-                  sidebarManager.open ? "flex-row pr-2" : "flex-col-reverse"
+                  sidebarManager.open ? "flex-row pr-1" : "flex-col-reverse"
                 } flex justify-between items-center gap-1 hover:bg-accent rounded-sm`}
               >
-                <SidebarMenuButton asChild>
-                  <Button
-                    className="w-9/10 bg-transparent flex justify-start items-center select-none"
-                    onClick={() => {
-                      router.push(WebURLPathDictionary.root.dashboard);
-                    }}
-                  >
-                    <LayoutDashboardIcon />
-                    {sidebarManager.open && (
-                      <span className="truncate">Dashboard</span>
-                    )}
-                  </Button>
+                <SidebarMenuButton
+                  className="w-19/20 bg-transparent hover:bg-primary flex justify-start items-center select-none"
+                  onClick={() => {
+                    router.push(WebURLPathDictionary.root.dashboard);
+                  }}
+                >
+                  <LayoutDashboardIcon />
+                  {sidebarManager.open && (
+                    <span className="truncate">Dashboard</span>
+                  )}
                 </SidebarMenuButton>
                 <SidebarTrigger
-                  variant={"secondary"}
-                  className="bg-transparent hover:bg-primary/60 select-none"
+                  variant={"default"}
+                  className="select-none bg-transparent hover:bg-primary"
                 />
               </SidebarMenuItem>
-              <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
-                <Button
-                  className={`w-full bg-transparent hover:bg-transparent flex ${
+              <SidebarMenuItem className="rounded-sm">
+                <SidebarMenuButton
+                  className={`w-full flex ${
                     sidebarManager.open ? "justify-start" : "justify-center"
-                  } items-center select-none`}
+                  } items-center select-none hover:bg-primary`}
                 >
                   <CalendarIcon />
                   {sidebarManager.open && (
                     <span className="truncate">Daily Routine</span>
                   )}
-                </Button>
+                </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem className="hover:bg-primary/60 rounded-sm">
-                <Button
-                  className={`w-full bg-transparent hover:bg-transparent flex ${
+              <SidebarMenuItem className="rounded-sm">
+                <SidebarMenuButton
+                  className={`w-full flex ${
                     sidebarManager.open ? "justify-start" : "justify-center"
-                  } items-center select-none`}
+                  } items-center select-none hover:bg-primary`}
                 >
                   <MessageSquareIcon />
                   {sidebarManager.open && (
                     <span className="truncate">Community</span>
                   )}
-                </Button>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -164,11 +163,9 @@ export function AppSidebar() {
               <Collapsible className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="rounded-sm" asChild>
-                      <Button className="flex flex-row justify-start items-center gap-2 bg-transparent hover:bg-transparent">
-                        <ShelfCaseIcon size={16} />
-                        <span>Shelves</span>
-                      </Button>
+                    <SidebarMenuButton className="flex flex-row justify-start items-center gap-2 hover:bg-primary">
+                      <ShelfCaseIcon size={16} />
+                      <span>Shelves</span>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <SidebarMenuAction
@@ -233,6 +230,7 @@ export function AppSidebar() {
                 onClick={async () => {
                   router.push(WebURLPathDictionary.home);
                   await userDataManager.logout();
+                  toast.success("Logout successfully, see you next time ~");
                 }}
               >
                 <span>{languageManager.t(tKey.auth.logout)}</span>

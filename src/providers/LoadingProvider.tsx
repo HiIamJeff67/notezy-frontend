@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState } from "react";
+import React, { createContext, useRef, useState } from "react";
 
 interface LoadingContextType {
   isStrictLoading: boolean;
@@ -20,15 +20,45 @@ export const LoadingProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isStrictLoading, setIsStrictLoading] = useState<boolean>(false); // the strict loading states
-  const [isLaxLoading, setIsLaxLoading] = useState<boolean>(false);
+  const [isStrictLoading, _setIsStrictLoading] = useState<boolean>(false); // the strict loading states
+  const [isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
+  const strictLoadingCounterRef = useRef<number>(0);
+  const laxLoadingCounterRef = useRef<number>(0);
 
-  const startLoadingTransaction = async <T,>(fn: () => Promise<T>) => {
-    setIsStrictLoading(true);
+  const setIsStrictLoading = (state: boolean) => {
+    if (state) {
+      _setIsStrictLoading(true);
+      strictLoadingCounterRef.current++;
+    } else {
+      strictLoadingCounterRef.current--;
+      if (strictLoadingCounterRef.current === 0) {
+        _setIsStrictLoading(false);
+      }
+    }
+  };
+
+  const setIsLaxLoading = (state: boolean) => {
+    if (state) {
+      _setIsLaxLoading(true);
+      laxLoadingCounterRef.current++;
+    } else {
+      laxLoadingCounterRef.current--;
+      if (laxLoadingCounterRef.current === 0) {
+        _setIsLaxLoading(false);
+      }
+    }
+  };
+
+  const startTransactionLoading = async <T,>(fn: () => Promise<T>) => {
+    _setIsStrictLoading(true);
+    strictLoadingCounterRef.current++;
     try {
       return await fn();
     } finally {
-      setIsStrictLoading(false);
+      strictLoadingCounterRef.current--;
+      if (strictLoadingCounterRef.current === 0) {
+        _setIsStrictLoading(false);
+      }
     }
   };
 
@@ -37,7 +67,7 @@ export const LoadingProvider = ({
     setIsStrictLoading: setIsStrictLoading,
     isLaxLoading: isLaxLoading,
     setIsLaxLoading: setIsLaxLoading,
-    startTransactionLoading: startLoadingTransaction,
+    startTransactionLoading: startTransactionLoading,
     isAnyLoading: isStrictLoading || isLaxLoading,
   };
 

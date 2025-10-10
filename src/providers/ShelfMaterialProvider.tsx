@@ -178,13 +178,14 @@ export const ShelfMaterialProvider = ({
   >(undefined);
   const [editRootShelfNodeName, setEditRootShelfNodeName] =
     useState<string>("");
-  const [originalRootShelfName, setOriginalRootShelfName] =
+  const [originalRootShelfNodeName, setOriginalRootShelfNodeName] =
     useState<string>("");
   const [editingSubShelfNode, setEditingSubShelfNode] = useState<
     SubShelfNode | undefined
   >(undefined);
   const [editSubShelfNodeName, setEditSubShelfNodeName] = useState<string>("");
-  const [originalSubShelfName, setOriginalSubShelfName] = useState<string>("");
+  const [originalSubShelfNodeName, setOriginalSubShelfNodeName] =
+    useState<string>("");
   const [editingMaterialNode, setEditingMaterialNode] = useState<
     MaterialNode | undefined
   >(undefined);
@@ -216,7 +217,7 @@ export const ShelfMaterialProvider = ({
         await renameEditingRootShelf();
         setEditingRootShelfNode(undefined);
         setEditRootShelfNodeName("");
-        setOriginalRootShelfName("");
+        setOriginalRootShelfNodeName("");
       }
     };
 
@@ -237,10 +238,10 @@ export const ShelfMaterialProvider = ({
   }, [
     editingRootShelfNode,
     editRootShelfNodeName, // will be used in renameEditingRootShelf
-    originalRootShelfName, // will be used in renameEditingRootShelf
+    originalRootShelfNodeName, // will be used in renameEditingRootShelf
     setEditingRootShelfNode,
     setEditRootShelfNodeName,
-    setOriginalRootShelfName,
+    setOriginalRootShelfNodeName,
   ]);
 
   // trigger for listen and auto focus the input with ref of inputRef declared in the top
@@ -255,7 +256,7 @@ export const ShelfMaterialProvider = ({
         await renameEditingSubShelf();
         setEditingSubShelfNode(undefined);
         setEditSubShelfNodeName("");
-        setOriginalSubShelfName("");
+        setOriginalSubShelfNodeName("");
       }
     };
 
@@ -276,10 +277,49 @@ export const ShelfMaterialProvider = ({
   }, [
     editingSubShelfNode,
     editSubShelfNodeName, // will be used in renameEditingSubShelf
-    originalSubShelfName, // will be used in renameEditingSubShelf
+    originalSubShelfNodeName, // will be used in renameEditingSubShelf
     setEditingSubShelfNode,
     setEditSubShelfNodeName,
-    setOriginalSubShelfName,
+    setOriginalSubShelfNodeName,
+  ]);
+
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = async (event: MouseEvent) => {
+      if (
+        editingMaterialNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        await renameEditingMaterial();
+        setEditingMaterialNode(undefined);
+        setEditMaterialNodeName("");
+        setOriginalMaterialNodeName("");
+      }
+    };
+
+    if (editingMaterialNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    setTimeout(() => {
+      if (editingMaterialNode && inputRef.current) {
+        inputRef.current?.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [
+    editingMaterialNode,
+    editMaterialNodeName, // will be used in renameEditingMaterial
+    originalMaterialNodeName, // will be used in renameEditingMaterial
+    setEditingMaterialNode,
+    setEditMaterialNodeName,
+    setOriginalMaterialNodeName,
   ]);
 
   const forceUpdate = () => {
@@ -449,10 +489,10 @@ export const ShelfMaterialProvider = ({
 
   const isNewRootShelfNodeName = useCallback(() => {
     return (
-      editRootShelfNodeName !== originalRootShelfName &&
+      editRootShelfNodeName !== originalRootShelfNodeName &&
       editRootShelfNodeName.trim() !== ""
     );
-  }, [editRootShelfNodeName, originalRootShelfName]);
+  }, [editRootShelfNodeName, originalRootShelfNodeName]);
 
   const isRootShelfNodeEditing = useCallback(
     (rootShelfId: UUID) => {
@@ -464,23 +504,23 @@ export const ShelfMaterialProvider = ({
   const startRenamingRootShelfNode = useCallback(
     (rootShelfNode: RootShelfNode) => {
       setEditingRootShelfNode(rootShelfNode);
-      setOriginalRootShelfName(rootShelfNode.name);
+      setOriginalRootShelfNodeName(rootShelfNode.name);
       setEditRootShelfNodeName(rootShelfNode.name);
     },
     [
       setEditingRootShelfNode,
-      setOriginalRootShelfName,
+      setOriginalRootShelfNodeName,
       setEditRootShelfNodeName,
     ]
   );
 
   const cancelRenamingRootShelfNode = useCallback(() => {
     setEditingRootShelfNode(undefined);
-    setOriginalRootShelfName("");
+    setOriginalRootShelfNodeName("");
     setEditRootShelfNodeName("");
   }, [
     setEditingRootShelfNode,
-    setOriginalRootShelfName,
+    setOriginalRootShelfNodeName,
     setEditRootShelfNodeName,
   ]);
 
@@ -524,15 +564,15 @@ export const ShelfMaterialProvider = ({
     } finally {
       setEditingRootShelfNode(undefined);
       setEditRootShelfNodeName("");
-      setOriginalRootShelfName("");
+      setOriginalRootShelfNodeName("");
     }
   }, [
     editingRootShelfNode,
     editRootShelfNodeName,
-    originalRootShelfName,
+    originalRootShelfNodeName,
     setEditingRootShelfNode,
     setEditRootShelfNodeName,
-    setOriginalRootShelfName,
+    setOriginalRootShelfNodeName,
     expandedShelvesRef,
     updateRootShelfMutator,
   ]);
@@ -711,10 +751,10 @@ export const ShelfMaterialProvider = ({
 
   const isNewSubShelfNodeName = useCallback((): boolean => {
     return (
-      editSubShelfNodeName !== originalSubShelfName &&
+      editSubShelfNodeName !== originalSubShelfNodeName &&
       editSubShelfNodeName.trim() !== ""
     );
-  }, [editSubShelfNodeName, originalSubShelfName]);
+  }, [editSubShelfNodeName, originalSubShelfNodeName]);
 
   const isSubShelfNodeEditing = useCallback(
     (subShelfId: UUID): boolean => {
@@ -726,19 +766,23 @@ export const ShelfMaterialProvider = ({
   const startRenamingSubShelfNode = useCallback(
     (subShelfNode: SubShelfNode): void => {
       setEditingSubShelfNode(subShelfNode);
-      setOriginalSubShelfName(subShelfNode.name);
+      setOriginalSubShelfNodeName(subShelfNode.name);
       setEditSubShelfNodeName(subShelfNode.name);
     },
-    [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfNodeName]
+    [
+      setEditingSubShelfNode,
+      setOriginalSubShelfNodeName,
+      setEditSubShelfNodeName,
+    ]
   );
 
   const cancelRenamingSubShelfNode = useCallback((): void => {
     setEditingSubShelfNode(undefined);
-    setOriginalSubShelfName("");
+    setOriginalSubShelfNodeName("");
     setEditSubShelfNodeName("");
   }, [
     setEditingSubShelfNode,
-    setOriginalSubShelfName,
+    setOriginalSubShelfNodeName,
     setEditSubShelfNodeName,
   ]);
 
@@ -777,15 +821,15 @@ export const ShelfMaterialProvider = ({
     } finally {
       setEditingSubShelfNode(undefined);
       setEditSubShelfNodeName("");
-      setOriginalSubShelfName("");
+      setOriginalSubShelfNodeName("");
     }
   }, [
     editingSubShelfNode,
     editSubShelfNodeName,
-    originalSubShelfName,
+    originalSubShelfNodeName,
     setEditingSubShelfNode,
     setEditSubShelfNodeName,
-    setOriginalSubShelfName,
+    setOriginalSubShelfNodeName,
     updateSubShelfMutator,
   ]);
 

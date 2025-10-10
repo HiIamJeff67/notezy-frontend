@@ -137,7 +137,7 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
                     <Input
                       {...field}
                       placeholder="設定顯示名稱"
-                      className="w-[200px] caret-foreground"
+                      className="w-[200px]"
                     />
                   </FormControl>
                 </SettingMenuItem>

@@ -3,19 +3,24 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { useAppRouter, useLanguage } from "@/hooks";
 import {
   useForgetPassword,
   useSendAuthCode,
 } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import toast from "react-hot-toast";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sendAuthCodeMutator = useSendAuthCode();
   const forgetPasswordMutator = useForgetPassword();
@@ -27,9 +32,9 @@ const ForgetPasswordPage = () => {
   const [sendAuthCodeTimeCounter, setSendAuthCodeTimeCounter] =
     useState<number>(0);
 
-  useEffect(() => {
-    loadingManager.setIsStrictLoading(false);
-  }, []);
+  const [_, startSendAuthCodeTransition] = useTransition();
+  const [isResetPasswordPending, startResetPasswordTransition] =
+    useTransition();
 
   useEffect(() => {
     if (sendAuthCodeTimeCounter === 0) return;
@@ -48,78 +53,77 @@ const ForgetPasswordPage = () => {
 
   const handleSendAuthCodeOnClick = useCallback(
     async function (): Promise<void> {
-      loadingManager.setIsStrictLoading(true);
+      startSendAuthCodeTransition(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          const responseOfSendingAuthCode =
+            await sendAuthCodeMutator.mutateAsync({
+              header: {
+                userAgent: userAgent,
+              },
+              body: {
+                email: email,
+              },
+            });
 
-      try {
-        const userAgent = navigator.userAgent;
-        const responseOfSendingAuthCode = await sendAuthCodeMutator.mutateAsync(
-          {
-            header: {
-              userAgent: userAgent,
-            },
-            body: {
-              email: email,
-            },
-          }
-        );
-
-        const blockUntil = new Date(
-          responseOfSendingAuthCode.data.blockAuthCodeUntil
-        );
-        const blockTime = Math.floor(
-          (blockUntil.getTime() - new Date().getTime()) / 1000
-        );
-        setSendAuthCodeTimeCounter(Math.max(AuthCodeBlockedSecond, blockTime));
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      } finally {
-        loadingManager.setIsStrictLoading(false);
-      }
+          const blockUntil = new Date(
+            responseOfSendingAuthCode.data.blockAuthCodeUntil
+          );
+          const blockTime = Math.floor(
+            (blockUntil.getTime() - new Date().getTime()) / 1000
+          );
+          setSendAuthCodeTimeCounter(
+            Math.max(AuthCodeBlockedSecond, blockTime)
+          );
+        } catch (error) {
+          setSendAuthCodeTimeCounter(0);
+          toast.error(languageManager.tError(error));
+        }
+      });
     },
-    [email, loadingManager, languageManager, sendAuthCodeMutator]
+    [email, languageManager, sendAuthCodeMutator]
   );
 
   const handleResetPasswordOnSubmit = useCallback(
     async function (): Promise<void> {
-      loadingManager.setIsStrictLoading(true);
+      startResetPasswordTransition(async () => {
+        try {
+          if (newPassword !== confirmNewPassword) {
+            throw new Error(
+              languageManager.t(
+                tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+              )
+            );
+          }
 
-      try {
-        if (newPassword !== confirmNewPassword) {
-          throw new Error(
-            languageManager.t(
-              tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-            )
-          );
+          const userAgent = navigator.userAgent;
+          await forgetPasswordMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+            },
+            body: {
+              account: email,
+              newPassword: newPassword,
+              authCode: authCode,
+            },
+          });
+          setEmail("");
+          setAuthCode("");
+          setNewPassword("");
+          setConfirmNewPassword("");
+          router.push(WebURLPathDictionary.auth.login);
+        } catch (error) {
+          setNewPassword("");
+          setConfirmNewPassword("");
+          toast.error(languageManager.tError(error));
         }
-
-        const userAgent = navigator.userAgent;
-        await forgetPasswordMutator.mutateAsync({
-          header: {
-            userAgent: userAgent,
-          },
-          body: {
-            account: email,
-            newPassword: newPassword,
-            authCode: authCode,
-          },
-        });
-        setEmail("");
-        setAuthCode("");
-        setNewPassword("");
-        setConfirmNewPassword("");
-        router.push(WebURLPathDictionary.auth.login);
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      } finally {
-        loadingManager.setIsStrictLoading(false);
-      }
+      });
     },
     [
       email,
       authCode,
       newPassword,
       confirmNewPassword,
-      loadingManager,
       languageManager,
       forgetPasswordMutator,
       router,
@@ -196,13 +200,12 @@ const ForgetPasswordPage = () => {
               ),
               title: languageManager.t(tKey.auth.register),
               onClick: () => {
-                loadingManager.setIsStrictLoading(true);
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
           ]}
           statusDetail={"System Ready"}
-          isLoading={loadingManager.isStrictLoading}
+          isLoading={isResetPasswordPending}
         />
       </Suspense>
     </GridBackground>

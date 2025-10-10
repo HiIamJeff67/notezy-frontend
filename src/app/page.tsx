@@ -1,6 +1,7 @@
 "use client";
 
 import GridBlackBackground from "@/components/GridBackground/GridBackground";
+import CheckIcon from "@/components/icons/CheckIcon";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
 import DocumentIcon from "@/components/icons/DocumentIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";
@@ -15,7 +16,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useLoading, useTheme } from "@/hooks";
+import { useAppRouter, useLanguage, useTheme } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -27,7 +28,6 @@ const DisplayTitle = {
 
 const HomePage = () => {
   const router = useAppRouter();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const themeManager = useTheme();
 
@@ -101,7 +101,6 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    loadingManager.setIsStrictLoading(false);
     startCycle();
     return () => clearAllTimers();
   }, []);
@@ -159,11 +158,10 @@ const HomePage = () => {
                     key={theme.id}
                     onClick={() => themeManager.switchCurrentTheme(theme.id)}
                     className="flex items-center justify-between cursor-pointer"
+                    defaultChecked={themeManager.currentTheme.id === theme.id}
                   >
                     <span>{languageManager.t(theme.translationKey)}</span>
-                    {themeManager.currentTheme === theme && (
-                      <span className="text-accent text-sm">✓</span>
-                    )}
+                    {themeManager.currentTheme.id === theme.id && <CheckIcon />}
                   </MenubarItem>
                 ))}
               </MenubarContent>
@@ -196,7 +194,6 @@ const HomePage = () => {
                 variant="secondary"
                 className="cursor-pointer font-bold hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
                 onClick={() => {
-                  loadingManager.setIsStrictLoading(true);
                   router.push(WebURLPathDictionary.root.documents);
                 }}
               >
@@ -207,7 +204,6 @@ const HomePage = () => {
                 variant="default"
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
-                  loadingManager.setIsStrictLoading(true);
                   router.push(WebURLPathDictionary.auth.login);
                 }}
               >

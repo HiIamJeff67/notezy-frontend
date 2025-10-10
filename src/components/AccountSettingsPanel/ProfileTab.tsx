@@ -192,11 +192,7 @@ const ProfileTab = memo(({ userInfo }: ProfileTabProps) => {
               <FormItem>
                 <FormLabel>個人標題</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    className="caret-foreground"
-                  />
+                  <Input {...field} value={field.value ?? ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -214,7 +210,7 @@ const ProfileTab = memo(({ userInfo }: ProfileTabProps) => {
                   <Textarea
                     {...field}
                     value={field.value ?? ""}
-                    className="text-base mb-6 caret-foreground"
+                    className="text-base mb-6"
                   />
                 </FormControl>
                 <FormMessage />

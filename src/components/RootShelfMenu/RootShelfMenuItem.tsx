@@ -99,7 +99,7 @@ const RootShelfMenuItem = ({
                   ref={shelfMaterialManager.inputRef}
                   type="text"
                   value={shelfMaterialManager.editRootShelfNodeName}
-                  className="flex-1 bg-transparent h-6 outline-none caret-foreground overflow-hidden"
+                  className="flex-1 bg-transparent h-6 outline-none overflow-hidden"
                   onChange={e =>
                     shelfMaterialManager.setEditRootShelfNodeName(
                       e.target.value

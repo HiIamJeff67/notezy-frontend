@@ -1,10 +1,11 @@
+import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import NotebookEditor from "@/components/NotebookEditor/NotebookEditor";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import MaterialEditorNotFoundPage from "../../not-found";
 
-interface MaterialEditorPageProps {
+interface NotebookMaterialEditorPageProps {
   params: Promise<{
     materialId: string;
   }>;
@@ -13,10 +14,10 @@ interface MaterialEditorPageProps {
   }>;
 }
 
-const MaterialEditorPage = async ({
+const NotebookMaterialEditorPage = async ({
   params,
   searchParams,
-}: MaterialEditorPageProps) => {
+}: NotebookMaterialEditorPageProps) => {
   const { materialId } = await params;
   const { parentSubShelfId } = await searchParams;
   if (
@@ -24,10 +25,10 @@ const MaterialEditorPage = async ({
     !isValidUUID(parentSubShelfId) ||
     !isValidUUID(materialId)
   )
-    return <MaterialEditorNotFoundPage />;
+    return notFound();
 
   return (
-    <Suspense fallback={<MaterialEditorNotFoundPage />}>
+    <Suspense fallback={<StrictLoadingOutlay />}>
       <NotebookEditor
         defaultMeta={getDefaultNotebookMaterialMeta(
           materialId,
@@ -38,4 +39,4 @@ const MaterialEditorPage = async ({
   );
 };
 
-export default MaterialEditorPage;
+export default NotebookMaterialEditorPage;
