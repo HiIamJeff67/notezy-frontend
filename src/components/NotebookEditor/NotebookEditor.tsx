@@ -23,9 +23,9 @@ import {
 } from "@shared/api/hooks/material.hook";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
 import {
+  ExportableMaterialContentTypes,
   MaterialContentType,
   MaterialType,
-  MaterialTypeToAllowedMaterialContentTypes,
 } from "@shared/types/enums";
 import {
   NotebookMaterialMeta,
@@ -66,6 +66,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const [isSaving, startSavingTransition] = useTransition();
+  const [isImporting, startImportingTransition] = useTransition();
   const [isExporting, startExportingTransition] = useTransition();
   const [meta, dispatchMeta] = useReducer(
     notebookMaterialMetaReducer,
@@ -85,7 +86,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   useEffect(() => {
     const initializeMaterial = async () => {
       try {
-        loadingManager.startTransactionLoading(async () => {
+        loadingManager.startAsyncTransactionLoading(async () => {
           const notebookMaterialMeta = await loadNotebookMaterial(
             meta.id as UUID
           );
@@ -199,19 +200,50 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
   const handleImportFiles = async (files: File[]) => {
     if (!files.length) return;
-    const file = files[0];
-    const text = await file.text();
-    const blocks = JSON.parse(text) as PartialBlock[];
-    editor.replaceBlocks([editor.document[0]?.id], blocks);
-    dispatchMeta({ type: "setInitialContent", newInitialContent: blocks });
-    toast.success(`Imported ${file.name}`);
+
+    startImportingTransition(async () => {
+      try {
+        const file = files[0];
+        let blocks: PartialBlock[] | undefined = undefined;
+        switch (file.type) {
+          case MaterialContentType.Markdown:
+          case MaterialContentType.PlainText: // use the same way as markdown to parse the text
+            const markdownText = await file.text();
+            blocks = await editor.tryParseMarkdownToBlocks(markdownText);
+            break;
+          case MaterialContentType.HTML:
+            const htmlText = await file.text();
+            blocks = await editor.tryParseHTMLToBlocks(htmlText);
+            break;
+          case MaterialContentType.JSON:
+            const jsonText = await file.text();
+            blocks = JSON.parse(jsonText) as PartialBlock[];
+            break;
+          default:
+            throw new Error(`Unexpected content type received`);
+        }
+        if (!blocks) {
+          throw new Error(`Unexpected content type received`);
+        }
+
+        editor.replaceBlocks([editor.document[0]?.id], blocks);
+        dispatchMeta({
+          type: "setInitialContent",
+          newInitialContent: blocks,
+        });
+
+        toast.success(`Imported ${file.name}`);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    });
   };
 
   const handleExportFiles = async (
-    contentType: (typeof MaterialTypeToAllowedMaterialContentTypes)[MaterialType.Notebook][number]
+    contentType: (typeof ExportableMaterialContentTypes)[MaterialType.Notebook][number]
   ) => {
-    try {
-      startExportingTransition(async () => {
+    startExportingTransition(async () => {
+      try {
         let blob: Blob | undefined = undefined;
         const a = document.createElement("a");
 
@@ -241,7 +273,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
             a.download = `${meta.name}.docx`;
             break;
           default:
-            blob = undefined;
+            throw new Error(`Unexpected content type received`);
         }
         if (!blob) {
           throw new Error(`Unexpected content type received`);
@@ -251,10 +283,12 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         a.href = url;
         a.click();
         URL.revokeObjectURL(url);
-      });
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
+
+        toast.success(`Exported`);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    });
   };
 
   return (
@@ -340,7 +374,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           </MenubarMenu>
           <MenubarMenu>
             <MenubarTrigger>
-              <span>Import</span>
+              {isImporting ? <Spinner /> : <span>Import</span>}
             </MenubarTrigger>
             <MenubarContent align="end" side="bottom">
               <DropFileZone

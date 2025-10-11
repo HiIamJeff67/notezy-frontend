@@ -7,9 +7,10 @@ import {
 import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import {
   useCreateNotebookMaterial,
+  useCreateTextbookMaterial,
   useDeleteMyMaterialById,
   useGetAllMyMaterialsByParentSubShelfId,
-  useUpdateMyNotebookMaterialById,
+  useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
 import {
   useCreateRootShelf,
@@ -115,6 +116,11 @@ interface ShelfMaterialContextType {
 
   // for material
   toggleMaterial: (materialNode: MaterialNode, reset?: boolean) => void;
+  createTextbookMaterial: (
+    rootShelfId: UUID,
+    parentSubShelfNode: SubShelfNode,
+    name: string
+  ) => Promise<void>;
   createNotebookMaterial: (
     rootShelfId: UUID,
     parentSubShelfNode: SubShelfNode,
@@ -127,7 +133,7 @@ interface ShelfMaterialContextType {
   isMaterialNodeEditing: (materialId: UUID) => boolean;
   startRenamingMaterialNode: (materialNode: MaterialNode) => void;
   cancelRenamingMaterialNode: () => void;
-  renameEditingMaterial: () => Promise<void>;
+  renameEditingMaterial: (materialType: MaterialType) => Promise<void>;
   deleteMaterial: (
     parentSubShelfNode: SubShelfNode,
     materialNode: MaterialNode
@@ -158,8 +164,9 @@ export const ShelfMaterialProvider = ({
   // const restoreRootShelfMutator = useRestoreMyRootShelfById();
   // const restoreSubShelfMutator = useRestoreMySubShelfById();
 
+  const createTextbookMaterialMutator = useCreateTextbookMaterial();
   const createNotebookMaterialMutator = useCreateNotebookMaterial();
-  const updateNotebookMaterialMutator = useUpdateMyNotebookMaterialById();
+  const updateMaterialMutator = useUpdateMyMaterialById();
   const deleteMaterialMutator = useDeleteMyMaterialById();
 
   const [_, setUpdateTrigger] = useState(0);
@@ -292,7 +299,7 @@ export const ShelfMaterialProvider = ({
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        await renameEditingMaterial();
+        await renameEditingMaterial(editingMaterialNode.type);
         setEditingMaterialNode(undefined);
         setEditMaterialNodeName("");
         setOriginalMaterialNodeName("");
@@ -967,6 +974,65 @@ export const ShelfMaterialProvider = ({
     forceUpdate();
   };
 
+  const createTextbookMaterial = useCallback(
+    async (
+      rootShelfId: UUID,
+      parentSubShelfNode: SubShelfNode,
+      name: string
+    ): Promise<void> => {
+      const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
+      if (shelfTreeSummary === undefined) {
+        throw new Error(
+          `The given rootShelfId is not exist in the expandedShelvesRef`
+        );
+      }
+
+      const userAgent = navigator.userAgent;
+      const responseOfCreateNotebookMaterial =
+        await createTextbookMaterialMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
+          },
+          body: {
+            parentSubShelfId: parentSubShelfNode.id,
+            name: name,
+          },
+          affected: {
+            rootShelfId: rootShelfId,
+            parentSubShelfId: parentSubShelfNode.id,
+          },
+        });
+      shelfTreeSummary.hasChanged = true;
+      shelfTreeSummary.root.totalMaterials++;
+      if (parentSubShelfNode !== null) {
+        shelfTreeSummary.maxDepth = Math.max(
+          shelfTreeSummary.maxDepth,
+          parentSubShelfNode.path.length + 1
+        );
+        shelfTreeSummary.maxWidth = Math.max(
+          shelfTreeSummary.maxWidth,
+          Object.entries(parentSubShelfNode.children).length +
+            Object.entries(parentSubShelfNode.materialNodes).length +
+            1
+        );
+        parentSubShelfNode.materialNodes[
+          responseOfCreateNotebookMaterial.data.id as UUID
+        ] = {
+          id: responseOfCreateNotebookMaterial.data.id as UUID,
+          parentSubShelfId: parentSubShelfNode.id,
+          name: name,
+          type: MaterialType.Notebook,
+          downloadURL: responseOfCreateNotebookMaterial.data.downloadURL,
+          updatedAt: responseOfCreateNotebookMaterial.data.createdAt,
+          createdAt: responseOfCreateNotebookMaterial.data.createdAt,
+          isOpen: false,
+        };
+        forceUpdate();
+      }
+    },
+    [expandedShelvesRef, createTextbookMaterialMutator]
+  );
+
   const createNotebookMaterial = useCallback(
     async (
       rootShelfId: UUID,
@@ -981,7 +1047,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const responseOfCreateMaterial =
+      const responseOfCreateNotebookMaterial =
         await createNotebookMaterialMutator.mutateAsync({
           header: {
             userAgent: userAgent,
@@ -1009,15 +1075,15 @@ export const ShelfMaterialProvider = ({
             1
         );
         parentSubShelfNode.materialNodes[
-          responseOfCreateMaterial.data.id as UUID
+          responseOfCreateNotebookMaterial.data.id as UUID
         ] = {
-          id: responseOfCreateMaterial.data.id as UUID,
+          id: responseOfCreateNotebookMaterial.data.id as UUID,
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
           type: MaterialType.Notebook,
-          downloadURL: responseOfCreateMaterial.data.downloadURL,
-          updatedAt: responseOfCreateMaterial.data.createdAt,
-          createdAt: responseOfCreateMaterial.data.createdAt,
+          downloadURL: responseOfCreateNotebookMaterial.data.downloadURL,
+          updatedAt: responseOfCreateNotebookMaterial.data.createdAt,
+          createdAt: responseOfCreateNotebookMaterial.data.createdAt,
           isOpen: false,
         };
         forceUpdate();
@@ -1063,49 +1129,53 @@ export const ShelfMaterialProvider = ({
     setEditMaterialNodeName,
   ]);
 
-  const renameEditingMaterial = useCallback(async (): Promise<void> => {
-    try {
-      if (!isNewMaterialNodeName() || !editingMaterialNode) {
-        throw new Error("the name of the given material node is invalid");
-      }
+  const renameEditingMaterial = useCallback(
+    async (materialType: MaterialType): Promise<void> => {
+      try {
+        if (!isNewMaterialNodeName() || !editingMaterialNode) {
+          throw new Error("the name of the given material node is invalid");
+        }
 
-      const userAgent = navigator.userAgent;
-      await updateNotebookMaterialMutator.mutateAsync({
-        header: {
-          userAgent: userAgent,
-        },
-        body: {
-          materialId: editingMaterialNode.id,
-          values: {
-            name: editMaterialNodeName,
+        const userAgent = navigator.userAgent;
+        await updateMaterialMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
           },
-        },
-        affected: {
-          parentSubShelfId: editingMaterialNode.parentSubShelfId,
-        },
-      });
+          body: {
+            materialId: editingMaterialNode.id,
+            values: {
+              name: editMaterialNodeName,
+            },
+            type: materialType,
+          },
+          affected: {
+            parentSubShelfId: editingMaterialNode.parentSubShelfId,
+          },
+        });
 
-      editingMaterialNode.name = editMaterialNodeName;
-      setEditingMaterialNode(prev =>
-        prev ? { ...prev, name: editMaterialNodeName } : undefined
-      );
-      forceUpdate();
-    } catch (error) {
-      throw error;
-    } finally {
-      setEditingMaterialNode(undefined);
-      setEditMaterialNodeName("");
-      setOriginalMaterialNodeName("");
-    }
-  }, [
-    editingMaterialNode,
-    editMaterialNodeName,
-    originalMaterialNodeName,
-    setEditingMaterialNode,
-    setEditMaterialNodeName,
-    setOriginalMaterialNodeName,
-    updateNotebookMaterialMutator,
-  ]);
+        editingMaterialNode.name = editMaterialNodeName;
+        setEditingMaterialNode(prev =>
+          prev ? { ...prev, name: editMaterialNodeName } : undefined
+        );
+        forceUpdate();
+      } catch (error) {
+        throw error;
+      } finally {
+        setEditingMaterialNode(undefined);
+        setEditMaterialNodeName("");
+        setOriginalMaterialNodeName("");
+      }
+    },
+    [
+      editingMaterialNode,
+      editMaterialNodeName,
+      originalMaterialNodeName,
+      setEditingMaterialNode,
+      setEditMaterialNodeName,
+      setOriginalMaterialNodeName,
+      updateMaterialMutator,
+    ]
+  );
 
   const deleteMaterial = useCallback(
     async (
@@ -1197,6 +1267,7 @@ export const ShelfMaterialProvider = ({
 
     // for material
     toggleMaterial: toggleMaterial,
+    createTextbookMaterial: createTextbookMaterial,
     createNotebookMaterial: createNotebookMaterial,
     editMaterialNodeName: editMaterialNodeName,
     setEditMaterialNodeName: setEditMaterialNodeName,

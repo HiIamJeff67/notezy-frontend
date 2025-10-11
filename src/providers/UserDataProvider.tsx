@@ -37,7 +37,7 @@ export const UserDataProvider = ({
   // For maintaining the basic user data in the context
   useEffect(() => {
     if (userData === null) {
-      loadingManager.startTransactionLoading(async () => {
+      loadingManager.startAsyncTransactionLoading(async () => {
         try {
           const userAgent = navigator.userAgent;
           const responseOfGettingUserData = await getUserDataQuerier.queryAsync(

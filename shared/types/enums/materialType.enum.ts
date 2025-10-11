@@ -28,10 +28,23 @@ export enum MaterialType {
 
 export const AllMaterialTypes = Object.values(MaterialType);
 
-export const MaterialTypeToAllowedMaterialContentTypes = {
-  [MaterialType.Textbook]: [
+export const ImportableMaterialContentTypes = {
+  [MaterialType.Textbook]: [MaterialContentType.PDF],
+  [MaterialType.Notebook]: [
+    MaterialContentType.Markdown,
     MaterialContentType.PlainText,
     MaterialContentType.HTML,
+    MaterialContentType.JSON,
+  ],
+  [MaterialType.LearningCard]: [
+    MaterialContentType.HTML,
+    MaterialContentType.JSON,
+  ],
+  [MaterialType.Workflow]: [MaterialContentType.JSON],
+};
+
+export const ExportableMaterialContentTypes = {
+  [MaterialType.Textbook]: [
     MaterialContentType.JSON,
     MaterialContentType.PDF,
     MaterialContentType.DOCX,

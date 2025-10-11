@@ -72,7 +72,7 @@ const RegisterPage = () => {
           setPassword("");
           setConfirmPassword("");
           userDataManager.setUserData(responseOfGettingUserData.data);
-          router.push(WebURLPathDictionary.root.dashboard);
+          router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
           setConfirmPassword("");

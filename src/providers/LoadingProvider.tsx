@@ -7,7 +7,8 @@ interface LoadingContextType {
   setIsStrictLoading: (state: boolean) => void;
   isLaxLoading: boolean;
   setIsLaxLoading: (state: boolean) => void;
-  startTransactionLoading: <T>(fn: () => Promise<T>) => Promise<T>;
+  startSyncTransactionLoading: <T>(fn: () => T) => T;
+  startAsyncTransactionLoading: <T>(fn: () => Promise<T>) => Promise<T>;
   isAnyLoading: boolean;
 }
 
@@ -49,7 +50,20 @@ export const LoadingProvider = ({
     }
   };
 
-  const startTransactionLoading = async <T,>(fn: () => Promise<T>) => {
+  const startSyncTransactionLoading = <T,>(fn: () => T) => {
+    _setIsStrictLoading(true);
+    strictLoadingCounterRef.current++;
+    try {
+      return fn();
+    } finally {
+      strictLoadingCounterRef.current--;
+      if (strictLoadingCounterRef.current === 0) {
+        _setIsStrictLoading(false);
+      }
+    }
+  };
+
+  const startAsyncTransactionLoading = async <T,>(fn: () => Promise<T>) => {
     _setIsStrictLoading(true);
     strictLoadingCounterRef.current++;
     try {
@@ -67,7 +81,8 @@ export const LoadingProvider = ({
     setIsStrictLoading: setIsStrictLoading,
     isLaxLoading: isLaxLoading,
     setIsLaxLoading: setIsLaxLoading,
-    startTransactionLoading: startTransactionLoading,
+    startSyncTransactionLoading: startSyncTransactionLoading,
+    startAsyncTransactionLoading: startAsyncTransactionLoading,
     isAnyLoading: isStrictLoading || isLaxLoading,
   };
 

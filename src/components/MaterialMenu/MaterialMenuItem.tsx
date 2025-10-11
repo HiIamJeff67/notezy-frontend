@@ -5,14 +5,16 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useAppRouter, useShelfMaterial } from "@/hooks";
+import { useAppRouter, useLanguage, useShelfMaterial } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
+import { MaterialType } from "@shared/types/enums";
 import {
   MaterialNode,
   RootShelfNode,
   SubShelfNode,
 } from "@shared/types/shelfMaterialNodes";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import toast from "react-hot-toast";
 
 interface MaterialMenuItemProps {
   summary: ShelfTreeSummary;
@@ -28,7 +30,36 @@ const MaterialMenuItem = ({
   current,
 }: MaterialMenuItemProps) => {
   const router = useAppRouter();
+  const languageManager = useLanguage();
   const shelfMaterialManager = useShelfMaterial();
+
+  const handleMaterialOnClick = () => {
+    try {
+      let nextPath: string | undefined = undefined;
+
+      switch (current.type) {
+        case MaterialType.Notebook:
+          nextPath = WebURLPathDictionary.root.materialEditor.notebook(
+            current.id,
+            parent.id
+          );
+          break;
+        case MaterialType.Textbook:
+          nextPath = WebURLPathDictionary.root.materialEditor.textbook(
+            current.id,
+            parent.id
+          );
+          break;
+        default:
+          throw new Error(`Unsupported type`);
+      }
+
+      router.push(nextPath);
+      shelfMaterialManager.toggleMaterial(current);
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
+  };
 
   return (
     <ContextMenu>
@@ -40,14 +71,7 @@ const MaterialMenuItem = ({
                 ? "bg-primary/60"
                 : "bg-transparent"
             }`}
-          onClick={() => {
-            const nextPath = WebURLPathDictionary.root.materialEditor.notebook(
-              current.id,
-              parent.id
-            );
-            router.push(nextPath);
-            shelfMaterialManager.toggleMaterial(current);
-          }}
+          onClick={handleMaterialOnClick}
         >
           <span>{current.name}</span>
         </SidebarMenuButton>

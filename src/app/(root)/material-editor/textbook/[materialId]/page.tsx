@@ -1,11 +1,10 @@
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import NotebookEditor from "@/components/NotebookEditor/NotebookEditor";
-import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
+import TextbookEditor from "@/components/TextbookEditor/TextbookEditor";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-interface NotebookMaterialEditorPageProps {
+interface TextbookMaterialEditorPageProps {
   params: Promise<{
     materialId: string;
   }>;
@@ -14,12 +13,13 @@ interface NotebookMaterialEditorPageProps {
   }>;
 }
 
-const NotebookMaterialEditorPage = async ({
+const TextbookMaterialEditorPage = async ({
   params,
   searchParams,
-}: NotebookMaterialEditorPageProps) => {
+}: TextbookMaterialEditorPageProps) => {
   const { materialId } = await params;
   const { parentSubShelfId } = await searchParams;
+
   if (
     !parentSubShelfId ||
     !isValidUUID(parentSubShelfId) ||
@@ -32,14 +32,9 @@ const NotebookMaterialEditorPage = async ({
 
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>
-      <NotebookEditor
-        defaultMeta={getDefaultNotebookMaterialMeta(
-          materialId,
-          parentSubShelfId
-        )}
-      />
+      <TextbookEditor materialId={materialId} />
     </Suspense>
   );
 };
 
-export default NotebookMaterialEditorPage;
+export default TextbookMaterialEditorPage;

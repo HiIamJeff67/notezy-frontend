@@ -3,6 +3,8 @@ import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   CreateNotebookMaterialRequest,
   CreateNotebookMaterialResponse,
+  CreateTextbookMaterialRequest,
+  CreateTextbookMaterialResponse,
   DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdResponse,
   DeleteMyMaterialsByIdsRequest,
@@ -23,8 +25,8 @@ import {
   RestoreMyMaterialsByIdsResponse,
   SaveMyNotebookMaterialByIdRequest,
   SaveMyNotebookMaterialByIdResponse,
-  UpdateMyNotebookMaterialByIdRequest,
-  UpdateMyNotebookMaterialByIdResponse,
+  UpdateMyMaterialByIdRequest,
+  UpdateMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -127,7 +129,36 @@ export async function GetAllMyMaterialsByRootShelfId(
   return jsonResponse;
 }
 
-/* ============================== CreateMaterial (including all types) ============================== */
+/* ============================== CreateTextbookMaterial ============================== */
+
+export async function CreateTextbookMaterial(
+  request: CreateTextbookMaterialRequest
+): Promise<CreateTextbookMaterialResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const jsonResponse =
+    (await response.json()) as CreateNotebookMaterialResponse;
+  if (jsonResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  }
+  return jsonResponse;
+}
+
+/* ============================== CreateNotebookMaterial ============================== */
 
 export async function CreateNotebookMaterial(
   request: CreateNotebookMaterialRequest
@@ -156,13 +187,13 @@ export async function CreateNotebookMaterial(
   return jsonResponse;
 }
 
-/* ============================== UpdateMyNotebookMaterialById ============================== */
+/* ============================== UpdateMyMaterialById ============================== */
 
-export async function UpdateMyNotebookMaterialById(
-  request: UpdateMyNotebookMaterialByIdRequest
-): Promise<UpdateMyNotebookMaterialByIdResponse> {
+export async function UpdateMyMaterialById(
+  request: UpdateMyMaterialByIdRequest
+): Promise<UpdateMyMaterialByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyNotebookMaterialById}`,
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyMaterialById}`,
     {
       method: "PUT",
       headers: {
@@ -177,8 +208,7 @@ export async function UpdateMyNotebookMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as UpdateMyNotebookMaterialByIdResponse;
+  const jsonResponse = (await response.json()) as UpdateMyMaterialByIdResponse;
   if (jsonResponse.exception) {
     throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
   }

@@ -1,6 +1,7 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   CreateNotebookMaterial,
+  CreateTextbookMaterial,
   DeleteMyMaterialById,
   DeleteMyMaterialsByIds,
   GetAllMyMaterialsByParentSubShelfId,
@@ -10,11 +11,13 @@ import {
   RestoreMyMaterialById,
   RestoreMyMaterialsByIds,
   SaveMyNotebookMaterialById,
-  UpdateMyNotebookMaterialById,
+  UpdateMyMaterialById,
 } from "@shared/api/functions/material.api";
 import {
   CreateNotebookMaterialRequest,
   CreateNotebookMaterialRequestSchema,
+  CreateTextbookMaterialRequest,
+  CreateTextbookMaterialRequestSchema,
   DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdRequestSchema,
   DeleteMyMaterialsByIdsRequest,
@@ -36,8 +39,8 @@ import {
   RestoreMyMaterialsByIdsRequestSchema,
   SaveMyNotebookMaterialByIdRequest,
   SaveMyNotebookMaterialByIdRequestSchema,
-  UpdateMyNotebookMaterialByIdRequest,
-  UpdateMyNotebookMaterialByIdRequestSchema,
+  UpdateMyMaterialByIdRequest,
+  UpdateMyMaterialByIdRequestSchema,
 } from "@shared/api/interfaces/material.interface";
 import {
   QueryAsyncDefaultOptions,
@@ -239,6 +242,66 @@ export const useGetAllMyMaterialsByRootShelfId = (
   };
 };
 
+export const useCreateTextbookMaterial = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: CreateTextbookMaterialRequest) => {
+      const validatedRequest =
+        CreateTextbookMaterialRequestSchema.parse(request);
+      return await CreateTextbookMaterial(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      const parentSubShelfId = variables.affected.parentSubShelfId;
+      const rootShelfId = variables.affected.rootShelfId;
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+
+          switch (k[0]) {
+            case "rootShelf":
+              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
+            case "subShelf":
+              if (k[1] === "myOneById" && parentSubShelfId === k[2])
+                return false;
+            case "material":
+              switch (k[1]) {
+                case "myManyByParentSubShelfId":
+                  if (parentSubShelfId === k[2]) return true;
+                case "myManyByRootShelfId":
+                  if (rootShelfId === k[2]) return true;
+              }
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "CREATE_TEXTBOOK_MATERIAL" as const,
+  };
+};
+
 export const useCreateNotebookMaterial = () => {
   const queryClient = useQueryClient();
 
@@ -299,14 +362,13 @@ export const useCreateNotebookMaterial = () => {
   };
 };
 
-export const useUpdateMyNotebookMaterialById = () => {
+export const useUpdateMyMaterialById = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMyNotebookMaterialByIdRequest) => {
-      const validatedRequest =
-        UpdateMyNotebookMaterialByIdRequestSchema.parse(request);
-      return await UpdateMyNotebookMaterialById(validatedRequest);
+    mutationFn: async (request: UpdateMyMaterialByIdRequest) => {
+      const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
+      return await UpdateMyMaterialById(validatedRequest);
     },
     onSuccess: (_, variables) => {
       const materialId = variables.body.materialId;
@@ -350,7 +412,7 @@ export const useUpdateMyNotebookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "UPDATE_MY_NOTEBOOK_MATERIAL_BY_ID" as const,
+    name: "UPDATE_MY_MATERIAL_BY_ID" as const,
   };
 };
 

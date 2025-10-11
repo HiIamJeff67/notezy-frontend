@@ -113,7 +113,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 <SidebarMenuButton
                   className="w-19/20 bg-transparent hover:bg-primary flex justify-start items-center select-none"
                   onClick={() => {
-                    router.push(WebURLPathDictionary.root.dashboard);
+                    router.push(WebURLPathDictionary.root.dashboard._);
                   }}
                 >
                   <LayoutDashboardIcon />

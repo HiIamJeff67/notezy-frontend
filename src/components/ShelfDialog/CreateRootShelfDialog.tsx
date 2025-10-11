@@ -29,7 +29,7 @@ const CreateRootShelfDialog = ({
   const [newShelfName, setNewShelfName] = useState<string>("");
 
   const handleCreateRootShelfOnSubmit = useCallback(async (): Promise<void> => {
-    await loadingManager.startTransactionLoading(async () => {
+    await loadingManager.startAsyncTransactionLoading(async () => {
       try {
         if (newShelfName.replaceAll(" ", "") === "") {
           throw new Error("new shelf name must not be empty");

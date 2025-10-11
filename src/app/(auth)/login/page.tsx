@@ -50,7 +50,7 @@ const LoginPage = () => {
           setAccount("");
           setPassword("");
           userDataManager.setUserData(responseOfGettingUserData.data);
-          router.push(WebURLPathDictionary.root.dashboard);
+          router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
           console.error(error);

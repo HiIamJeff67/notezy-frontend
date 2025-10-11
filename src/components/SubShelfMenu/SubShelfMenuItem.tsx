@@ -100,16 +100,59 @@ const SubShelfMenuItem = ({
     </SidebarMenuSubItem>;
   }
 
-  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsStrictLoading(true);
-
+  const handleCreateTextbookMaterial = useCallback(async () => {
     try {
-      await shelfMaterialManager.renameEditingSubShelf();
+      await shelfMaterialManager.createTextbookMaterial(
+        root.id,
+        current,
+        "undefined"
+      );
+      if (!current.isExpanded) {
+        await shelfMaterialManager.expandSubShelf(root, current);
+      }
     } catch (error) {
       toast.error(languageManager.tError(error));
-    } finally {
-      loadingManager.setIsStrictLoading(false);
     }
+  }, [root, current, languageManager, shelfMaterialManager]);
+
+  const handleCreateNotebookMaterial = useCallback(async () => {
+    try {
+      await shelfMaterialManager.createNotebookMaterial(
+        root.id,
+        current,
+        "undefined"
+      );
+      if (!current.isExpanded) {
+        await shelfMaterialManager.expandSubShelf(root, current);
+      }
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
+  }, [root, current, languageManager, shelfMaterialManager]);
+
+  const handleCreateSubShelf = useCallback(async () => {
+    try {
+      await shelfMaterialManager.createSubShelf(
+        summary.root.id,
+        current,
+        "undefined"
+      );
+      if (!current.isExpanded) {
+        await shelfMaterialManager.expandSubShelf(root, current);
+      }
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
+  }, [root, current, languageManager, shelfMaterialManager]);
+
+  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
+    loadingManager.startAsyncTransactionLoading(async () => {
+      try {
+        await shelfMaterialManager.renameEditingSubShelf();
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    });
   }, [loadingManager, languageManager, shelfMaterialManager]);
 
   return (
@@ -144,18 +187,13 @@ const SubShelfMenuItem = ({
             <ContextMenuSub>
               <ContextMenuSubTrigger>Create Material</ContextMenuSubTrigger>
               <ContextMenuSubContent>
-                <ContextMenuItem>Textbook</ContextMenuItem>
                 <ContextMenuItem
-                  onClick={async () => {
-                    await shelfMaterialManager.createNotebookMaterial(
-                      root.id,
-                      current,
-                      "undefined"
-                    );
-                    if (!current.isExpanded) {
-                      await shelfMaterialManager.expandSubShelf(root, current);
-                    }
-                  }}
+                  onClick={async () => await handleCreateTextbookMaterial()}
+                >
+                  Textbook
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={async () => await handleCreateNotebookMaterial()}
                 >
                   Notebook
                 </ContextMenuItem>
@@ -163,18 +201,7 @@ const SubShelfMenuItem = ({
                 <ContextMenuItem>Workflow</ContextMenuItem>
               </ContextMenuSubContent>
             </ContextMenuSub>
-            <ContextMenuItem
-              onClick={async () => {
-                await shelfMaterialManager.createSubShelf(
-                  summary.root.id,
-                  current,
-                  "undefined"
-                );
-                if (!current.isExpanded) {
-                  await shelfMaterialManager.expandSubShelf(root, current);
-                }
-              }}
-            >
+            <ContextMenuItem onClick={async () => await handleCreateSubShelf()}>
               Create Sub Shelf
             </ContextMenuItem>
             <ContextMenuSeparator />

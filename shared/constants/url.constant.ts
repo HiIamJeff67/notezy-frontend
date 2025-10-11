@@ -84,8 +84,9 @@ export const APIURLPathDictionary = {
     getAllMyMaterialsByParentSubShelfId:
       "material/getAllMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
+    createTextbookMaterial: "material/createTextbookMaterial",
     createNotebookMaterial: "material/createNotebookMaterial",
-    updateMyNotebookMaterialById: "material/updateMyNotebookMaterialById",
+    updateMyMaterialById: "material/updateMyMaterialById",
     saveMyNotebookMaterialById: "material/saveMyNotebookMaterialById",
     moveMyMaterialById: "material/moveMyMaterialById",
     moveMyMaterialsByIds: "material/moveMyMaterialsByIds",
@@ -128,6 +129,8 @@ export const WebURLPathDictionary = {
     documents: {
       _: "documents",
     },
-    dashboard: "dashboard",
+    dashboard: {
+      _: "dashboard",
+    },
   },
 };

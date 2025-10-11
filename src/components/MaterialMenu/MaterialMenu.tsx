@@ -1,4 +1,5 @@
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import { MaterialType } from "@shared/types/enums";
 import { SubShelfNode } from "@shared/types/shelfMaterialNodes";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
@@ -18,16 +19,19 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
   const languageManager = useLanguage();
   const shelfMaterialManager = useShelfMaterial();
 
-  const handleRenameMaterialOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsStrictLoading(true);
-    try {
-      await shelfMaterialManager.renameEditingMaterial();
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    } finally {
-      loadingManager.setIsStrictLoading(false);
-    }
-  }, [loadingManager, languageManager, shelfMaterialManager]);
+  const handleRenameMaterialOnSubmit = useCallback(
+    async (materialType: MaterialType): Promise<void> => {
+      loadingManager.setIsStrictLoading(true);
+      try {
+        await shelfMaterialManager.renameEditingMaterial(materialType);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      } finally {
+        loadingManager.setIsStrictLoading(false);
+      }
+    },
+    [loadingManager, languageManager, shelfMaterialManager]
+  );
 
   return (
     <Suspense fallback={<MaterialMenuItemSkeleton />}>
@@ -53,7 +57,7 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
                     onKeyDown={async e => {
                       switch (e.key) {
                         case "Enter":
-                          await handleRenameMaterialOnSubmit();
+                          await handleRenameMaterialOnSubmit(materialNode.type);
                         case "Escape":
                           shelfMaterialManager.cancelRenamingMaterialNode();
                       }
@@ -62,7 +66,7 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
                   {shelfMaterialManager.isNewMaterialNodeName() && (
                     <button
                       onClick={async e => {
-                        await handleRenameMaterialOnSubmit();
+                        await handleRenameMaterialOnSubmit(materialNode.type);
                         e.stopPropagation();
                       }}
                       className="rounded hover:bg-primary/60 absolute w-4 h-4"
