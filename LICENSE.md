@@ -51,7 +51,7 @@ Important: By installing, accessing, copying, or using the Software, you agree t
     You will comply with all applicable export control and sanctions laws. You represent that you are not a prohibited party under such laws.
 
 13. Governing Law and Venue
-    This EULA is governed by the laws of [insert jurisdiction], without regard to its conflicts of laws rules. The courts located in [insert venue] shall have exclusive jurisdiction.
+    This EULA is governed by the laws of the Republic of China (Taiwan), without regard to conflict of laws rules. The Taipei District Court in Taiwan shall have exclusive jurisdiction of first instance.
 
 14. Assignment
     You may not assign or transfer this EULA without Notezy’s prior written consent. Notezy may assign this EULA without restriction.
@@ -60,6 +60,6 @@ Important: By installing, accessing, copying, or using the Software, you agree t
     This EULA constitutes the entire agreement regarding the Software and supersedes all prior agreements. If any provision is held unenforceable, it will be modified to the minimum extent necessary to be enforceable, and the remainder will remain in effect. Failure to enforce any provision is not a waiver. In any translation, the English version controls in case of conflict.
 
 16. Contact
-    For permissions beyond this EULA, contact: [theNotezy@gmail.com].
+    For permissions beyond this EULA, contact: [theNotezy@gmail.com](mailto:theNotezy@gmail.com).
 
 © 2025 Notezy. All rights reserved.
