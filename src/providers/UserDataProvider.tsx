@@ -1,15 +1,19 @@
 "use client";
 
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
+import { getAuthorization } from "@/util/getAuthorization";
 import { useLogout } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { UserData } from "@shared/types/models";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 interface UserDataContextType {
+  enableAutoFetching: boolean;
+  setEnableAutoFetching: (state: boolean) => void;
   userData: UserData | null;
   setUserData: (userData: UserData | null) => void;
   updateUserData: (fields: Partial<UserData>) => boolean;
@@ -33,17 +37,22 @@ export const UserDataProvider = ({
   const logoutMutator = useLogout();
 
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(false);
 
   // For maintaining the basic user data in the context
   useEffect(() => {
-    if (userData === null) {
+    if (userData === null && enableAutoFetching) {
       loadingManager.startAsyncTransactionLoading(async () => {
         try {
           const userAgent = navigator.userAgent;
+          const accessToken = localStorage.getItemByKey(
+            LocalStorageKeys.AccessToken
+          );
           const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
             {
               header: {
                 userAgent: userAgent,
+                authorization: getAuthorization(accessToken),
               },
               body: {},
             }
@@ -89,6 +98,8 @@ export const UserDataProvider = ({
   }, [logoutMutator, setUserData]);
 
   const contextValue: UserDataContextType = {
+    enableAutoFetching: enableAutoFetching,
+    setEnableAutoFetching: setEnableAutoFetching,
     userData: userData,
     setUserData: setUserData,
     updateUserData: updateUserData,

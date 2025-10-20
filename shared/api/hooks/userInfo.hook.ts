@@ -9,6 +9,7 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { queryKeys } from "@shared/api/queryKeys";
 
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
   useQuery,
@@ -31,7 +32,15 @@ export const useGetMyInfo = (
     if (!request) return;
     try {
       const validatedRequest = GetMyInfoRequestSchema.parse(request);
-      return await GetMyInfo(validatedRequest);
+      const response = await GetMyInfo(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -84,8 +93,15 @@ export const useUpdateMyInfo = () => {
       const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
       return await UpdateMyInfo(validatedRequest);
     },
-    onSuccess: _ => {
+    onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {

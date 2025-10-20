@@ -26,6 +26,7 @@ import {
   UpdateMyRootShelfByIdRequest,
   UpdateMyRootShelfByIdRequestSchema,
 } from "@shared/api/interfaces/rootShelf.interface";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
   useQuery,
@@ -51,7 +52,15 @@ export const useGetMyRootShelfById = (
 
     try {
       const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);
-      return await GetMyRootShelfById(validatedRequest);
+      const response = await GetMyRootShelfById(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -108,7 +117,7 @@ export const useCreateRootShelf = () => {
       const validatedRequest = CreateRootShelfRequestSchema.parse(request);
       return await CreateRootShelf(validatedRequest);
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (response, _) => {
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -140,6 +149,13 @@ export const useCreateRootShelf = () => {
           },
         },
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -173,12 +189,19 @@ export const useUpdateMyRootShelfById = () => {
         UpdateMyRootShelfByIdRequestSchema.parse(request);
       return await UpdateMyRootShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.rootShelf.myOneById(
           variables.body.rootShelfId as UUID
         ),
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -212,7 +235,7 @@ export const useRestoreMyRootShelfById = () => {
         RestoreMyRootShelfByIdRequestSchema.parse(request);
       return await RestoreMyRootShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
@@ -234,6 +257,13 @@ export const useRestoreMyRootShelfById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -267,7 +297,7 @@ export const useRestoreMyRootShelvesByIds = () => {
         RestoreMyRootShelvesByIdsRequestSchema.parse(request);
       return await RestoreMyRootShelvesByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const rootShelfIdsSet = new Set(
         (variables.body.rootShelfIds || []).filter(Boolean) as UUID[]
       );
@@ -291,6 +321,13 @@ export const useRestoreMyRootShelvesByIds = () => {
           return false;
         },
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
   });
 
@@ -309,7 +346,7 @@ export const useDeleteMyRootShelfById = () => {
         DeleteMyRootShelfByIdRequestSchema.parse(request);
       return await DeleteMyRootShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
@@ -331,6 +368,13 @@ export const useDeleteMyRootShelfById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -364,7 +408,7 @@ export const useDeleteMyRootShelvesByIds = () => {
         DeleteMyRootShelvesByIdsRequestSchema.parse(request);
       return await DeleteMyRootShelvesByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const rootShelfIdsSet = new Set(
         (variables.body.rootShelfIds || []).filter(Boolean) as UUID[]
       );
@@ -388,6 +432,13 @@ export const useDeleteMyRootShelvesByIds = () => {
           return false;
         },
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
   });
 

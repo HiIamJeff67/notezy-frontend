@@ -5,6 +5,7 @@ export * from "./defaultLocalStorage.constant";
 export * from "./defaultTextbookInitialContent.constant";
 export * from "./defaultThemes.constant";
 export * from "./searchLimitations.constant";
+export * from "./sessionStorageKeys.constant";
 export * from "./shelfMaterialLimitations.constant";
 export * from "./size.constant";
 export * from "./triggerLimitations.constant";

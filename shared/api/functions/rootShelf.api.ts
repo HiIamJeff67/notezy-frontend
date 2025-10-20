@@ -37,6 +37,9 @@ export async function GetMyRootShelfById(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -72,6 +75,9 @@ export async function SearchRecentRootShelves(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -99,6 +105,9 @@ export async function CreateRootShelf(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -127,6 +136,9 @@ export async function UpdateMyRootShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -155,6 +167,9 @@ export async function RestoreMyRootShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -184,6 +199,9 @@ export async function RestoreMyRootShelvesByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -213,6 +231,9 @@ export async function DeleteMyRootShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -241,6 +262,9 @@ export async function DeleteMyRootShelvesByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",

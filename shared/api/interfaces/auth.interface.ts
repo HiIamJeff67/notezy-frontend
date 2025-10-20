@@ -29,6 +29,8 @@ export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export const RegisterResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
+    refreshToken: z.string(),
+    csrfToken: z.string(),
     createdAt: z.coerce.date(),
   }),
 });
@@ -58,6 +60,8 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export const LoginResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
+    refreshToken: z.string(),
+    csrfToken: z.string(),
     updatedAt: z.coerce.date(),
   }),
 });
@@ -107,6 +111,53 @@ export const SendAuthCodeResponseSchema = NotezyResponseSchema.extend({
 
 export type SendAuthCodeResponse = z.infer<typeof SendAuthCodeResponseSchema>;
 
+/* ============================== ValidateEmail Context ============================== */
+
+export const ValidateEmailRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+    csrfToken: z.string(),
+  }),
+  body: z.object({
+    authCode: z.string().length(6),
+  }),
+});
+
+export type ValidateEmailRequest = z.infer<typeof ValidateEmailRequestSchema>;
+
+export const ValidateEmailResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type ValidateEmailResponse = z.infer<typeof ValidateEmailResponseSchema>;
+
+/* ============================== ResetEmail Context ============================== */
+
+export const ResetEmailRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+    csrfToken: z.string(),
+  }),
+  body: z.object({
+    newEmail: z.email(),
+    authCode: z.string().length(6),
+  }),
+});
+
+export type ResetEmailRequest = z.infer<typeof ResetEmailRequestSchema>;
+
+export const ResetEmailResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type ResetEmailResponse = z.infer<typeof ResetEmailResponseSchema>;
+
 /* ============================== ForgetPassword Context ============================== */
 
 export const ForgetPasswordRequestSchema = NotezyRequestSchema.extend({
@@ -141,3 +192,26 @@ export const ForgetPasswordResponseSchema = NotezyResponseSchema.extend({
 export type ForgetPasswordResponse = z.infer<
   typeof ForgetPasswordResponseSchema
 >;
+
+/* ============================== DeleteMe Context ============================== */
+
+export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+    csrfToken: z.string(),
+  }),
+  body: z.object({
+    authCode: z.string().length(6),
+  }),
+});
+
+export type DeleteMeRequest = z.infer<typeof DeleteMeRequestSchema>;
+
+export const DeleteMeResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    deletedAt: z.coerce.date(),
+  }),
+});
+
+export type DeleteMeResponse = z.infer<typeof DeleteMeResponseSchema>;

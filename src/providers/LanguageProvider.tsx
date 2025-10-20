@@ -4,6 +4,7 @@ import { useLocalStorage } from "@/hooks";
 import { LanguageKeyMap, Languages } from "@shared/constants";
 import { tKey, translations } from "@shared/translations/index";
 import { Language } from "@shared/types/language.type";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {
@@ -29,13 +30,15 @@ export const LanguageProvider = ({
   const localStorageManager = useLocalStorage();
 
   useEffect(() => {
-    const savedLanguage = localStorageManager.getItemByKey("language");
+    const savedLanguage = localStorageManager.getItemByKey(
+      LocalStorageKeys.Language
+    );
     if (savedLanguage !== null) setCurrentLanguage(savedLanguage);
   }, []);
 
   // update the HTML lang attribute
   useEffect(() => {
-    localStorageManager.setItem("language", currentLanguage);
+    localStorageManager.setItem(LocalStorageKeys.Language, currentLanguage);
     const langCode = currentLanguage.code;
     document.documentElement.lang = langCode;
   }, [currentLanguage]);

@@ -2,6 +2,7 @@
 import { useLocalStorage } from "@/hooks";
 import { useThemeStore } from "@/hooks/useThemeStore";
 import { DefaultStandardTheme } from "@shared/constants";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { Theme } from "@shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
 
@@ -27,10 +28,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   // initialize the default theme
   useEffect(() => {
-    const savedTheme = localStorageManager.getItemByKey("theme");
-    if (savedTheme === null) {
+    const savedTheme = localStorageManager.getItemByKey(LocalStorageKeys.Theme);
+    if (!savedTheme) {
       setCurrentTheme(DefaultStandardTheme);
-      localStorageManager.setItem("theme", DefaultStandardTheme);
+      localStorageManager.setItem(LocalStorageKeys.Theme, DefaultStandardTheme);
       return;
     }
 
@@ -40,7 +41,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (!isThemeExists) {
       setCurrentTheme(DefaultStandardTheme);
-      localStorageManager.setItem("theme", DefaultStandardTheme);
+      localStorageManager.setItem(LocalStorageKeys.Theme, DefaultStandardTheme);
       return;
     }
 
@@ -51,7 +52,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!currentTheme) return;
 
-    localStorageManager.setItem("theme", currentTheme);
+    localStorageManager.setItem(LocalStorageKeys.Theme, currentTheme);
 
     if (prevTheme !== null) {
       const prevDefaultThemeCSSClassName = !prevTheme.isDark ? "light" : "dark";

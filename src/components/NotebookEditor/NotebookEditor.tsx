@@ -3,7 +3,12 @@
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import {
+  useLanguage,
+  useLoading,
+  useLocalStorage,
+  useShelfMaterial,
+} from "@/hooks";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -12,6 +17,7 @@ import {
   convertBlocksToPDF,
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
+import { getAuthorization } from "@/util/getAuthorization";
 import { loadFileFromDownloadURL } from "@/util/loadFiles";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
@@ -27,6 +33,7 @@ import {
   MaterialContentType,
   MaterialType,
 } from "@shared/types/enums";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   NotebookMaterialMeta,
   notebookMaterialMetaReducer,
@@ -57,6 +64,7 @@ interface NotebookEditorProps {
 const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const localStorageManager = useLocalStorage();
   const shelfMaterialManager = useShelfMaterial();
 
   const getMyMaterialQuerier = useGetMyMaterialById();
@@ -116,9 +124,13 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     materialId: UUID
   ): Promise<NotebookMaterialMeta | undefined> => {
     const userAgent = navigator.userAgent;
+    const accessToken = localStorageManager.getItemByKey(
+      LocalStorageKeys.AccessToken
+    );
     const responseOfGettingMaterial = await getMyMaterialQuerier.queryAsync({
       header: {
         userAgent: userAgent,
+        authorization: getAuthorization(accessToken),
       },
       param: {
         materialId: materialId,
@@ -178,9 +190,13 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         });
 
         const userAgent = navigator.userAgent;
+        const accessToken = localStorageManager.getItemByKey(
+          LocalStorageKeys.AccessToken
+        );
         await saveMyNotebookMaterialMutator.mutateAsync({
           header: {
             userAgent: userAgent,
+            authorization: getAuthorization(accessToken),
           },
           body: {
             materialId: meta.id,

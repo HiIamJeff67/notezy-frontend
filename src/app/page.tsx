@@ -16,7 +16,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useTheme } from "@/hooks";
+import { useAppRouter, useLanguage, useTheme, useUserData } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -30,6 +30,7 @@ const HomePage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
   const themeManager = useTheme();
+  const userDataManager = useUserData();
 
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
@@ -102,6 +103,7 @@ const HomePage = () => {
 
   useEffect(() => {
     startCycle();
+    userDataManager.setEnableAutoFetching(false);
     return () => clearAllTimers();
   }, []);
 
@@ -205,6 +207,7 @@ const HomePage = () => {
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
                   router.push(WebURLPathDictionary.auth.login);
+                  userDataManager.setEnableAutoFetching(true);
                 }}
               >
                 <NoteIcon size={18} />

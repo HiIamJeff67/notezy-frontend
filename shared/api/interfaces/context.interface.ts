@@ -17,6 +17,7 @@ export type NotezyRequest = z.infer<typeof NotezyRequestSchema>;
 export const NotezyResponseSchema = z.object({
   success: z.boolean(),
   data: z.object({}).nullable(),
+  newAccessToken: z.string().optional(), // exist if the API route is under the refresh access token middleware
   exception: NotezyExceptionSchema.nullable(),
 });
 

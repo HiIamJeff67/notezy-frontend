@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useLanguage, useLoading } from "@/hooks";
+import { useLanguage, useLoading, useLocalStorage } from "@/hooks";
 import { Download, Save, Upload } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
@@ -36,6 +36,7 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
   const sidebarManager = useSidebar();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const localStorageManager = useLocalStorage();
 
   const [pdfDocument, setPdfDocument] =
     useState<pdfjsLib.PDFDocumentProxy | null>(null);

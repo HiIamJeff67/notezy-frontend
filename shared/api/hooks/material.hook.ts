@@ -47,6 +47,7 @@ import {
   UseQueryDefaultOptions,
 } from "@shared/api/interfaces/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
   useQuery,
@@ -67,7 +68,15 @@ export const useGetMyMaterialById = (
 
     try {
       const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
-      return await GetMyMaterialById(validatedRequest);
+      const response = await GetMyMaterialById(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -130,7 +139,17 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
     try {
       const validatedRequest =
         GetAllMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-      return await GetAllMyMaterialsByParentSubShelfId(validatedRequest);
+      const response = await GetAllMyMaterialsByParentSubShelfId(
+        validatedRequest
+      );
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -193,7 +212,15 @@ export const useGetAllMyMaterialsByRootShelfId = (
     try {
       const validatedRequest =
         GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
-      return await GetAllMyMaterialsByRootShelfId(validatedRequest);
+      const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -251,7 +278,7 @@ export const useCreateTextbookMaterial = () => {
         CreateTextbookMaterialRequestSchema.parse(request);
       return await CreateTextbookMaterial(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -278,6 +305,13 @@ export const useCreateTextbookMaterial = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -311,7 +345,7 @@ export const useCreateNotebookMaterial = () => {
         CreateNotebookMaterialRequestSchema.parse(request);
       return await CreateNotebookMaterial(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -338,6 +372,13 @@ export const useCreateNotebookMaterial = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -370,7 +411,7 @@ export const useUpdateMyMaterialById = () => {
       const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
       return await UpdateMyMaterialById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialId = variables.body.materialId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       queryClient.invalidateQueries({
@@ -392,6 +433,13 @@ export const useUpdateMyMaterialById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -425,7 +473,7 @@ export const useSaveMyNotebookMaterialById = () => {
         SaveMyNotebookMaterialByIdRequestSchema.parse(request);
       return await SaveMyNotebookMaterialById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialId = variables.body.materialId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       queryClient.invalidateQueries({
@@ -447,6 +495,13 @@ export const useSaveMyNotebookMaterialById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -479,7 +534,7 @@ export const useMoveMyMaterialById = () => {
       const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
       return await MoveMyMaterialById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialId = variables.body.materialId;
       const destinationParentSubShelfId =
         variables.body.destinationParentSubShelfId;
@@ -519,6 +574,13 @@ export const useMoveMyMaterialById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -552,7 +614,7 @@ export const useRestoreMyMaterialById = () => {
         RestoreMyMaterialByIdRequestSchema.parse(request);
       return await RestoreMyMaterialById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialId = variables.body.materialId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
@@ -582,6 +644,13 @@ export const useRestoreMyMaterialById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -615,7 +684,7 @@ export const useRestoreMyMaterialsByIds = () => {
         RestoreMyMaterialsByIdsRequestSchema.parse(request);
       return await RestoreMyMaterialsByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialIdsSet = new Set(
         (variables.body.materialIds || []).filter(Boolean) as UUID[]
       );
@@ -652,6 +721,13 @@ export const useRestoreMyMaterialsByIds = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -684,7 +760,7 @@ export const useDeleteMyMaterialById = () => {
       const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
       return await DeleteMyMaterialById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialId = variables.body.materialId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
@@ -714,6 +790,13 @@ export const useDeleteMyMaterialById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -747,7 +830,7 @@ export const useDeleteMyMaterialsByIds = () => {
         DeleteMyMaterialsByIdsRequestSchema.parse(request);
       return await DeleteMyMaterialsByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const materialIdsSet = new Set(
         (variables.body.materialIds || []).filter(Boolean) as UUID[]
       );
@@ -784,6 +867,13 @@ export const useDeleteMyMaterialsByIds = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {

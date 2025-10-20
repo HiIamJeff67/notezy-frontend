@@ -15,6 +15,7 @@ import {
 } from "@shared/api/interfaces/user.interface";
 import { queryKeys } from "@shared/api/queryKeys";
 import { tKey } from "@shared/translations";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
   useQuery,
@@ -38,7 +39,15 @@ export const useGetUserData = (
 
     try {
       const validatedRequest = GetUserDataRequestSchema.parse(request);
-      return await GetUserData(validatedRequest);
+      const response = await GetUserData(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -95,7 +104,15 @@ export const useGetMe = (
     if (!request) return;
     try {
       const validatedRequest = GetMeRequestSchema.parse(request);
-      return await GetMe(validatedRequest);
+      const response = await GetMe(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -148,8 +165,15 @@ export const useUpdateMe = () => {
       const validatedRequest = UpdateMeRequestSchema.parse(request);
       return await UpdateMe(validatedRequest);
     },
-    onSuccess: _ => {
+    onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {

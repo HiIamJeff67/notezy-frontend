@@ -43,6 +43,9 @@ export async function GetMySubShelfById(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -73,6 +76,9 @@ export async function GetMySubShelvesByPrevSubShelfId(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -104,6 +110,9 @@ export async function GetAllMySubShelvesByRootShelfId(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -131,6 +140,9 @@ export async function CreateSubShelfByRootShelfId(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -160,6 +172,9 @@ export async function UpdateMySubShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -188,6 +203,9 @@ export async function MoveMySubShelf(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -216,6 +234,9 @@ export async function MoveMySubShelves(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -244,6 +265,9 @@ export async function RestoreMySubShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -272,6 +296,9 @@ export async function RestoreMySubShelvesByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -301,6 +328,9 @@ export async function DeleteMySubShelfById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -329,6 +359,9 @@ export async function DeleteMySubShelvesByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",

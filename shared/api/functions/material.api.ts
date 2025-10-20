@@ -47,6 +47,9 @@ export async function GetMyMaterialById(
     headers: {
       "Content-Type": "application/json",
       "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
     },
     credentials: "include",
   });
@@ -80,6 +83,9 @@ export async function GetAllMyMaterialsByParentSubShelfId(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       credentials: "include",
     }
@@ -113,6 +119,9 @@ export async function GetAllMyMaterialsByRootShelfId(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       credentials: "include",
     }
@@ -141,6 +150,9 @@ export async function CreateTextbookMaterial(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -170,6 +182,9 @@ export async function CreateNotebookMaterial(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -199,6 +214,9 @@ export async function UpdateMyMaterialById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -231,7 +249,11 @@ export async function SaveMyNotebookMaterialById(
     {
       method: "PUT",
       headers: {
+        "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: formData,
       credentials: "include",
@@ -261,6 +283,9 @@ export async function MoveMyMaterialById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -289,6 +314,9 @@ export async function MoveMyMaterialsByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -317,6 +345,9 @@ export async function RestoreMyMaterialById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -345,6 +376,9 @@ export async function RestoreMyMaterialsByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -374,6 +408,9 @@ export async function DeleteMyMaterialById(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",
@@ -402,6 +439,9 @@ export async function DeleteMyMaterialsByIds(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
       },
       body: JSON.stringify(request.body),
       credentials: "include",

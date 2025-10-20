@@ -18,6 +18,8 @@ import {
   SendAuthCodeRequestSchema,
 } from "@shared/api/interfaces/auth.interface";
 import { tKey } from "@shared/translations";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ZodError } from "zod";
 import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
@@ -31,9 +33,19 @@ export const useRegister = () => {
       const validatedRequest = RegisterRequestSchema.parse(request);
       return await Register(validatedRequest);
     },
-    onSuccess: _ => {
+    onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      localStorage.removeItem(LocalStorageKeys.AccessToken);
+      localStorage.setItem(
+        LocalStorageKeys.AccessToken,
+        response.data.accessToken
+      );
+      sessionStorage.removeItem(SessionStorageKeys.CSRFToken);
+      sessionStorage.setItem(
+        SessionStorageKeys.CSRFToken,
+        response.data.csrfToken
+      );
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -70,9 +82,19 @@ export const useLogin = () => {
       const validatedRequest = LoginRequestSchema.parse(request);
       return await Login(validatedRequest);
     },
-    onSuccess: _ => {
+    onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      localStorage.removeItem(LocalStorageKeys.AccessToken);
+      localStorage.setItem(
+        LocalStorageKeys.AccessToken,
+        response.data.accessToken
+      );
+      sessionStorage.removeItem(SessionStorageKeys.CSRFToken);
+      sessionStorage.setItem(
+        SessionStorageKeys.CSRFToken,
+        response.data.csrfToken
+      );
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -111,6 +133,7 @@ export const useLogout = () => {
     onSuccess: _ => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      localStorage.removeItem(LocalStorageKeys.AccessToken);
     },
     onError: error => {
       if (error instanceof ZodError) {

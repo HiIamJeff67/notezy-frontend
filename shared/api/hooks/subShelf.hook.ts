@@ -39,6 +39,7 @@ import {
   UpdateMySubShelfByIdRequest,
   UpdateMySubShelfByIdRequestSchema,
 } from "@shared/api/interfaces/subShelf.interface";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
   useQuery,
@@ -64,7 +65,15 @@ export const useGetMySubShelfById = (
 
     try {
       const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
-      return await GetMySubShelfById(validatedRequest);
+      const response = await GetMySubShelfById(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -127,7 +136,15 @@ export const useGetMySubShelvesByPrevSubShelfId = (
     try {
       const validatedRequest =
         GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
-      return await GetMySubShelvesByPrevSubShelfId(validatedRequest);
+      const response = await GetMySubShelvesByPrevSubShelfId(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -190,7 +207,15 @@ export const useGetAllMySubShelvesByRootShelfId = (
     try {
       const validatedRequest =
         GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
-      return await GetAllMySubShelvesByRootShelfId(validatedRequest);
+      const response = await GetAllMySubShelvesByRootShelfId(validatedRequest);
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessage = error.issues
@@ -248,7 +273,7 @@ export const useCreateSubShelfByRootShelfId = () => {
         CreateSubShelfByRootShelfIdRequestSchema.parse(request);
       return await CreateSubShelfByRootShelfId(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -273,6 +298,13 @@ export const useCreateSubShelfByRootShelfId = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -305,7 +337,7 @@ export const useUpdateMySubShelfById = () => {
       const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
       return await UpdateMySubShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -331,6 +363,13 @@ export const useUpdateMySubShelfById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -363,7 +402,7 @@ export const useMoveMySubShelf = () => {
       const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
       return await MoveMySubShelf(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const sourceSubShelfId = variables.body.sourceSubShelfId;
       const destinationSubShelfId = variables.body.destinationSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
@@ -401,6 +440,13 @@ export const useMoveMySubShelf = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -433,7 +479,7 @@ export const useMoveMySubShelves = () => {
       const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
       return await MoveMySubShelves(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const sourceSubShelfIdsSet = new Set(
         (variables.body.sourceSubShelfIds || []).filter(Boolean) as UUID[]
       );
@@ -476,6 +522,13 @@ export const useMoveMySubShelves = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -509,7 +562,7 @@ export const useRestoreMySubShelfById = () => {
         RestoreMySubShelfByIdRequestSchema.parse(request);
       return await RestoreMySubShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
@@ -544,6 +597,13 @@ export const useRestoreMySubShelfById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -577,7 +637,7 @@ export const useRestoreMySubShelvesByIds = () => {
         RestoreMySubShelvesByIdsRequestSchema.parse(request);
       return await RestoreMySubShelvesByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const subShelfIdsSet = new Set(
         (variables.body.subShelfIds || []).filter(Boolean) as UUID[]
       );
@@ -615,6 +675,13 @@ export const useRestoreMySubShelvesByIds = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -647,7 +714,7 @@ export const useDeleteMySubShelfById = () => {
       const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
       return await DeleteMySubShelfById(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
@@ -681,6 +748,13 @@ export const useDeleteMySubShelfById = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -714,7 +788,7 @@ export const useDeleteMySubShelvesByIds = () => {
         DeleteMySubShelvesByIdsRequestSchema.parse(request);
       return await DeleteMySubShelvesByIds(validatedRequest);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       const subShelfIdsSet = new Set(
         (variables.body.subShelfIds || []).filter(Boolean) as UUID[]
       );
@@ -754,6 +828,13 @@ export const useDeleteMySubShelvesByIds = () => {
         },
         refetchType: "active",
       });
+      if (response.newAccessToken) {
+        localStorage.removeItem(LocalStorageKeys.AccessToken);
+        localStorage.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
