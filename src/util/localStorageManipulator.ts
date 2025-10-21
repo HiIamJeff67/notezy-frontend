@@ -1,15 +1,18 @@
 "use client";
 
-import { LocalStoragePrefix } from "@shared/constants";
 import {
   LocalStorageItem,
   LocalStorageKeys,
 } from "@shared/types/localStorage.type";
 
-export const useLocalStorage = () => {
-  // check if the local storage is available or not,
-  // since the user may using incognito mode or their memory is use up
-  const isLocalStorageAvailable = (): boolean => {
+export class LocalStorageManipulator {
+  private static readonly LocalStoragePrefix = "notezy_";
+
+  private static getStorageKey(key: LocalStorageKeys): string {
+    return this.LocalStoragePrefix + key;
+  }
+
+  static isLocalStorageAvailable = (): boolean => {
     try {
       const testKey = "__test__";
       localStorage.setItem(testKey, "test");
@@ -22,13 +25,13 @@ export const useLocalStorage = () => {
   };
 
   // get an item from local storage by providing a key
-  const getItemByKey = function <K extends LocalStorageKeys>(
+  static getItemByKey = <K extends LocalStorageKeys>(
     key: K
-  ): LocalStorageItem[K] | null {
+  ): LocalStorageItem[K] | null => {
     try {
-      if (!isLocalStorageAvailable) return null;
+      if (!this.isLocalStorageAvailable()) return null;
 
-      const storageKey = LocalStoragePrefix + key;
+      const storageKey = this.getStorageKey(key);
       const item = localStorage.getItem(storageKey);
 
       return item === null ? null : JSON.parse(item);
@@ -39,33 +42,33 @@ export const useLocalStorage = () => {
   };
 
   // get items from local storage by providing the keys of them
-  const getItemsByKeys = function <K extends LocalStorageKeys>(
+  static getItemsByKeys = <K extends LocalStorageKeys>(
     keys: K[]
-  ): Pick<LocalStorageItem, K> {
-    if (!isLocalStorageAvailable) return {} as Pick<LocalStorageItem, K>;
+  ): Pick<LocalStorageItem, K> => {
+    if (!this.isLocalStorageAvailable()) return {} as Pick<LocalStorageItem, K>;
 
     const result = {} as Pick<LocalStorageItem, K>;
 
     keys.forEach(key => {
-      result[key] = getItemByKey(key);
+      result[key] = this.getItemByKey(key);
     });
 
     return result;
   };
 
   // get all items from local storage
-  const getAllItems = function <
+  static getAllItems = <
     K extends LocalStorageKeys
-  >(): Partial<LocalStorageItem> {
-    if (!isLocalStorageAvailable) return {} as Partial<LocalStorageItem>;
+  >(): Partial<LocalStorageItem> => {
+    if (!this.isLocalStorageAvailable()) return {} as Partial<LocalStorageItem>;
 
     const result = {} as Partial<LocalStorageItem>;
 
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const keyString = localStorage.key(i);
-        if (keyString && keyString.startsWith(LocalStoragePrefix)) {
-          const cleanKey = keyString.replace(LocalStoragePrefix, "") as K;
+        if (keyString && keyString.startsWith(this.LocalStoragePrefix)) {
+          const cleanKey = keyString.replace(this.LocalStoragePrefix, "") as K;
           result[cleanKey] = localStorage.getItem(
             keyString
           ) as LocalStorageItem[K];
@@ -78,15 +81,21 @@ export const useLocalStorage = () => {
     return result;
   };
 
+  static hasItem = <K extends LocalStorageKeys>(key: K): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
+
+    return this.getItemByKey(key) !== null;
+  };
+
   // set an item to local storage by providing a key-value pair
-  const setItem = function <K extends LocalStorageKeys>(
+  static setItem = <K extends LocalStorageKeys>(
     key: K,
     value: LocalStorageItem[K] // use the key of the Storage
-  ): boolean {
-    if (!isLocalStorageAvailable) return false;
+  ): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
 
     try {
-      const storageKey = LocalStoragePrefix + key;
+      const storageKey = this.getStorageKey(key);
       localStorage.setItem(storageKey, JSON.stringify(value));
       return true;
     } catch (error) {
@@ -96,29 +105,23 @@ export const useLocalStorage = () => {
   };
 
   // set items to local storage by providing key-value pairs
-  const setItems = function (items: Partial<LocalStorageItem>): boolean {
-    if (!isLocalStorageAvailable) return false;
+  static setItems = (items: Partial<LocalStorageItem>): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
     Object.entries(items).forEach(([key, value]) => {
       if (value !== undefined) {
-        success = success && setItem(key as keyof LocalStorageItem, value);
+        success = success && this.setItem(key as LocalStorageKeys, value);
       }
     });
     return success;
   };
 
-  const hasItem = function <K extends LocalStorageKeys>(key: K): boolean {
-    if (!isLocalStorageAvailable) return false;
-
-    return getItemByKey(key) !== null;
-  };
-
-  const removeItem = function <K extends LocalStorageKeys>(key: K): boolean {
-    if (!isLocalStorageAvailable) return false;
+  static removeItem = <K extends LocalStorageKeys>(key: K): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
 
     try {
-      const storageKey = LocalStoragePrefix + key;
+      const storageKey = this.LocalStoragePrefix + key;
       localStorage.removeItem(storageKey);
       return true;
     } catch (error) {
@@ -126,20 +129,16 @@ export const useLocalStorage = () => {
     }
   };
 
-  const removeItems = function <K extends LocalStorageKeys>(
-    keys: K[]
-  ): boolean {
-    if (!isLocalStorageAvailable) return false;
+  static removeItems = <K extends LocalStorageKeys>(keys: K[]): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
-    keys.forEach((key, _) => (success = success && removeItem(key)));
+    keys.forEach((key, _) => (success = success && this.removeItem(key)));
     return success;
   };
 
-  const clearAllItems = function <K extends LocalStorageKeys>(
-    keys: K[]
-  ): boolean {
-    if (!isLocalStorageAvailable) return false;
+  static clearAllItems = <K extends LocalStorageKeys>(keys: K[]): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
     try {
@@ -147,7 +146,7 @@ export const useLocalStorage = () => {
 
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(LocalStoragePrefix)) {
+        if (key && key.startsWith(this.LocalStoragePrefix)) {
           keysToRemove.push(key);
         }
       }
@@ -162,17 +161,4 @@ export const useLocalStorage = () => {
 
     return success;
   };
-
-  return {
-    isLocalStorageAvailable,
-    getItemByKey,
-    getItemsByKeys,
-    getAllItems,
-    setItem,
-    setItems,
-    hasItem,
-    removeItem,
-    removeItems,
-    clearAllItems,
-  };
-};
+}

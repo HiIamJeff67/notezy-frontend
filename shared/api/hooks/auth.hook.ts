@@ -1,11 +1,17 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
+  DeleteMe,
   ForgetPassword,
   Login,
   Logout,
   Register,
+  ResetEmail,
   SendAuthCode,
+  ValidateEmail,
 } from "@shared/api/functions/auth.api";
 import {
+  DeleteMeRequest,
+  DeleteMeRequestSchema,
   ForgetPasswordRequest,
   ForgetPasswordRequestSchema,
   LoginRequest,
@@ -14,8 +20,12 @@ import {
   LogoutRequestSchema,
   RegisterRequest,
   RegisterRequestSchema,
+  ResetEmailRequest,
+  ResetEmailRequestSchema,
   SendAuthCodeRequest,
   SendAuthCodeRequestSchema,
+  ValidateEmailRequest,
+  ValidateEmailRequestSchema,
 } from "@shared/api/interfaces/auth.interface";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
@@ -36,8 +46,8 @@ export const useRegister = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      localStorage.removeItem(LocalStorageKeys.AccessToken);
-      localStorage.setItem(
+      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.setItem(
         LocalStorageKeys.AccessToken,
         response.data.accessToken
       );
@@ -85,8 +95,8 @@ export const useLogin = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      localStorage.removeItem(LocalStorageKeys.AccessToken);
-      localStorage.setItem(
+      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.setItem(
         LocalStorageKeys.AccessToken,
         response.data.accessToken
       );
@@ -133,7 +143,7 @@ export const useLogout = () => {
     onSuccess: _ => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      localStorage.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -189,6 +199,90 @@ export const useSendAuthCode = () => {
   };
 };
 
+export const useValidateEmail = () => {
+  const mutation = useMutation({
+    mutationFn: async (request: ValidateEmailRequest) => {
+      const validatedRequest = ValidateEmailRequestSchema.parse(request);
+      return await ValidateEmail(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "VALIDATE_EMAIL" as const,
+  };
+};
+
+export const useResetEmail = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: ResetEmailRequest) => {
+      const validatedRequest = ResetEmailRequestSchema.parse(request);
+      return await ResetEmail(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.AccessToken,
+          response.newAccessToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "RESET_EMAIL" as const,
+  };
+};
+
 export const useForgetPassword = () => {
   const queryClient = useQueryClient();
 
@@ -223,5 +317,41 @@ export const useForgetPassword = () => {
   return {
     ...mutation,
     name: "FORGET_PASSWORD_HOOK" as const,
+  };
+};
+
+export const useDeleteMe = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: DeleteMeRequest) => {
+      const validatedRequest = DeleteMeRequestSchema.parse(request);
+      return await DeleteMe(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      }
+      if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "DELETE_ME" as const,
   };
 };

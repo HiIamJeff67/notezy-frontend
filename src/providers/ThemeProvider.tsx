@@ -1,6 +1,7 @@
 "use client";
-import { useLocalStorage } from "@/hooks";
+
 import { useThemeStore } from "@/hooks/useThemeStore";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { DefaultStandardTheme } from "@shared/constants";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { Theme } from "@shared/types/theme.type";
@@ -23,15 +24,19 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultStandardTheme);
   const [prevTheme, setPrevTheme] = useState<Theme | null>(null);
-  const localStorageManager = useLocalStorage();
   const themeStore = useThemeStore();
 
   // initialize the default theme
   useEffect(() => {
-    const savedTheme = localStorageManager.getItemByKey(LocalStorageKeys.Theme);
+    const savedTheme = LocalStorageManipulator.getItemByKey(
+      LocalStorageKeys.Theme
+    );
     if (!savedTheme) {
       setCurrentTheme(DefaultStandardTheme);
-      localStorageManager.setItem(LocalStorageKeys.Theme, DefaultStandardTheme);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.Theme,
+        DefaultStandardTheme
+      );
       return;
     }
 
@@ -41,7 +46,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (!isThemeExists) {
       setCurrentTheme(DefaultStandardTheme);
-      localStorageManager.setItem(LocalStorageKeys.Theme, DefaultStandardTheme);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.Theme,
+        DefaultStandardTheme
+      );
       return;
     }
 
@@ -52,7 +60,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!currentTheme) return;
 
-    localStorageManager.setItem(LocalStorageKeys.Theme, currentTheme);
+    LocalStorageManipulator.setItem(LocalStorageKeys.Theme, currentTheme);
 
     if (prevTheme !== null) {
       const prevDefaultThemeCSSClassName = !prevTheme.isDark ? "light" : "dark";

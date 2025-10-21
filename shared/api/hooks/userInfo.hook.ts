@@ -9,6 +9,7 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { queryKeys } from "@shared/api/queryKeys";
 
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   useMutation,
@@ -34,8 +35,8 @@ export const useGetMyInfo = (
       const validatedRequest = GetMyInfoRequestSchema.parse(request);
       const response = await GetMyInfo(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -96,8 +97,8 @@ export const useUpdateMyInfo = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );

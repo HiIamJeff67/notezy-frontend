@@ -2,7 +2,6 @@ export * from "./useAppRouter";
 export * from "./useDebounce";
 export * from "./useLanguage";
 export * from "./useLoading";
-export * from "./useLocalStorage";
 export * from "./useMobile";
 export * from "./useShelfMaterial";
 export * from "./useTheme";

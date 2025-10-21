@@ -1,3 +1,4 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
@@ -41,8 +42,8 @@ export const useGetUserData = (
       const validatedRequest = GetUserDataRequestSchema.parse(request);
       const response = await GetUserData(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -106,8 +107,8 @@ export const useGetMe = (
       const validatedRequest = GetMeRequestSchema.parse(request);
       const response = await GetMe(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -168,8 +169,8 @@ export const useUpdateMe = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );

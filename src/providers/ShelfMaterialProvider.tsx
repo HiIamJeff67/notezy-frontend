@@ -5,8 +5,8 @@ import {
   SearchSortOrder,
 } from "@/graphql/generated/graphql";
 import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
-import { useLocalStorage } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   useCreateNotebookMaterial,
   useCreateTextbookMaterial,
@@ -152,8 +152,6 @@ export const ShelfMaterialProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const localStorageManager = useLocalStorage();
-
   const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
   const createRootShelfMutator = useCreateRootShelf();
@@ -432,7 +430,7 @@ export const ShelfMaterialProvider = ({
     }
 
     const userAgent = navigator.userAgent;
-    const accessToken = localStorageManager.getItemByKey(
+    const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKeys.AccessToken
     );
     const responseOfGetAllSubShelves =
@@ -471,7 +469,7 @@ export const ShelfMaterialProvider = ({
   const createRootShelf = useCallback(
     async (name: string): Promise<void> => {
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       const responseOfCreateRootShelf =
@@ -561,7 +559,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await updateRootShelfMutator.mutateAsync({
@@ -616,7 +614,7 @@ export const ShelfMaterialProvider = ({
       const materialIds = materialNodes.map(val => val.id);
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await deleteRootShelfMutator.mutateAsync({
@@ -647,7 +645,7 @@ export const ShelfMaterialProvider = ({
     ): Promise<void> => {
       // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       const authorization = getAuthorization(accessToken);
@@ -716,7 +714,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       const responseOfCreateSubShelf = await createSubShelfMutator.mutateAsync({
@@ -832,7 +830,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await updateSubShelfMutator.mutateAsync({
@@ -890,7 +888,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await deleteSubShelfMutator.mutateAsync({
@@ -966,7 +964,7 @@ export const ShelfMaterialProvider = ({
       const childSubShelfIds = childSubShelfNodes.map(val => val.id);
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await moveSubShelfMutator.mutateAsync({
@@ -1031,7 +1029,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       const responseOfCreateNotebookMaterial =
@@ -1094,7 +1092,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       const responseOfCreateNotebookMaterial =
@@ -1188,7 +1186,7 @@ export const ShelfMaterialProvider = ({
         }
 
         const userAgent = navigator.userAgent;
-        const accessToken = localStorageManager.getItemByKey(
+        const accessToken = LocalStorageManipulator.getItemByKey(
           LocalStorageKeys.AccessToken
         );
         await updateMaterialMutator.mutateAsync({
@@ -1247,7 +1245,7 @@ export const ShelfMaterialProvider = ({
       }
 
       const userAgent = navigator.userAgent;
-      const accessToken = localStorageManager.getItemByKey(
+      const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKeys.AccessToken
       );
       await deleteMaterialMutator.mutateAsync({

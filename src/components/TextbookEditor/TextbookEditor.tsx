@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useLocalStorage } from "@/hooks";
+import { useLanguage, useLoading } from "@/hooks";
 import { Download, Save, Upload } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
@@ -36,7 +36,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
   const sidebarManager = useSidebar();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const localStorageManager = useLocalStorage();
 
   const [pdfDocument, setPdfDocument] =
     useState<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -61,7 +60,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     }
   }, [currentPage, pdfDocument, scale, annotations]);
 
-  // 載入 PDF
   const loadPDF = async (url: string) => {
     loadingManager.startAsyncTransactionLoading(async () => {
       try {
@@ -71,7 +69,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
         setTotalPages(pdf.numPages);
         setCurrentPage(1);
 
-        // 獲取原始 PDF bytes 用於後續編輯
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
         setPdfBytes(new Uint8Array(arrayBuffer));
@@ -84,7 +81,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     });
   };
 
-  // 渲染當前頁面
   const renderPage = async (pageNum: number) => {
     if (!pdfDocument || !canvasRef.current) return;
 
@@ -107,14 +103,12 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
 
       await page.render(renderContext).promise;
 
-      // 渲染該頁的註記
       renderAnnotations(pageNum);
     } catch (error) {
       console.error("渲染頁面失敗:", error);
     }
   };
 
-  // 渲染註記
   const renderAnnotations = (pageNum: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -162,7 +156,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     });
   };
 
-  // 處理 canvas 點擊/繪製
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!currentTool || !canvasRef.current) return;
 
@@ -195,13 +188,11 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     renderPage(currentPage);
   };
 
-  // 儲存註記為 JSON
   const handleSaveAnnotations = async () => {
     try {
       const annotationsJSON = JSON.stringify(annotations, null, 2);
       const blob = new Blob([annotationsJSON], { type: "application/json" });
 
-      // 這裡應該呼叫你的 API 上傳到後端
       // await saveAnnotationsToBackend(materialId, blob);
 
       toast.success("註記已儲存");
@@ -211,7 +202,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     }
   };
 
-  // 匯出含註記的 PDF
   const handleExportPDF = async () => {
     if (!pdfBytes) {
       toast.error("沒有 PDF 可供匯出");
@@ -220,11 +210,9 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
 
     loadingManager.startAsyncTransactionLoading(async () => {
       try {
-        // 使用 pdf-lib 載入原始 PDF
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const pages = pdfDoc.getPages();
 
-        // 將註記燒入 PDF
         for (const annotation of annotations) {
           const page = pages[annotation.page - 1];
           if (!page) continue;
@@ -249,12 +237,9 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
                 size: 16,
               });
               break;
-
-            // drawing 需要更複雜的處理，這裡簡化
           }
         }
 
-        // 產生新 PDF
         const pdfBytesWithAnnotations = await pdfDoc.save();
         const blob = new Blob([new Uint8Array(pdfBytesWithAnnotations)], {
           type: "application/pdf",
@@ -274,7 +259,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
     });
   };
 
-  // 上傳 PDF
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -289,7 +273,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
         {sidebarManager.isMobile && <SidebarTrigger />}
         <h1 className="font-semibold">Textbook Editor</h1>
 
-        {/* 工具列 */}
         <div className="ml-auto flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -357,7 +340,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
         </div>
       </header>
 
-      {/* PDF 顯示區 */}
       <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 p-4">
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg">
           <canvas
@@ -367,7 +349,6 @@ const TextbookEditor = ({ materialId, initialPdfUrl }: TextbookEditorProps) => {
           />
         </div>
 
-        {/* 頁面控制 */}
         {pdfDocument && (
           <div className="mt-4 flex items-center justify-center gap-4">
             <Button

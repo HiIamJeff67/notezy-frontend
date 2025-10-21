@@ -36,7 +36,10 @@ export const APIURLPathDictionary = {
     login: "auth/login",
     logout: "auth/logout",
     sendAuthCode: "auth/sendAuthCode",
+    validateEmail: "auth/validateEmail",
+    resetEmail: "auth/resetEmail",
     forgetPassword: "auth/forgetPassword",
+    deleteMe: "auth/deleteMe",
   },
   user: {
     getUserData: "user/getUserData",

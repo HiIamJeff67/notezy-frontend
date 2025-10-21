@@ -1,3 +1,4 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   CreateNotebookMaterial,
@@ -70,8 +71,8 @@ export const useGetMyMaterialById = (
       const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
       const response = await GetMyMaterialById(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -143,8 +144,8 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
         validatedRequest
       );
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -214,8 +215,8 @@ export const useGetAllMyMaterialsByRootShelfId = (
         GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
       const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -306,8 +307,8 @@ export const useCreateTextbookMaterial = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -373,8 +374,8 @@ export const useCreateNotebookMaterial = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -434,8 +435,8 @@ export const useUpdateMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -496,8 +497,8 @@ export const useSaveMyNotebookMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -575,8 +576,8 @@ export const useMoveMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -645,8 +646,8 @@ export const useRestoreMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -722,8 +723,8 @@ export const useRestoreMyMaterialsByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -791,8 +792,8 @@ export const useDeleteMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -868,8 +869,8 @@ export const useDeleteMyMaterialsByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );

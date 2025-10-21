@@ -1,3 +1,4 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useApolloClient } from "@apollo/client/react";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
@@ -54,8 +55,8 @@ export const useGetMyRootShelfById = (
       const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);
       const response = await GetMyRootShelfById(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -150,8 +151,8 @@ export const useCreateRootShelf = () => {
         },
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -196,8 +197,8 @@ export const useUpdateMyRootShelfById = () => {
         ),
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -258,8 +259,8 @@ export const useRestoreMyRootShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -322,8 +323,8 @@ export const useRestoreMyRootShelvesByIds = () => {
         },
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -369,8 +370,8 @@ export const useDeleteMyRootShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -433,8 +434,8 @@ export const useDeleteMyRootShelvesByIds = () => {
         },
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );

@@ -1,3 +1,4 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   CreateSubShelfByRootShelfId,
@@ -67,8 +68,8 @@ export const useGetMySubShelfById = (
       const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
       const response = await GetMySubShelfById(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -138,8 +139,8 @@ export const useGetMySubShelvesByPrevSubShelfId = (
         GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
       const response = await GetMySubShelvesByPrevSubShelfId(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -209,8 +210,8 @@ export const useGetAllMySubShelvesByRootShelfId = (
         GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
       const response = await GetAllMySubShelvesByRootShelfId(validatedRequest);
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -299,8 +300,8 @@ export const useCreateSubShelfByRootShelfId = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -364,8 +365,8 @@ export const useUpdateMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -441,8 +442,8 @@ export const useMoveMySubShelf = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -523,8 +524,8 @@ export const useMoveMySubShelves = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -598,8 +599,8 @@ export const useRestoreMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -676,8 +677,8 @@ export const useRestoreMySubShelvesByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -749,8 +750,8 @@ export const useDeleteMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );
@@ -829,8 +830,8 @@ export const useDeleteMySubShelvesByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        localStorage.removeItem(LocalStorageKeys.AccessToken);
-        localStorage.setItem(
+        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.setItem(
           LocalStorageKeys.AccessToken,
           response.newAccessToken
         );

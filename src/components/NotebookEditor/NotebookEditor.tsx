@@ -3,12 +3,7 @@
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
-import {
-  useLanguage,
-  useLoading,
-  useLocalStorage,
-  useShelfMaterial,
-} from "@/hooks";
+import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -19,6 +14,7 @@ import {
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
 import { loadFileFromDownloadURL } from "@/util/loadFiles";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
@@ -64,7 +60,6 @@ interface NotebookEditorProps {
 const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const localStorageManager = useLocalStorage();
   const shelfMaterialManager = useShelfMaterial();
 
   const getMyMaterialQuerier = useGetMyMaterialById();
@@ -124,7 +119,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     materialId: UUID
   ): Promise<NotebookMaterialMeta | undefined> => {
     const userAgent = navigator.userAgent;
-    const accessToken = localStorageManager.getItemByKey(
+    const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKeys.AccessToken
     );
     const responseOfGettingMaterial = await getMyMaterialQuerier.queryAsync({
@@ -190,7 +185,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         });
 
         const userAgent = navigator.userAgent;
-        const accessToken = localStorageManager.getItemByKey(
+        const accessToken = LocalStorageManipulator.getItemByKey(
           LocalStorageKeys.AccessToken
         );
         await saveMyNotebookMaterialMutator.mutateAsync({

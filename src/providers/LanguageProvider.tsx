@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocalStorage } from "@/hooks";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LanguageKeyMap, Languages } from "@shared/constants";
 import { tKey, translations } from "@shared/translations/index";
 import { Language } from "@shared/types/language.type";
@@ -27,10 +27,9 @@ export const LanguageProvider = ({
   const [currentLanguage, setCurrentLanguage] = useState<Language>(
     LanguageKeyMap["English"]
   );
-  const localStorageManager = useLocalStorage();
 
   useEffect(() => {
-    const savedLanguage = localStorageManager.getItemByKey(
+    const savedLanguage = LocalStorageManipulator.getItemByKey(
       LocalStorageKeys.Language
     );
     if (savedLanguage !== null) setCurrentLanguage(savedLanguage);
@@ -38,7 +37,7 @@ export const LanguageProvider = ({
 
   // update the HTML lang attribute
   useEffect(() => {
-    localStorageManager.setItem(LocalStorageKeys.Language, currentLanguage);
+    LocalStorageManipulator.setItem(LocalStorageKeys.Language, currentLanguage);
     const langCode = currentLanguage.code;
     document.documentElement.lang = langCode;
   }, [currentLanguage]);
