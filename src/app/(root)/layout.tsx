@@ -1,5 +1,8 @@
+"use client";
+
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
-import { SidebarInset } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ShelfMaterialProvider } from "@/providers";
 
 export default function RootLayout({
   children,
@@ -7,9 +10,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
-    </>
+    <SidebarProvider>
+      <ShelfMaterialProvider>
+        <AppSidebar />
+        <SidebarInset>{children}</SidebarInset>
+      </ShelfMaterialProvider>
+    </SidebarProvider>
   );
 }

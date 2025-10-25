@@ -1,7 +1,6 @@
 export * from "./availableLanguages.constant";
 export * from "./blockTimes.constant";
 export * from "./defaultFakeUser.constant";
-export * from "./defaultLocalStorage.constant";
 export * from "./defaultTextbookInitialContent.constant";
 export * from "./defaultThemes.constant";
 export * from "./searchLimitations.constant";

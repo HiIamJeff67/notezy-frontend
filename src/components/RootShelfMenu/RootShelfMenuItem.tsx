@@ -94,7 +94,7 @@ const RootShelfMenuItem = ({
         <SidebarMenuItem>
           <ContextMenu>
             {shelfMaterialManager.isRootShelfNodeEditing(summary.root.id) ? (
-              <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative">
+              <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-none border-foreground relative">
                 <input
                   ref={shelfMaterialManager.inputRef}
                   type="text"
@@ -135,7 +135,7 @@ const RootShelfMenuItem = ({
                     ref={node => {
                       drop(node);
                     }}
-                    className="w-full rounded-sm border-2 border-secondary hover:border-transparent 
+                    className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
                         whitespace-nowrap text-ellipsis overflow-hidden"
                     onClick={async () => {
                       await shelfMaterialManager.expandRootShelf(

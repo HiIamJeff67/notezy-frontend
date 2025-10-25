@@ -3,6 +3,7 @@ export * from "./useDebounce";
 export * from "./useLanguage";
 export * from "./useLoading";
 export * from "./useMobile";
+export * from "./useResizeSidebar";
 export * from "./useShelfMaterial";
 export * from "./useTheme";
 export * from "./useThemeStore";

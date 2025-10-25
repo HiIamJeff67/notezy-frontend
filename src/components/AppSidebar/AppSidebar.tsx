@@ -19,7 +19,6 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import {
-  Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -51,6 +50,7 @@ import {
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ShelfCaseIcon from "../icons/ShelfCaseIcon";
+import ResizableSidebar from "../ResizableSidebar/ResizableSidebar";
 
 interface AppSidebarProps {
   disabled?: boolean;
@@ -84,7 +84,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   >("None");
 
   return (
-    <Sidebar
+    <ResizableSidebar
       variant="sidebar"
       collapsible="icon"
       className="p-0 m-0 overflow-hidden"
@@ -244,6 +244,6 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
           </MenubarMenu>
         </Menubar>
       </SidebarFooter>
-    </Sidebar>
+    </ResizableSidebar>
   );
 }
