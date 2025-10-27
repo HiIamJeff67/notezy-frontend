@@ -3,5 +3,5 @@ export const getAuthorization = (
 ): string | undefined => {
   if (!accessToken) return undefined;
   if (accessToken.replaceAll(" ", "") === "") return undefined;
-  return "Bear " + accessToken;
+  return "Bearer " + accessToken;
 };

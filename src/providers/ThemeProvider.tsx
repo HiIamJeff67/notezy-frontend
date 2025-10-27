@@ -29,12 +29,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   // initialize the default theme
   useEffect(() => {
     const savedTheme = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.Theme
+      LocalStorageKeys.theme
     );
     if (!savedTheme) {
       setCurrentTheme(DefaultStandardTheme);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.Theme,
+        LocalStorageKeys.theme,
         DefaultStandardTheme
       );
       return;
@@ -47,7 +47,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (!isThemeExists) {
       setCurrentTheme(DefaultStandardTheme);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.Theme,
+        LocalStorageKeys.theme,
         DefaultStandardTheme
       );
       return;
@@ -60,7 +60,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!currentTheme) return;
 
-    LocalStorageManipulator.setItem(LocalStorageKeys.Theme, currentTheme);
+    LocalStorageManipulator.setItem(LocalStorageKeys.theme, currentTheme);
 
     if (prevTheme !== null) {
       const prevDefaultThemeCSSClassName = !prevTheme.isDark ? "light" : "dark";

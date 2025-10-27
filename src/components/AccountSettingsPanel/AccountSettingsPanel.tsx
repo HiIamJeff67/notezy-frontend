@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
-import { GetMyInfo } from "@shared/api/functions/userInfo.api";
+import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { PrivateFakeUser, PrivateFakeUserInfo } from "@shared/constants";
 import { PrivateUser, PrivateUserInfo } from "@shared/types/models";
 import { lazy, Suspense, useEffect, useState } from "react";

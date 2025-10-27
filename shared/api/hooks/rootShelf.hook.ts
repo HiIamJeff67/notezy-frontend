@@ -1,15 +1,11 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useApolloClient } from "@apollo/client/react";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { queryFnGetMyRootShelfById } from "@shared/api/functions/rootShelf.function";
 import {
-  CreateRootShelf,
-  DeleteMyRootShelfById,
-  DeleteMyRootShelvesByIds,
-  GetMyRootShelfById,
-  RestoreMyRootShelfById,
-  RestoreMyRootShelvesByIds,
-  UpdateMyRootShelfById,
-} from "@shared/api/functions/rootShelf.api";
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/interfaces/queryHookOptions";
 import {
   CreateRootShelfRequest,
   CreateRootShelfRequestSchema,
@@ -18,7 +14,6 @@ import {
   DeleteMyRootShelvesByIdsRequest,
   DeleteMyRootShelvesByIdsRequestSchema,
   GetMyRootShelfByIdRequest,
-  GetMyRootShelfByIdRequestSchema,
   GetMyRootShelfByIdResponse,
   RestoreMyRootShelfByIdRequest,
   RestoreMyRootShelfByIdRequestSchema,
@@ -27,63 +22,32 @@ import {
   UpdateMyRootShelfByIdRequest,
   UpdateMyRootShelfByIdRequestSchema,
 } from "@shared/api/interfaces/rootShelf.interface";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+  CreateRootShelf,
+  DeleteMyRootShelfById,
+  DeleteMyRootShelvesByIds,
+  RestoreMyRootShelfById,
+  RestoreMyRootShelvesByIds,
+  UpdateMyRootShelfById,
+} from "@shared/api/invokers/rootShelf.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
+import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "../interfaces/queryHookOptions";
-import { queryKeys } from "../queryKeys";
 
 export const useGetMyRootShelfById = (
   hookRequest?: GetMyRootShelfByIdRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (request?: GetMyRootShelfByIdRequest) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);
-      const response = await GetMyRootShelfById(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.rootShelf.myOneById(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () => await queryFnGetMyRootShelfById(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -98,7 +62,7 @@ export const useGetMyRootShelfById = (
       queryKey: queryKeys.rootShelf.myOneById(
         callbackRequest.param.rootShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () => await queryFnGetMyRootShelfById(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -106,7 +70,7 @@ export const useGetMyRootShelfById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_ROOT_SHELF_BY_ID" as const,
+    name: "GET_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
 
@@ -151,9 +115,9 @@ export const useCreateRootShelf = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -177,12 +141,12 @@ export const useCreateRootShelf = () => {
 
   return {
     ...mutation,
-    name: "CREATE_ROOT_SHELF" as const,
+    name: "CREATE_ROOT_SHELF_HOOK" as const,
   };
 };
 
 export const useUpdateMyRootShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: UpdateMyRootShelfByIdRequest) => {
@@ -197,9 +161,9 @@ export const useUpdateMyRootShelfById = () => {
         ),
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -223,12 +187,12 @@ export const useUpdateMyRootShelfById = () => {
 
   return {
     ...mutation,
-    name: "UPDATE_MY_ROOT_SHELF_BY_ID" as const,
+    name: "UPDATE_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useRestoreMyRootShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMyRootShelfByIdRequest) => {
@@ -259,9 +223,9 @@ export const useRestoreMyRootShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -285,12 +249,12 @@ export const useRestoreMyRootShelfById = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_ROOT_SHELF_BY_ID" as const,
+    name: "RESTORE_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useRestoreMyRootShelvesByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMyRootShelvesByIdsRequest) => {
@@ -323,9 +287,9 @@ export const useRestoreMyRootShelvesByIds = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -334,12 +298,12 @@ export const useRestoreMyRootShelvesByIds = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_ROOT_SHELVES_BY_IDS" as const,
+    name: "RESTORE_MY_ROOT_SHELVES_BY_IDS_HOOK" as const,
   };
 };
 
 export const useDeleteMyRootShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMyRootShelfByIdRequest) => {
@@ -370,9 +334,9 @@ export const useDeleteMyRootShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -396,12 +360,12 @@ export const useDeleteMyRootShelfById = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_ROOT_SHELF_BY_ID" as const,
+    name: "DELETE_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useDeleteMyRootShelvesByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMyRootShelvesByIdsRequest) => {
@@ -434,9 +398,9 @@ export const useDeleteMyRootShelvesByIds = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -445,6 +409,6 @@ export const useDeleteMyRootShelvesByIds = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_ROOT_SHELVES_BY_IDS" as const,
+    name: "DELETE_MY_ROOT_SHELVES_BY_IDS_HOOK" as const,
   };
 };

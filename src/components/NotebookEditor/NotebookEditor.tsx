@@ -1,8 +1,23 @@
 "use client";
 
+import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+import { Spinner } from "@/components/ui/spinner";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import {
   convertBlocksToDOCX,
@@ -13,9 +28,7 @@ import {
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
-import { loadFileFromDownloadURL } from "@/util/loadFiles";
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
-import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
@@ -24,6 +37,7 @@ import {
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
+import { MaterialLoader } from "@shared/lib/materialLoader";
 import {
   ExportableMaterialContentTypes,
   MaterialContentType,
@@ -37,21 +51,6 @@ import {
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import DropFileZone from "../DropFileZone/DropFileZone";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "../ui/menubar";
-import { Spinner } from "../ui/spinner";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
@@ -120,7 +119,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   ): Promise<NotebookMaterialMeta | undefined> => {
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.AccessToken
+      LocalStorageKeys.accessToken
     );
     const responseOfGettingMaterial = await getMyMaterialQuerier.queryAsync({
       header: {
@@ -135,15 +134,10 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       return undefined;
     }
 
-    const fileContentString = await loadFileFromDownloadURL(
-      responseOfGettingMaterial.data.downloadURL
+    const parsedContent = await MaterialLoader.loadMaterialContent(
+      responseOfGettingMaterial.data.downloadURL,
+      AllDefaultNotebookInitialContents
     );
-    const parsedContent = (
-      fileContentString && fileContentString.trim() !== ""
-        ? JSON.parse(fileContentString)
-        : choiceRandom(AllDefaultNotebookInitialContents)
-    ) as PartialBlock[];
-    if (!Array.isArray(parsedContent)) return undefined;
 
     return {
       id: responseOfGettingMaterial.data.id as UUID,
@@ -186,7 +180,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
         const userAgent = navigator.userAgent;
         const accessToken = LocalStorageManipulator.getItemByKey(
-          LocalStorageKeys.AccessToken
+          LocalStorageKeys.accessToken
         );
         await saveMyNotebookMaterialMutator.mutateAsync({
           header: {

@@ -2,17 +2,17 @@ import { Language } from "./language.type";
 import { Theme } from "./theme.type";
 
 export enum LocalStorageKeys {
-  AccessToken = "AccessToken",
-  Theme = "Theme",
-  Language = "Language",
-  LastVisitedAt = "LastVisitedAt",
-  SidebarWidth = "SidebarWidth",
+  accessToken = "AccessToken",
+  theme = "Theme",
+  language = "Language",
+  lastVisitedAt = "LastVisitedAt",
+  sidebarWidth = "SidebarWidth",
 }
 
 export interface LocalStorageItem {
-  [LocalStorageKeys.Theme]: Theme | null;
-  [LocalStorageKeys.Language]: Language | null;
-  [LocalStorageKeys.LastVisitedAt]: Date | null;
-  [LocalStorageKeys.AccessToken]: string | null;
-  [LocalStorageKeys.SidebarWidth]: string | null;
+  [LocalStorageKeys.theme]: Theme | null;
+  [LocalStorageKeys.language]: Language | null;
+  [LocalStorageKeys.lastVisitedAt]: Date | null;
+  [LocalStorageKeys.accessToken]: string | null;
+  [LocalStorageKeys.sidebarWidth]: string | null;
 }

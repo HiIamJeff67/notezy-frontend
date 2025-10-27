@@ -88,7 +88,7 @@ const MaterialMenuItem = ({
           onClick={async () => {
             await shelfMaterialManager.deleteMaterial(parent, current);
             if (current.id === (router.params.materialId as string)) {
-              router.push(WebURLPathDictionary.root.materialEditor.notFound);
+              router.push(WebURLPathDictionary.root.materialEditor._);
             }
           }}
         >

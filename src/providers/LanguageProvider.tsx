@@ -30,14 +30,14 @@ export const LanguageProvider = ({
 
   useEffect(() => {
     const savedLanguage = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.Language
+      LocalStorageKeys.language
     );
     if (savedLanguage !== null) setCurrentLanguage(savedLanguage);
   }, []);
 
   // update the HTML lang attribute
   useEffect(() => {
-    LocalStorageManipulator.setItem(LocalStorageKeys.Language, currentLanguage);
+    LocalStorageManipulator.setItem(LocalStorageKeys.language, currentLanguage);
     const langCode = currentLanguage.code;
     document.documentElement.lang = langCode;
   }, [currentLanguage]);

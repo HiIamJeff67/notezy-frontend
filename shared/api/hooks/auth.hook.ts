@@ -1,15 +1,5 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
-  DeleteMe,
-  ForgetPassword,
-  Login,
-  Logout,
-  Register,
-  ResetEmail,
-  SendAuthCode,
-  ValidateEmail,
-} from "@shared/api/functions/auth.api";
-import {
   DeleteMeRequest,
   DeleteMeRequestSchema,
   ForgetPasswordRequest,
@@ -27,16 +17,27 @@ import {
   ValidateEmailRequest,
   ValidateEmailRequestSchema,
 } from "@shared/api/interfaces/auth.interface";
+import {
+  DeleteMe,
+  ForgetPassword,
+  Login,
+  Logout,
+  Register,
+  ResetEmail,
+  SendAuthCode,
+  ValidateEmail,
+} from "@shared/api/invokers/auth.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
+import { queryKeys } from "@shared/api/queryKeys";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ZodError } from "zod";
 import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
-import { queryKeys } from "../queryKeys";
 
 export const useRegister = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RegisterRequest) => {
@@ -46,14 +47,14 @@ export const useRegister = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.AccessToken,
+        LocalStorageKeys.accessToken,
         response.data.accessToken
       );
-      sessionStorage.removeItem(SessionStorageKeys.CSRFToken);
+      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
       sessionStorage.setItem(
-        SessionStorageKeys.CSRFToken,
+        SessionStorageKeys.csrfToken,
         response.data.csrfToken
       );
     },
@@ -85,7 +86,7 @@ export const useRegister = () => {
 };
 
 export const useLogin = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: LoginRequest) => {
@@ -95,14 +96,14 @@ export const useLogin = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.AccessToken,
+        LocalStorageKeys.accessToken,
         response.data.accessToken
       );
-      sessionStorage.removeItem(SessionStorageKeys.CSRFToken);
+      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
       sessionStorage.setItem(
-        SessionStorageKeys.CSRFToken,
+        SessionStorageKeys.csrfToken,
         response.data.csrfToken
       );
     },
@@ -133,7 +134,7 @@ export const useLogin = () => {
 };
 
 export const useLogout = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: LogoutRequest) => {
@@ -143,7 +144,7 @@ export const useLogout = () => {
     onSuccess: _ => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -207,9 +208,9 @@ export const useValidateEmail = () => {
     },
     onSuccess: (response, _) => {
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -235,12 +236,12 @@ export const useValidateEmail = () => {
 
   return {
     ...mutation,
-    name: "VALIDATE_EMAIL" as const,
+    name: "VALIDATE_EMAIL_HOOK" as const,
   };
 };
 
 export const useResetEmail = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: ResetEmailRequest) => {
@@ -251,9 +252,9 @@ export const useResetEmail = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -279,12 +280,12 @@ export const useResetEmail = () => {
 
   return {
     ...mutation,
-    name: "RESET_EMAIL" as const,
+    name: "RESET_EMAIL_HOOK" as const,
   };
 };
 
 export const useForgetPassword = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: ForgetPasswordRequest) => {
@@ -321,7 +322,7 @@ export const useForgetPassword = () => {
 };
 
 export const useDeleteMe = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMeRequest) => {
@@ -352,6 +353,6 @@ export const useDeleteMe = () => {
 
   return {
     ...mutation,
-    name: "DELETE_ME" as const,
+    name: "DELETE_ME_HOOK" as const,
   };
 };

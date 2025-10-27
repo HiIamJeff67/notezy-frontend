@@ -1,7 +1,7 @@
 export enum SessionStorageKeys {
-  CSRFToken = "CSRFToken",
+  csrfToken = "CSRFToken",
 }
 
 export interface SessionStorageItem {
-  [SessionStorageKeys.CSRFToken]: string | null;
+  [SessionStorageKeys.csrfToken]: string | null;
 }

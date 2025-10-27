@@ -1,67 +1,32 @@
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
-import { GetMyInfo, UpdateMyInfo } from "@shared/api/functions/userInfo.api";
+import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/interfaces/queryHookOptions";
 import {
   GetMyInfoRequest,
-  GetMyInfoRequestSchema,
   GetMyInfoResponse,
   UpdateMyInfoRequest,
   UpdateMyInfoRequestSchema,
 } from "@shared/api/interfaces/userInfo.interface";
+import { UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
-
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ZodError } from "zod";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "../interfaces/queryHookOptions";
 
 export const useGetMyInfo = (
   hookRequest?: GetMyInfoRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (request?: GetMyInfoRequest) => {
-    if (!request) return;
-    try {
-      const validatedRequest = GetMyInfoRequestSchema.parse(request);
-      const response = await GetMyInfo(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.userInfo.my(),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () => await queryFnGetMyInfo(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -74,7 +39,7 @@ export const useGetMyInfo = (
   ): Promise<GetMyInfoResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.userInfo.my(),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () => await queryFnGetMyInfo(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -87,7 +52,7 @@ export const useGetMyInfo = (
 };
 
 export const useUpdateMyInfo = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: UpdateMyInfoRequest) => {
@@ -97,9 +62,9 @@ export const useUpdateMyInfo = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }

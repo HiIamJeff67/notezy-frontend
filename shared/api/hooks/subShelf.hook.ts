@@ -1,18 +1,14 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  CreateSubShelfByRootShelfId,
-  DeleteMySubShelfById,
-  DeleteMySubShelvesByIds,
-  GetAllMySubShelvesByRootShelfId,
-  GetMySubShelfById,
-  GetMySubShelvesByPrevSubShelfId,
-  MoveMySubShelf,
-  MoveMySubShelves,
-  RestoreMySubShelfById,
-  RestoreMySubShelvesByIds,
-  UpdateMySubShelfById,
-} from "@shared/api/functions/subShelf.api";
+  queryFnGetAllMySubShelvesByRootShelfId,
+  queryFnGetMySubShelfById,
+  queryFnGetMySubShelvesByPrevSubShelfId,
+} from "@shared/api/functions/subShelf.function";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/interfaces/queryHookOptions";
 import {
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdRequestSchema,
@@ -21,13 +17,10 @@ import {
   DeleteMySubShelvesByIdsRequest,
   DeleteMySubShelvesByIdsRequestSchema,
   GetAllMySubShelvesByRootShelfIdRequest,
-  GetAllMySubShelvesByRootShelfIdRequestSchema,
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
-  GetMySubShelfByIdRequestSchema,
   GetMySubShelfByIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
-  GetMySubShelvesByPrevSubShelfIdRequestSchema,
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfRequestSchema,
@@ -40,63 +33,34 @@ import {
   UpdateMySubShelfByIdRequest,
   UpdateMySubShelfByIdRequestSchema,
 } from "@shared/api/interfaces/subShelf.interface";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+  CreateSubShelfByRootShelfId,
+  DeleteMySubShelfById,
+  DeleteMySubShelvesByIds,
+  MoveMySubShelf,
+  MoveMySubShelves,
+  RestoreMySubShelfById,
+  RestoreMySubShelvesByIds,
+  UpdateMySubShelfById,
+} from "@shared/api/invokers/subShelf.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
+import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "../interfaces/queryHookOptions";
-import { queryKeys } from "../queryKeys";
 
 export const useGetMySubShelfById = (
   hookRequest?: GetMySubShelfByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (request?: GetMySubShelfByIdRequest) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
-      const response = await GetMySubShelfById(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.myOneById(
       hookRequest?.param.subShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () => await queryFnGetMySubShelfById(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -111,7 +75,7 @@ export const useGetMySubShelfById = (
       queryKey: queryKeys.subShelf.myOneById(
         callbackRequest.param.subShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () => await queryFnGetMySubShelfById(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -119,7 +83,7 @@ export const useGetMySubShelfById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_SUB_SHELF_BY_ID",
+    name: "GET_MY_SUB_SHELF_BY_ID_HOOK",
   };
 };
 
@@ -127,47 +91,14 @@ export const useGetMySubShelvesByPrevSubShelfId = (
   hookRequest?: GetMySubShelvesByPrevSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (
-    request?: GetMySubShelvesByPrevSubShelfIdRequest
-  ) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest =
-        GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
-      const response = await GetMySubShelvesByPrevSubShelfId(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
       hookRequest?.param.prevSubShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () =>
+      await queryFnGetMySubShelvesByPrevSubShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -182,7 +113,8 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
         callbackRequest.param.prevSubShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () =>
+        await queryFnGetMySubShelvesByPrevSubShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -190,7 +122,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID" as const,
+    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
 
@@ -198,47 +130,14 @@ export const useGetAllMySubShelvesByRootShelfId = (
   hookRequest?: GetAllMySubShelvesByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (
-    request?: GetAllMySubShelvesByRootShelfIdRequest
-  ) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest =
-        GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
-      const response = await GetAllMySubShelvesByRootShelfId(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.myManyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () =>
+      await queryFnGetAllMySubShelvesByRootShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -253,7 +152,8 @@ export const useGetAllMySubShelvesByRootShelfId = (
       queryKey: queryKeys.subShelf.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () =>
+        await queryFnGetAllMySubShelvesByRootShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -261,12 +161,12 @@ export const useGetAllMySubShelvesByRootShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID" as const,
+    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useCreateSubShelfByRootShelfId = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: CreateSubShelfByRootShelfIdRequest) => {
@@ -300,9 +200,9 @@ export const useCreateSubShelfByRootShelfId = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -326,12 +226,12 @@ export const useCreateSubShelfByRootShelfId = () => {
 
   return {
     ...mutation,
-    name: "CREATE_SUB_SHELF_BY_ROOT_SHELF_ID" as const,
+    name: "CREATE_SUB_SHELF_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useUpdateMySubShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: UpdateMySubShelfByIdRequest) => {
@@ -365,9 +265,9 @@ export const useUpdateMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -391,12 +291,12 @@ export const useUpdateMySubShelfById = () => {
 
   return {
     ...mutation,
-    name: "UPDATE_MY_SUB_SHELF_BY_ID" as const,
+    name: "UPDATE_MY_SUB_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useMoveMySubShelf = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: MoveMySubShelfRequest) => {
@@ -442,9 +342,9 @@ export const useMoveMySubShelf = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -468,12 +368,12 @@ export const useMoveMySubShelf = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_SUB_SHELF" as const,
+    name: "MOVE_MY_SUB_SHELF_HOOK" as const,
   };
 };
 
 export const useMoveMySubShelves = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: MoveMySubShelvesRequest) => {
@@ -524,9 +424,9 @@ export const useMoveMySubShelves = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -550,12 +450,12 @@ export const useMoveMySubShelves = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_SUB_SHELVES" as const,
+    name: "MOVE_MY_SUB_SHELVES_HOOK" as const,
   };
 };
 
 export const useRestoreMySubShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMySubShelfByIdRequest) => {
@@ -599,9 +499,9 @@ export const useRestoreMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -625,12 +525,12 @@ export const useRestoreMySubShelfById = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_SUB_SHELF_BY_ID" as const,
+    name: "RESTORE_MY_SUB_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useRestoreMySubShelvesByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMySubShelvesByIdsRequest) => {
@@ -677,9 +577,9 @@ export const useRestoreMySubShelvesByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -703,12 +603,12 @@ export const useRestoreMySubShelvesByIds = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_SUB_SHELVES_BY_IDS" as const,
+    name: "RESTORE_MY_SUB_SHELVES_BY_IDS_HOOK" as const,
   };
 };
 
 export const useDeleteMySubShelfById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMySubShelfByIdRequest) => {
@@ -750,9 +650,9 @@ export const useDeleteMySubShelfById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -776,12 +676,12 @@ export const useDeleteMySubShelfById = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_SUB_SHELF_BY_ID" as const,
+    name: "DELETE_MY_SUB_SHELF_BY_ID_HOOK" as const,
   };
 };
 
 export const useDeleteMySubShelvesByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMySubShelvesByIdsRequest) => {
@@ -830,9 +730,9 @@ export const useDeleteMySubShelvesByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -856,6 +756,6 @@ export const useDeleteMySubShelvesByIds = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_SUB_SHELVES_BY_IDS" as const,
+    name: "DELETE_MY_SUB_SHELVES_BY_IDS_HOOK" as const,
   };
 };

@@ -23,7 +23,7 @@ import {
 import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateMe } from "@shared/api/functions/user.api";
+import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { AllUserStatus } from "@shared/types/enums";
 import { PrivateUser, PrivateUserSchema } from "@shared/types/models";
 import { memo, useCallback, useMemo } from "react";

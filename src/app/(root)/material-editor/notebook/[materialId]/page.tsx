@@ -1,7 +1,12 @@
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import NotebookEditor from "@/components/NotebookEditor/NotebookEditor";
+import { getAuthorization } from "@/util/getAuthorization";
+import { prefetchGetMyMaterialById } from "@shared/api/prefetches/material.prefetch";
+import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -27,8 +32,34 @@ const NotebookMaterialEditorPage = async ({
   )
     return notFound();
 
-  // we cannot fetch or load the material content here,
-  // since the server component will not have the authorization tokens in cookie
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get(CookieStoreKeys.accessToken)?.value;
+  if (accessToken) {
+    const headersList = await headers();
+    const { prefetchQuery, nextQueryClient } = prefetchGetMyMaterialById();
+    await prefetchQuery({
+      header: {
+        userAgent: headersList.get("user-agent") || "",
+        authorization: getAuthorization(accessToken),
+      },
+      param: {
+        materialId: materialId,
+      },
+    });
+
+    return (
+      <HydrationBoundary state={dehydrate(nextQueryClient)}>
+        <Suspense fallback={<StrictLoadingOutlay />}>
+          <NotebookEditor
+            defaultMeta={getDefaultNotebookMaterialMeta(
+              materialId,
+              parentSubShelfId
+            )}
+          />
+        </Suspense>
+      </HydrationBoundary>
+    );
+  }
 
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>

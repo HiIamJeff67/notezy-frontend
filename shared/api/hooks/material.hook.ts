@@ -1,19 +1,10 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  CreateNotebookMaterial,
-  CreateTextbookMaterial,
-  DeleteMyMaterialById,
-  DeleteMyMaterialsByIds,
-  GetAllMyMaterialsByParentSubShelfId,
-  GetAllMyMaterialsByRootShelfId,
-  GetMyMaterialById,
-  MoveMyMaterialById,
-  RestoreMyMaterialById,
-  RestoreMyMaterialsByIds,
-  SaveMyNotebookMaterialById,
-  UpdateMyMaterialById,
-} from "@shared/api/functions/material.api";
+  queryFnGetAllMyMaterialsByParentSubShelfId,
+  queryFnGetAllMyMaterialsByRootShelfId,
+  queryFnGetMyMaterialById,
+} from "@shared/api/functions/material.function";
 import {
   CreateNotebookMaterialRequest,
   CreateNotebookMaterialRequestSchema,
@@ -24,13 +15,10 @@ import {
   DeleteMyMaterialsByIdsRequest,
   DeleteMyMaterialsByIdsRequestSchema,
   GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdRequestSchema,
   GetAllMyMaterialsByParentSubShelfIdResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdRequestSchema,
   GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialByIdRequest,
-  GetMyMaterialByIdRequestSchema,
   GetMyMaterialByIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdRequestSchema,
@@ -47,14 +35,21 @@ import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/interfaces/queryHookOptions";
+import {
+  CreateNotebookMaterial,
+  CreateTextbookMaterial,
+  DeleteMyMaterialById,
+  DeleteMyMaterialsByIds,
+  MoveMyMaterialById,
+  RestoreMyMaterialById,
+  RestoreMyMaterialsByIds,
+  SaveMyNotebookMaterialById,
+  UpdateMyMaterialById,
+} from "@shared/api/invokers/material.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -62,44 +57,13 @@ export const useGetMyMaterialById = (
   hookRequest?: GetMyMaterialByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (request?: GetMyMaterialByIdRequest) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
-      const response = await GetMyMaterialById(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.material.myOneById(
       hookRequest?.param.materialId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () => await queryFnGetMyMaterialById(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -114,7 +78,7 @@ export const useGetMyMaterialById = (
       queryKey: queryKeys.material.myOneById(
         callbackRequest.param.materialId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () => await queryFnGetMyMaterialById(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -122,7 +86,7 @@ export const useGetMyMaterialById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_MATERIAL_BY_ID" as const,
+    name: "GET_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
@@ -130,49 +94,14 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   hookRequest?: GetAllMyMaterialsByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (
-    request?: GetAllMyMaterialsByParentSubShelfIdRequest
-  ) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest =
-        GetAllMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-      const response = await GetAllMyMaterialsByParentSubShelfId(
-        validatedRequest
-      );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.material.myManyByParentSubShelfId(
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () =>
+      await queryFnGetAllMyMaterialsByParentSubShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -187,7 +116,8 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
       queryKey: queryKeys.material.myManyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () =>
+        await queryFnGetAllMyMaterialsByParentSubShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -195,7 +125,7 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID" as const,
+    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID_HOOK" as const,
   };
 };
 
@@ -203,47 +133,14 @@ export const useGetAllMyMaterialsByRootShelfId = (
   hookRequest?: GetAllMyMaterialsByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = useQueryClient();
-
-  const queryFunction = async (
-    request?: GetAllMyMaterialsByRootShelfIdRequest
-  ) => {
-    if (!request) return;
-
-    try {
-      const validatedRequest =
-        GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
-      const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
-          response.newAccessToken
-        );
-      }
-      return response;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    }
-  };
+  const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.material.myManyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFunction(hookRequest),
+    queryFn: async () =>
+      await queryFnGetAllMyMaterialsByRootShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -258,7 +155,8 @@ export const useGetAllMyMaterialsByRootShelfId = (
       queryKey: queryKeys.material.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
-      queryFn: async () => await queryFunction(callbackRequest),
+      queryFn: async () =>
+        await queryFnGetAllMyMaterialsByRootShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -266,12 +164,12 @@ export const useGetAllMyMaterialsByRootShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID" as const,
+    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useCreateTextbookMaterial = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: CreateTextbookMaterialRequest) => {
@@ -307,9 +205,9 @@ export const useCreateTextbookMaterial = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -333,12 +231,12 @@ export const useCreateTextbookMaterial = () => {
 
   return {
     ...mutation,
-    name: "CREATE_TEXTBOOK_MATERIAL" as const,
+    name: "CREATE_TEXTBOOK_MATERIAL_HOOK" as const,
   };
 };
 
 export const useCreateNotebookMaterial = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: CreateNotebookMaterialRequest) => {
@@ -374,9 +272,9 @@ export const useCreateNotebookMaterial = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -400,12 +298,12 @@ export const useCreateNotebookMaterial = () => {
 
   return {
     ...mutation,
-    name: "CREATE_NOTEBOOK_MATERIAL" as const,
+    name: "CREATE_NOTEBOOK_MATERIAL_HOOK" as const,
   };
 };
 
 export const useUpdateMyMaterialById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: UpdateMyMaterialByIdRequest) => {
@@ -435,9 +333,9 @@ export const useUpdateMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -461,12 +359,12 @@ export const useUpdateMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "UPDATE_MY_MATERIAL_BY_ID" as const,
+    name: "UPDATE_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useSaveMyNotebookMaterialById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: SaveMyNotebookMaterialByIdRequest) => {
@@ -497,9 +395,9 @@ export const useSaveMyNotebookMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -523,12 +421,12 @@ export const useSaveMyNotebookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "SAVE_MY_NOTEBOOK_MATERIAL_BY_ID" as const,
+    name: "SAVE_MY_NOTEBOOK_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useMoveMyMaterialById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: MoveMyMaterialByIdRequest) => {
@@ -576,9 +474,9 @@ export const useMoveMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -602,12 +500,12 @@ export const useMoveMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_MATERIAL_BY_ID" as const,
+    name: "MOVE_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useRestoreMyMaterialById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMyMaterialByIdRequest) => {
@@ -646,9 +544,9 @@ export const useRestoreMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -672,12 +570,12 @@ export const useRestoreMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_MATERIAL_BY_ID" as const,
+    name: "RESTORE_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useRestoreMyMaterialsByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: RestoreMyMaterialsByIdsRequest) => {
@@ -723,9 +621,9 @@ export const useRestoreMyMaterialsByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -749,12 +647,12 @@ export const useRestoreMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_MATERIALS_BY_IDS" as const,
+    name: "RESTORE_MY_MATERIALS_BY_IDS_HOOK" as const,
   };
 };
 
 export const useDeleteMyMaterialById = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMyMaterialByIdRequest) => {
@@ -792,9 +690,9 @@ export const useDeleteMyMaterialById = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -818,12 +716,12 @@ export const useDeleteMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIAL_BY_ID" as const,
+    name: "DELETE_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useDeleteMyMaterialsByIds = () => {
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (request: DeleteMyMaterialsByIdsRequest) => {
@@ -869,9 +767,9 @@ export const useDeleteMyMaterialsByIds = () => {
         refetchType: "active",
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.AccessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.AccessToken,
+          LocalStorageKeys.accessToken,
           response.newAccessToken
         );
       }
@@ -895,6 +793,6 @@ export const useDeleteMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIALS_BY_IDS" as const,
+    name: "DELETE_MY_MATERIALS_BY_IDS_HOOK" as const,
   };
 };

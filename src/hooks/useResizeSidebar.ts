@@ -35,7 +35,7 @@ export function useResizeSidebar(options: ResizeSidebarOptions = {}) {
 
   useEffect(() => {
     const saved = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.SidebarWidth
+      LocalStorageKeys.sidebarWidth
     );
     if (saved) {
       const parsed = Number(saved);
@@ -52,7 +52,7 @@ export function useResizeSidebar(options: ResizeSidebarOptions = {}) {
       const clamped = clamp(next, minWidth, maxWidth);
       setWidth(clamped);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.SidebarWidth,
+        LocalStorageKeys.sidebarWidth,
         String(clamped)
       );
     },

@@ -46,7 +46,7 @@ export const UserDataProvider = ({
         try {
           const userAgent = navigator.userAgent;
           const accessToken = localStorage.getItemByKey(
-            LocalStorageKeys.AccessToken
+            LocalStorageKeys.accessToken
           );
           const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
             {

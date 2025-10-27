@@ -249,7 +249,7 @@ export async function SaveMyNotebookMaterialById(
     {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        // Do NOT set the content type of form-data manually
         "User-Agent": request.header.userAgent,
         ...(request.header.authorization
           ? { Authorization: request.header.authorization }

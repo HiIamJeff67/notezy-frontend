@@ -18,7 +18,7 @@ export const makeQueryClient = (): QueryClient => {
 };
 
 export const getQueryClient = (): QueryClient => {
-  if (!isServer) {
+  if (isServer) {
     return makeQueryClient();
   } else {
     if (!queryClient) queryClient = makeQueryClient();
