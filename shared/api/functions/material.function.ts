@@ -5,12 +5,15 @@ import {
   GetAllMyMaterialsByParentSubShelfIdRequestSchema,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdRequestSchema,
+  GetMyMaterialAndItsParentByIdRequest,
+  GetMyMaterialAndItsParentByIdRequestSchema,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdRequestSchema,
 } from "@shared/api/interfaces/material.interface";
 import {
   GetAllMyMaterialsByParentSubShelfId,
   GetAllMyMaterialsByRootShelfId,
+  GetMyMaterialAndItsParentById,
   GetMyMaterialById,
 } from "@shared/api/invokers/material.invoker";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
@@ -25,6 +28,39 @@ export const queryFnGetMyMaterialById = async (
   try {
     const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
     const response = await GetMyMaterialById(validatedRequest);
+    if (!isCallerServerOnly && response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.accessToken,
+        response.newAccessToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    }
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetMyMaterialAndItsParentById = async (
+  request?: GetMyMaterialAndItsParentByIdRequest,
+  isCallerServerOnly: boolean = false
+) => {
+  if (!request) return;
+
+  try {
+    const validatedRequest =
+      GetMyMaterialAndItsParentByIdRequestSchema.parse(request);
+    const response = await GetMyMaterialAndItsParentById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(

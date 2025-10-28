@@ -1,6 +1,7 @@
 import { PartialBlock } from "@blocknote/core";
+import { MaterialType } from "@shared/types/enums";
 import { UUID } from "crypto";
-import { MaterialType } from "./enums";
+import { generateUUID } from "./uuid_v4.type";
 
 /*
  * This is only used as the interface between NotezyAPI and BlockNoteEditor
@@ -8,8 +9,11 @@ import { MaterialType } from "./enums";
 export interface NotebookMaterialMeta {
   id: UUID;
   parentId: UUID;
+  rootId: UUID;
   name: string;
   type: MaterialType;
+  size: number;
+  path: UUID[];
   initialContent: PartialBlock[] | undefined;
   updatedAt: Date | undefined;
   createdAt: Date | undefined;
@@ -17,13 +21,17 @@ export interface NotebookMaterialMeta {
 
 export const getDefaultNotebookMaterialMeta = (
   materialId: UUID,
-  parentSubShelfId: UUID
+  parentSubShelfId: UUID,
+  rootShelfId: UUID = generateUUID()
 ): NotebookMaterialMeta => {
   return {
     id: materialId,
+    rootId: rootShelfId,
     parentId: parentSubShelfId,
     name: "Untitled",
     type: MaterialType.Notebook,
+    size: 0,
+    path: [],
     initialContent: undefined,
     updatedAt: undefined,
     createdAt: undefined,

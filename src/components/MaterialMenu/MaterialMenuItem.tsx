@@ -14,6 +14,7 @@ import {
   SubShelfNode,
 } from "@shared/types/shelfMaterialNodes";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { useCallback } from "react";
 import toast from "react-hot-toast";
 
 interface MaterialMenuItemProps {
@@ -33,7 +34,7 @@ const MaterialMenuItem = ({
   const languageManager = useLanguage();
   const shelfMaterialManager = useShelfMaterial();
 
-  const handleMaterialOnClick = () => {
+  const handleMaterialOnClick = useCallback(() => {
     try {
       let nextPath: string | undefined = undefined;
 
@@ -59,7 +60,7 @@ const MaterialMenuItem = ({
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
-  };
+  }, [parent, current, router, shelfMaterialManager]);
 
   return (
     <ContextMenu>

@@ -1,7 +1,7 @@
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import NotebookEditor from "@/components/NotebookEditor/NotebookEditor";
 import { getAuthorization } from "@/util/getAuthorization";
-import { prefetchGetMyMaterialById } from "@shared/api/prefetches/material.prefetch";
+import { prefetchGetMyMaterialAndItsParentById } from "@shared/api/prefetches/material.prefetch";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { isValidUUID } from "@shared/types/uuid_v4.type";
@@ -16,6 +16,7 @@ interface NotebookMaterialEditorPageProps {
   }>;
   searchParams: Promise<{
     parentSubShelfId?: string;
+    rootShelfId?: string;
   }>;
 }
 
@@ -26,9 +27,9 @@ const NotebookMaterialEditorPage = async ({
   const { materialId } = await params;
   const { parentSubShelfId } = await searchParams;
   if (
+    !isValidUUID(materialId) ||
     !parentSubShelfId ||
-    !isValidUUID(parentSubShelfId) ||
-    !isValidUUID(materialId)
+    !isValidUUID(parentSubShelfId)
   )
     return notFound();
 
@@ -36,7 +37,8 @@ const NotebookMaterialEditorPage = async ({
   const accessToken = cookieStore.get(CookieStoreKeys.accessToken)?.value;
   if (accessToken) {
     const headersList = await headers();
-    const { prefetchQuery, nextQueryClient } = prefetchGetMyMaterialById();
+    const { prefetchQuery, nextQueryClient } =
+      prefetchGetMyMaterialAndItsParentById();
     await prefetchQuery({
       header: {
         userAgent: headersList.get("user-agent") || "",

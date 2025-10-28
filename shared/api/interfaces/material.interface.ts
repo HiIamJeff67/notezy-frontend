@@ -27,6 +27,7 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     parentSubShelfId: z.uuidv4(),
     name: z.string(),
     type: z.enum(AllMaterialTypes),
+    size: z.number(),
     downloadURL: z.url(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
@@ -35,6 +36,47 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
 
 export type GetMyMaterialByIdResponse = z.infer<
   typeof GetMyMaterialByIdResponseSchema
+>;
+
+/* ============================== GetMyMaterialAndItsParentById ============================== */
+
+export const GetMyMaterialAndItsParentByIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    param: z.object({
+      materialId: z.uuidv4(),
+    }),
+  });
+
+export type GetMyMaterialAndItsParentByIdRequest = z.infer<
+  typeof GetMyMaterialAndItsParentByIdRequestSchema
+>;
+
+export const GetMyMaterialAndItsParentByIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      id: z.uuidv4(),
+      name: z.string(),
+      type: z.enum(AllMaterialTypes),
+      size: z.number(),
+      downloadURL: z.url(),
+      updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
+      rootShelfId: z.uuidv4(),
+      parentSubShelfId: z.uuidv4(),
+      parentSubShelfName: z.string(),
+      parentSubShelfPrevSubShelfId: z.uuidv4(),
+      parentSubShelfPath: z.array(z.uuidv4()),
+      parentSubShelfUpdatedAt: z.coerce.date(),
+      parentSubShelfCreatedAt: z.coerce.date(),
+    }),
+  });
+
+export type GetMyMaterialAndItsParentByIdResponse = z.infer<
+  typeof GetMyMaterialAndItsParentByIdResponseSchema
 >;
 
 /* ============================== GetAllMyMaterialsByParentSubShelfId ============================== */

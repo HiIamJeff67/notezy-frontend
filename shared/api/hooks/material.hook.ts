@@ -3,6 +3,7 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetAllMyMaterialsByParentSubShelfId,
   queryFnGetAllMyMaterialsByRootShelfId,
+  queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
 } from "@shared/api/functions/material.function";
 import {
@@ -18,6 +19,8 @@ import {
   GetAllMyMaterialsByParentSubShelfIdResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdResponse,
+  GetMyMaterialAndItsParentByIdRequest,
+  GetMyMaterialAndItsParentByIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdResponse,
   MoveMyMaterialByIdRequest,
@@ -87,6 +90,45 @@ export const useGetMyMaterialById = (
     ...query,
     queryAsync,
     name: "GET_MY_MATERIAL_BY_ID_HOOK" as const,
+  };
+};
+
+export const useGetMyMaterialAndItsParentById = (
+  hookRequest?: GetMyMaterialAndItsParentByIdRequest,
+  options?: Partial<UseQueryOptions>
+) => {
+  const queryClient = getQueryClient();
+
+  const query = useQuery({
+    queryKey: queryKeys.material.myOneById(
+      hookRequest?.param.materialId as UUID | undefined
+    ),
+    queryFn: async () =>
+      await queryFnGetMyMaterialAndItsParentById(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
+  });
+
+  const queryAsync = async (
+    callbackRequest: GetMyMaterialAndItsParentByIdRequest
+  ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.material.myOneById(
+        callbackRequest.param.materialId as UUID
+      ),
+      queryFn: async () =>
+        await queryFnGetMyMaterialAndItsParentById(callbackRequest),
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    ...query,
+    queryAsync,
+    name: "GET_MY_MATERIAL_AND_ITS_PARENT_BY_ID_HOOK" as const,
   };
 };
 

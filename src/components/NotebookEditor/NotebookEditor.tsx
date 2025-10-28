@@ -2,6 +2,7 @@
 
 import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
+import XIcon from "@/components/icons/XIcon";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +18,14 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import {
+  useAppRouter,
+  useLanguage,
+  useLoading,
+  useShelfMaterial,
+} from "@/hooks";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -33,9 +40,10 @@ import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import {
-  useGetMyMaterialById,
+  useGetMyMaterialAndItsParentById,
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
+import { WebURLPathDictionary } from "@shared/constants";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
 import { MaterialLoader } from "@shared/lib/materialLoader";
 import {
@@ -51,17 +59,20 @@ import {
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import MaterialPath from "../MaterialPath/MaterialPath";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
 }
 
 const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
+  const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const sidebarManager = useSidebar();
   const shelfMaterialManager = useShelfMaterial();
 
-  const getMyMaterialQuerier = useGetMyMaterialById();
+  const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
   const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
 
   const [editor, setEditor] = useState<BlockNoteEditor | undefined>(undefined);
@@ -121,16 +132,22 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKeys.accessToken
     );
-    const responseOfGettingMaterial = await getMyMaterialQuerier.queryAsync({
-      header: {
-        userAgent: userAgent,
-        authorization: getAuthorization(accessToken),
-      },
-      param: {
-        materialId: materialId,
-      },
-    });
-    if (responseOfGettingMaterial.data.type !== MaterialType.Notebook) {
+    const responseOfGettingMaterial =
+      await getMyMaterialAndItsParentQuerier.queryAsync({
+        header: {
+          userAgent: userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          materialId: materialId,
+        },
+      });
+    if (
+      responseOfGettingMaterial.data.type !== MaterialType.Notebook ||
+      responseOfGettingMaterial.data.id !== defaultMeta.id ||
+      responseOfGettingMaterial.data.parentSubShelfId !== defaultMeta.parentId
+    ) {
+      // since the root shelf id is default to be fake generated, so we don't need to verify it
       return undefined;
     }
 
@@ -142,8 +159,11 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     return {
       id: responseOfGettingMaterial.data.id as UUID,
       parentId: responseOfGettingMaterial.data.parentSubShelfId as UUID,
+      rootId: responseOfGettingMaterial.data.rootShelfId as UUID,
       name: responseOfGettingMaterial.data.name,
       type: responseOfGettingMaterial.data.type,
+      size: responseOfGettingMaterial.data.size,
+      path: responseOfGettingMaterial.data.parentSubShelfPath as UUID[],
       initialContent: parsedContent,
       updatedAt: new Date(responseOfGettingMaterial.data.updatedAt),
       createdAt: new Date(responseOfGettingMaterial.data.createdAt),
@@ -297,78 +317,104 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center">
-      <header className="w-full h-12 flex shrink-0 justify-between items-center pt-4 p-2 pl-8 gap-2 bg-transparent">
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button className="font-semibold text-2xl border-none border-transparent bg-transparent hover:bg-muted/50 focus-visible:ring-0 focus-visible:ring-offset-0">
-              <TruncatedText width="1/2">{meta.name}</TruncatedText>
-              <ChevronDownIcon
-                className={`transition ${isDropdownOpen ? "-rotate-180" : ""}`}
-              />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="bottom">
-            <DropdownMenuItem
-              onClick={() => {
-                if (meta.id) copyToClipboard(meta.id.toString());
-              }}
-              className="hover:cursor-pointer"
-            >
-              <span className="font-semibold">Id</span>
-              <TruncatedText width="200px" className="text-muted-foreground">
-                {meta.id}
-              </TruncatedText>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => copyToClipboard(meta.name)}
-              className="hover:cursor-pointer"
-            >
-              <span className="font-semibold">Name</span>
-              <TruncatedText width="200px" className="text-muted-foreground">
-                {meta.name}
-              </TruncatedText>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => copyToClipboard(meta.type)}
-              className="hover:cursor-pointer"
-            >
-              <span className="font-semibold">Type</span>
-              <TruncatedText width="200px" className="text-muted-foreground">
-                {meta.type}
-              </TruncatedText>
-            </DropdownMenuItem>
-            {meta.updatedAt && (
+    <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
+      <header className="w-full h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-background/15 backdrop-blur-md border-b border-background/10">
+        <div className="flex justify-start items-center gap-2">
+          {sidebarManager.isMobile ? (
+            <SidebarTrigger />
+          ) : (
+            !router.isSamePath(
+              router.getCurrentPath(),
+              WebURLPathDictionary.root.materialEditor._
+            ) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={() =>
+                  router.push(WebURLPathDictionary.root.materialEditor._)
+                }
+              >
+                <XIcon size={16} />
+              </Button>
+            )
+          )}
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="font-semibold text-2xl select-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              >
+                <TruncatedText width="1/2">{meta.name}</TruncatedText>
+                <ChevronDownIcon
+                  className={`transition ${
+                    isDropdownOpen ? "-rotate-180" : ""
+                  }`}
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom">
               <DropdownMenuItem
                 onClick={() => {
-                  if (meta.updatedAt)
-                    copyToClipboard(meta.updatedAt.toLocaleString());
+                  if (meta.id) copyToClipboard(meta.id.toString());
                 }}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">UpdatedAt</span>
-                <span className="text-muted-foreground">
-                  {meta.updatedAt.toLocaleString()}
-                </span>
+                <span className="font-semibold">Id</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {meta.id}
+                </TruncatedText>
               </DropdownMenuItem>
-            )}
-            {meta.createdAt && (
               <DropdownMenuItem
-                onClick={() => {
-                  if (meta.createdAt)
-                    copyToClipboard(meta.createdAt.toLocaleString());
-                }}
+                onClick={() => copyToClipboard(meta.name)}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">CreatedAt</span>
-                <span className="text-muted-foreground">
-                  {meta.createdAt.toLocaleString()}
-                </span>
+                <span className="font-semibold">Name</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {meta.name}
+                </TruncatedText>
               </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Menubar className="bg-muted">
+              <DropdownMenuItem
+                onClick={() => copyToClipboard(meta.type)}
+                className="hover:cursor-pointer"
+              >
+                <span className="font-semibold">Type</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {meta.type}
+                </TruncatedText>
+              </DropdownMenuItem>
+              {meta.updatedAt && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (meta.updatedAt)
+                      copyToClipboard(meta.updatedAt.toLocaleString());
+                  }}
+                  className="hover:cursor-pointer"
+                >
+                  <span className="font-semibold">UpdatedAt</span>
+                  <span className="text-muted-foreground">
+                    {meta.updatedAt.toLocaleString()}
+                  </span>
+                </DropdownMenuItem>
+              )}
+              {meta.createdAt && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (meta.createdAt)
+                      copyToClipboard(meta.createdAt.toLocaleString());
+                  }}
+                  className="hover:cursor-pointer"
+                >
+                  <span className="font-semibold">CreatedAt</span>
+                  <span className="text-muted-foreground">
+                    {meta.createdAt.toLocaleString()}
+                  </span>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <Menubar className="bg-muted/25">
           <MenubarMenu>
             <MenubarTrigger
               onClick={handleSaveNotebookMaterial}
@@ -447,8 +493,16 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           </MenubarMenu>
         </Menubar>
       </header>
+      <MaterialPath
+        parentSubShelfId={meta.parentId}
+        materialId={meta.id}
+        path={meta.path}
+        summary={shelfMaterialManager.expandedShelves.get(
+          meta.rootId.toString()
+        )}
+      />
       <div className="w-full h-full rounded-none p-8">
-        <BlockNoteView editor={editor} className="caret-foreground" />
+        <BlockNoteView editor={editor} className="caret-muted-foreground" />
       </div>
     </div>
   );
