@@ -35,10 +35,6 @@ const MaterialPath = ({
 }: MaterialPathProps) => {
   if (!summary) return <></>;
 
-  // !Note that the path would not contain the current sub shelf and the root shelf, and the material itself
-  // so we have to place them into the path, also display them as different icon and functionality
-  // we still need the summary, so that we can trace the shelf tree summary by tracing the path we got here and then extract the name and detail of each shelves
-
   const tracePathInSummary = useCallback((): SubShelfNode[] => {
     if (path.length === 0) {
       const parentSubShelfNode = summary.root.children[parentSubShelfId];
@@ -56,7 +52,7 @@ const MaterialPath = ({
       cur = next;
     }
 
-    const parentSubShelfNode = summary.root.children[parentSubShelfId];
+    const parentSubShelfNode = cur.children[parentSubShelfId];
     if (!parentSubShelfNode) return [];
     subShelfNodes.push(parentSubShelfNode);
     return subShelfNodes;
@@ -66,7 +62,7 @@ const MaterialPath = ({
 
   return (
     <Breadcrumb className="bg-muted/25 w-full">
-      <BreadcrumbList className="px-4 py-1">
+      <BreadcrumbList className="px-4 py-1 w-full">
         <BreadcrumbItem>
           <DropdownMenu>
             <DropdownMenuTrigger className="select-none hover:underline text-secondary-foreground/80 font-semibold">
@@ -92,7 +88,7 @@ const MaterialPath = ({
             subShelfNode.materialNodes[materialId]
           ) {
             return (
-              <WrapPlaceholder>
+              <WrapPlaceholder key={index}>
                 <MaterialPathItem
                   key={subShelfNode.id}
                   rootShelfNode={summary.root}

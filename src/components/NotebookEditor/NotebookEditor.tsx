@@ -501,8 +501,11 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           meta.rootId.toString()
         )}
       />
-      <div className="w-full h-full rounded-none p-8">
-        <BlockNoteView editor={editor} className="caret-muted-foreground" />
+      <div className="w-full h-full rounded-none p-8 z-0">
+        <BlockNoteView
+          editor={editor}
+          className="caret-muted-foreground z-10"
+        />
       </div>
     </div>
   );

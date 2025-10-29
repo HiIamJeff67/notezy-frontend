@@ -28,7 +28,6 @@ interface MaterialPathItemProps {
 }
 
 const MaterialPathItem = ({
-  key,
   rootShelfNode,
   subShelfNode,
 }: MaterialPathItemProps) => {
@@ -68,7 +67,7 @@ const MaterialPathItem = ({
   );
 
   return (
-    <WrapPlaceholder key={key}>
+    <WrapPlaceholder>
       <BreadcrumbSeparator />
       <BreadcrumbItem>
         <DropdownMenu>

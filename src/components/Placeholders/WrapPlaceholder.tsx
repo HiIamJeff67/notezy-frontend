@@ -1,6 +1,5 @@
 interface WrapPlaceholder {
   consumingProps?: any;
-  key?: any;
   children?: React.ReactNode;
 }
 

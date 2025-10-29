@@ -1,8 +1,10 @@
 "use client";
 
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebarInset from "@/components/AppSidebar/AppSidebarInset";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { ShelfMaterialProvider } from "@/providers";
+import { ResizeSidebarProvider } from "@/providers/ResizeSidebarProvider";
 
 export default function RootLayout({
   children,
@@ -11,10 +13,12 @@ export default function RootLayout({
 }) {
   return (
     <SidebarProvider>
-      <ShelfMaterialProvider>
-        <AppSidebar />
-        <SidebarInset>{children}</SidebarInset>
-      </ShelfMaterialProvider>
+      <ResizeSidebarProvider>
+        <ShelfMaterialProvider>
+          <AppSidebar />
+          <AppSidebarInset>{children}</AppSidebarInset>
+        </ShelfMaterialProvider>
+      </ResizeSidebarProvider>
     </SidebarProvider>
   );
 }

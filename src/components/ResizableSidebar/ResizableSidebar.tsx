@@ -1,10 +1,9 @@
 import { Sidebar, useSidebar } from "@/components/ui/sidebar";
-import { ResizeSidebarOptions, useResizeSidebar } from "@/hooks";
+import { useResizeSidebar } from "@/hooks";
 
 interface ResizableSidebarProps {
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "icon" | "offcanvas" | "none";
-  options?: ResizeSidebarOptions;
   className?: string;
   children: React.ReactNode;
 }
@@ -12,19 +11,18 @@ interface ResizableSidebarProps {
 const ResizableSidebar = ({
   variant,
   collapsible,
-  options,
   className,
   children,
 }: ResizableSidebarProps) => {
   const sidebarManager = useSidebar();
-  const { style, onMouseDown, onDoubleClick } = useResizeSidebar(options);
+  const { sidebarStyle, onMouseDown, onDoubleClick } = useResizeSidebar();
 
   return (
     <Sidebar
       variant={variant}
       collapsible={collapsible}
       className={className ?? ""}
-      style={style}
+      style={sidebarStyle}
     >
       <div className="relative flex h-full flex-col">
         {children}
