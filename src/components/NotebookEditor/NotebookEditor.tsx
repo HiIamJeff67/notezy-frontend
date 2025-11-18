@@ -37,6 +37,7 @@ import {
 import { getAuthorization } from "@/util/getAuthorization";
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+// @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import {
