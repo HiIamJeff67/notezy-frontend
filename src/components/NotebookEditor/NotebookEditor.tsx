@@ -3,6 +3,8 @@
 import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import XIcon from "@/components/icons/XIcon";
+import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import MaterialPath from "@/components/MaterialPath/MaterialPath";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +43,7 @@ import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import {
   useGetMyMaterialAndItsParentById,
+  useGetMyMaterialById,
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -59,7 +62,6 @@ import {
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import MaterialPath from "../MaterialPath/MaterialPath";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
@@ -72,6 +74,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const sidebarManager = useSidebar();
   const shelfMaterialManager = useShelfMaterial();
 
+  const getMyMaterialQuerier = useGetMyMaterialById();
   const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
   const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
 
@@ -502,10 +505,14 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         )}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        <BlockNoteView
-          editor={editor}
-          className="caret-muted-foreground z-10"
-        />
+        {getMyMaterialQuerier.isFetching ? (
+          <StrictLoadingOutlay />
+        ) : (
+          <BlockNoteView
+            editor={editor}
+            className="caret-muted-foreground z-10"
+          />
+        )}
       </div>
     </div>
   );

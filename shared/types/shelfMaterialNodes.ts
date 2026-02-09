@@ -40,8 +40,8 @@ export interface SubShelfNode {
 export interface RootShelfNode {
   id: UUID;
   name: string;
-  totalShelfNodes: number;
-  totalMaterials: number;
+  subShelfCount: number;
+  itemCount: number;
   lastAnalyzedAt: Date;
   updatedAt: Date;
   createdAt: Date;

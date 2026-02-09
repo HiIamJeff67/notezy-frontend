@@ -1,8 +1,8 @@
 fragment FragmentedBasicPrivateRootShelf on PrivateRootShelf {
   id
   name
-  totalShelfNodes
-  totalMaterials
+  subShelfCount
+  itemCount
   lastAnalyzedAt
   deletedAt
   updatedAt

@@ -361,8 +361,8 @@ export const ShelfMaterialProvider = ({
             root: {
               id: edge.node.id,
               name: edge.node.name,
-              totalShelfNodes: edge.node.totalShelfNodes,
-              totalMaterials: edge.node.totalMaterials,
+              subShelfCount: edge.node.subShelfCount,
+              itemCount: edge.node.itemCount,
               lastAnalyzedAt: edge.node.lastAnalyzedAt,
               updatedAt: edge.node.updatedAt,
               createdAt: edge.node.createdAt,
@@ -487,8 +487,8 @@ export const ShelfMaterialProvider = ({
         RootShelfManipulator.analysisAndGenerateSummary({
           id: responseOfCreateRootShelf.data.id as UUID,
           name: name,
-          totalShelfNodes: 0,
-          totalMaterials: 0,
+          subShelfCount: 0,
+          itemCount: 0,
           lastAnalyzedAt: responseOfCreateRootShelf.data.lastAnalyzedAt,
           updatedAt: responseOfCreateRootShelf.data.createdAt,
           createdAt: responseOfCreateRootShelf.data.createdAt,
@@ -734,7 +734,7 @@ export const ShelfMaterialProvider = ({
       });
 
       shelfTreeSummary.hasChanged = true;
-      shelfTreeSummary.root.totalShelfNodes++;
+      shelfTreeSummary.root.subShelfCount++;
       if (prevSubShelfNode !== null) {
         shelfTreeSummary.maxDepth = Math.max(
           shelfTreeSummary.maxDepth,
@@ -1048,7 +1048,7 @@ export const ShelfMaterialProvider = ({
           },
         });
       shelfTreeSummary.hasChanged = true;
-      shelfTreeSummary.root.totalMaterials++;
+      shelfTreeSummary.root.subShelfCount++;
       if (parentSubShelfNode !== null) {
         shelfTreeSummary.maxDepth = Math.max(
           shelfTreeSummary.maxDepth,
@@ -1111,7 +1111,7 @@ export const ShelfMaterialProvider = ({
           },
         });
       shelfTreeSummary.hasChanged = true;
-      shelfTreeSummary.root.totalMaterials++;
+      shelfTreeSummary.root.itemCount++;
       if (parentSubShelfNode !== null) {
         shelfTreeSummary.maxDepth = Math.max(
           shelfTreeSummary.maxDepth,

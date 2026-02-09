@@ -1,4 +1,5 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
+import { useApolloClient } from "@apollo/client/react";
 import {
   DeleteMeRequest,
   DeleteMeRequestSchema,
@@ -135,6 +136,7 @@ export const useLogin = () => {
 
 export const useLogout = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: async (request: LogoutRequest) => {
@@ -142,9 +144,10 @@ export const useLogout = () => {
       return await Logout(validatedRequest);
     },
     onSuccess: _ => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      queryClient.removeQueries();
+      apolloClient.clearStore();
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
     },
     onError: error => {
       if (error instanceof ZodError) {

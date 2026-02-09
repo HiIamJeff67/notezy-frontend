@@ -21,8 +21,8 @@ export const GetMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     name: z.string(),
-    totalShelfNodes: z.int32(),
-    totalMaterials: z.int32(),
+    subShelfCount: z.int32(),
+    itemCount: z.int32(),
     lastAnalyzedAt: z.coerce.date(),
     deletedAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
@@ -58,8 +58,8 @@ export const SearchRecentRootShelvesResponseSchema =
       z.object({
         id: z.uuidv4(),
         name: z.string(),
-        totalShelfNodes: z.int32(),
-        totalMaterials: z.int32(),
+        subShelfCount: z.int32(),
+        itemCount: z.int32(),
         lastAnalyzedAt: z.coerce.date(),
         deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
