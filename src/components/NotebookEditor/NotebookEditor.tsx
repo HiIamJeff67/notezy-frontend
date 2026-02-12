@@ -165,7 +165,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       rootId: responseOfGettingMaterial.data.rootShelfId as UUID,
       name: responseOfGettingMaterial.data.name,
       type: responseOfGettingMaterial.data.type,
-      size: responseOfGettingMaterial.data.size,
+      size: responseOfGettingMaterial.data.megaByteSize,
       path: responseOfGettingMaterial.data.parentSubShelfPath as UUID[],
       initialContent: parsedContent,
       updatedAt: new Date(responseOfGettingMaterial.data.updatedAt),

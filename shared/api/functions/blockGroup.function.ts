@@ -1,33 +1,36 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdRequestSchema,
-  GetMyMaterialAndItsParentByIdRequest,
-  GetMyMaterialAndItsParentByIdRequestSchema,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdRequestSchema,
-  GetMyMaterialsByParentSubShelfIdRequest,
-  GetMyMaterialsByParentSubShelfIdRequestSchema,
-} from "@shared/api/interfaces/material.interface";
+  GetAllMyBlockGroupsByBlockPackIdRequest,
+  GetAllMyBlockGroupsByBlockPackIdRequestSchema,
+  GetMyBlockGroupAndItsBlocksByIdRequest,
+  GetMyBlockGroupAndItsBlocksByIdRequestSchema,
+  GetMyBlockGroupByIdRequest,
+  GetMyBlockGroupByIdRequestSchema,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
+  GetMyBlockGroupsByPrevBlockGroupIdRequest,
+  GetMyBlockGroupsByPrevBlockGroupIdRequestSchema,
+} from "@shared/api/interfaces/blockGroup.interface";
 import {
-  GetAllMyMaterialsByRootShelfId,
-  GetMyMaterialAndItsParentById,
-  GetMyMaterialById,
-  GetMyMaterialsByParentSubShelfId,
-} from "@shared/api/invokers/material.invoker";
+  GetAllMyBlockGroupsByBlockPackId,
+  GetMyBlockGroupAndItsBlocksById,
+  GetMyBlockGroupById,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackId,
+  GetMyBlockGroupsByPrevBlockGroupId,
+} from "@shared/api/invokers/blockGroup.invoker";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 
-export const queryFnGetMyMaterialById = async (
-  request?: GetMyMaterialByIdRequest,
+export const queryFnGetMyBlockGroupById = async (
+  request?: GetMyBlockGroupByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
-    const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
-    const response = await GetMyMaterialById(validatedRequest);
+    const validatedRequest = GetMyBlockGroupByIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -51,16 +54,16 @@ export const queryFnGetMyMaterialById = async (
   }
 };
 
-export const queryFnGetMyMaterialAndItsParentById = async (
-  request?: GetMyMaterialAndItsParentByIdRequest,
+export const queryFnGetMyBlockGroupAndItsBlocksById = async (
+  request?: GetMyBlockGroupAndItsBlocksByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetMyMaterialAndItsParentByIdRequestSchema.parse(request);
-    const response = await GetMyMaterialAndItsParentById(validatedRequest);
+      GetMyBlockGroupAndItsBlocksByIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupAndItsBlocksById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -84,16 +87,17 @@ export const queryFnGetMyMaterialAndItsParentById = async (
   }
 };
 
-export const queryFnGetMyMaterialsByParentSubShelfId = async (
-  request?: GetMyMaterialsByParentSubShelfIdRequest,
+export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
+  request?: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-    const response = await GetMyMaterialsByParentSubShelfId(validatedRequest);
+      GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema.parse(request);
+    const response =
+      await GetMyBlockGroupsAndTheirBlocksByBlockPackId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -117,16 +121,49 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
   }
 };
 
-export const queryFnGetAllMyMaterialsByRootShelfId = async (
-  request?: GetAllMyMaterialsByRootShelfIdRequest,
+export const queryFnGetMyBlockGroupsByPrevBlockGroupId = async (
+  request?: GetMyBlockGroupsByPrevBlockGroupIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
-    const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
+      GetMyBlockGroupsByPrevBlockGroupIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupsByPrevBlockGroupId(validatedRequest);
+    if (!isCallerServerOnly && response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.accessToken,
+        response.newAccessToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    }
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
+  request?: GetAllMyBlockGroupsByBlockPackIdRequest,
+  isCallerServerOnly: boolean = false
+) => {
+  if (!request) return;
+
+  try {
+    const validatedRequest =
+      GetAllMyBlockGroupsByBlockPackIdRequestSchema.parse(request);
+    const response = await GetAllMyBlockGroupsByBlockPackId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(

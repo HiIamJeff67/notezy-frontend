@@ -27,7 +27,7 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     parentSubShelfId: z.uuidv4(),
     name: z.string(),
     type: z.enum(AllMaterialTypes),
-    size: z.number(),
+    megaByteSize: z.int64(),
     downloadURL: z.url(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
@@ -61,7 +61,7 @@ export const GetMyMaterialAndItsParentByIdResponseSchema =
       id: z.uuidv4(),
       name: z.string(),
       type: z.enum(AllMaterialTypes),
-      size: z.number(),
+      megaByteSize: z.number(),
       downloadURL: z.url(),
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
@@ -79,9 +79,9 @@ export type GetMyMaterialAndItsParentByIdResponse = z.infer<
   typeof GetMyMaterialAndItsParentByIdResponseSchema
 >;
 
-/* ============================== GetAllMyMaterialsByParentSubShelfId ============================== */
+/* ============================== GetMyMaterialsByParentSubShelfId ============================== */
 
-export const GetAllMyMaterialsByParentSubShelfIdRequestSchema =
+export const GetMyMaterialsByParentSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
       userAgent: z.string().min(1),
@@ -92,11 +92,11 @@ export const GetAllMyMaterialsByParentSubShelfIdRequestSchema =
     }),
   });
 
-export type GetAllMyMaterialsByParentSubShelfIdRequest = z.infer<
-  typeof GetAllMyMaterialsByParentSubShelfIdRequestSchema
+export type GetMyMaterialsByParentSubShelfIdRequest = z.infer<
+  typeof GetMyMaterialsByParentSubShelfIdRequestSchema
 >;
 
-export const GetAllMyMaterialsByParentSubShelfIdResponseSchema =
+export const GetMyMaterialsByParentSubShelfIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.array(
       z.object({
@@ -104,6 +104,7 @@ export const GetAllMyMaterialsByParentSubShelfIdResponseSchema =
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
         type: z.enum(AllMaterialTypes),
+        megaByteSize: z.int64(),
         downloadURL: z.url(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
@@ -111,8 +112,8 @@ export const GetAllMyMaterialsByParentSubShelfIdResponseSchema =
     ),
   });
 
-export type GetAllMyMaterialsByParentSubShelfIdResponse = z.infer<
-  typeof GetAllMyMaterialsByParentSubShelfIdResponseSchema
+export type GetMyMaterialsByParentSubShelfIdResponse = z.infer<
+  typeof GetMyMaterialsByParentSubShelfIdResponseSchema
 >;
 
 /* ============================== GetAllMyMaterialsByRootShelfId ============================== */
@@ -140,6 +141,7 @@ export const GetAllMyMaterialsByRootShelfIdResponseSchema =
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
         type: z.enum(AllMaterialTypes),
+        megaByteSize: z.int64(),
         downloadURL: z.url(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),

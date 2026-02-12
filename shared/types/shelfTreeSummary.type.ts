@@ -1,7 +1,7 @@
 // This shelf summary structure maybe different from the backend,
 
 import { AnalysisStatus } from "./enums/analysisStatus.enum";
-import { RootShelfNode } from "./shelfMaterialNodes";
+import { RootShelfNode } from "./shelfNodes.type";
 
 // Since we may require more information for the client user
 export interface ShelfTreeSummary {

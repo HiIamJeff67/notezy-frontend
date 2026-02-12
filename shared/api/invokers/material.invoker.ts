@@ -9,14 +9,14 @@ import {
   DeleteMyMaterialByIdResponse,
   DeleteMyMaterialsByIdsRequest,
   DeleteMyMaterialsByIdsResponse,
-  GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialAndItsParentByIdRequest,
   GetMyMaterialAndItsParentByIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdResponse,
+  GetMyMaterialsByParentSubShelfIdRequest,
+  GetMyMaterialsByParentSubShelfIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdResponse,
   MoveMyMaterialsByIdsRequest,
@@ -32,8 +32,6 @@ import {
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-
-/* ============================== GetMyMaterialById ============================== */
 
 export async function GetMyMaterialById(
   request: GetMyMaterialByIdRequest
@@ -60,15 +58,14 @@ export async function GetMyMaterialById(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as GetMyMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as GetMyMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== GetMyMaterialAndItsParentById ============================== */
 
 export async function GetMyMaterialAndItsParentById(
   request: GetMyMaterialAndItsParentByIdRequest
@@ -95,27 +92,25 @@ export async function GetMyMaterialAndItsParentById(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as GetMyMaterialAndItsParentByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
-  return jsonResponse;
+  return formattedResponse;
 }
 
-/* ============================== GetAllMyMaterialsByParentSubShelfId ============================== */
-
-export async function GetAllMyMaterialsByParentSubShelfId(
-  request: GetAllMyMaterialsByParentSubShelfIdRequest
-): Promise<GetAllMyMaterialsByParentSubShelfIdResponse> {
+export async function GetMyMaterialsByParentSubShelfId(
+  request: GetMyMaterialsByParentSubShelfIdRequest
+): Promise<GetMyMaterialsByParentSubShelfIdResponse> {
   const { parentSubShelfId } = request.param;
   const params = new URLSearchParams({
     parentSubShelfId: parentSubShelfId,
   }).toString();
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByParentSubShelfId}?${params}`,
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialsByParentSubShelfId}?${params}`,
     {
       method: "GET",
       headers: {
@@ -132,15 +127,15 @@ export async function GetAllMyMaterialsByParentSubShelfId(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as GetAllMyMaterialsByParentSubShelfIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== GetAllMyMaterialsByRootShelfId ============================== */
+  const formattedResponse =
+    (await response.json()) as GetMyMaterialsByParentSubShelfIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function GetAllMyMaterialsByRootShelfId(
   request: GetAllMyMaterialsByRootShelfIdRequest
@@ -168,15 +163,15 @@ export async function GetAllMyMaterialsByRootShelfId(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== CreateTextbookMaterial ============================== */
+  const formattedResponse =
+    (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function CreateTextbookMaterial(
   request: CreateTextbookMaterialRequest
@@ -200,15 +195,15 @@ export async function CreateTextbookMaterial(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as CreateNotebookMaterialResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== CreateNotebookMaterial ============================== */
+  const formattedResponse =
+    (await response.json()) as CreateNotebookMaterialResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function CreateNotebookMaterial(
   request: CreateNotebookMaterialRequest
@@ -232,15 +227,15 @@ export async function CreateNotebookMaterial(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as CreateNotebookMaterialResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== UpdateMyMaterialById ============================== */
+  const formattedResponse =
+    (await response.json()) as CreateNotebookMaterialResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function UpdateMyMaterialById(
   request: UpdateMyMaterialByIdRequest
@@ -264,14 +259,15 @@ export async function UpdateMyMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as UpdateMyMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== SaveMyNotebookMaterialById ============================== */
+  const formattedResponse =
+    (await response.json()) as UpdateMyMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function SaveMyNotebookMaterialById(
   request: SaveMyNotebookMaterialByIdRequest
@@ -301,15 +297,15 @@ export async function SaveMyNotebookMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as SaveMyNotebookMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== MoveMyMaterialById ============================== */
+  const formattedResponse =
+    (await response.json()) as SaveMyNotebookMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function MoveMyMaterialById(
   request: MoveMyMaterialByIdRequest
@@ -333,14 +329,15 @@ export async function MoveMyMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as MoveMyMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== MoveMyMaterialsByIds ============================== */
+  const formattedResponse =
+    (await response.json()) as MoveMyMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function MoveMyMaterialsByIds(
   request: MoveMyMaterialsByIdsRequest
@@ -364,14 +361,15 @@ export async function MoveMyMaterialsByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as MoveMyMaterialsByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== RestoreMyMaterialById ============================== */
+  const formattedResponse =
+    (await response.json()) as MoveMyMaterialsByIdsResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function RestoreMyMaterialById(
   request: RestoreMyMaterialByIdRequest
@@ -395,14 +393,15 @@ export async function RestoreMyMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as RestoreMyMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== RestoreMyMaterialsByIds ============================== */
+  const formattedResponse =
+    (await response.json()) as RestoreMyMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function RestoreMyMaterialsByIds(
   request: RestoreMyMaterialsByIdsRequest
@@ -426,15 +425,15 @@ export async function RestoreMyMaterialsByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
-    (await response.json()) as RestoreMyMaterialsByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== DeleteMyMaterialById ============================== */
+  const formattedResponse =
+    (await response.json()) as RestoreMyMaterialsByIdsResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function DeleteMyMaterialById(
   request: DeleteMyMaterialByIdRequest
@@ -458,14 +457,15 @@ export async function DeleteMyMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as DeleteMyMaterialByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
-  }
-  return jsonResponse;
-}
 
-/* ============================== DeleteMyMaterialsByIds ============================== */
+  const formattedResponse =
+    (await response.json()) as DeleteMyMaterialByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function DeleteMyMaterialsByIds(
   request: DeleteMyMaterialsByIdsRequest
@@ -489,10 +489,12 @@ export async function DeleteMyMaterialsByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+
+  const formattedResponse =
     (await response.json()) as DeleteMyMaterialsByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+
+  return formattedResponse;
 }

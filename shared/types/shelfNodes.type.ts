@@ -1,4 +1,4 @@
-import { MaterialType } from "@shared/types/enums";
+import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { UUID } from "crypto";
 
 /**
@@ -6,18 +6,6 @@ import { UUID } from "crypto";
  *           since if the node is deleted, it should be put in the trash can
  *           in the frontend scenario
  */
-
-export interface MaterialNode {
-  id: UUID;
-  parentSubShelfId: UUID;
-  name: string;
-  type: MaterialType;
-  downloadURL: string;
-  updatedAt: Date;
-  createdAt: Date;
-
-  isOpen: boolean;
-}
 
 export interface SubShelfNode {
   id: UUID;
@@ -31,6 +19,7 @@ export interface SubShelfNode {
   isExpanded: boolean; // to indicate whether the data below this sub shelf is fetched or not
   children: Record<UUID, SubShelfNode>;
   materialNodes: Record<UUID, MaterialNode>;
+  blockPackNodes: Record<UUID, BlockPackNode>;
 
   // to indicate this sub shelf is currently open and available to see things below it,
   // which means even if the data is fetched, the user can still toggle this value for frontend display

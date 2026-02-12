@@ -1,6 +1,6 @@
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import { RootShelfNode } from "@shared/types/shelfMaterialNodes";
+import { RootShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";

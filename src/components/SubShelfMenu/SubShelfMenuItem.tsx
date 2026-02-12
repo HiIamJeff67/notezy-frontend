@@ -25,7 +25,7 @@ import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { DNDType } from "@shared/types/enums/dndType.enum";
-import { RootShelfNode, SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";

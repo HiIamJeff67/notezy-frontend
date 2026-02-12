@@ -6,10 +6,7 @@ export const NotezyRequestSchema = z.object({
   // contextFields: z.object({}).optional(), // this field is only exist in the backend
   body: z.object({}).optional(),
   param: z.object({}).optional(),
-
-  // this field is only exist in the frontend(for cache strategy)
-  // and it's useless in the API function
-  affected: z.object({}).optional(),
+  affected: z.object({}).optional(), // this field is only exist in the frontend(for cache strategy)
 });
 
 export type NotezyRequest = z.infer<typeof NotezyRequestSchema>;

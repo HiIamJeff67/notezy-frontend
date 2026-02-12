@@ -3,6 +3,7 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetAllMySubShelvesByRootShelfId,
   queryFnGetMySubShelfById,
+  queryFnGetMySubShelvesAndItemsByPrevSubShelfId,
   queryFnGetMySubShelvesByPrevSubShelfId,
 } from "@shared/api/functions/subShelf.function";
 import {
@@ -20,6 +21,8 @@ import {
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
   GetMySubShelfByIdResponse,
+  GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
@@ -46,7 +49,12 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -122,7 +130,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID_HOOK" as const,
+    name: "GET_MY_SUB_SHELVES_BY_PREV_SUB_SHELF_ID_HOOK" as const,
   };
 };
 
@@ -162,6 +170,45 @@ export const useGetAllMySubShelvesByRootShelfId = (
     ...query,
     queryAsync,
     name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID_HOOK" as const,
+  };
+};
+
+export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
+  hookRequest?: GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  options?: Partial<UseQueryOptions>
+) => {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
+      hookRequest?.param.prevSubShelfId as UUID | undefined
+    ),
+    queryFn: async () =>
+      await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
+  });
+
+  const queryAsync = async (
+    callbackRequest: GetMySubShelvesAndItemsByPrevSubShelfIdRequest
+  ): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.subShelf.myManyByPrevSubShelfId(
+        callbackRequest.param.prevSubShelfId as UUID
+      ),
+      queryFn: async () =>
+        await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(callbackRequest),
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    ...query,
+    queryAsync,
+    name: "GET_MY_SUB_SHELVES_AND_ITEMS_BY_PREV_SUB_SHELF_ID_HOOK",
   };
 };
 

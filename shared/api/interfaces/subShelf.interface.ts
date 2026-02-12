@@ -1,5 +1,10 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
+import { AllMaterialTypes } from "@shared/types/enums";
+import { AllSupportedBlockPackIcon } from "@shared/types/enums/supportedBlockPackIcon.enum";
 import { z } from "zod";
-import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
 /* ============================== GetMySubShelfById ============================== */
 
@@ -24,7 +29,6 @@ export const GetMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     rooShelfId: z.uuidv4(),
     prevSubShelfId: z.uuidv4().nullable(),
     path: z.array(z.uuidv4()),
-    deletedAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -60,7 +64,6 @@ export const GetMySubShelvesByPrevSubShelfIdResponseSchema =
         rootShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
-        deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -97,7 +100,6 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
         rooShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
-        deletedAt: z.coerce.date(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -106,6 +108,71 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
 
 export type GetAllMySubShelvesByRootShelfIdResponse = z.infer<
   typeof GetAllMySubShelvesByRootShelfIdResponseSchema
+>;
+
+/* ============================== GetMySubShelvesAndItemsByPrevSubShelfId ============================== */
+
+export const GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    param: z.object({
+      prevSubShelfId: z.uuidv4(),
+    }),
+  });
+
+export type GetMySubShelvesAndItemsByPrevSubShelfIdRequest = z.infer<
+  typeof GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema
+>;
+
+export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      subShelves: z.array(
+        z.object({
+          // the response dto of GetMySubShelfById
+          id: z.uuidv4(),
+          name: z.string(),
+          rootShelfId: z.uuidv4(),
+          prevSubShelfId: z.uuidv4().nullable(),
+          path: z.array(z.uuidv4()),
+          updatedAt: z.coerce.date(),
+          createdAt: z.coerce.date(),
+        })
+      ),
+      materials: z.array(
+        z.object({
+          // the response dto of GetMyMaterialById
+          id: z.uuidv4(),
+          parentSubShelfId: z.uuidv4(),
+          name: z.string(),
+          type: z.enum(AllMaterialTypes),
+          megaByteSize: z.int64(),
+          downloadURL: z.url(),
+          updatedAt: z.coerce.date(),
+          createdAt: z.coerce.date(),
+        })
+      ),
+      blockPacks: z.array(
+        z.object({
+          // the response dto of GetMyBlockPackById
+          id: z.uuidv4(),
+          parentSubShelfId: z.uuidv4(),
+          name: z.string(),
+          icon: z.enum(AllSupportedBlockPackIcon).nullable(),
+          headerBackgroundURL: z.url().nullable(),
+          blockCount: z.int32(),
+          updatedAt: z.coerce.date(),
+          createdAt: z.coerce.date(),
+        })
+      ),
+    }),
+  });
+
+export type GetMySubShelvesAndItemsByPrevSubShelfIdResponse = z.infer<
+  typeof GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema
 >;
 
 /* ============================== CreateSubShelfByRootShelfId ============================== */

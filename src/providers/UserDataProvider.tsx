@@ -2,6 +2,7 @@
 
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useLogout } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -37,17 +38,17 @@ export const UserDataProvider = ({
   const logoutMutator = useLogout();
 
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(false);
+  const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(true);
 
   // For maintaining the basic user data in the context
   useEffect(() => {
-    if (userData === null && enableAutoFetching) {
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKeys.accessToken
+    );
+    if (userData === null && accessToken && enableAutoFetching) {
       loadingManager.startAsyncTransactionLoading(async () => {
         try {
           const userAgent = navigator.userAgent;
-          const accessToken = localStorage.getItemByKey(
-            LocalStorageKeys.accessToken
-          );
           const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
             {
               header: {

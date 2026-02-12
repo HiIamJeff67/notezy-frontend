@@ -1,4 +1,5 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   GetMeRequest,
   GetMeResponse,
@@ -9,9 +10,6 @@ import {
 } from "@shared/api/interfaces/user.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyAPIError, NotezyException } from "../exceptions";
-
-/* ============================== GetUserData ============================== */
 
 export async function GetUserData(
   request: GetUserDataRequest
@@ -35,14 +33,12 @@ export async function GetUserData(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as GetUserDataResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as GetUserDataResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== GetMe ============================== */
 
 export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
   const response = await fetch(
@@ -64,14 +60,12 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as GetMeResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as GetMeResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== UpdateMe ============================== */
 
 export async function UpdateMe(
   request: UpdateMeRequest
@@ -96,9 +90,9 @@ export async function UpdateMe(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as UpdateMeResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as UpdateMeResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }

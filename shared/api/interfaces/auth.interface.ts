@@ -1,7 +1,7 @@
 import z from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
-/* ============================== Request Context ============================== */
+/* ============================== Register Context ============================== */
 
 export const RegisterRequestSchema = NotezyRequestSchema.extend({
   header: z.object({

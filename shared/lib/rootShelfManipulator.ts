@@ -14,7 +14,7 @@ import {
   MaterialNode,
   RootShelfNode,
   SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+} from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 

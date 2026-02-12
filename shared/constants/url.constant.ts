@@ -64,6 +64,8 @@ export const APIURLPathDictionary = {
     getMySubShelfById: "subShelf/getMySubShelfById",
     getMySubShelvesByPrevSubShelfId: "subShelf/getMySubShelvesByPrevSubShelfId",
     getAllMySubShelvesByRootShelfId: "subShelf/getAllMySubShelvesByRootShelfId",
+    getMySubShelvesAndItemsByPrevSubShelfId:
+      "subShelf/getMySubShelvesAndItemsByPrevSubShelfId",
     createSubShelfByRootShelfId: "subShelf/createSubShelfByRootShelfId",
     updateMySubShelfById: "subShelf/updateMySubShelfById",
     moveMySubShelf: "subShelf/moveMySubShelf",
@@ -73,20 +75,11 @@ export const APIURLPathDictionary = {
     deleteMySubShelfById: "subShelf/deleteMySubShelfById",
     deleteMySubShelvesByIds: "subShelf/deleteMySubShelvesByIds",
   },
-  shelf: {
-    getMyShelfById: "shelf/getMyShelfById",
-    createShelf: "shelf/createShelf",
-    synchronizeShelves: "shelf/synchronizeShelves",
-    restoreMyShelfById: "shelf/restoreMyShelfById",
-    restoreMyShelvesByIds: "shelf/restoreMyShelvesByIds",
-    deleteMyShelfById: "shelf/deleteMyShelfById",
-    deleteMyShelvesByIds: "shelf/deleteMyShelvesByIds",
-  },
   material: {
     getMyMaterialById: "material/getMyMaterialById",
     getMyMaterialAndItsParentById: "material/getMyMaterialAndItsParentById",
-    getAllMyMaterialsByParentSubShelfId:
-      "material/getAllMyMaterialsByParentSubShelfId",
+    getMyMaterialsByParentSubShelfId:
+      "material/getMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
     createTextbookMaterial: "material/createTextbookMaterial",
     createNotebookMaterial: "material/createNotebookMaterial",
@@ -98,6 +91,45 @@ export const APIURLPathDictionary = {
     restoreMyMaterialsByIds: "material/restoreMyMaterialsByIds",
     deleteMyMaterialById: "material/deleteMyMaterialById",
     deleteMyMaterialsByIds: "material/deleteMyMaterialsByIds",
+  },
+  blockPack: {
+    getMyBlockPackById: "blockPack/getMyBlockPackById",
+    getMyBlockPackAndItsParentById: "blockPack/getMyBlockPackAndItsParentById",
+    getMyBlockPacksByParentSubShelfId:
+      "blockPack/getMyBlockPacksByParentSubShelfId",
+    getAllMyBlockPacksByRootShelfId:
+      "blockPack/getAllMyBlockPacksByRootShelfId",
+    createBlockPack: "blockPack/createBlockPack",
+    updateMyBlockPackById: "blockPack/updateMyBlockPackById",
+    moveMyBlockPackById: "blockPack/moveMyBlockPackById",
+    moveMyBlockPacksByIds: "blockPack/moveMyBlockPacksByIds",
+    restoreMyBlockPackById: "blockPack/restoreMyBlockPackById",
+    restoreMyBlockPacksByIds: "blockPack/restoreMyBlockPacksByIds",
+    deleteMyBlockPackById: "blockPack/deleteMyBlockPackById",
+    deleteMyBlockPacksByIds: "blockPack/deleteMyBlockPacksByIds",
+  },
+  blockGroup: {
+    getMyBlockGroupById: "blockGroup/getMyBlockGroupById",
+    getMyBlockGroupAndItsBlocksById:
+      "blockGroup/getMyBlockGroupAndItsBlocksById",
+    getMyBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/getMyBlockGroupsAndTheirBlocksByBlockPackId",
+    getMyBlockGroupsByPrevBlockGroupId:
+      "blockGroup/getMyBlockGroupsByPrevBlockGroupId",
+    getAllMyBlockGroupsByBlockPackId:
+      "blockGroup/getAllMyBlockGroupsByBlockPackId",
+    insertBlockGroupByBlockPackId: "blockGroup/insertBlockGroupByBlockPackId",
+    insertBlockGroupAndItsBlocksByBlockPackId:
+      "blockGroup/insertBlockGroupAndItsBlocksByBlockPackId",
+    insertBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/insertBlockGroupsAndTheirBlocksByBlockPackId",
+    insertSequentialBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/insertSequentialBlockGroupsAndTheirBlocksByBlockPackId",
+    moveMyBlockGroupsByIds: "blockGroup/moveMyBlockGroupsByIds",
+    restoreMyBlockGroupById: "blockGroup/restoreMyBlockGroupById",
+    restoreMyBlockGroupsByIds: "blockGroup/restoreMyBlockGroupsByIds",
+    deleteMyBlockGroupById: "blockGroup/deleteMyBlockGroupById",
+    deleteMyBlockGroupsByIds: "blockGroup/deleteMyBlockGroupsByIds",
   },
 };
 

@@ -3,7 +3,7 @@ import { PrivateUserInfoSchema } from "@shared/types/models";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
-/* ============================== GetMyInfo Context ============================== */
+/* ============================== GetMyInfo ============================== */
 
 export const GetMyInfoRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
@@ -20,7 +20,7 @@ export const GetMyInfoResponseSchema = NotezyResponseSchema.extend({
 
 export type GetMyInfoResponse = z.infer<typeof GetMyInfoResponseSchema>;
 
-/* ============================== UpdateMyInfo Context ============================== */
+/* ============================== UpdateMyInfo ============================== */
 
 export const UpdateMyInfoRequestSchema = NotezyRequestSchema.extend({
   header: z.object({

@@ -1,10 +1,10 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  queryFnGetAllMyMaterialsByParentSubShelfId,
   queryFnGetAllMyMaterialsByRootShelfId,
   queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
+  queryFnGetMyMaterialsByParentSubShelfId,
 } from "@shared/api/functions/material.function";
 import {
   CreateNotebookMaterialRequest,
@@ -15,14 +15,14 @@ import {
   DeleteMyMaterialByIdRequestSchema,
   DeleteMyMaterialsByIdsRequest,
   DeleteMyMaterialsByIdsRequestSchema,
-  GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialAndItsParentByIdRequest,
   GetMyMaterialAndItsParentByIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdResponse,
+  GetMyMaterialsByParentSubShelfIdRequest,
+  GetMyMaterialsByParentSubShelfIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdRequestSchema,
   RestoreMyMaterialByIdRequest,
@@ -132,8 +132,8 @@ export const useGetMyMaterialAndItsParentById = (
   };
 };
 
-export const useGetAllMyMaterialsByParentSubShelfId = (
-  hookRequest?: GetAllMyMaterialsByParentSubShelfIdRequest,
+export const useGetMyMaterialsByParentSubShelfId = (
+  hookRequest?: GetMyMaterialsByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
@@ -143,7 +143,7 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () =>
-      await queryFnGetAllMyMaterialsByParentSubShelfId(hookRequest),
+      await queryFnGetMyMaterialsByParentSubShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -152,14 +152,14 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByParentSubShelfIdRequest
-  ): Promise<GetAllMyMaterialsByParentSubShelfIdResponse> => {
+    callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
+  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.material.myManyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByParentSubShelfId(callbackRequest),
+        await queryFnGetMyMaterialsByParentSubShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };

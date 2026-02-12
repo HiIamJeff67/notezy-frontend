@@ -17,7 +17,7 @@ import {
   MaterialNode,
   RootShelfNode,
   SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+} from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 

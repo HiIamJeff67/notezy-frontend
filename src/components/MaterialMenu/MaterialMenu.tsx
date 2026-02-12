@@ -1,6 +1,6 @@
 import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
 import { MaterialType } from "@shared/types/enums";
-import { SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";

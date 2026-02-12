@@ -21,8 +21,6 @@ import {
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
 
-/* ========================= Register ========================= */
-
 export async function Register(
   request: RegisterRequest
 ): Promise<RegisterResponse> {
@@ -43,14 +41,12 @@ export async function Register(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as RegisterResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as RegisterResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ========================= Login ========================= */
 
 export async function Login(request: LoginRequest): Promise<LoginResponse> {
   const response = await fetch(
@@ -70,14 +66,12 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as LoginResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as LoginResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ========================= Logout ========================= */
 
 export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   const response = await fetch(
@@ -99,14 +93,12 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as LogoutResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as LogoutResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== SendAuthCode ============================== */
 
 export async function SendAuthCode(
   request: SendAuthCodeRequest
@@ -131,14 +123,12 @@ export async function SendAuthCode(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as SendAuthCodeResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as SendAuthCodeResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== ValidateEmail ============================== */
 
 export async function ValidateEmail(
   request: ValidateEmailRequest
@@ -164,14 +154,12 @@ export async function ValidateEmail(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as ValidateEmailResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as ValidateEmailResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== ResetEmail ============================== */
 
 export async function ResetEmail(
   request: ResetEmailRequest
@@ -197,14 +185,12 @@ export async function ResetEmail(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as ResetEmailResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as ResetEmailResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== ForgetPassword ============================== */
 
 export async function ForgetPassword(
   request: ForgetPasswordRequest
@@ -229,14 +215,12 @@ export async function ForgetPassword(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as ForgetPasswordResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as ForgetPasswordResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== DeleteMe ============================== */
 
 export async function DeleteMe(
   request: DeleteMeRequest
@@ -262,9 +246,9 @@ export async function DeleteMe(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as DeleteMeResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as DeleteMeResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }

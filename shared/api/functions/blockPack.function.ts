@@ -1,33 +1,33 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdRequestSchema,
-  GetMyMaterialAndItsParentByIdRequest,
-  GetMyMaterialAndItsParentByIdRequestSchema,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdRequestSchema,
-  GetMyMaterialsByParentSubShelfIdRequest,
-  GetMyMaterialsByParentSubShelfIdRequestSchema,
-} from "@shared/api/interfaces/material.interface";
+  GetAllMyBlockPacksByRootShelfIdRequest,
+  GetAllMyBlockPacksByRootShelfIdRequestSchema,
+  GetMyBlockPackAndItsParentByIdRequest,
+  GetMyBlockPackAndItsParentByIdRequestSchema,
+  GetMyBlockPackByIdRequest,
+  GetMyBlockPackByIdRequestSchema,
+  GetMyBlockPacksByParentSubShelfIdRequest,
+  GetMyBlockPacksByParentSubShelfIdRequestSchema,
+} from "@shared/api/interfaces/blockPack.interface";
 import {
-  GetAllMyMaterialsByRootShelfId,
-  GetMyMaterialAndItsParentById,
-  GetMyMaterialById,
-  GetMyMaterialsByParentSubShelfId,
-} from "@shared/api/invokers/material.invoker";
+  GetAllMyBlockPacksByRootShelfId,
+  GetMyBlockPackAndItsParentById,
+  GetMyBlockPackById,
+  GetMyBlockPacksByParentSubShelfId,
+} from "@shared/api/invokers/blockPack.invoker";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 
-export const queryFnGetMyMaterialById = async (
-  request?: GetMyMaterialByIdRequest,
+export const queryFnGetMyBlockPackById = async (
+  request?: GetMyBlockPackByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
-    const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
-    const response = await GetMyMaterialById(validatedRequest);
+    const validatedRequest = GetMyBlockPackByIdRequestSchema.parse(request);
+    const response = await GetMyBlockPackById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -51,16 +51,16 @@ export const queryFnGetMyMaterialById = async (
   }
 };
 
-export const queryFnGetMyMaterialAndItsParentById = async (
-  request?: GetMyMaterialAndItsParentByIdRequest,
+export const queryFnGetMyBlockPackAndItsParentById = async (
+  request?: GetMyBlockPackAndItsParentByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetMyMaterialAndItsParentByIdRequestSchema.parse(request);
-    const response = await GetMyMaterialAndItsParentById(validatedRequest);
+      GetMyBlockPackAndItsParentByIdRequestSchema.parse(request);
+    const response = await GetMyBlockPackAndItsParentById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -84,16 +84,16 @@ export const queryFnGetMyMaterialAndItsParentById = async (
   }
 };
 
-export const queryFnGetMyMaterialsByParentSubShelfId = async (
-  request?: GetMyMaterialsByParentSubShelfIdRequest,
+export const queryFnGetMyBlockPacksByParentSubShelfId = async (
+  request?: GetMyBlockPacksByParentSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-    const response = await GetMyMaterialsByParentSubShelfId(validatedRequest);
+      GetMyBlockPacksByParentSubShelfIdRequestSchema.parse(request);
+    const response = await GetMyBlockPacksByParentSubShelfId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(
@@ -117,16 +117,16 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
   }
 };
 
-export const queryFnGetAllMyMaterialsByRootShelfId = async (
-  request?: GetAllMyMaterialsByRootShelfIdRequest,
+export const queryFnGetAllMyBlockPacksByRootShelfId = async (
+  request?: GetAllMyBlockPacksByRootShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
   if (!request) return;
 
   try {
     const validatedRequest =
-      GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
-    const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
+      GetAllMyBlockPacksByRootShelfIdRequestSchema.parse(request);
+    const response = await GetAllMyBlockPacksByRootShelfId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(

@@ -11,7 +11,6 @@ import {
   useCreateNotebookMaterial,
   useCreateTextbookMaterial,
   useDeleteMyMaterialById,
-  useGetAllMyMaterialsByParentSubShelfId,
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
 import {
@@ -23,14 +22,13 @@ import {
   useCreateSubShelfByRootShelfId,
   useDeleteMySubShelfById,
   useGetAllMySubShelvesByRootShelfId,
-  useGetMySubShelvesByPrevSubShelfId,
+  useGetMySubShelvesAndItemsByPrevSubShelfId,
   useMoveMySubShelf,
   useUpdateMySubShelfById,
 } from "@shared/api/hooks/subShelf.hook";
-import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
 import {
   GetAllMySubShelvesByRootShelfIdResponse,
-  GetMySubShelvesByPrevSubShelfIdResponse,
+  GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import {
   MaxMaterialsOfRootShelf,
@@ -42,12 +40,9 @@ import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { AnalysisStatus, MaterialType } from "@shared/types/enums";
+import { MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import {
@@ -153,13 +148,12 @@ export const ShelfMaterialProvider = ({
   children: React.ReactNode;
 }) => {
   const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
-  const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
+  const getMySubShelvesAndItemsBySubShelfQuerier =
+    useGetMySubShelvesAndItemsByPrevSubShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
 
-  const getAllMyMaterialsBySubShelfQuerier =
-    useGetAllMyMaterialsByParentSubShelfId();
   const createSubShelfMutator = useCreateSubShelfByRootShelfId();
   const updateSubShelfMutator = useUpdateMySubShelfById();
   const deleteSubShelfMutator = useDeleteMySubShelfById();
@@ -649,24 +643,8 @@ export const ShelfMaterialProvider = ({
         LocalStorageKeys.accessToken
       );
       const authorization = getAuthorization(accessToken);
-      const responseOfGetAllMaterials =
-        (await getAllMyMaterialsBySubShelfQuerier.queryAsync({
-          header: {
-            userAgent: userAgent,
-            authorization: authorization,
-          },
-          param: {
-            parentSubShelfId: subShelfNode.id,
-          },
-        })) as GetAllMyMaterialsByParentSubShelfIdResponse;
-
-      SubShelfManipulator.initializeMaterialNodesByResponse(
-        subShelfNode,
-        responseOfGetAllMaterials
-      );
-
-      const responseOfGetAllSubShelves =
-        (await getMySubShelvesBySubShelfQuerier.queryAsync({
+      const response =
+        (await getMySubShelvesAndItemsBySubShelfQuerier.queryAsync({
           header: {
             userAgent: userAgent,
             authorization: authorization,
@@ -674,21 +652,24 @@ export const ShelfMaterialProvider = ({
           param: {
             prevSubShelfId: subShelfNode.id,
           },
-        })) as GetMySubShelvesByPrevSubShelfIdResponse;
-
+        })) as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
       SubShelfManipulator.initializeSubShelfNodesByResponse(
         rootShelfNode,
         subShelfNode,
-        responseOfGetAllSubShelves
+        response.data.subShelves
+      );
+      SubShelfManipulator.initializeMaterialNodesByResponse(
+        subShelfNode,
+        response.data.materials
+      );
+      SubShelfManipulator.initializeBlockPackNodesByResponse(
+        subShelfNode,
+        response.data.blockPacks
       );
       subShelfNode.isExpanded = true;
       forceUpdate();
     },
-    [
-      getAllMyMaterialsBySubShelfQuerier,
-      SubShelfManipulator,
-      getMySubShelvesBySubShelfQuerier,
-    ]
+    [SubShelfManipulator, getMySubShelvesAndItemsBySubShelfQuerier]
   );
 
   const toggleSubShelf = (
@@ -759,6 +740,7 @@ export const ShelfMaterialProvider = ({
           isExpanded: true,
           children: {},
           materialNodes: {},
+          blockPackNodes: {},
           isOpen: false,
         };
       } else {
@@ -777,6 +759,7 @@ export const ShelfMaterialProvider = ({
           isExpanded: true,
           children: {},
           materialNodes: {},
+          blockPackNodes: {},
           isOpen: false,
         };
       }
@@ -1067,6 +1050,7 @@ export const ShelfMaterialProvider = ({
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
           type: MaterialType.Notebook,
+          megaByteSize: BigInt(0),
           downloadURL: responseOfCreateNotebookMaterial.data.downloadURL,
           updatedAt: responseOfCreateNotebookMaterial.data.createdAt,
           createdAt: responseOfCreateNotebookMaterial.data.createdAt,
@@ -1130,6 +1114,7 @@ export const ShelfMaterialProvider = ({
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
           type: MaterialType.Notebook,
+          megaByteSize: BigInt(0),
           downloadURL: responseOfCreateNotebookMaterial.data.downloadURL,
           updatedAt: responseOfCreateNotebookMaterial.data.createdAt,
           createdAt: responseOfCreateNotebookMaterial.data.createdAt,

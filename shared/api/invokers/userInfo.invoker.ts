@@ -1,4 +1,5 @@
 import { isJsonResponse } from "@/util/isJsonContext";
+import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   GetMyInfoRequest,
   GetMyInfoResponse,
@@ -7,9 +8,6 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { NotezyAPIError, NotezyException } from "../exceptions";
-
-/* ============================== GetMyInfo ============================== */
 
 export async function GetMyInfo(
   request: GetMyInfoRequest
@@ -33,14 +31,12 @@ export async function GetMyInfo(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as GetMyInfoResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as GetMyInfoResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== UpdateMyInfo ============================== */
 
 export async function UpdateMyInfo(
   request: UpdateMyInfoRequest
@@ -65,9 +61,9 @@ export async function UpdateMyInfo(
     throw new Error(tKey.error.encounterUnknownError);
   }
 
-  const jsonResponse = (await response.json()) as UpdateMyInfoResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as UpdateMyInfoResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
