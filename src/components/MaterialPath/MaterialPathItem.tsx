@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppRouter, useLanguage, useShelfMaterial } from "@/hooks";
+import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { MaterialType } from "@shared/types/enums";
 import {
@@ -33,7 +33,7 @@ const MaterialPathItem = ({
 }: MaterialPathItemProps) => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const handleMaterialOnClick = useCallback(
     (current: MaterialNode, parent: SubShelfNode) => {
@@ -58,12 +58,12 @@ const MaterialPathItem = ({
         }
 
         router.push(nextPath);
-        shelfMaterialManager.toggleMaterial(current);
+        shelfItemManager.toggleMaterial(current);
       } catch (error) {
         toast.error(languageManager.tError(error));
       }
     },
-    [router, shelfMaterialManager]
+    [router, shelfItemManager]
   );
 
   return (
@@ -83,12 +83,12 @@ const MaterialPathItem = ({
                     key={id}
                     // onClick={async () => {
                     //   if (!child.isExpanded) {
-                    //     await shelfMaterialManager.expandSubShelf(
+                    //     await shelfItemManager.expandSubShelf(
                     //       rootShelfNode,
                     //       child
                     //     );
                     //   }
-                    //   shelfMaterialManager.toggleSubShelf(child);
+                    //   shelfItemManager.toggleSubShelf(child);
                     // }}
                   >
                     <ChevronRightIcon />

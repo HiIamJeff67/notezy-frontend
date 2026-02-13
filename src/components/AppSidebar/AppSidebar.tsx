@@ -35,7 +35,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useShelfMaterial } from "@/hooks";
+import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -63,12 +63,12 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const sidebarManager = useSidebar();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   useEffect(() => {
     const initialSearchRootShelves = async () => {
       try {
-        await shelfMaterialManager.searchRootShelves();
+        await shelfItemManager.searchRootShelves();
       } catch (error) {
         toast.error(languageManager.tError(error));
       }

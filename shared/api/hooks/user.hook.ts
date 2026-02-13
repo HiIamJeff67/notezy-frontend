@@ -15,6 +15,7 @@ import {
   GetUserDataResponse,
   UpdateMeRequest,
   UpdateMeRequestSchema,
+  UpdateMeResponse,
 } from "@shared/api/interfaces/user.interface";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
@@ -93,7 +94,7 @@ export const useUpdateMe = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMeRequest) => {
+    mutationFn: async (request: UpdateMeRequest): Promise<UpdateMeResponse> => {
       const validatedRequest = UpdateMeRequestSchema.parse(request);
       return await UpdateMe(validatedRequest);
     },
@@ -113,8 +114,7 @@ export const useUpdateMe = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);

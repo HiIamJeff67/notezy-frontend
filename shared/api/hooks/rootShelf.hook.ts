@@ -9,18 +9,24 @@ import {
 import {
   CreateRootShelfRequest,
   CreateRootShelfRequestSchema,
+  CreateRootShelfResponse,
   DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdRequestSchema,
+  DeleteMyRootShelfByIdResponse,
   DeleteMyRootShelvesByIdsRequest,
   DeleteMyRootShelvesByIdsRequestSchema,
+  DeleteMyRootShelvesByIdsResponse,
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
   RestoreMyRootShelfByIdRequest,
   RestoreMyRootShelfByIdRequestSchema,
+  RestoreMyRootShelfByIdResponse,
   RestoreMyRootShelvesByIdsRequest,
   RestoreMyRootShelvesByIdsRequestSchema,
+  RestoreMyRootShelvesByIdsResponse,
   UpdateMyRootShelfByIdRequest,
   UpdateMyRootShelfByIdRequestSchema,
+  UpdateMyRootShelfByIdResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import {
   CreateRootShelf,
@@ -78,7 +84,9 @@ export const useCreateRootShelf = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateRootShelfRequest) => {
+    mutationFn: async (
+      request: CreateRootShelfRequest
+    ): Promise<CreateRootShelfResponse> => {
       const validatedRequest = CreateRootShelfRequestSchema.parse(request);
       return await CreateRootShelf(validatedRequest);
     },
@@ -128,8 +136,7 @@ export const useCreateRootShelf = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -149,7 +156,9 @@ export const useUpdateMyRootShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMyRootShelfByIdRequest) => {
+    mutationFn: async (
+      request: UpdateMyRootShelfByIdRequest
+    ): Promise<UpdateMyRootShelfByIdResponse> => {
       const validatedRequest =
         UpdateMyRootShelfByIdRequestSchema.parse(request);
       return await UpdateMyRootShelfById(validatedRequest);
@@ -174,8 +183,7 @@ export const useUpdateMyRootShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -195,7 +203,9 @@ export const useRestoreMyRootShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyRootShelfByIdRequest) => {
+    mutationFn: async (
+      request: RestoreMyRootShelfByIdRequest
+    ): Promise<RestoreMyRootShelfByIdResponse> => {
       const validatedRequest =
         RestoreMyRootShelfByIdRequestSchema.parse(request);
       return await RestoreMyRootShelfById(validatedRequest);
@@ -236,8 +246,7 @@ export const useRestoreMyRootShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -257,7 +266,9 @@ export const useRestoreMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyRootShelvesByIdsRequest) => {
+    mutationFn: async (
+      request: RestoreMyRootShelvesByIdsRequest
+    ): Promise<RestoreMyRootShelvesByIdsResponse> => {
       const validatedRequest =
         RestoreMyRootShelvesByIdsRequestSchema.parse(request);
       return await RestoreMyRootShelvesByIds(validatedRequest);
@@ -294,6 +305,20 @@ export const useRestoreMyRootShelvesByIds = () => {
         );
       }
     },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
   });
 
   return {
@@ -306,7 +331,9 @@ export const useDeleteMyRootShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyRootShelfByIdRequest) => {
+    mutationFn: async (
+      request: DeleteMyRootShelfByIdRequest
+    ): Promise<DeleteMyRootShelfByIdResponse> => {
       const validatedRequest =
         DeleteMyRootShelfByIdRequestSchema.parse(request);
       return await DeleteMyRootShelfById(validatedRequest);
@@ -347,8 +374,7 @@ export const useDeleteMyRootShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -368,7 +394,9 @@ export const useDeleteMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyRootShelvesByIdsRequest) => {
+    mutationFn: async (
+      request: DeleteMyRootShelvesByIdsRequest
+    ): Promise<DeleteMyRootShelvesByIdsResponse> => {
       const validatedRequest =
         DeleteMyRootShelvesByIdsRequestSchema.parse(request);
       return await DeleteMyRootShelvesByIds(validatedRequest);
@@ -404,6 +432,20 @@ export const useDeleteMyRootShelvesByIds = () => {
           response.newAccessToken
         );
       }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
     },
   });
 

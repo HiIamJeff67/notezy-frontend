@@ -17,8 +17,10 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { useAppRouter, useLanguage, useTheme, useUserData } from "@/hooks";
+import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -103,7 +105,6 @@ const HomePage = () => {
 
   useEffect(() => {
     startCycle();
-    userDataManager.setEnableAutoFetching(false);
     return () => clearAllTimers();
   }, []);
 
@@ -206,8 +207,14 @@ const HomePage = () => {
                 variant="default"
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
-                  router.push(WebURLPathDictionary.auth.login);
-                  userDataManager.setEnableAutoFetching(true);
+                  const accessToken = LocalStorageManipulator.getItemByKey(
+                    LocalStorageKeys.accessToken
+                  );
+                  router.push(
+                    userDataManager.userData !== null && accessToken
+                      ? WebURLPathDictionary.root.dashboard._
+                      : WebURLPathDictionary.auth.login
+                  );
                 }}
               >
                 <NoteIcon size={18} />

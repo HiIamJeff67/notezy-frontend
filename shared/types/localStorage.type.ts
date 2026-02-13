@@ -2,11 +2,11 @@ import { Language } from "./language.type";
 import { Theme } from "./theme.type";
 
 export enum LocalStorageKeys {
-  accessToken = "AccessToken",
-  theme = "Theme",
-  language = "Language",
-  lastVisitedAt = "LastVisitedAt",
-  sidebarWidth = "SidebarWidth",
+  accessToken = "access_token",
+  theme = "theme",
+  language = "language",
+  lastVisitedAt = "last_visited_at",
+  sidebarWidth = "sidebar_width",
 }
 
 export interface LocalStorageItem {

@@ -166,6 +166,10 @@ export const CreateBlockPackRequestSchema = NotezyRequestSchema.extend({
     icon: z.enum(AllSupportedBlockPackIcon).nullable(),
     headerBackgroundURL: z.url().nullable(),
   }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
+  }),
 });
 
 export type CreateBlockPackRequest = z.infer<
@@ -201,6 +205,9 @@ export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
       .partial(),
     setNull: z.record(z.string(), z.boolean()).optional(),
   }),
+  affected: z.object({
+    parentSubShelfId: z.uuidv4(),
+  }),
 });
 
 export type UpdateMyBlockPackByIdRequest = z.infer<
@@ -227,6 +234,10 @@ export const MoveMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   body: z.object({
     blockPackId: z.uuidv4(),
     destinationParentSubShelfId: z.uuidv4(),
+  }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    sourceParentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -255,10 +266,14 @@ export const MoveMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
     blockPackIds: z.array(z.uuidv4()),
     destinationParentSubShelfId: z.uuidv4(),
   }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    sourceParentSubShelfIds: z.array(z.uuidv4()),
+  }),
 });
 
 export type MoveMyBlockPacksByIdsRequest = z.infer<
-  typeof MoveMyBlockPackByIdRequestSchema
+  typeof MoveMyBlockPacksByIdsRequestSchema
 >;
 
 export const MoveMyBlockPacksByIdsResponseSchema = NotezyResponseSchema.extend({
@@ -280,6 +295,10 @@ export const RestoreMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     blockPackId: z.uuidv4(),
+  }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
   }),
 });
 
@@ -310,6 +329,10 @@ export const RestoreMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend(
     body: z.object({
       blockPackIds: z.array(z.uuidv4()),
     }),
+    affected: z.object({
+      rootShelfIds: z.array(z.uuidv4()),
+      parentSubShelfIds: z.array(z.uuidv4()),
+    }),
   }
 );
 
@@ -338,6 +361,10 @@ export const DeleteMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   body: z.object({
     blockPackId: z.uuidv4(),
   }),
+  affected: z.object({
+    rootShelfId: z.uuidv4(),
+    parentSubShelfId: z.uuidv4(),
+  }),
 });
 
 export type DeleteMyBlockPackByIdRequest = z.infer<
@@ -363,6 +390,10 @@ export const DeleteMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     blockPackIds: z.array(z.uuidv4()),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    parentSubShelfIds: z.array(z.uuidv4()),
   }),
 });
 

@@ -67,14 +67,21 @@ export const UserDataProvider = ({
 
           setUserData(responseOfGettingUserData.data);
         } catch {
-          toast.error(
-            "Your account has been logged out, please try to log in again."
-          );
-          router.push(WebURLPathDictionary.auth.login);
+          if (
+            !router.isSamePath(
+              router.getCurrentPath(),
+              WebURLPathDictionary.home
+            )
+          ) {
+            toast.error(
+              "Your account has been logged out, please try to log in again."
+            );
+            router.push(WebURLPathDictionary.auth.login);
+          }
         }
       });
     }
-  }, []);
+  }, [enableAutoFetching]);
 
   /**
    * A method within useUserData() to update the user data of the current user

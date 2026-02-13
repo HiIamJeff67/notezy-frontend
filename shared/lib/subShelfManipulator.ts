@@ -66,6 +66,7 @@ export class SubShelfManipulator {
         materialNodes: {},
         blockPackNodes: {},
         isOpen: false,
+        nodeType: "SUB_SHELF",
       };
 
       if (subShelfNode) {
@@ -97,6 +98,7 @@ export class SubShelfManipulator {
         updatedAt: material.updatedAt,
         createdAt: material.createdAt,
         isOpen: false,
+        nodeType: "MATERIAL",
       };
       subShelfNode.materialNodes[material.id as UUID] = newMaterialNode;
     }
@@ -123,6 +125,7 @@ export class SubShelfManipulator {
         updatedAt: blockPack.updatedAt,
         createdAt: blockPack.createdAt,
         isOpen: false,
+        nodeType: "BLOCK_PACK",
       };
       subShelfNode.blockPackNodes[blockPack.id as UUID] = newBlockPackNode;
     }

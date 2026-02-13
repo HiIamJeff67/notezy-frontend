@@ -1,22 +1,34 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useApolloClient } from "@apollo/client/react";
 import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
+import {
   DeleteMeRequest,
   DeleteMeRequestSchema,
+  DeleteMeResponse,
   ForgetPasswordRequest,
   ForgetPasswordRequestSchema,
+  ForgetPasswordResponse,
   LoginRequest,
   LoginRequestSchema,
+  LoginResponse,
   LogoutRequest,
   LogoutRequestSchema,
+  LogoutResponse,
   RegisterRequest,
   RegisterRequestSchema,
+  RegisterResponse,
   ResetEmailRequest,
   ResetEmailRequestSchema,
+  ResetEmailResponse,
   SendAuthCodeRequest,
   SendAuthCodeRequestSchema,
+  SendAuthCodeResponse,
   ValidateEmailRequest,
   ValidateEmailRequestSchema,
+  ValidateEmailResponse,
 } from "@shared/api/interfaces/auth.interface";
 import {
   DeleteMe,
@@ -35,13 +47,12 @@ import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { useMutation } from "@tanstack/react-query";
 import { ZodError } from "zod";
-import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
 
 export const useRegister = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RegisterRequest) => {
+    mutationFn: async (request: RegisterRequest): Promise<RegisterResponse> => {
       const validatedRequest = RegisterRequestSchema.parse(request);
       return await Register(validatedRequest);
     },
@@ -65,8 +76,7 @@ export const useRegister = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.duplicateName:
             throw new Error(tKey.error.apiError.register.duplicateName);
@@ -90,7 +100,7 @@ export const useLogin = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: LoginRequest) => {
+    mutationFn: async (request: LoginRequest): Promise<LoginResponse> => {
       const validatedRequest = LoginRequestSchema.parse(request);
       return await Login(validatedRequest);
     },
@@ -114,8 +124,7 @@ export const useLogin = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);
@@ -139,7 +148,7 @@ export const useLogout = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: LogoutRequest) => {
+    mutationFn: async (request: LogoutRequest): Promise<LogoutResponse> => {
       const validatedRequest = LogoutRequestSchema.parse(request);
       return await Logout(validatedRequest);
     },
@@ -155,8 +164,7 @@ export const useLogout = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -174,7 +182,9 @@ export const useLogout = () => {
 
 export const useSendAuthCode = () => {
   const mutation = useMutation({
-    mutationFn: async (request: SendAuthCodeRequest) => {
+    mutationFn: async (
+      request: SendAuthCodeRequest
+    ): Promise<SendAuthCodeResponse> => {
       const validatedRequest = SendAuthCodeRequestSchema.parse(request);
       return await SendAuthCode(validatedRequest);
     },
@@ -184,8 +194,7 @@ export const useSendAuthCode = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);
@@ -205,7 +214,9 @@ export const useSendAuthCode = () => {
 
 export const useValidateEmail = () => {
   const mutation = useMutation({
-    mutationFn: async (request: ValidateEmailRequest) => {
+    mutationFn: async (
+      request: ValidateEmailRequest
+    ): Promise<ValidateEmailResponse> => {
       const validatedRequest = ValidateEmailRequestSchema.parse(request);
       return await ValidateEmail(validatedRequest);
     },
@@ -224,8 +235,7 @@ export const useValidateEmail = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);
@@ -247,7 +257,9 @@ export const useResetEmail = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: ResetEmailRequest) => {
+    mutationFn: async (
+      request: ResetEmailRequest
+    ): Promise<ResetEmailResponse> => {
       const validatedRequest = ResetEmailRequestSchema.parse(request);
       return await ResetEmail(validatedRequest);
     },
@@ -268,8 +280,7 @@ export const useResetEmail = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);
@@ -291,7 +302,9 @@ export const useForgetPassword = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: ForgetPasswordRequest) => {
+    mutationFn: async (
+      request: ForgetPasswordRequest
+    ): Promise<ForgetPasswordResponse> => {
       const validatedRequest = ForgetPasswordRequestSchema.parse(request);
       return await ForgetPassword(validatedRequest);
     },
@@ -305,8 +318,7 @@ export const useForgetPassword = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);
@@ -328,7 +340,7 @@ export const useDeleteMe = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMeRequest) => {
+    mutationFn: async (request: DeleteMeRequest): Promise<DeleteMeResponse> => {
       const validatedRequest = DeleteMeRequestSchema.parse(request);
       return await DeleteMe(validatedRequest);
     },
@@ -341,8 +353,7 @@ export const useDeleteMe = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.user.notFound:
             throw new Error(tKey.error.apiError.getUser.failedToGetUser);

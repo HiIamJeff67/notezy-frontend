@@ -13,6 +13,7 @@ export interface MaterialNode {
   createdAt: Date;
 
   isOpen: boolean;
+  nodeType: "MATERIAL";
 }
 
 export interface BlockPackNode {
@@ -26,4 +27,5 @@ export interface BlockPackNode {
   createdAt: Date;
 
   isOpen: boolean;
+  nodeType: "BLOCK_PACK";
 }

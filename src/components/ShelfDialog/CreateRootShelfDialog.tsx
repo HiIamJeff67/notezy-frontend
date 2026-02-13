@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { Suspense, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -24,7 +24,7 @@ const CreateRootShelfDialog = ({
 }: CreateRootShelfDialogProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
 
@@ -35,7 +35,7 @@ const CreateRootShelfDialog = ({
           throw new Error("new shelf name must not be empty");
         }
 
-        await shelfMaterialManager.createRootShelf(newShelfName);
+        await shelfItemManager.createRootShelf(newShelfName);
         onClose();
       } catch (error) {
         toast.error(languageManager.tError(error));
@@ -43,7 +43,7 @@ const CreateRootShelfDialog = ({
         setNewShelfName("");
       }
     });
-  }, [newShelfName, loadingManager, languageManager, shelfMaterialManager]);
+  }, [newShelfName, loadingManager, languageManager, shelfItemManager]);
 
   return (
     <Suspense fallback={<StrictLoadingOutlay />}>

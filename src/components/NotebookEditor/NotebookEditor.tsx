@@ -22,12 +22,7 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  useAppRouter,
-  useLanguage,
-  useLoading,
-  useShelfMaterial,
-} from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -72,7 +67,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const getMyMaterialQuerier = useGetMyMaterialById();
   const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
@@ -91,13 +86,13 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
   // update the file name in this page
   useEffect(() => {
-    if (shelfMaterialManager.isMaterialNodeEditing(meta.id)) {
+    if (shelfItemManager.isItemNodeEditing(meta.id)) {
       dispatchMeta({
         type: "setName",
-        newName: shelfMaterialManager.editMaterialNodeName,
+        newName: shelfItemManager.editItemNodeName,
       });
     }
-  }, [shelfMaterialManager.editMaterialNodeName]);
+  }, [shelfItemManager.editItemNodeName]);
 
   useEffect(() => {
     const initializeMaterial = async () => {
@@ -500,9 +495,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         parentSubShelfId={meta.parentId}
         materialId={meta.id}
         path={meta.path}
-        summary={shelfMaterialManager.expandedShelves.get(
-          meta.rootId.toString()
-        )}
+        summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
         {getMyMaterialQuerier.isFetching ? (

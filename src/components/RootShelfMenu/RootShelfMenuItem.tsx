@@ -22,7 +22,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { DNDType } from "@shared/types/enums/dndType.enum";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
@@ -43,11 +43,9 @@ const RootShelfMenuItem = ({
 }: RootShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
-  const summary = shelfMaterialManager.expandedShelves.get(
-    rootShelfEdge.node.id
-  );
+  const summary = shelfItemManager.expandedShelves.get(rootShelfEdge.node.id);
   if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
 
   // the hook should be place before break
@@ -64,7 +62,7 @@ const RootShelfMenuItem = ({
         return;
       }
 
-      await shelfMaterialManager.moveSubShelf(
+      await shelfItemManager.moveSubShelf(
         draggedItem.prev,
         draggedItem.current,
         summary.root,
@@ -80,42 +78,40 @@ const RootShelfMenuItem = ({
     loadingManager.setIsStrictLoading(true);
 
     try {
-      await shelfMaterialManager.renameEditingRootShelf();
+      await shelfItemManager.renameEditingRootShelf();
     } catch (error) {
       toast.error(languageManager.tError(error));
     } finally {
       loadingManager.setIsStrictLoading(false);
     }
-  }, [loadingManager, languageManager, shelfMaterialManager]);
+  }, [loadingManager, languageManager, shelfItemManager]);
 
   return (
     <Suspense fallback={<RootShelfMenuItemSkeleton />} key={index}>
       <Collapsible>
         <SidebarMenuItem>
           <ContextMenu>
-            {shelfMaterialManager.isRootShelfNodeEditing(summary.root.id) ? (
+            {shelfItemManager.isRootShelfNodeEditing(summary.root.id) ? (
               <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-none border-foreground relative">
                 <input
-                  ref={shelfMaterialManager.inputRef}
+                  ref={shelfItemManager.inputRef}
                   type="text"
-                  value={shelfMaterialManager.editRootShelfNodeName}
+                  value={shelfItemManager.editRootShelfNodeName}
                   className="flex-1 bg-transparent h-6 outline-none overflow-hidden"
                   onChange={e =>
-                    shelfMaterialManager.setEditRootShelfNodeName(
-                      e.target.value
-                    )
+                    shelfItemManager.setEditRootShelfNodeName(e.target.value)
                   }
                   onKeyDown={async e => {
                     if (e.key === "Enter") {
                       await handleRenameRootShelfOnSubmit();
                     } else if (e.key === "Escape") {
-                      shelfMaterialManager.cancelRenamingRootShelfNode();
+                      shelfItemManager.cancelRenamingRootShelfNode();
                     }
                   }}
                   // note that autoFocus doesn't work in this case,
                   // bcs the user clicked context menu trigger before the input element rendering
                 />
-                {shelfMaterialManager.isNewRootShelfNodeName() && (
+                {shelfItemManager.isNewRootShelfNodeName() && (
                   <button
                     onClick={async e => {
                       await handleRenameRootShelfOnSubmit();
@@ -138,10 +134,10 @@ const RootShelfMenuItem = ({
                     className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
                         whitespace-nowrap text-ellipsis overflow-hidden"
                     onClick={async () => {
-                      await shelfMaterialManager.expandRootShelf(
+                      await shelfItemManager.expandRootShelf(
                         rootShelfEdge.node
                       );
-                      shelfMaterialManager.toggleRootShelf(summary.root);
+                      shelfItemManager.toggleRootShelf(summary.root);
                     }}
                   >
                     {summary.root.isOpen ? (
@@ -154,7 +150,7 @@ const RootShelfMenuItem = ({
                 </CollapsibleTrigger>
               </ContextMenuTrigger>
             )}
-            {!shelfMaterialManager.isNewRootShelfNodeName() &&
+            {!shelfItemManager.isNewRootShelfNodeName() &&
               summary.hasChanged && (
                 <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
                   <ModifyDotIcon className="max-w-3.5 max-h-3.5" />
@@ -163,7 +159,7 @@ const RootShelfMenuItem = ({
             <ContextMenuContent>
               <ContextMenuItem
                 onClick={async () => {
-                  await shelfMaterialManager.createSubShelf(
+                  await shelfItemManager.createSubShelf(
                     summary.root.id,
                     null,
                     "undefined"
@@ -175,7 +171,7 @@ const RootShelfMenuItem = ({
               <ContextMenuSeparator />
               <ContextMenuItem
                 onClick={() => {
-                  shelfMaterialManager.startRenamingRootShelfNode(summary.root);
+                  shelfItemManager.startRenamingRootShelfNode(summary.root);
                 }}
               >
                 Rename
@@ -183,7 +179,7 @@ const RootShelfMenuItem = ({
               <ContextMenuSeparator />
               <ContextMenuItem
                 onClick={async () => {
-                  await shelfMaterialManager.deleteRootShelf(summary.root);
+                  await shelfItemManager.deleteRootShelf(summary.root);
                 }}
               >
                 Delete

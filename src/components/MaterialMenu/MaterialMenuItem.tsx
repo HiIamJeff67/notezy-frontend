@@ -5,34 +5,23 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useShelfMaterial } from "@/hooks";
+import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { MaterialType } from "@shared/types/enums";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfNodes.type";
-import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { MaterialNode } from "@shared/types/itemNodes.type";
+import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 
 interface MaterialMenuItemProps {
-  summary: ShelfTreeSummary;
-  root: RootShelfNode;
   parent: SubShelfNode;
   current: MaterialNode;
 }
 
-const MaterialMenuItem = ({
-  summary,
-  root,
-  parent,
-  current,
-}: MaterialMenuItemProps) => {
+const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const handleMaterialOnClick = useCallback(() => {
     try {
@@ -56,11 +45,11 @@ const MaterialMenuItem = ({
       }
 
       router.push(nextPath);
-      shelfMaterialManager.toggleMaterial(current);
+      shelfItemManager.toggleMaterial(current);
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
-  }, [parent, current, router, shelfMaterialManager]);
+  }, [parent, current, router, shelfItemManager]);
 
   return (
     <ContextMenu>
@@ -68,7 +57,7 @@ const MaterialMenuItem = ({
         <SidebarMenuButton
           className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden 
             ${
-              shelfMaterialManager.isFocused(current.id)
+              shelfItemManager.isFocused(current.id)
                 ? "bg-primary/60"
                 : "bg-transparent"
             }`}
@@ -79,15 +68,13 @@ const MaterialMenuItem = ({
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem
-          onClick={() =>
-            shelfMaterialManager.startRenamingMaterialNode(current)
-          }
+          onClick={() => shelfItemManager.startRenamingItemNode(current)}
         >
           Rename
         </ContextMenuItem>
         <ContextMenuItem
           onClick={async () => {
-            await shelfMaterialManager.deleteMaterial(parent, current);
+            await shelfItemManager.deleteMaterial(parent, current);
             if (current.id === (router.params.materialId as string)) {
               router.push(WebURLPathDictionary.root.materialEditor._);
             }

@@ -58,7 +58,7 @@ export class LocalStorageManipulator {
 
   // get all items from local storage
   static getAllItems = <
-    K extends LocalStorageKeys
+    K extends LocalStorageKeys,
   >(): Partial<LocalStorageItem> => {
     if (!this.isLocalStorageAvailable()) return {} as Partial<LocalStorageItem>;
 

@@ -1,4 +1,7 @@
 import CheckIcon from "@/components/icons/CheckIcon";
+import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
+import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
+import MaterialMenu from "@/components/MaterialMenu/MaterialMenu";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
 import {
   Collapsible,
@@ -21,7 +24,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { MaxShelfDepth } from "@shared/constants";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { DNDType } from "@shared/types/enums/dndType.enum";
@@ -30,9 +33,6 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
-import ChevronDownIcon from "../icons/ChevronDownIcon";
-import ChevronRightIcon from "../icons/ChevronRightIcon";
-import MaterialMenu from "../MaterialMenu/MaterialMenu";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -51,14 +51,14 @@ const SubShelfMenuItem = ({
 }: SubShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DNDType.DraggableSubShelf.toString(),
     item: { summary, prev, current, depth },
     canDrag:
-      !shelfMaterialManager.isAnyRootShelfNodeEditing &&
-      !shelfMaterialManager.isAnySubShelfNodeEditing,
+      !shelfItemManager.isAnyRootShelfNodeEditing &&
+      !shelfItemManager.isAnySubShelfNodeEditing,
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
@@ -80,7 +80,7 @@ const SubShelfMenuItem = ({
         return;
       }
 
-      await shelfMaterialManager.moveSubShelf(
+      await shelfItemManager.moveSubShelf(
         draggedItem.prev,
         draggedItem.current,
         root,
@@ -102,58 +102,58 @@ const SubShelfMenuItem = ({
 
   const handleCreateTextbookMaterial = useCallback(async () => {
     try {
-      await shelfMaterialManager.createTextbookMaterial(
+      await shelfItemManager.createTextbookMaterial(
         root.id,
         current,
         "undefined"
       );
       if (!current.isExpanded) {
-        await shelfMaterialManager.expandSubShelf(root, current);
+        await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
-  }, [root, current, languageManager, shelfMaterialManager]);
+  }, [root, current, languageManager, shelfItemManager]);
 
   const handleCreateNotebookMaterial = useCallback(async () => {
     try {
-      await shelfMaterialManager.createNotebookMaterial(
+      await shelfItemManager.createNotebookMaterial(
         root.id,
         current,
         "undefined"
       );
       if (!current.isExpanded) {
-        await shelfMaterialManager.expandSubShelf(root, current);
+        await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
-  }, [root, current, languageManager, shelfMaterialManager]);
+  }, [root, current, languageManager, shelfItemManager]);
 
   const handleCreateSubShelf = useCallback(async () => {
     try {
-      await shelfMaterialManager.createSubShelf(
+      await shelfItemManager.createSubShelf(
         summary.root.id,
         current,
         "undefined"
       );
       if (!current.isExpanded) {
-        await shelfMaterialManager.expandSubShelf(root, current);
+        await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
       toast.error(languageManager.tError(error));
     }
-  }, [root, current, languageManager, shelfMaterialManager]);
+  }, [root, current, languageManager, shelfItemManager]);
 
   const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
     loadingManager.startAsyncTransactionLoading(async () => {
       try {
-        await shelfMaterialManager.renameEditingSubShelf();
+        await shelfItemManager.renameEditingSubShelf();
       } catch (error) {
         toast.error(languageManager.tError(error));
       }
     });
-  }, [loadingManager, languageManager, shelfMaterialManager]);
+  }, [loadingManager, languageManager, shelfItemManager]);
 
   return (
     <Collapsible>
@@ -173,9 +173,9 @@ const SubShelfMenuItem = ({
                 className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
                 onClick={async () => {
                   if (!current.isExpanded) {
-                    await shelfMaterialManager.expandSubShelf(root, current);
+                    await shelfItemManager.expandSubShelf(root, current);
                   }
-                  shelfMaterialManager.toggleSubShelf(current);
+                  shelfItemManager.toggleSubShelf(current);
                 }}
               >
                 {current.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
@@ -207,7 +207,7 @@ const SubShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuItem
               onClick={() =>
-                shelfMaterialManager.startRenamingSubShelfNode(current)
+                shelfItemManager.startRenamingSubShelfNode(current)
               }
             >
               Rename
@@ -215,7 +215,7 @@ const SubShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuItem
               onClick={async () => {
-                await shelfMaterialManager.deleteSubShelf(prev, current);
+                await shelfItemManager.deleteSubShelf(prev, current);
               }}
             >
               Delete
@@ -234,7 +234,7 @@ const SubShelfMenuItem = ({
                         fallback={<SubShelfMenuItemSkeleton />}
                         key={subShelfId}
                       >
-                        {shelfMaterialManager.isSubShelfNodeEditing(
+                        {shelfItemManager.isSubShelfNodeEditing(
                           subShelfNode.id
                         ) ? (
                           <SidebarMenuItem
@@ -242,12 +242,12 @@ const SubShelfMenuItem = ({
                             className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
                           >
                             <input
-                              ref={shelfMaterialManager.inputRef}
+                              ref={shelfItemManager.inputRef}
                               type="text"
-                              value={shelfMaterialManager.editSubShelfNodeName}
+                              value={shelfItemManager.editSubShelfNodeName}
                               className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
                               onChange={e =>
-                                shelfMaterialManager.setEditSubShelfNodeName(
+                                shelfItemManager.setEditSubShelfNodeName(
                                   e.target.value
                                 )
                               }
@@ -256,13 +256,13 @@ const SubShelfMenuItem = ({
                                   case "Enter":
                                     await handleRenameSubShelfOnSubmit();
                                   case "Escape":
-                                    shelfMaterialManager.cancelRenamingSubShelfNode();
+                                    shelfItemManager.cancelRenamingSubShelfNode();
                                 }
                               }}
                               // note that autoFocus doesn't work in this case,
                               // bcs the user clicked context menu trigger before the input element rendering
                             />
-                            {shelfMaterialManager.isNewSubShelfNodeName() && (
+                            {shelfItemManager.isNewSubShelfNodeName() && (
                               <button
                                 onClick={async e => {
                                   await handleRenameSubShelfOnSubmit();
@@ -291,7 +291,7 @@ const SubShelfMenuItem = ({
                 )}
               </Suspense>
             )}
-            <MaterialMenu summary={summary} parent={current} />
+            <MaterialMenu parent={current} />
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>

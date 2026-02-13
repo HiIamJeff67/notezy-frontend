@@ -4,7 +4,7 @@ export * from "./useLanguage";
 export * from "./useLoading";
 export * from "./useMobile";
 export * from "./useResizeSidebar";
-export * from "./useShelfMaterial";
+export * from "./useShelfItem";
 export * from "./useTheme";
 export * from "./useThemeStore";
 export * from "./useUserData";

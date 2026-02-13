@@ -13,7 +13,7 @@ export const queryKeys = {
   rootShelf: {
     all: () => ["rootShelf"] as const,
     myOneById: (rootShelfId: UUID | undefined) =>
-      ["rootShelf", "myOne", rootShelfId?.toString()] as const,
+      ["rootShelf", "myOneById", rootShelfId?.toString()] as const,
   },
   subShelf: {
     all: () => ["subShelf"] as const,
@@ -35,5 +35,16 @@ export const queryKeys = {
       ["material", "myManyByParentSubShelfId", parentSubShelfId] as const,
     myManyByRootShelfId: (rootShelfId?: UUID) =>
       ["material", "myManyByRootShelfId", rootShelfId] as const,
+  },
+  blockPack: {
+    all: () => ["blockPack"] as const,
+    myOneById: (id?: UUID) => ["blockPack", "myOneById", id] as const,
+    myManyByParentSubShelfId: (parentSubShelfId?: UUID) =>
+      ["blockPack", "myManyByParentSubShelfId", parentSubShelfId] as const,
+    myManyByRootShelfId: (rootShelfId?: UUID) =>
+      ["blockPack", "myManyByRootShelfId", rootShelfId] as const,
+  },
+  blockGroup: {
+    all: () => ["blockGroup"] as const,
   },
 };

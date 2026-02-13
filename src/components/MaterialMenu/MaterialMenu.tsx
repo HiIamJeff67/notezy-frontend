@@ -1,36 +1,34 @@
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import CheckIcon from "@/components/icons/CheckIcon";
+import MaterialMenuItem from "@/components/MaterialMenu/MaterialMenuItem";
+import MaterialMenuItemSkeleton from "@/components/MaterialMenu/MaterialMenuItemSkeleton";
+import { SidebarMenuItem } from "@/components/ui/sidebar";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { MaterialType } from "@shared/types/enums";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
-import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";
-import CheckIcon from "../icons/CheckIcon";
-import { SidebarMenuItem } from "../ui/sidebar";
-import MaterialMenuItem from "./MaterialMenuItem";
-import MaterialMenuItemSkeleton from "./MaterialMenuItemSkeleton";
 
 interface MaterialMenuProps {
-  summary: ShelfTreeSummary;
   parent: SubShelfNode;
 }
 
-const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
+const MaterialMenu = ({ parent }: MaterialMenuProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const handleRenameMaterialOnSubmit = useCallback(
     async (materialType: MaterialType): Promise<void> => {
       loadingManager.setIsStrictLoading(true);
       try {
-        await shelfMaterialManager.renameEditingMaterial(materialType);
+        await shelfItemManager.renameEditingMaterial(materialType);
       } catch (error) {
         toast.error(languageManager.tError(error));
       } finally {
         loadingManager.setIsStrictLoading(false);
       }
     },
-    [loadingManager, languageManager, shelfMaterialManager]
+    [loadingManager, languageManager, shelfItemManager]
   );
 
   return (
@@ -39,31 +37,29 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
         ([materialId, materialNode]) => {
           return (
             <Suspense fallback={<MaterialMenuItemSkeleton />} key={materialId}>
-              {shelfMaterialManager.isMaterialNodeEditing(materialNode.id) ? (
+              {shelfItemManager.isItemNodeEditing(materialNode.id) ? (
                 <SidebarMenuItem
                   key={materialId}
                   className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
                 >
                   <input
-                    ref={shelfMaterialManager.inputRef}
+                    ref={shelfItemManager.inputRef}
                     type="text"
-                    value={shelfMaterialManager.editMaterialNodeName}
+                    value={shelfItemManager.editItemNodeName}
                     className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
                     onChange={e =>
-                      shelfMaterialManager.setEditMaterialNodeName(
-                        e.target.value
-                      )
+                      shelfItemManager.setEditItemNodeName(e.target.value)
                     }
                     onKeyDown={async e => {
                       switch (e.key) {
                         case "Enter":
                           await handleRenameMaterialOnSubmit(materialNode.type);
                         case "Escape":
-                          shelfMaterialManager.cancelRenamingMaterialNode();
+                          shelfItemManager.cancelRenamingItemNode();
                       }
                     }}
                   />
-                  {shelfMaterialManager.isNewMaterialNodeName() && (
+                  {shelfItemManager.isNewItemNodeName() && (
                     <button
                       onClick={async e => {
                         await handleRenameMaterialOnSubmit(materialNode.type);
@@ -79,8 +75,6 @@ const MaterialMenu = ({ summary, parent }: MaterialMenuProps) => {
               ) : (
                 <MaterialMenuItem
                   key={materialId}
-                  summary={summary}
-                  root={summary.root}
                   parent={parent}
                   current={materialNode}
                 />

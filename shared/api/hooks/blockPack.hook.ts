@@ -1,63 +1,59 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  queryFnGetAllMyMaterialsByRootShelfId,
-  queryFnGetMyMaterialAndItsParentById,
-  queryFnGetMyMaterialById,
-  queryFnGetMyMaterialsByParentSubShelfId,
-} from "@shared/api/functions/material.function";
+  queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsParentById,
+  queryFnGetMyBlockPackById,
+  queryFnGetMyBlockPacksByParentSubShelfId,
+} from "@shared/api/functions/blockPack.function";
 import {
-  CreateNotebookMaterialRequest,
-  CreateNotebookMaterialRequestSchema,
-  CreateNotebookMaterialResponse,
-  CreateTextbookMaterialRequest,
-  CreateTextbookMaterialRequestSchema,
-  CreateTextbookMaterialResponse,
-  DeleteMyMaterialByIdRequest,
-  DeleteMyMaterialByIdRequestSchema,
-  DeleteMyMaterialByIdResponse,
-  DeleteMyMaterialsByIdsRequest,
-  DeleteMyMaterialsByIdsRequestSchema,
-  DeleteMyMaterialsByIdsResponse,
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdResponse,
-  GetMyMaterialAndItsParentByIdRequest,
-  GetMyMaterialAndItsParentByIdResponse,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdResponse,
-  GetMyMaterialsByParentSubShelfIdRequest,
-  GetMyMaterialsByParentSubShelfIdResponse,
-  MoveMyMaterialByIdRequest,
-  MoveMyMaterialByIdRequestSchema,
-  MoveMyMaterialByIdResponse,
-  RestoreMyMaterialByIdRequest,
-  RestoreMyMaterialByIdRequestSchema,
-  RestoreMyMaterialByIdResponse,
-  RestoreMyMaterialsByIdsRequest,
-  RestoreMyMaterialsByIdsRequestSchema,
-  RestoreMyMaterialsByIdsResponse,
-  SaveMyNotebookMaterialByIdRequest,
-  SaveMyNotebookMaterialByIdRequestSchema,
-  SaveMyNotebookMaterialByIdResponse,
-  UpdateMyMaterialByIdRequest,
-  UpdateMyMaterialByIdRequestSchema,
-  UpdateMyMaterialByIdResponse,
-} from "@shared/api/interfaces/material.interface";
+  CreateBlockPackRequest,
+  CreateBlockPackRequestSchema,
+  CreateBlockPackResponse,
+  DeleteMyBlockPackByIdRequest,
+  DeleteMyBlockPackByIdRequestSchema,
+  DeleteMyBlockPackByIdResponse,
+  DeleteMyBlockPacksByIdsRequest,
+  DeleteMyBlockPacksByIdsRequestSchema,
+  DeleteMyBlockPacksByIdsResponse,
+  GetAllMyBlockPacksByRootShelfIdRequest,
+  GetAllMyBlockPacksByRootShelfIdResponse,
+  GetMyBlockPackAndItsParentByIdRequest,
+  GetMyBlockPackAndItsParentByIdResponse,
+  GetMyBlockPackByIdRequest,
+  GetMyBlockPackByIdResponse,
+  GetMyBlockPacksByParentSubShelfIdRequest,
+  GetMyBlockPacksByParentSubShelfIdResponse,
+  MoveMyBlockPackByIdRequest,
+  MoveMyBlockPackByIdRequestSchema,
+  MoveMyBlockPackByIdResponse,
+  MoveMyBlockPacksByIdsRequest,
+  MoveMyBlockPacksByIdsRequestSchema,
+  MoveMyBlockPacksByIdsResponse,
+  RestoreMyBlockPackByIdRequest,
+  RestoreMyBlockPackByIdRequestSchema,
+  RestoreMyBlockPackByIdResponse,
+  RestoreMyBlockPacksByIdsRequest,
+  RestoreMyBlockPacksByIdsRequestSchema,
+  RestoreMyBlockPacksByIdsResponse,
+  UpdateMyBlockPackByIdRequest,
+  UpdateMyBlockPackByIdRequestSchema,
+  UpdateMyBlockPackByIdResponse,
+} from "@shared/api/interfaces/blockPack.interface";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/interfaces/queryHookOptions";
 import {
-  CreateNotebookMaterial,
-  CreateTextbookMaterial,
-  DeleteMyMaterialById,
-  DeleteMyMaterialsByIds,
-  MoveMyMaterialById,
-  RestoreMyMaterialById,
-  RestoreMyMaterialsByIds,
-  SaveMyNotebookMaterialById,
-  UpdateMyMaterialById,
-} from "@shared/api/invokers/material.invoker";
+  CreateBlockPack,
+  DeleteMyBlockPackById,
+  DeleteMyBlockPacksByIds,
+  MoveMyBlockPackById,
+  MoveMyBlockPacksByIds,
+  RestoreMyBlockPackById,
+  RestoreMyBlockPacksByIds,
+  UpdateMyBlockPackById,
+} from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
@@ -65,17 +61,17 @@ import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
-export const useGetMyMaterialById = (
-  hookRequest?: GetMyMaterialByIdRequest,
+export const useGetMyBlockPackById = (
+  hookRequest?: GetMyBlockPackByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
-      hookRequest?.param.materialId as UUID | undefined
+    queryKey: queryKeys.blockPack.myOneById(
+      hookRequest?.param.blockPackId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyMaterialById(hookRequest),
+    queryFn: async () => await queryFnGetMyBlockPackById(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -84,13 +80,13 @@ export const useGetMyMaterialById = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetMyMaterialByIdRequest
-  ): Promise<GetMyMaterialByIdResponse> => {
+    callbackRequest: GetMyBlockPackByIdRequest
+  ): Promise<GetMyBlockPackByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
-        callbackRequest.param.materialId as UUID
+      queryKey: queryKeys.blockPack.myOneById(
+        callbackRequest.param.blockPackId as UUID
       ),
-      queryFn: async () => await queryFnGetMyMaterialById(callbackRequest),
+      queryFn: async () => await queryFnGetMyBlockPackById(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -98,22 +94,22 @@ export const useGetMyMaterialById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_MATERIAL_BY_ID_HOOK" as const,
+    name: "GET_MY_BLOCK_PACK_BY_ID_HOOK" as const,
   };
 };
 
-export const useGetMyMaterialAndItsParentById = (
-  hookRequest?: GetMyMaterialAndItsParentByIdRequest,
+export const useGetMyBlockPackAndItsParentById = (
+  hookRequest?: GetMyBlockPackAndItsParentByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
-      hookRequest?.param.materialId as UUID | undefined
+    queryKey: queryKeys.blockPack.myOneById(
+      hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () =>
-      await queryFnGetMyMaterialAndItsParentById(hookRequest),
+      await queryFnGetMyBlockPackAndItsParentById(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -122,14 +118,14 @@ export const useGetMyMaterialAndItsParentById = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetMyMaterialAndItsParentByIdRequest
-  ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
+    callbackRequest: GetMyBlockPackAndItsParentByIdRequest
+  ): Promise<GetMyBlockPackAndItsParentByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
-        callbackRequest.param.materialId as UUID
+      queryKey: queryKeys.blockPack.myOneById(
+        callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialAndItsParentById(callbackRequest),
+        await queryFnGetMyBlockPackAndItsParentById(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -137,22 +133,22 @@ export const useGetMyMaterialAndItsParentById = (
   return {
     ...query,
     queryAsync,
-    name: "GET_MY_MATERIAL_AND_ITS_PARENT_BY_ID_HOOK" as const,
+    name: "GET_MY_BLOCK_PACK_AND_ITS_PARENT_BY_ID_HOOK" as const,
   };
 };
 
-export const useGetMyMaterialsByParentSubShelfId = (
-  hookRequest?: GetMyMaterialsByParentSubShelfIdRequest,
+export const useGetMyBlockPacksByParentSubShelfId = (
+  hookRequest?: GetMyBlockPacksByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByParentSubShelfId(
+    queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () =>
-      await queryFnGetMyMaterialsByParentSubShelfId(hookRequest),
+      await queryFnGetMyBlockPacksByParentSubShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -161,14 +157,14 @@ export const useGetMyMaterialsByParentSubShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
-  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
+    callbackRequest: GetMyBlockPacksByParentSubShelfIdRequest
+  ): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
+      queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialsByParentSubShelfId(callbackRequest),
+        await queryFnGetMyBlockPacksByParentSubShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -176,22 +172,22 @@ export const useGetMyMaterialsByParentSubShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID_HOOK" as const,
+    name: "GET_MY_BLOCK_PACKS_BY_PARENT_SUB_SHELF_ID" as const,
   };
 };
 
-export const useGetAllMyMaterialsByRootShelfId = (
-  hookRequest?: GetAllMyMaterialsByRootShelfIdRequest,
+export const useGetAllMyBlockPacksByRootShelfId = (
+  hookRequest?: GetAllMyBlockPacksByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByRootShelfId(
+    queryKey: queryKeys.blockPack.myManyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () =>
-      await queryFnGetAllMyMaterialsByRootShelfId(hookRequest),
+      await queryFnGetAllMyBlockPacksByRootShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -200,14 +196,14 @@ export const useGetAllMyMaterialsByRootShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
-  ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
+    callbackRequest: GetAllMyBlockPacksByRootShelfIdRequest
+  ): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.blockPack.myManyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByRootShelfId(callbackRequest),
+        await queryFnGetAllMyBlockPacksByRootShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -215,88 +211,19 @@ export const useGetAllMyMaterialsByRootShelfId = (
   return {
     ...query,
     queryAsync,
-    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID_HOOK" as const,
+    name: "GET_ALL_MY_BLOCK_PACKS_BY_ROOT_SHELF_ID" as const,
   };
 };
 
-export const useCreateTextbookMaterial = () => {
+export const useCreateBlockPack = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: CreateTextbookMaterialRequest
-    ): Promise<CreateTextbookMaterialResponse> => {
-      const validatedRequest =
-        CreateTextbookMaterialRequestSchema.parse(request);
-      return await CreateTextbookMaterial(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return false;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
-          response.newAccessToken
-        );
-      }
-    },
-    onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    },
-  });
-
-  return {
-    ...mutation,
-    name: "CREATE_TEXTBOOK_MATERIAL_HOOK" as const,
-  };
-};
-
-export const useCreateNotebookMaterial = () => {
-  const queryClient = getQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (
-      request: CreateNotebookMaterialRequest
-    ): Promise<CreateNotebookMaterialResponse> => {
-      const validatedRequest =
-        CreateNotebookMaterialRequestSchema.parse(request);
-      return await CreateNotebookMaterial(validatedRequest);
+      request: CreateBlockPackRequest
+    ): Promise<CreateBlockPackResponse> => {
+      const validatedRequest = CreateBlockPackRequestSchema.parse(request);
+      return await CreateBlockPack(validatedRequest);
     },
     onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId;
@@ -312,7 +239,7 @@ export const useCreateNotebookMaterial = () => {
             case "subShelf":
               if (k[1] === "myOneById" && parentSubShelfId === k[2])
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfId === k[2]) return true;
@@ -351,85 +278,23 @@ export const useCreateNotebookMaterial = () => {
 
   return {
     ...mutation,
-    name: "CREATE_NOTEBOOK_MATERIAL_HOOK" as const,
+    name: "CREATE_BLOCK_PACK_HOOK" as const,
   };
 };
 
-export const useUpdateMyMaterialById = () => {
+export const useUpdateMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: UpdateMyMaterialByIdRequest
-    ): Promise<UpdateMyMaterialByIdResponse> => {
-      const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
-      return await UpdateMyMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
-          response.newAccessToken
-        );
-      }
-    },
-    onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
-      throw error;
-    },
-  });
-
-  return {
-    ...mutation,
-    name: "UPDATE_MY_MATERIAL_BY_ID_HOOK" as const,
-  };
-};
-
-export const useSaveMyNotebookMaterialById = () => {
-  const queryClient = getQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (
-      request: SaveMyNotebookMaterialByIdRequest
-    ): Promise<SaveMyNotebookMaterialByIdResponse> => {
+      request: UpdateMyBlockPackByIdRequest
+    ): Promise<UpdateMyBlockPackByIdResponse> => {
       const validatedRequest =
-        SaveMyNotebookMaterialByIdRequestSchema.parse(request);
-      return await SaveMyNotebookMaterialById(validatedRequest);
+        UpdateMyBlockPackByIdRequestSchema.parse(request);
+      return await UpdateMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
+      const blockPackId = variables.body.blockPackId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       queryClient.invalidateQueries({
         predicate: q => {
@@ -437,10 +302,10 @@ export const useSaveMyNotebookMaterialById = () => {
           if (!Array.isArray(k) || k.length < 3) return false;
 
           switch (k[0]) {
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
+                  if (blockPackId === k[2]) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfId === k[2]) return true;
               }
@@ -476,22 +341,22 @@ export const useSaveMyNotebookMaterialById = () => {
 
   return {
     ...mutation,
-    name: "SAVE_MY_NOTEBOOK_MATERIAL_BY_ID_HOOK" as const,
+    name: "UPDATE_MY_BLOCK_PACK_BY_ID_HOOK" as const,
   };
 };
 
-export const useMoveMyMaterialById = () => {
+export const useMoveMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: MoveMyMaterialByIdRequest
-    ): Promise<MoveMyMaterialByIdResponse> => {
-      const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
-      return await MoveMyMaterialById(validatedRequest);
+      request: MoveMyBlockPackByIdRequest
+    ): Promise<MoveMyBlockPackByIdResponse> => {
+      const validatedRequest = MoveMyBlockPackByIdRequestSchema.parse(request);
+      return await MoveMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
+      const blockPackId = variables.body.blockPackId;
       const destinationParentSubShelfId =
         variables.body.destinationParentSubShelfId;
       const sourceParentSubShelfId = variables.affected.sourceParentSubShelfId;
@@ -504,17 +369,17 @@ export const useMoveMyMaterialById = () => {
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
+            case "subShelfId":
               if (
                 k[1] === "myOneById" &&
                 (sourceParentSubShelfId === k[2] ||
                   destinationParentSubShelfId === k[2])
               )
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
+                  if (blockPackId === k[2]) return true;
                 case "myManyByParentSubShelfId":
                   if (
                     sourceParentSubShelfId === k[2] ||
@@ -556,23 +421,110 @@ export const useMoveMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_MATERIAL_BY_ID_HOOK" as const,
+    name: "MOVE_MY_BLOCK_PACK_BY_ID_HOOK" as const,
   };
 };
 
-export const useRestoreMyMaterialById = () => {
+export const useMoveMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: RestoreMyMaterialByIdRequest
-    ): Promise<RestoreMyMaterialByIdResponse> => {
+      request: MoveMyBlockPacksByIdsRequest
+    ): Promise<MoveMyBlockPacksByIdsResponse> => {
       const validatedRequest =
-        RestoreMyMaterialByIdRequestSchema.parse(request);
-      return await RestoreMyMaterialById(validatedRequest);
+        MoveMyBlockPacksByIdsRequestSchema.parse(request);
+      return await MoveMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
+      const blockPackIdsSet = new Set(
+        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
+      );
+      const destinationParentSubShelfId =
+        variables.body.destinationParentSubShelfId;
+      const sourceParentSubShelfIdsSet = new Set(
+        (variables.affected.sourceParentSubShelfIds || []).filter(
+          Boolean
+        ) as UUID[]
+      );
+      const rootShelfId = variables.affected.rootShelfId;
+      queryClient.invalidateQueries({
+        predicate: q => {
+          const k = q.queryKey as any[];
+          if (!Array.isArray(k) || k.length < 3) return false;
+
+          switch (k[0]) {
+            case "rootShelf":
+              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
+            case "subShelfId":
+              if (
+                k[1] === "myOneById" &&
+                (sourceParentSubShelfIdsSet.has(k[2]) ||
+                  destinationParentSubShelfId === k[2])
+              )
+                return true;
+            case "blockPack":
+              switch (k[1]) {
+                case "myOneById":
+                  if (blockPackIdsSet.has(k[2])) return true;
+                case "myManyByParentSubShelfId":
+                  if (
+                    sourceParentSubShelfIdsSet.has(k[2]) ||
+                    destinationParentSubShelfId === k[2]
+                  )
+                    return true;
+                case "myManyByRootShelfId":
+                  if (rootShelfId === k[2]) return true;
+              }
+          }
+
+          return false;
+        },
+        refetchType: "active",
+      });
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.accessToken,
+          response.newAccessToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "MOVE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
+  };
+};
+
+export const useRestoreMyBlockPackById = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: RestoreMyBlockPackByIdRequest
+    ): Promise<RestoreMyBlockPackByIdResponse> => {
+      const validatedRequest =
+        RestoreMyBlockPackByIdRequestSchema.parse(request);
+      return await RestoreMyBlockPackById(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const blockPackId = variables.body.blockPackId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -583,13 +535,13 @@ export const useRestoreMyMaterialById = () => {
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
+            case "subShelfId":
               if (k[1] === "myOneById" && parentSubShelfId === k[2])
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
+                  if (blockPackId === k[2]) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
@@ -627,24 +579,24 @@ export const useRestoreMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_MATERIAL_BY_ID_HOOK" as const,
+    name: "RESTORE_MY_BLOCK_PACK_BY_ID_HOOK" as const,
   };
 };
 
-export const useRestoreMyMaterialsByIds = () => {
+export const useRestoreMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: RestoreMyMaterialsByIdsRequest
-    ): Promise<RestoreMyMaterialsByIdsResponse> => {
+      request: RestoreMyBlockPacksByIdsRequest
+    ): Promise<RestoreMyBlockPacksByIdsResponse> => {
       const validatedRequest =
-        RestoreMyMaterialsByIdsRequestSchema.parse(request);
-      return await RestoreMyMaterialsByIds(validatedRequest);
+        RestoreMyBlockPacksByIdsRequestSchema.parse(request);
+      return await RestoreMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const blockPackIdsSet = new Set(
+        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
       );
       const parentSubShelfIdsSet = new Set(
         (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
@@ -655,19 +607,19 @@ export const useRestoreMyMaterialsByIds = () => {
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
+          if (!Array.isArray(k) || k.length < 3) return false;
 
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
                 return true;
-            case "subShelf":
+            case "subShelfId":
               if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
+                  if (blockPackIdsSet.has(k[2])) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfIdsSet.has(k[2])) return true;
                 case "myManyByRootShelfId":
@@ -705,22 +657,23 @@ export const useRestoreMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "RESTORE_MY_MATERIALS_BY_IDS_HOOK" as const,
+    name: "RESTORE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
   };
 };
 
-export const useDeleteMyMaterialById = () => {
+export const useDeleteMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: DeleteMyMaterialByIdRequest
-    ): Promise<DeleteMyMaterialByIdResponse> => {
-      const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
-      return await DeleteMyMaterialById(validatedRequest);
+      request: DeleteMyBlockPackByIdRequest
+    ): Promise<DeleteMyBlockPackByIdResponse> => {
+      const validatedRequest =
+        DeleteMyBlockPackByIdRequestSchema.parse(request);
+      return await DeleteMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
+      const blockPackId = variables.body.blockPackId;
       const parentSubShelfId = variables.affected.parentSubShelfId;
       const rootShelfId = variables.affected.rootShelfId;
       queryClient.invalidateQueries({
@@ -731,13 +684,13 @@ export const useDeleteMyMaterialById = () => {
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
+            case "subShelfId":
               if (k[1] === "myOneById" && parentSubShelfId === k[2])
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialId === k[2]) return true;
+                  if (blockPackId === k[2]) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfId === k[2]) return true;
                 case "myManyByRootShelfId":
@@ -775,24 +728,24 @@ export const useDeleteMyMaterialById = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIAL_BY_ID_HOOK" as const,
+    name: "DELETE_MY_BLOCK_PACK_BY_ID_HOOK" as const,
   };
 };
 
-export const useDeleteMyMaterialsByIds = () => {
+export const useDeleteMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (
-      request: DeleteMyMaterialsByIdsRequest
-    ): Promise<DeleteMyMaterialsByIdsResponse> => {
+      request: DeleteMyBlockPacksByIdsRequest
+    ): Promise<DeleteMyBlockPacksByIdsResponse> => {
       const validatedRequest =
-        DeleteMyMaterialsByIdsRequestSchema.parse(request);
-      return await DeleteMyMaterialsByIds(validatedRequest);
+        DeleteMyBlockPacksByIdsRequestSchema.parse(request);
+      return await DeleteMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const blockPackIdsSet = new Set(
+        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
       );
       const parentSubShelfIdsSet = new Set(
         (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
@@ -803,19 +756,19 @@ export const useDeleteMyMaterialsByIds = () => {
       queryClient.invalidateQueries({
         predicate: q => {
           const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
+          if (!Array.isArray(k) || k.length < 3) return false;
 
           switch (k[0]) {
             case "rootShelf":
               if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
                 return true;
-            case "subShelf":
+            case "subShelfId":
               if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
                 return true;
-            case "material":
+            case "blockPack":
               switch (k[1]) {
                 case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
+                  if (blockPackIdsSet.has(k[2])) return true;
                 case "myManyByParentSubShelfId":
                   if (parentSubShelfIdsSet.has(k[2])) return true;
                 case "myManyByRootShelfId":
@@ -853,6 +806,6 @@ export const useDeleteMyMaterialsByIds = () => {
 
   return {
     ...mutation,
-    name: "DELETE_MY_MATERIALS_BY_IDS_HOOK" as const,
+    name: "DELETE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
   };
 };

@@ -13,10 +13,13 @@ import {
 import {
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdRequestSchema,
+  CreateSubShelfByRootShelfIdResponse,
   DeleteMySubShelfByIdRequest,
   DeleteMySubShelfByIdRequestSchema,
+  DeleteMySubShelfByIdResponse,
   DeleteMySubShelvesByIdsRequest,
   DeleteMySubShelvesByIdsRequestSchema,
+  DeleteMySubShelvesByIdsResponse,
   GetAllMySubShelvesByRootShelfIdRequest,
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
@@ -27,14 +30,19 @@ import {
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfRequestSchema,
+  MoveMySubShelfResponse,
   MoveMySubShelvesRequest,
   MoveMySubShelvesRequestSchema,
+  MoveMySubShelvesResponse,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdRequestSchema,
+  RestoreMySubShelfByIdResponse,
   RestoreMySubShelvesByIdsRequest,
   RestoreMySubShelvesByIdsRequestSchema,
+  RestoreMySubShelvesByIdsResponse,
   UpdateMySubShelfByIdRequest,
   UpdateMySubShelfByIdRequestSchema,
+  UpdateMySubShelfByIdResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import {
   CreateSubShelfByRootShelfId,
@@ -209,6 +217,7 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     ...query,
     queryAsync,
     name: "GET_MY_SUB_SHELVES_AND_ITEMS_BY_PREV_SUB_SHELF_ID_HOOK",
+    isAbandon: true,
   };
 };
 
@@ -216,7 +225,9 @@ export const useCreateSubShelfByRootShelfId = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateSubShelfByRootShelfIdRequest) => {
+    mutationFn: async (
+      request: CreateSubShelfByRootShelfIdRequest
+    ): Promise<CreateSubShelfByRootShelfIdResponse> => {
       const validatedRequest =
         CreateSubShelfByRootShelfIdRequestSchema.parse(request);
       return await CreateSubShelfByRootShelfId(validatedRequest);
@@ -260,8 +271,7 @@ export const useCreateSubShelfByRootShelfId = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -281,7 +291,9 @@ export const useUpdateMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMySubShelfByIdRequest) => {
+    mutationFn: async (
+      request: UpdateMySubShelfByIdRequest
+    ): Promise<UpdateMySubShelfByIdResponse> => {
       const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
       return await UpdateMySubShelfById(validatedRequest);
     },
@@ -325,8 +337,7 @@ export const useUpdateMySubShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -346,7 +357,9 @@ export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: MoveMySubShelfRequest) => {
+    mutationFn: async (
+      request: MoveMySubShelfRequest
+    ): Promise<MoveMySubShelfResponse> => {
       const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
       return await MoveMySubShelf(validatedRequest);
     },
@@ -402,8 +415,7 @@ export const useMoveMySubShelf = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -423,7 +435,9 @@ export const useMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: MoveMySubShelvesRequest) => {
+    mutationFn: async (
+      request: MoveMySubShelvesRequest
+    ): Promise<MoveMySubShelvesResponse> => {
       const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
       return await MoveMySubShelves(validatedRequest);
     },
@@ -484,8 +498,7 @@ export const useMoveMySubShelves = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -505,7 +518,9 @@ export const useRestoreMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMySubShelfByIdRequest) => {
+    mutationFn: async (
+      request: RestoreMySubShelfByIdRequest
+    ): Promise<RestoreMySubShelfByIdResponse> => {
       const validatedRequest =
         RestoreMySubShelfByIdRequestSchema.parse(request);
       return await RestoreMySubShelfById(validatedRequest);
@@ -559,8 +574,7 @@ export const useRestoreMySubShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -580,7 +594,9 @@ export const useRestoreMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMySubShelvesByIdsRequest) => {
+    mutationFn: async (
+      request: RestoreMySubShelvesByIdsRequest
+    ): Promise<RestoreMySubShelvesByIdsResponse> => {
       const validatedRequest =
         RestoreMySubShelvesByIdsRequestSchema.parse(request);
       return await RestoreMySubShelvesByIds(validatedRequest);
@@ -637,8 +653,7 @@ export const useRestoreMySubShelvesByIds = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -658,7 +673,9 @@ export const useDeleteMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMySubShelfByIdRequest) => {
+    mutationFn: async (
+      request: DeleteMySubShelfByIdRequest
+    ): Promise<DeleteMySubShelfByIdResponse> => {
       const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
       return await DeleteMySubShelfById(validatedRequest);
     },
@@ -710,8 +727,7 @@ export const useDeleteMySubShelfById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -731,7 +747,9 @@ export const useDeleteMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMySubShelvesByIdsRequest) => {
+    mutationFn: async (
+      request: DeleteMySubShelvesByIdsRequest
+    ): Promise<DeleteMySubShelvesByIdsResponse> => {
       const validatedRequest =
         DeleteMySubShelvesByIdsRequestSchema.parse(request);
       return await DeleteMySubShelvesByIds(validatedRequest);
@@ -790,8 +808,7 @@ export const useDeleteMySubShelvesByIds = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
