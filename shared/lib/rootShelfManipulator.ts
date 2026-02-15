@@ -10,11 +10,8 @@ import {
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
 import { AnalysisStatus } from "@shared/types/enums";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfNodes.type";
+import { MaterialNode } from "@shared/types/itemNodes.type";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 
@@ -115,7 +112,9 @@ export class RootShelfManipulator {
         isExpanded: false,
         children: {},
         materialNodes: {},
+        blockPackNodes: {},
         isOpen: false,
+        nodeType: "SUB_SHELF",
       };
       newRootShelfNode.children[subShelf.id as UUID] = newSubShelfNode;
       prevSubShelfNodes[newSubShelfNode.id] =
@@ -159,7 +158,9 @@ export class RootShelfManipulator {
           isExpanded: false,
           children: {},
           materialNodes: {},
+          blockPackNodes: {},
           isOpen: false,
+          nodeType: "SUB_SHELF",
         };
 
         if (

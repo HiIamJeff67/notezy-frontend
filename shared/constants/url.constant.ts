@@ -162,6 +162,10 @@ export const WebURLPathDictionary = {
         `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
       notFound: "material-editor/not-found",
     },
+    blockPackEditor: {
+      _: (blockPackId: UUID, parentSubShelfId: UUID) =>
+        `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}`,
+    },
     documents: {
       _: "documents",
     },

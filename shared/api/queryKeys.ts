@@ -46,5 +46,10 @@ export const queryKeys = {
   },
   blockGroup: {
     all: () => ["blockGroup"] as const,
+    myOneById: (id?: UUID) => ["blockGroup", "myOneById", id] as const,
+    myManyByBlockPackId: (blockPackId?: UUID) =>
+      ["blockPack", "myManyByBlockPackId", blockPackId] as const,
+    myManyByPrevBlockGroupId: (prevBlockGroupId?: UUID) =>
+      ["blockGroup", "myManyByPrevBlockGroupId", prevBlockGroupId] as const,
   },
 };

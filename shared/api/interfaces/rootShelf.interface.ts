@@ -24,7 +24,7 @@ export const GetMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
     subShelfCount: z.int32(),
     itemCount: z.int32(),
     lastAnalyzedAt: z.coerce.date(),
-    deletedAt: z.coerce.date(),
+    deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -61,7 +61,7 @@ export const SearchRecentRootShelvesResponseSchema =
         subShelfCount: z.int32(),
         itemCount: z.int32(),
         lastAnalyzedAt: z.coerce.date(),
-        deletedAt: z.coerce.date(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -151,7 +151,14 @@ export type RestoreMyRootShelfByIdRequest = z.infer<
 export const RestoreMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend(
   {
     data: z.object({
+      id: z.uuidv4(),
+      name: z.string(),
+      subShelfCount: z.int32(),
+      itemCount: z.int32(),
+      lastAnalyzedAt: z.coerce.date(),
+      deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
     }),
   }
 );
@@ -179,9 +186,18 @@ export type RestoreMyRootShelvesByIdsRequest = z.infer<
 
 export const RestoreMyRootShelvesByIdsResponseSchema =
   NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        name: z.string(),
+        subShelfCount: z.int32(),
+        itemCount: z.int32(),
+        lastAnalyzedAt: z.coerce.date(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
   });
 
 export type RestoreMyRootShelvesByIdsResponse = z.infer<

@@ -23,7 +23,7 @@ export const queryFnGetMyMaterialById = async (
   request?: GetMyMaterialByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
@@ -55,7 +55,7 @@ export const queryFnGetMyMaterialAndItsParentById = async (
   request?: GetMyMaterialAndItsParentByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -88,7 +88,7 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
   request?: GetMyMaterialsByParentSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -121,7 +121,7 @@ export const queryFnGetAllMyMaterialsByRootShelfId = async (
   request?: GetAllMyMaterialsByRootShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =

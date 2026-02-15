@@ -23,7 +23,7 @@ export const queryFnGetMyBlockPackById = async (
   request?: GetMyBlockPackByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMyBlockPackByIdRequestSchema.parse(request);
@@ -55,7 +55,7 @@ export const queryFnGetMyBlockPackAndItsParentById = async (
   request?: GetMyBlockPackAndItsParentByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -88,7 +88,7 @@ export const queryFnGetMyBlockPacksByParentSubShelfId = async (
   request?: GetMyBlockPacksByParentSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -121,7 +121,7 @@ export const queryFnGetAllMyBlockPacksByRootShelfId = async (
   request?: GetAllMyBlockPacksByRootShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =

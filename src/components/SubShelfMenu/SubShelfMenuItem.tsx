@@ -33,6 +33,7 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
+import BlockPackMenu from "../BlockPackMenu/BlockPackMenu";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -52,6 +53,8 @@ const SubShelfMenuItem = ({
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const shelfItemManager = useShelfItem();
+
+  console.log(current);
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DNDType.DraggableSubShelf.toString(),
@@ -105,7 +108,7 @@ const SubShelfMenuItem = ({
       await shelfItemManager.createTextbookMaterial(
         root.id,
         current,
-        "undefined"
+        "new textbook"
       );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
@@ -120,7 +123,22 @@ const SubShelfMenuItem = ({
       await shelfItemManager.createNotebookMaterial(
         root.id,
         current,
-        "undefined"
+        "new notebook"
+      );
+      if (!current.isExpanded) {
+        await shelfItemManager.expandSubShelf(root, current);
+      }
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    }
+  }, [root, current, languageManager, shelfItemManager]);
+
+  const handleCreateBlockPack = useCallback(async () => {
+    try {
+      await shelfItemManager.createBlockPack(
+        root.id,
+        current,
+        "new block pack"
       );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
@@ -135,7 +153,7 @@ const SubShelfMenuItem = ({
       await shelfItemManager.createSubShelf(
         summary.root.id,
         current,
-        "undefined"
+        "new sub shelf"
       );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
@@ -197,10 +215,13 @@ const SubShelfMenuItem = ({
                 >
                   Notebook
                 </ContextMenuItem>
-                <ContextMenuItem>Learning Card</ContextMenuItem>
-                <ContextMenuItem>Workflow</ContextMenuItem>
               </ContextMenuSubContent>
             </ContextMenuSub>
+            <ContextMenuItem
+              onClick={async () => await handleCreateBlockPack()}
+            >
+              Create Block Pack
+            </ContextMenuItem>
             <ContextMenuItem onClick={async () => await handleCreateSubShelf()}>
               Create Sub Shelf
             </ContextMenuItem>
@@ -292,6 +313,7 @@ const SubShelfMenuItem = ({
               </Suspense>
             )}
             <MaterialMenu parent={current} />
+            <BlockPackMenu parent={current} />
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>

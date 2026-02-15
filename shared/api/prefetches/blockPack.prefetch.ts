@@ -1,32 +1,34 @@
 import {
-  queryFnGetAllMyMaterialsByRootShelfId,
-  queryFnGetMyMaterialAndItsParentById,
-  queryFnGetMyMaterialById,
-  queryFnGetMyMaterialsByParentSubShelfId,
-} from "@shared/api/functions/material.function";
+  queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsParentById,
+  queryFnGetMyBlockPackById,
+  queryFnGetMyBlockPacksByParentSubShelfId,
+} from "@shared/api/functions/blockPack.function";
 import {
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialsByParentSubShelfIdRequest,
-} from "@shared/api/interfaces/material.interface";
+  GetAllMyBlockPacksByRootShelfIdRequest,
+  GetMyBlockPackAndItsParentByIdRequest,
+  GetMyBlockPackByIdRequest,
+  GetMyBlockPacksByParentSubShelfIdRequest,
+} from "@shared/api/interfaces/blockPack.interface";
 import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
 import { UUID } from "crypto";
 
-export const prefetchGetMyMaterialById = (initialQueryClient?: QueryClient) => {
+export const prefetchGetMyBlockPackById = (
+  initialQueryClient?: QueryClient
+) => {
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const prefetchQuery = async (
-    prefetchRequest: GetMyMaterialByIdRequest
+    prefetchRequest: GetMyBlockPackByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myOneById(
-        prefetchRequest.param.materialId as UUID
+      queryKey: queryKeys.blockPack.myOneById(
+        prefetchRequest.param.blockPackId as UUID
       ),
-      queryFn: async () =>
-        await queryFnGetMyMaterialById(prefetchRequest, true),
+      queryFn: async () => queryFnGetMyBlockPackById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -34,24 +36,24 @@ export const prefetchGetMyMaterialById = (initialQueryClient?: QueryClient) => {
   return {
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
-    name: "GET_MY_MATERIAL_BY_ID_PREFETCH" as const,
+    name: "GET_MY_BLOCK_PACK_BY_ID_PREFETCH" as const,
   };
 };
 
-export const prefetchGetMyMaterialAndItsParentById = (
+export const prefetchGetMyBlockPackAndItsParentById = (
   initialQueryClient?: QueryClient
 ) => {
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const prefetchQuery = async (
-    prefetchRequest: GetMyMaterialByIdRequest
+    prefetchRequest: GetMyBlockPackAndItsParentByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myOneById(
-        prefetchRequest.param.materialId as UUID
+      queryKey: queryKeys.blockPack.myOneById(
+        prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialAndItsParentById(prefetchRequest, true),
+        queryFnGetMyBlockPackAndItsParentById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -59,24 +61,24 @@ export const prefetchGetMyMaterialAndItsParentById = (
   return {
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
-    name: "GET_MY_MATERIAL_AND_ITS_PARENT_BY_ID_PREFETCH" as const,
+    name: "GET_MY_BLOCK_PACK_AND_ITS_PARENT_BY_ID_PREFETCH" as const,
   };
 };
 
-export const prefetchGetMyMaterialsByParentSubShelfId = (
+export const prefetchGetMyBlockPacksByParentSubShelfId = (
   initialQueryClient?: QueryClient
 ) => {
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const prefetchQuery = async (
-    prefetchRequest: GetMyMaterialsByParentSubShelfIdRequest
+    prefetchRequest: GetMyBlockPacksByParentSubShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
+      queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
         prefetchRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialsByParentSubShelfId(prefetchRequest, true),
+        queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -84,24 +86,24 @@ export const prefetchGetMyMaterialsByParentSubShelfId = (
   return {
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
-    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID_PREFETCH" as const,
+    name: "GET_MY_BLOCK_PACKS_BY_PARENT_SUB_SHELF_ID_PREFETCH" as const,
   };
 };
 
-export const prefetchGetAllMyMaterialsByRootShelfId = (
+export const prefetchGetAllMyBlockPacksByRootShelfId = (
   initialQueryClient?: QueryClient
 ) => {
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const prefetchQuery = async (
-    prefetchRequest: GetAllMyMaterialsByRootShelfIdRequest
+    prefetchRequest: GetAllMyBlockPacksByRootShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.blockPack.myManyByRootShelfId(
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByRootShelfId(prefetchRequest, true),
+        queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -109,6 +111,6 @@ export const prefetchGetAllMyMaterialsByRootShelfId = (
   return {
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
-    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID_PREFETCH" as const,
+    name: "GET_ALL_MY_BLOCK_PACKS_BY_ROOT_SHELF_ID_PREFETCH" as const,
   };
 };

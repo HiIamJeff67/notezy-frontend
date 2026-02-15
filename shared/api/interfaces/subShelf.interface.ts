@@ -29,6 +29,7 @@ export const GetMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     rooShelfId: z.uuidv4(),
     prevSubShelfId: z.uuidv4().nullable(),
     path: z.array(z.uuidv4()),
+    deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -64,6 +65,7 @@ export const GetMySubShelvesByPrevSubShelfIdResponseSchema =
         rootShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -100,6 +102,7 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
         rooShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -138,6 +141,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           rootShelfId: z.uuidv4(),
           prevSubShelfId: z.uuidv4().nullable(),
           path: z.array(z.uuidv4()),
+          deletedAt: z.coerce.date().nullable(),
           updatedAt: z.coerce.date(),
           createdAt: z.coerce.date(),
         })
@@ -151,6 +155,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           type: z.enum(AllMaterialTypes),
           megaByteSize: z.int64(),
           downloadURL: z.url(),
+          deletedAt: z.coerce.date().nullable(),
           updatedAt: z.coerce.date(),
           createdAt: z.coerce.date(),
         })
@@ -164,6 +169,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           icon: z.enum(AllSupportedBlockPackIcon).nullable(),
           headerBackgroundURL: z.url().nullable(),
           blockCount: z.int32(),
+          deletedAt: z.coerce.date().nullable(),
           updatedAt: z.coerce.date(),
           createdAt: z.coerce.date(),
         })
@@ -332,7 +338,14 @@ export type RestoreMySubShelfByIdRequest = z.infer<
 
 export const RestoreMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    id: z.uuidv4(),
+    name: z.string(),
+    rooShelfId: z.uuidv4(),
+    prevSubShelfId: z.uuidv4().nullable(),
+    path: z.array(z.uuidv4()),
+    deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
   }),
 });
 
@@ -364,9 +377,18 @@ export type RestoreMySubShelvesByIdsRequest = z.infer<
 
 export const RestoreMySubShelvesByIdsResponseSchema =
   NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        name: z.string(),
+        rooShelfId: z.uuidv4(),
+        prevSubShelfId: z.uuidv4().nullable(),
+        path: z.array(z.uuidv4()),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
   });
 
 export type RestoreMySubShelvesByIdsResponse = z.infer<

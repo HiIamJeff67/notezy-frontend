@@ -90,7 +90,7 @@ export const useCreateRootShelf = () => {
       const validatedRequest = CreateRootShelfRequestSchema.parse(request);
       return await CreateRootShelf(validatedRequest);
     },
-    onSuccess: (response, _) => {
+    onSuccess: (response, variables) => {
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -101,7 +101,7 @@ export const useCreateRootShelf = () => {
               node: {
                 __typename: "PrivateRootShelf",
                 id: response.data.id,
-                name: name,
+                name: variables.body.name,
                 subShelfCount: 0,
                 itemCount: 0,
                 lastAnalyzedAt: response.data.lastAnalyzedAt,
@@ -154,6 +154,7 @@ export const useCreateRootShelf = () => {
 
 export const useUpdateMyRootShelfById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: async (
@@ -164,11 +165,25 @@ export const useUpdateMyRootShelfById = () => {
       return await UpdateMyRootShelfById(validatedRequest);
     },
     onSuccess: (response, variables) => {
+      const rootShelfId = variables.body.rootShelfId;
+
       queryClient.invalidateQueries({
         queryKey: queryKeys.rootShelf.myOneById(
           variables.body.rootShelfId as UUID
         ),
       });
+      apolloClient.cache.modify({
+        id: apolloClient.cache.identify({
+          __typename: "PrivateRootShelf",
+          id: rootShelfId,
+        }),
+        fields: {
+          ...(variables.body.values.name && {
+            name: () => variables.body.values.name,
+          }),
+        },
+      });
+
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -201,6 +216,7 @@ export const useUpdateMyRootShelfById = () => {
 
 export const useRestoreMyRootShelfById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: async (
@@ -231,6 +247,44 @@ export const useRestoreMyRootShelfById = () => {
           return false;
         },
         refetchType: "active",
+      });
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existingSearchRootShelves, { readField }) {
+            if (!existingSearchRootShelves) return existingSearchRootShelves;
+
+            const restoredEdge = {
+              __typename: "SearchRootShelfEdge",
+              node: {
+                __typename: "PrivateRootShelf",
+                id: response.data.id,
+                name: response.data.name,
+                subShelfCount: response.data.subShelfCount,
+                itemCount: response.data.itemCount,
+                lastAnalyzedAt: response.data.lastAnalyzedAt,
+                updatedAt: response.data.updatedAt,
+                createdAt: response.data.createdAt,
+              },
+            };
+
+            if (
+              existingSearchRootShelves.searchEdges.some(
+                (edge: any) => readField("id", edge.node) === response.data.id
+              )
+            )
+              return existingSearchRootShelves;
+
+            const updatedEdges = [
+              restoredEdge,
+              ...existingSearchRootShelves.searchEdges,
+            ];
+
+            return {
+              ...existingSearchRootShelves,
+              searchEdges: updatedEdges,
+            };
+          },
+        },
       });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
@@ -264,6 +318,7 @@ export const useRestoreMyRootShelfById = () => {
 
 export const useRestoreMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: async (
@@ -295,6 +350,45 @@ export const useRestoreMyRootShelvesByIds = () => {
           }
 
           return false;
+        },
+      });
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existingSearchRootShelves, { readField }) {
+            if (!existingSearchRootShelves) return existingSearchRootShelves;
+
+            const newEdges = response.data
+              .map(shelf => ({
+                __typename: "SearchRootShelfEdge",
+                node: {
+                  __typename: "PrivateRootShelf",
+                  id: shelf.id,
+                  name: shelf.name,
+                  subShelfCount: shelf.subShelfCount,
+                  itemCount: shelf.itemCount,
+                  lastAnalyzedAt: shelf.lastAnalyzedAt,
+                  updatedAt: shelf.updatedAt,
+                  createdAt: shelf.createdAt,
+                },
+              }))
+              .filter(edge => {
+                const exists = existingSearchRootShelves.searchEdges.some(
+                  (existingEdge: any) =>
+                    readField("id", existingEdge.node) === edge.node.id
+                );
+                return !exists;
+              });
+
+            if (newEdges.length === 0) return existingSearchRootShelves;
+
+            return {
+              ...existingSearchRootShelves,
+              searchEdges: [
+                ...newEdges,
+                ...existingSearchRootShelves.searchEdges,
+              ],
+            };
+          },
         },
       });
       if (response.newAccessToken) {
@@ -329,6 +423,7 @@ export const useRestoreMyRootShelvesByIds = () => {
 
 export const useDeleteMyRootShelfById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: async (
@@ -359,6 +454,22 @@ export const useDeleteMyRootShelfById = () => {
           return false;
         },
         refetchType: "active",
+      });
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existingSearchRootShelves, { readField }) {
+            if (!existingSearchRootShelves) return existingSearchRootShelves;
+
+            const updatedEdges = existingSearchRootShelves.searchEdges.filter(
+              (edge: any) => readField("id", edge.node) !== rootShelfId
+            );
+
+            return {
+              ...existingSearchRootShelves,
+              searchEdges: updatedEdges,
+            };
+          },
+        },
       });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);

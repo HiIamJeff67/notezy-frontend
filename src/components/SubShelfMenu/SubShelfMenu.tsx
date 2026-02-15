@@ -19,17 +19,17 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const languageManager = useLanguage();
   const shelfItemManager = useShelfItem();
 
-  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsStrictLoading(true);
-
-    try {
-      await shelfItemManager.renameEditingSubShelf();
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    } finally {
-      loadingManager.setIsStrictLoading(false);
-    }
-  }, [loadingManager, languageManager, shelfItemManager]);
+  const handleRenameSubShelfOnSubmit = useCallback(
+    async (): Promise<void> =>
+      loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          await shelfItemManager.renameEditingSubShelf();
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [loadingManager, languageManager, shelfItemManager]
+  );
 
   return (
     <SidebarMenu>

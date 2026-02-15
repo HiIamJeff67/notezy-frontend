@@ -26,7 +26,7 @@ export const queryFnGetMyBlockGroupById = async (
   request?: GetMyBlockGroupByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMyBlockGroupByIdRequestSchema.parse(request);
@@ -58,7 +58,7 @@ export const queryFnGetMyBlockGroupAndItsBlocksById = async (
   request?: GetMyBlockGroupAndItsBlocksByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -91,7 +91,7 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
   request?: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -125,7 +125,7 @@ export const queryFnGetMyBlockGroupsByPrevBlockGroupId = async (
   request?: GetMyBlockGroupsByPrevBlockGroupIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -158,7 +158,7 @@ export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
   request?: GetAllMyBlockGroupsByBlockPackIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =

@@ -27,7 +27,8 @@ export const GetMyBlockGroupByIdResponseSchema = NotezyResponseSchema.extend({
     blockPackId: z.uuidv4(),
     prevBlockGroupId: z.uuidv4().nullable(),
     syncBlockGroupId: z.uuidv4().nullable(),
-    megaByteSize: z.float64(),
+    size: z.int64(),
+    deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -61,7 +62,8 @@ export const GetMyBlockGroupAndItsBlocksByIdResponseSchema =
       blockPackId: z.uuidv4(),
       prevBlockGroupId: z.uuidv4().nullable(),
       syncBlockGroupId: z.uuidv4().nullable(),
-      megaByteSize: z.float64(),
+      size: z.int64(),
+      deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
       rawArborizedEditableBlock: z.custom<PartialBlock>(),
@@ -97,7 +99,8 @@ export const GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema =
         blockPackId: z.uuidv4(),
         prevBlockGroupId: z.uuidv4().nullable(),
         syncBlockGroupId: z.uuidv4().nullable(),
-        megaByteSize: z.float64(),
+        size: z.int64(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
         rawArborizedEditableBlock: z.custom<PartialBlock>(),
@@ -134,7 +137,8 @@ export const GetMyBlockGroupsByPrevBlockGroupIdResponseSchema =
         blockPackId: z.uuidv4(),
         prevBlockGroupId: z.uuidv4().nullable(),
         syncBlockGroupId: z.uuidv4().nullable(),
-        megaByteSize: z.float64(),
+        size: z.int64(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -170,7 +174,8 @@ export const GetAllMyBlockGroupsByBlockPackIdResponseSchema =
         blockPackId: z.uuidv4(),
         prevBlockGroupId: z.uuidv4().nullable(),
         syncBlockGroupId: z.uuidv4().nullable(),
-        megaByteSize: z.float64(),
+        size: z.int64(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -376,7 +381,14 @@ export type RestoreMyBlockGroupByIdRequest = z.infer<
 export const RestoreMyBlockGroupByIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
+      id: z.uuidv4(),
+      blockPackId: z.uuidv4(),
+      prevBlockGroupId: z.uuidv4().nullable(),
+      syncBlockGroupId: z.uuidv4().nullable(),
+      size: z.int64(),
+      deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
     }),
   });
 
@@ -403,9 +415,18 @@ export type RestoreMyBlockGroupsByIdsRequest = z.infer<
 
 export const RestoreMyBlockGroupsByIdsResponseSchema =
   NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        blockPackId: z.uuidv4(),
+        prevBlockGroupId: z.uuidv4().nullable(),
+        syncBlockGroupId: z.uuidv4().nullable(),
+        size: z.int64(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
   });
 
 export type RestoreMyBlockGroupsByIdsResponse = z.infer<
@@ -421,6 +442,10 @@ export const DeleteMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     blockGroupId: z.uuidv4(),
+  }),
+  affected: z.object({
+    blockPackId: z.uuidv4(),
+    prevBlockGroupId: z.uuidv4(),
   }),
 });
 
@@ -450,6 +475,10 @@ export const DeleteMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend(
     }),
     body: z.object({
       blockGroupIds: z.array(z.uuidv4()),
+    }),
+    affected: z.object({
+      blockPackIds: z.array(z.uuidv4()),
+      prevBlockGroupIds: z.array(z.uuidv4()),
     }),
   }
 );

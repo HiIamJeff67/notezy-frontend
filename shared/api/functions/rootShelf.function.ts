@@ -12,7 +12,7 @@ export const queryFnGetMyRootShelfById = async (
   request?: GetMyRootShelfByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);

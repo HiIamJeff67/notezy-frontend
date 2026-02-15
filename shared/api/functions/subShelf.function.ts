@@ -23,7 +23,7 @@ export const queryFnGetMySubShelfById = async (
   request?: GetMySubShelfByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
@@ -55,7 +55,7 @@ export const queryFnGetMySubShelvesByPrevSubShelfId = async (
   request?: GetMySubShelvesByPrevSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -88,7 +88,7 @@ export const queryFnGetAllMySubShelvesByRootShelfId = async (
   request?: GetAllMySubShelvesByRootShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
@@ -121,7 +121,7 @@ export const queryFnGetMySubShelvesAndItemsByPrevSubShelfId = async (
   request?: GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =

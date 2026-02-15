@@ -29,6 +29,7 @@ export const GetMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
     icon: z.enum(AllSupportedBlockPackIcon).nullable(),
     headerBackgroundURL: z.url().nullable(),
     blockCount: z.int32(),
+    deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
@@ -63,6 +64,7 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
       icon: z.enum(AllSupportedBlockPackIcon).nullable(),
       headerBackgroundURL: z.url().nullable(),
       blockCount: z.int32(),
+      deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
       rootShelfId: z.uuidv4(),
@@ -70,6 +72,7 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
       parentSubShelfPrevSubShelfId: z.uuidv4().nullable(),
       parentSubShelfName: z.string(),
       parentSubShelfPath: z.array(z.uuidv4()),
+      parentSubShelfDeletedAt: z.coerce.date().nullable(),
       parentSubShelfUpdatedAt: z.coerce.date(),
       parentSubShelfCreatedAt: z.coerce.date(),
     }),
@@ -106,6 +109,7 @@ export const GetMyBlockPacksByParentSubShelfIdResponseSchema =
         icon: z.enum(AllSupportedBlockPackIcon).nullable(),
         headerBackgroundURL: z.url().nullable(),
         blockCount: z.int32(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -143,6 +147,7 @@ export const GetAllMyBlockPacksByRootShelfIdResponseSchema =
         icon: z.enum(AllSupportedBlockPackIcon).nullable(),
         headerBackgroundURL: z.url().nullable(),
         blockCount: z.int32(),
+        deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
       })
@@ -309,7 +314,15 @@ export type RestoreMyBlockPackByIdRequest = z.infer<
 export const RestoreMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend(
   {
     data: z.object({
+      id: z.uuidv4(),
+      parentSubShelfId: z.uuidv4(),
+      name: z.string(),
+      icon: z.enum(AllSupportedBlockPackIcon).nullable(),
+      headerBackgroundURL: z.url().nullable(),
+      blockCount: z.int32(),
+      deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
     }),
   }
 );
@@ -342,9 +355,19 @@ export type RestoreMyBlockPacksByIdsRequest = z.infer<
 
 export const RestoreMyBlockPacksByIdsResponseSchema =
   NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        parentSubShelfId: z.uuidv4(),
+        name: z.string(),
+        icon: z.enum(AllSupportedBlockPackIcon).nullable(),
+        headerBackgroundURL: z.url().nullable(),
+        blockCount: z.int32(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
   });
 
 export type RestoreMyBlockPacksByIdsResponse = z.infer<
