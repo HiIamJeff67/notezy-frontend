@@ -1,5 +1,7 @@
 "use client";
 
+import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
+import MaterialPathItem from "@/components/MaterialPath/MaterialPathItem";
 import WrapPlaceholder from "@/components/Placeholders/WrapPlaceholder";
 import {
   Breadcrumb,
@@ -17,8 +19,6 @@ import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import { useCallback } from "react";
-import ChevronRightIcon from "../icons/ChevronRightIcon";
-import MaterialPathItem from "./MaterialPathItem";
 
 interface MaterialPathProps {
   parentSubShelfId: UUID;

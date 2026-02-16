@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
-import { DNDType } from "@shared/types/enums/dndType.enum";
+import { DNDType } from "@shared/enums/dndType.enum";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { useCallback } from "react";

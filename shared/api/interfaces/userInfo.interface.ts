@@ -1,5 +1,5 @@
-import { Country, UserGender } from "@shared/types/enums";
-import { PrivateUserInfoSchema } from "@shared/types/models";
+import { Country, UserGender } from "@shared/enums";
+import { PrivateUserInfoSchema } from "@shared/types/user.type";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 

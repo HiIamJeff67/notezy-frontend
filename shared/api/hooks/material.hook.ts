@@ -72,7 +72,7 @@ export const useGetMyMaterialById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
+    queryKey: queryKeys.material.oneById(
       hookRequest?.param.materialId as UUID | undefined
     ),
     queryFn: async () => await queryFnGetMyMaterialById(hookRequest),
@@ -87,7 +87,7 @@ export const useGetMyMaterialById = (
     callbackRequest: GetMyMaterialByIdRequest
   ): Promise<GetMyMaterialByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         callbackRequest.param.materialId as UUID
       ),
       queryFn: async () => await queryFnGetMyMaterialById(callbackRequest),
@@ -109,7 +109,7 @@ export const useGetMyMaterialAndItsParentById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
+    queryKey: queryKeys.material.oneById(
       hookRequest?.param.materialId as UUID | undefined
     ),
     queryFn: async () =>
@@ -125,7 +125,7 @@ export const useGetMyMaterialAndItsParentById = (
     callbackRequest: GetMyMaterialAndItsParentByIdRequest
   ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         callbackRequest.param.materialId as UUID
       ),
       queryFn: async () =>
@@ -148,7 +148,7 @@ export const useGetMyMaterialsByParentSubShelfId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByParentSubShelfId(
+    queryKey: queryKeys.material.manyByParentSubShelfId(
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () =>
@@ -164,7 +164,7 @@ export const useGetMyMaterialsByParentSubShelfId = (
     callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
   ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
+      queryKey: queryKeys.material.manyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
@@ -187,7 +187,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByRootShelfId(
+    queryKey: queryKeys.material.manyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () =>
@@ -203,7 +203,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
     callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
   ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.material.manyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
@@ -231,32 +231,18 @@ export const useCreateTextbookMaterial = () => {
       return await CreateTextbookMaterial(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return false;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -299,32 +285,18 @@ export const useCreateNotebookMaterial = () => {
       return await CreateNotebookMaterial(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -366,27 +338,19 @@ export const useUpdateMyMaterialById = () => {
       return await UpdateMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -429,27 +393,17 @@ export const useSaveMyNotebookMaterialById = () => {
       return await SaveMyNotebookMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const targetKeys = [
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -491,45 +445,25 @@ export const useMoveMyMaterialById = () => {
       return await MoveMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const destinationParentSubShelfId =
-        variables.body.destinationParentSubShelfId;
-      const sourceParentSubShelfId = variables.affected.sourceParentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (
-                k[1] === "myOneById" &&
-                (sourceParentSubShelfId === k[2] ||
-                  destinationParentSubShelfId === k[2])
-              )
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (
-                    sourceParentSubShelfId === k[2] ||
-                    destinationParentSubShelfId === k[2]
-                  )
-                    return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const destinationParentSubShelfId = variables.body
+        .destinationParentSubShelfId as UUID;
+      const sourceParentSubShelfId = variables.affected
+        .sourceParentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(sourceParentSubShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(sourceParentSubShelfId),
+        queryKeys.material.manyByParentSubShelfId(destinationParentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -572,35 +506,20 @@ export const useRestoreMyMaterialById = () => {
       return await RestoreMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -643,42 +562,32 @@ export const useRestoreMyMaterialsByIds = () => {
       return await RestoreMyMaterialsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const materialIds = (variables.body.materialIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.map(parentSubShelfId =>
+          queryKeys.material.manyByParentSubShelfId(parentSubShelfId)
+        ),
+        ...materialIds.map(materialId =>
+          queryKeys.material.oneById(materialId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -720,35 +629,20 @@ export const useDeleteMyMaterialById = () => {
       return await DeleteMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -791,42 +685,32 @@ export const useDeleteMyMaterialsByIds = () => {
       return await DeleteMyMaterialsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const materialIds = (variables.body.materialIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.map(parentSubShelfId =>
+          queryKeys.material.manyByParentSubShelfId(parentSubShelfId)
+        ),
+        ...materialIds.map(materialId =>
+          queryKeys.material.oneById(materialId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(

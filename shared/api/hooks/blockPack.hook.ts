@@ -2,6 +2,7 @@ import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById,
   queryFnGetMyBlockPackAndItsParentById,
   queryFnGetMyBlockPackById,
   queryFnGetMyBlockPacksByParentSubShelfId,
@@ -18,6 +19,8 @@ import {
   DeleteMyBlockPacksByIdsResponse,
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetAllMyBlockPacksByRootShelfIdResponse,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackAndItsParentByIdResponse,
   GetMyBlockPackByIdRequest,
@@ -68,7 +71,7 @@ export const useGetMyBlockPackById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockPack.myOneById(
+    queryKey: queryKeys.blockPack.oneById(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () => await queryFnGetMyBlockPackById(hookRequest),
@@ -83,7 +86,7 @@ export const useGetMyBlockPackById = (
     callbackRequest: GetMyBlockPackByIdRequest
   ): Promise<GetMyBlockPackByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockPack.myOneById(
+      queryKey: queryKeys.blockPack.oneById(
         callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () => await queryFnGetMyBlockPackById(callbackRequest),
@@ -105,7 +108,7 @@ export const useGetMyBlockPackAndItsParentById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockPack.myOneById(
+    queryKey: queryKeys.blockPack.oneById(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () =>
@@ -121,7 +124,7 @@ export const useGetMyBlockPackAndItsParentById = (
     callbackRequest: GetMyBlockPackAndItsParentByIdRequest
   ): Promise<GetMyBlockPackAndItsParentByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockPack.myOneById(
+      queryKey: queryKeys.blockPack.oneById(
         callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
@@ -137,6 +140,49 @@ export const useGetMyBlockPackAndItsParentById = (
   };
 };
 
+export const useGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById = (
+  hookRequest?: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
+  options?: Partial<UseQueryOptions>
+) => {
+  const queryClient = getQueryClient();
+
+  const query = useQuery({
+    queryKey: queryKeys.blockPackWithBlockGroupAndBlock.oneById(
+      hookRequest?.param.blockPackId as UUID | undefined
+    ),
+    queryFn: async () =>
+      await queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
+        hookRequest
+      ),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
+  });
+
+  const queryAsync = async (
+    callbackRequest: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest
+  ): Promise<GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse> => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.blockPackWithBlockGroupAndBlock.oneById(
+        callbackRequest.param.blockPackId as UUID
+      ),
+      queryFn: async () =>
+        await queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
+          callbackRequest
+        ),
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    ...query,
+    queryAsync,
+    name: "GET_MY_BLOCK_AND_ITS_BLOCK_GROUPS_AND_THEIR_BLOCS_BY_ID_HOOK" as const,
+  };
+};
+
 export const useGetMyBlockPacksByParentSubShelfId = (
   hookRequest?: GetMyBlockPacksByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
@@ -144,7 +190,7 @@ export const useGetMyBlockPacksByParentSubShelfId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
+    queryKey: queryKeys.blockPack.manyByParentSubShelfId(
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () =>
@@ -160,7 +206,7 @@ export const useGetMyBlockPacksByParentSubShelfId = (
     callbackRequest: GetMyBlockPacksByParentSubShelfIdRequest
   ): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
+      queryKey: queryKeys.blockPack.manyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
@@ -183,7 +229,7 @@ export const useGetAllMyBlockPacksByRootShelfId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockPack.myManyByRootShelfId(
+    queryKey: queryKeys.blockPack.manyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () =>
@@ -199,7 +245,7 @@ export const useGetAllMyBlockPacksByRootShelfId = (
     callbackRequest: GetAllMyBlockPacksByRootShelfIdRequest
   ): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockPack.myManyByRootShelfId(
+      queryKey: queryKeys.blockPack.manyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
@@ -226,32 +272,19 @@ export const useCreateBlockPack = () => {
       return await CreateBlockPack(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(parentSubShelfId),
+        queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -294,27 +327,21 @@ export const useUpdateMyBlockPackById = () => {
       return await UpdateMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackId = variables.body.blockPackId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -356,45 +383,26 @@ export const useMoveMyBlockPackById = () => {
       return await MoveMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackId = variables.body.blockPackId;
-      const destinationParentSubShelfId =
-        variables.body.destinationParentSubShelfId;
-      const sourceParentSubShelfId = variables.affected.sourceParentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelfId":
-              if (
-                k[1] === "myOneById" &&
-                (sourceParentSubShelfId === k[2] ||
-                  destinationParentSubShelfId === k[2])
-              )
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (
-                    sourceParentSubShelfId === k[2] ||
-                    destinationParentSubShelfId === k[2]
-                  )
-                    return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const destinationParentSubShelfId = variables.body
+        .destinationParentSubShelfId as UUID;
+      const sourceParentSubShelfId = variables.affected
+        .sourceParentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(sourceParentSubShelfId),
+        queryKeys.subShelf.oneById(destinationParentSubShelfId),
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockPack.manyByParentSubShelfId(sourceParentSubShelfId),
+        queryKeys.blockPack.manyByParentSubShelfId(destinationParentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -437,51 +445,33 @@ export const useMoveMyBlockPacksByIds = () => {
       return await MoveMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackIdsSet = new Set(
-        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
+      const blockPackIds = (variables.body.blockPackIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const destinationParentSubShelfId = variables.body
+        .destinationParentSubShelfId as UUID;
+      const sourceParentSubShelfIds = (
+        variables.affected.sourceParentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        ...sourceParentSubShelfIds.flatMap(sourceParentSubShelfId => [
+          queryKeys.subShelf.oneById(sourceParentSubShelfId),
+          queryKeys.blockPack.manyByParentSubShelfId(sourceParentSubShelfId),
+        ]),
+        queryKeys.subShelf.oneById(destinationParentSubShelfId),
+        ...blockPackIds.map(blockPackId =>
+          queryKeys.blockPack.oneById(blockPackId)
+        ),
+        queryKeys.blockPack.manyByParentSubShelfId(destinationParentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const destinationParentSubShelfId =
-        variables.body.destinationParentSubShelfId;
-      const sourceParentSubShelfIdsSet = new Set(
-        (variables.affected.sourceParentSubShelfIds || []).filter(
-          Boolean
-        ) as UUID[]
-      );
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelfId":
-              if (
-                k[1] === "myOneById" &&
-                (sourceParentSubShelfIdsSet.has(k[2]) ||
-                  destinationParentSubShelfId === k[2])
-              )
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (
-                    sourceParentSubShelfIdsSet.has(k[2]) ||
-                    destinationParentSubShelfId === k[2]
-                  )
-                    return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -524,35 +514,24 @@ export const useRestoreMyBlockPackById = () => {
       return await RestoreMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackId = variables.body.blockPackId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelfId":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(parentSubShelfId),
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -595,42 +574,36 @@ export const useRestoreMyBlockPacksByIds = () => {
       return await RestoreMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackIdsSet = new Set(
-        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
+      const blockPackIds = (variables.body.blockPackIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.flatMap(parentSubShelfId => [
+          queryKeys.subShelf.oneById(parentSubShelfId),
+          queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        ]),
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelfId":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -673,35 +646,24 @@ export const useDeleteMyBlockPackById = () => {
       return await DeleteMyBlockPackById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackId = variables.body.blockPackId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelfId":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(parentSubShelfId),
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -744,42 +706,36 @@ export const useDeleteMyBlockPacksByIds = () => {
       return await DeleteMyBlockPacksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockPackIdsSet = new Set(
-        (variables.body.blockPackIds || []).filter(Boolean) as UUID[]
+      const blockPackIds = (variables.body.blockPackIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.flatMap(parentSubShelfId => [
+          queryKeys.subShelf.oneById(parentSubShelfId),
+          queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        ]),
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelfId":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "blockPack":
-              switch (k[1]) {
-                case "myOneById":
-                  if (blockPackIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(

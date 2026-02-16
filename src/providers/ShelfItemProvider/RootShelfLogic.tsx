@@ -15,9 +15,9 @@ import {
 import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
 import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import { MaxSearchLimit } from "@shared/constants";
+import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
-import { AnalysisStatus } from "@shared/types/enums";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";

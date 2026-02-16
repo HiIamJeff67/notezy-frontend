@@ -9,6 +9,7 @@ import {
   queryFnGetMyBlockGroupAndItsBlocksById,
   queryFnGetMyBlockGroupById,
   queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId,
+  queryFnGetMyBlockGroupsAndTheirBlocksByIds,
   queryFnGetMyBlockGroupsByPrevBlockGroupId,
 } from "../functions/blockGroup.function";
 import {
@@ -26,6 +27,8 @@ import {
   GetMyBlockGroupByIdResponse,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  GetMyBlockGroupsAndTheirBlocksByIdsRequest,
+  GetMyBlockGroupsAndTheirBlocksByIdsResponse,
   GetMyBlockGroupsByPrevBlockGroupIdRequest,
   GetMyBlockGroupsByPrevBlockGroupIdResponse,
   InsertBlockGroupAndItsBlocksByBlockPackIdRequest,
@@ -75,7 +78,7 @@ export const useGetMyBlockGroupById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.myOneById(
+    queryKey: queryKeys.blockGroup.oneById(
       hookRequest?.param.blockGroupId as UUID | undefined
     ),
     queryFn: async () => await queryFnGetMyBlockGroupById(hookRequest),
@@ -90,7 +93,7 @@ export const useGetMyBlockGroupById = (
     callbackRequest: GetMyBlockGroupByIdRequest
   ): Promise<GetMyBlockGroupByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.myOneById(
+      queryKey: queryKeys.blockGroup.oneById(
         callbackRequest.param.blockGroupId as UUID
       ),
       queryFn: async () => await queryFnGetMyBlockGroupById(callbackRequest),
@@ -112,7 +115,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.myOneById(
+    queryKey: queryKeys.blockGroup.oneById(
       hookRequest?.param.blockGroupId as UUID | undefined
     ),
     queryFn: async () =>
@@ -128,7 +131,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
     callbackRequest: GetMyBlockGroupAndItsBlocksByIdRequest
   ): Promise<GetMyBlockGroupAndItsBlocksByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.myOneById(
+      queryKey: queryKeys.blockGroup.oneById(
         callbackRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
@@ -144,6 +147,77 @@ export const useGetMyBlockGroupAndItsBlocksById = (
   };
 };
 
+export const GetMyBlockGroupsAndTheirBlocksByIds = (
+  hookRequest?: GetMyBlockGroupsAndTheirBlocksByIdsRequest,
+  options?: Partial<UseQueryOptions>
+) => {
+  const queryClient = getQueryClient();
+
+  const query = useQuery({
+    queryKey: queryKeys.blockGroupWithBlock.manyByIds(
+      hookRequest?.param.blockGroupIds as UUID[] | undefined
+    ),
+    queryFn: async () => {
+      const response =
+        await queryFnGetMyBlockGroupsAndTheirBlocksByIds(hookRequest);
+
+      if (hookRequest) {
+        response.data.forEach(blockGroupAndItsBlock => {
+          queryClient.setQueriesData(
+            {
+              queryKey: queryKeys.blockGroupWithBlock.oneById(
+                blockGroupAndItsBlock.id as UUID
+              ),
+            },
+            blockGroupAndItsBlock
+          );
+        });
+      }
+
+      return response;
+    },
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: !!hookRequest && options && options.enabled,
+  });
+
+  const queryAsync = async (
+    callbackRequest: GetMyBlockGroupsAndTheirBlocksByIdsRequest
+  ): Promise<GetMyBlockGroupsAndTheirBlocksByIdsResponse> => {
+    return await queryClient.fetchQuery({
+      queryKey: queryKeys.blockGroupWithBlock.manyByIds(
+        callbackRequest.param.blockGroupIds as UUID[]
+      ),
+      queryFn: async () => {
+        const response =
+          await queryFnGetMyBlockGroupsAndTheirBlocksByIds(callbackRequest);
+
+        response.data.forEach(blockGroupAndItsBlock => {
+          queryClient.setQueriesData(
+            {
+              queryKey: queryKeys.blockGroupWithBlock.oneById(
+                blockGroupAndItsBlock.id as UUID
+              ),
+            },
+            blockGroupAndItsBlock
+          );
+        });
+
+        return response;
+      },
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    ...query,
+    queryAsync,
+    name: "GET_MY_BLOCK_GROUPS_AND_THEIR_BLOCKS_BY_IDS_HOOK" as const,
+  };
+};
+
 export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
   hookRequest?: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   options?: Partial<UseQueryOptions>
@@ -151,7 +225,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+    queryKey: queryKeys.blockGroup.manyByBlockPackId(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () =>
@@ -167,7 +241,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     callbackRequest: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest
   ): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+      queryKey: queryKeys.blockGroup.manyByBlockPackId(
         callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
@@ -192,7 +266,7 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.myManyByPrevBlockGroupId(
+    queryKey: queryKeys.blockGroup.manyByPrevBlockGroupId(
       hookRequest?.param.prevBlockGroupId as UUID | undefined
     ),
     queryFn: async () =>
@@ -208,7 +282,7 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
     callbackRequest: GetMyBlockGroupsByPrevBlockGroupIdRequest
   ): Promise<GetMyBlockGroupsByPrevBlockGroupIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByPrevBlockGroupId(
+      queryKey: queryKeys.blockGroup.manyByPrevBlockGroupId(
         callbackRequest.param.prevBlockGroupId as UUID
       ),
       queryFn: async () =>
@@ -231,7 +305,7 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+    queryKey: queryKeys.blockGroup.manyByBlockPackId(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () =>
@@ -247,7 +321,7 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
     callbackRequest: GetAllMyBlockGroupsByBlockPackIdRequest
   ): Promise<GetAllMyBlockGroupsByBlockPackIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+      queryKey: queryKeys.blockGroup.manyByBlockPackId(
         callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
@@ -275,29 +349,21 @@ export const useInsertBlockGroupByBlockPackId = () => {
       return await InsertBlockGroupByBlockPackId(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const prevBlockGroupId = variables.body.prevBlockGroupId;
-      const blockPackId = variables.body.blockPackId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupId === k[2];
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -340,29 +406,21 @@ export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
       return await InsertBlockGroupAndItsBlocksByBlockPackId(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const prevBlockGroupId = variables.body.prevBlockGroupId;
-      const blockPackId = variables.body.blockPackId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupId === k[2];
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -409,33 +467,24 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
       );
     },
     onSuccess: (response, variables) => {
-      const prevBlockGroupIdsSet = new Set(
-        variables.body.blockGroupContents
-          .map(content => content.prevBlockGroupId)
-          .filter((id): id is UUID => id !== null)
+      const blockPackId = variables.body.blockPackId as UUID;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(variables.body.blockPackId as UUID),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        ...variables.body.blockGroupContents.map(content =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(
+            content.prevBlockGroupId as UUID | null
+          )
+        ),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const blockPackId = variables.body.blockPackId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupIdsSet.has(k[2]);
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -482,29 +531,21 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
       );
     },
     onSuccess: (response, variables) => {
-      const prevBlockGroupId = variables.body.prevBlockGroupId;
-      const blockPackId = variables.body.blockPackId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupId === k[2];
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockPackId = variables.body.blockPackId as UUID;
+      const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -547,40 +588,37 @@ export const useMoveMyBlockGroupsByIds = () => {
       return await MoveMyBlockGroupsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const movableBlockGroupIdsSet = new Set(
-        variables.body.movableBlockGroupIds
+      const movableBlockGroupIds = variables.body
+        .movableBlockGroupIds as UUID[];
+      const movablePrevBlockGroupIds = variables.body
+        .movablePrevBlockGroupIds as (UUID | null)[];
+      const blockPackId = variables.body.blockPackId as UUID;
+      const destinationBlockGroupId = variables.body
+        .destinationBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        ...movableBlockGroupIds.flatMap(movableBlockGroupId => [
+          queryKeys.blockGroup.oneById(movableBlockGroupId),
+          queryKeys.blockGroupWithBlock.oneById(movableBlockGroupId),
+        ]),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        ...movablePrevBlockGroupIds.map(movablePrevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(movablePrevBlockGroupId)
+        ),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(destinationBlockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(
+          destinationBlockGroupId ?? undefined
+        ),
+        queryKeys.blockGroupWithBlock.manyByIds(movableBlockGroupIds),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const movablePrevBlockGroupIdsSet = new Set(
-        variables.body.movablePrevBlockGroupIds
-      );
-      const destinationBlockGroupId = variables.body.destinationBlockGroupId;
-      const blockPackId = variables.body.blockPackId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myOneById":
-                  return movableBlockGroupIdsSet.has(k[0]);
-                case "myManyByBlockPackId":
-                  return blockPackId === k[0];
-                case "myManyByPrevBlockGroupId":
-                  return (
-                    destinationBlockGroupId === k[0] ||
-                    movablePrevBlockGroupIdsSet.has(k[0])
-                  );
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -623,32 +661,22 @@ export const useRestoreMyBlockGroupById = () => {
       return await RestoreMyBlockGroupById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockGroupId = variables.body.blockGroupId;
-      const blockPackId = response.data.blockPackId;
-      const prevBlockGroupId = response.data.prevBlockGroupId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myOneById":
-                  return blockGroupId === k[2];
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockGroupId = variables.body.blockGroupId as UUID;
+      const blockPackId = response.data.blockPackId as UUID;
+      const prevBlockGroupId = response.data.prevBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.oneById(blockGroupId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -691,42 +719,28 @@ export const useRestoreMyBlockGroupsByIds = () => {
       return await RestoreMyBlockGroupsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockGroupIdsSet = new Set(
-        (variables.body.blockGroupIds || []).filter(Boolean) as UUID[]
+      const blockGroupIds = variables.body.blockGroupIds as UUID[];
+      const targetKeys = [
+        ...response.data.flatMap(field => [
+          queryKeys.blockPack.oneById(field.blockPackId as UUID),
+          queryKeys.blockPackWithBlockGroup.oneById(field.blockPackId as UUID),
+          queryKeys.blockPackWithBlockGroupAndBlock.oneById(
+            field.blockPackId as UUID
+          ),
+          queryKeys.blockGroup.manyByBlockPackId(field.blockPackId as UUID),
+          queryKeys.blockGroup.manyByPrevBlockGroupId(
+            field.prevBlockGroupId as UUID | null
+          ),
+        ]),
+        ...blockGroupIds.map(blockGroupId =>
+          queryKeys.blockGroup.oneById(blockGroupId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const blockPackIdsSet = new Set(
-        response.data
-          .map(fields => fields.blockPackId)
-          .filter((id): id is UUID => id !== null)
-      );
-      const prevBlockGroupIdsSet = new Set(
-        response.data
-          .map(fields => fields.blockPackId)
-          .filter((id): id is UUID => id !== null)
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackIdsSet.has(k[2]);
-            case "blockGroup":
-              switch (k[1]) {
-                case "myOneById":
-                  return blockGroupIdsSet.has(k[2]);
-                case "myManyByBlockPackId":
-                  return blockPackIdsSet.has(k[2]);
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupIdsSet.has(k[2]);
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -769,32 +783,25 @@ export const useDeleteMyBlockGroupById = () => {
       return await DeleteMyBlockGroupById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockGroupId = variables.body.blockGroupId;
-      const blockPackId = variables.affected.blockPackId;
-      const prevBlockGroupId = variables.affected.prevBlockGroupId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackId === k[2];
-            case "blockGroup":
-              switch (k[1]) {
-                case "myOneById":
-                  return blockGroupId === k[2];
-                case "myManyByBlockPackId":
-                  return blockPackId === k[2];
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupId === k[2];
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const blockGroupId = variables.body.blockGroupId as UUID;
+      const blockPackId = variables.affected.blockPackId as UUID;
+      const prevBlockGroupId = variables.affected
+        .prevBlockGroupId as UUID | null;
+      const targetKeys = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.oneById(blockGroupId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(blockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -837,36 +844,32 @@ export const useDeleteMyBlockGroupsByIds = () => {
       return await DeleteMyBlockGroupsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const blockGroupIdsSet = new Set(
-        (variables.body.blockGroupIds || []).filter(Boolean) as UUID[]
+      const blockGroupIds = variables.body.blockGroupIds as UUID[];
+      const blockPackIds = variables.affected.blockPackIds as UUID[];
+      const prevBlockGroupIds = variables.affected
+        .prevBlockGroupIds as (UUID | null)[];
+      const targetKeys = [
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
+        ]),
+        ...blockGroupIds.flatMap(blockGroupId => [
+          queryKeys.blockGroup.oneById(blockGroupId),
+          queryKeys.blockGroupWithBlock.oneById(blockGroupId),
+        ]),
+        queryKeys.blockGroupWithBlock.manyByIds(blockGroupIds),
+        ...prevBlockGroupIds.map(prevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const blockPackIdsSet = new Set(variables.affected.blockPackIds);
-      const prevBlockGroupIdsSet = new Set(
-        variables.affected.prevBlockGroupIds
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "blockPack":
-              return k[1] === "myOneById" && blockPackIdsSet.has(k[2]);
-            case "blockGroup":
-              switch (k[1]) {
-                case "myOneById":
-                  return blockGroupIdsSet.has(k[2]);
-                case "myManyByBlockPackId":
-                  return blockPackIdsSet.has(k[2]);
-                case "myManyByPrevBlockGroupId":
-                  return prevBlockGroupIdsSet.has(k[2]);
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(

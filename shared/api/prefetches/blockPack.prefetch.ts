@@ -1,11 +1,13 @@
 import {
   queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById,
   queryFnGetMyBlockPackAndItsParentById,
   queryFnGetMyBlockPackById,
   queryFnGetMyBlockPacksByParentSubShelfId,
 } from "@shared/api/functions/blockPack.function";
 import {
   GetAllMyBlockPacksByRootShelfIdRequest,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackByIdRequest,
   GetMyBlockPacksByParentSubShelfIdRequest,
@@ -25,10 +27,11 @@ export const prefetchGetMyBlockPackById = (
     prefetchRequest: GetMyBlockPackByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockPack.myOneById(
+      queryKey: queryKeys.blockPack.oneById(
         prefetchRequest.param.blockPackId as UUID
       ),
-      queryFn: async () => queryFnGetMyBlockPackById(prefetchRequest, true),
+      queryFn: async () =>
+        await queryFnGetMyBlockPackById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -49,11 +52,11 @@ export const prefetchGetMyBlockPackAndItsParentById = (
     prefetchRequest: GetMyBlockPackAndItsParentByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockPack.myOneById(
+      queryKey: queryKeys.blockPack.oneById(
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        queryFnGetMyBlockPackAndItsParentById(prefetchRequest, true),
+        await queryFnGetMyBlockPackAndItsParentById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -62,6 +65,34 @@ export const prefetchGetMyBlockPackAndItsParentById = (
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
     name: "GET_MY_BLOCK_PACK_AND_ITS_PARENT_BY_ID_PREFETCH" as const,
+  };
+};
+
+export const prefetchGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById = (
+  initialQueryClient?: QueryClient
+) => {
+  const queryClient = initialQueryClient ?? getQueryClient();
+
+  const prefetchQuery = async (
+    prefetchRequest: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest
+  ): Promise<void> => {
+    await queryClient.prefetchQuery({
+      queryKey: queryKeys.blockPackWithBlockGroupAndBlock.oneById(
+        prefetchRequest.param.blockPackId as UUID
+      ),
+      queryFn: async () =>
+        await queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
+          prefetchRequest,
+          true
+        ),
+      staleTime: PrefetchQueryDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    prefetchQuery: prefetchQuery,
+    nextQueryClient: queryClient,
+    name: "GET_MY_BLOCK_PACK_AND_ITS_BLOCK_GROUPS_AND_THEIR_BLOCS_BY_ID_PREFETCH" as const,
   };
 };
 
@@ -74,11 +105,11 @@ export const prefetchGetMyBlockPacksByParentSubShelfId = (
     prefetchRequest: GetMyBlockPacksByParentSubShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockPack.myManyByParentSubShelfId(
+      queryKey: queryKeys.blockPack.manyByParentSubShelfId(
         prefetchRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest, true),
+        await queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -99,11 +130,11 @@ export const prefetchGetAllMyBlockPacksByRootShelfId = (
     prefetchRequest: GetAllMyBlockPacksByRootShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockPack.myManyByRootShelfId(
+      queryKey: queryKeys.blockPack.manyByRootShelfId(
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest, true),
+        await queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

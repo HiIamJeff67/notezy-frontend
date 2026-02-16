@@ -1,6 +1,6 @@
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import TextbookEditor from "@/components/TextbookEditor/TextbookEditor";
-import { isValidUUID } from "@shared/types/uuid_v4.type";
+import { isValidUUID } from "@shared/types/uuidv4.type";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 

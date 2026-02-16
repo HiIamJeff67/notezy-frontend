@@ -7,7 +7,7 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
-import { MaterialType } from "@shared/types/enums";
+import { MaterialType } from "@shared/enums";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";

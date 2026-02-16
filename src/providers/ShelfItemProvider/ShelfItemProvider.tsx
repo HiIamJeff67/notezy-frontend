@@ -7,8 +7,8 @@ import {
   MaxSubShelvesOfRootShelf,
   MaxTriggerValue,
 } from "@shared/constants";
+import { MaterialType } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
-import { MaterialType } from "@shared/types/enums";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";

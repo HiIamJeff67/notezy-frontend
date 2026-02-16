@@ -9,7 +9,7 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { AnalysisStatus } from "@shared/types/enums";
+import { AnalysisStatus } from "@shared/enums";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";

@@ -50,7 +50,7 @@ export const useGetMyRootShelfById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.rootShelf.myOneById(
+    queryKey: queryKeys.rootShelf.oneById(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () => await queryFnGetMyRootShelfById(hookRequest),
@@ -65,7 +65,7 @@ export const useGetMyRootShelfById = (
     callbackRequest: GetMyRootShelfByIdRequest
   ): Promise<GetMyRootShelfByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.rootShelf.myOneById(
+      queryKey: queryKeys.rootShelf.oneById(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () => await queryFnGetMyRootShelfById(callbackRequest),
@@ -166,9 +166,8 @@ export const useUpdateMyRootShelfById = () => {
     },
     onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId;
-
       queryClient.invalidateQueries({
-        queryKey: queryKeys.rootShelf.myOneById(
+        queryKey: queryKeys.rootShelf.oneById(
           variables.body.rootShelfId as UUID
         ),
       });
@@ -227,27 +226,18 @@ export const useRestoreMyRootShelfById = () => {
       return await RestoreMyRootShelfById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const rootShelfId = variables.body.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myManyByRootShelfId" && rootShelfId === k[2])
-                return true;
-            case "material":
-              if (k[1] === "myManyByRootShelfId" && rootShelfId === k[2])
-                return true;
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const rootShelfId = variables.body.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -329,29 +319,22 @@ export const useRestoreMyRootShelvesByIds = () => {
       return await RestoreMyRootShelvesByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const rootShelfIdsSet = new Set(
-        (variables.body.rootShelfIds || []).filter(Boolean) as UUID[]
+      const rootShelfIds = (variables.body.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myManyByRootShelfId" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              if (k[1] === "myManyByRootShelfId" && rootShelfIdsSet.has(k[2]))
-                return true;
-          }
-
-          return false;
-        },
-      });
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -434,27 +417,18 @@ export const useDeleteMyRootShelfById = () => {
       return await DeleteMyRootShelfById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const rootShelfId = variables.body.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myManyByRootShelfId" && rootShelfId === k[2])
-                return true;
-            case "material":
-              if (k[1] === "myManyByRootShelfId" && rootShelfId === k[2])
-                return true;
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const rootShelfId = variables.body.rootShelfId as UUID;
+      const targetKeys = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+        queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -513,29 +487,22 @@ export const useDeleteMyRootShelvesByIds = () => {
       return await DeleteMyRootShelvesByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const rootShelfIdsSet = new Set(
-        (variables.body.rootShelfIds || []).filter(Boolean) as UUID[]
+      const rootShelfIds = (variables.body.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myManyByRootShelfId" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              if (k[1] === "myManyByRootShelfId" && rootShelfIdsSet.has(k[2]))
-                return true;
-          }
-
-          return false;
-        },
-      });
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(

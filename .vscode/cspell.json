@@ -34,7 +34,8 @@
     "uuidv7",
     "recodegen",
     "rseidelsohn",
-    "cmdk"
+    "cmdk",
+    "metas"
   ],
   "ignorePaths": [
     "node_modules/**",

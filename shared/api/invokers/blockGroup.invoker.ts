@@ -13,6 +13,8 @@ import {
   GetMyBlockGroupByIdResponse,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  GetMyBlockGroupsAndTheirBlocksByIdsRequest,
+  GetMyBlockGroupsAndTheirBlocksByIdsResponse,
   GetMyBlockGroupsByPrevBlockGroupIdRequest,
   GetMyBlockGroupsByPrevBlockGroupIdResponse,
   InsertBlockGroupAndItsBlocksByBlockPackIdRequest,
@@ -95,6 +97,42 @@ export async function GetMyBlockGroupAndItsBlocksById(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupAndItsBlocksByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function GetMyBlockGroupsAndTheirBlocksByIds(
+  request: GetMyBlockGroupsAndTheirBlocksByIdsRequest
+): Promise<GetMyBlockGroupsAndTheirBlocksByIdsResponse> {
+  const { blockGroupIds } = request.param;
+  const params = new URLSearchParams();
+  blockGroupIds.forEach(blockGroupId => {
+    params.append("blockGroupIds", blockGroupId);
+  });
+  params.toString();
+  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
+    },
+    credentials: "include",
+  });
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as GetMyBlockGroupsAndTheirBlocksByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

@@ -29,7 +29,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/components/**/*.tsx",
-    "shared/**/*.enums.ts"
+    "shared/enums/*.enums.ts",
+    "src/reducers/*.reducer.ts"
   ],
   "exclude": ["node_modules"]
 }

@@ -3,6 +3,8 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetAllMyBlockPacksByRootShelfIdRequestSchema,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequestSchema,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackAndItsParentByIdRequestSchema,
   GetMyBlockPackByIdRequest,
@@ -12,6 +14,7 @@ import {
 } from "@shared/api/interfaces/blockPack.interface";
 import {
   GetAllMyBlockPacksByRootShelfId,
+  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksById,
   GetMyBlockPackAndItsParentById,
   GetMyBlockPackById,
   GetMyBlockPacksByParentSubShelfId,
@@ -61,6 +64,42 @@ export const queryFnGetMyBlockPackAndItsParentById = async (
     const validatedRequest =
       GetMyBlockPackAndItsParentByIdRequestSchema.parse(request);
     const response = await GetMyBlockPackAndItsParentById(validatedRequest);
+    if (!isCallerServerOnly && response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.accessToken,
+        response.newAccessToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    }
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById = async (
+  request?: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
+  isCallerServerOnly: boolean = false
+) => {
+  if (!request) throw new Error("got undefined request in query function");
+
+  try {
+    const validatedRequest =
+      GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequestSchema.parse(
+        request
+      );
+    const response =
+      await GetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
       LocalStorageManipulator.setItem(

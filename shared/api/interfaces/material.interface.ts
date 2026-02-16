@@ -2,7 +2,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialTypes, MaterialType } from "@shared/types/enums";
+import { AllMaterialTypes, MaterialType } from "@shared/enums";
 import z from "zod";
 
 /* ============================== GetMyMaterialById ============================== */
@@ -246,6 +246,7 @@ export const UpdateMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
     type: z.enum(MaterialType),
   }),
   affected: z.object({
+    rootShelfId: z.uuidv4(),
     parentSubShelfId: z.uuidv4(),
   }),
 });

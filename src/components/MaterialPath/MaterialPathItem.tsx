@@ -12,12 +12,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
-import { MaterialType } from "@shared/types/enums";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfNodes.type";
+import { MaterialType } from "@shared/enums";
+import { MaterialNode } from "@shared/types/itemNodes.type";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 

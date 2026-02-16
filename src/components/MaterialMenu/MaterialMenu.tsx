@@ -3,7 +3,7 @@ import MaterialMenuItem from "@/components/MaterialMenu/MaterialMenuItem";
 import MaterialMenuItemSkeleton from "@/components/MaterialMenu/MaterialMenuItemSkeleton";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
-import { MaterialType } from "@shared/types/enums";
+import { MaterialType } from "@shared/enums";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { Suspense, useCallback } from "react";
 import toast from "react-hot-toast";

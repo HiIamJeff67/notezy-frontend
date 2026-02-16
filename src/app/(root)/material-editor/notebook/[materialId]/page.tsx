@@ -4,7 +4,7 @@ import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyMaterialAndItsParentById } from "@shared/api/prefetches/material.prefetch";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
-import { isValidUUID } from "@shared/types/uuid_v4.type";
+import { isValidUUID } from "@shared/types/uuidv4.type";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";

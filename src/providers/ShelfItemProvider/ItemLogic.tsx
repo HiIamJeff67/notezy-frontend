@@ -11,9 +11,9 @@ import {
   useDeleteMyMaterialById,
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
+import { AnalysisStatus, MaterialType } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
-import { AnalysisStatus, MaterialType } from "@shared/types/enums";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
@@ -189,7 +189,7 @@ export const useItemLogic = ({
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
           type: MaterialType.Notebook,
-          megaByteSize: BigInt(0),
+          size: BigInt(0),
           downloadURL: responseOfCreatingNotebookMaterial.data.downloadURL,
           updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
           createdAt: responseOfCreatingNotebookMaterial.data.createdAt,
@@ -254,7 +254,7 @@ export const useItemLogic = ({
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
           type: MaterialType.Notebook,
-          megaByteSize: BigInt(0),
+          size: BigInt(0),
           downloadURL: responseOfCreatingNotebookMaterial.data.downloadURL,
           updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
           createdAt: responseOfCreatingNotebookMaterial.data.createdAt,

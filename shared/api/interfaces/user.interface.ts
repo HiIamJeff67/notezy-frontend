@@ -1,5 +1,5 @@
-import { UserStatus } from "@shared/types/enums";
-import { PrivateUserSchema, UserDataSchema } from "@shared/types/models";
+import { UserStatus } from "@shared/enums";
+import { PrivateUserSchema, UserDataSchema } from "@shared/types/user.type";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 

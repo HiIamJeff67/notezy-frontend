@@ -3,6 +3,7 @@ import {
   queryFnGetMyBlockGroupAndItsBlocksById,
   queryFnGetMyBlockGroupById,
   queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId,
+  queryFnGetMyBlockGroupsAndTheirBlocksByIds,
   queryFnGetMyBlockGroupsByPrevBlockGroupId,
 } from "@shared/api/functions/blockGroup.function";
 import {
@@ -10,6 +11,7 @@ import {
   GetMyBlockGroupAndItsBlocksByIdRequest,
   GetMyBlockGroupByIdRequest,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  GetMyBlockGroupsAndTheirBlocksByIdsRequest,
   GetMyBlockGroupsByPrevBlockGroupIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
 import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
@@ -27,7 +29,7 @@ export const prefetchGetMyBlockGroupById = (
     prefetchRequest: GetMyBlockGroupByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockGroup.myOneById(
+      queryKey: queryKeys.blockGroup.oneById(
         prefetchRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
@@ -52,7 +54,7 @@ export const prefetchGetMyBlockGroupAndItsBlocksById = (
     prefetchRequest: GetMyBlockGroupAndItsBlocksByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockGroup.myOneById(
+      queryKey: queryKeys.blockGroupWithBlock.oneById(
         prefetchRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
@@ -68,6 +70,48 @@ export const prefetchGetMyBlockGroupAndItsBlocksById = (
   };
 };
 
+export const prefetchGetMyBlockGroupsAndTheirBlocksByIds = (
+  initialQueryClient?: QueryClient
+) => {
+  const queryClient = initialQueryClient ?? getQueryClient();
+
+  const prefetchQuery = async (
+    prefetchRequest: GetMyBlockGroupsAndTheirBlocksByIdsRequest
+  ): Promise<void> => {
+    await queryClient.prefetchQuery({
+      queryKey: queryKeys.blockGroupWithBlock.manyByIds(
+        prefetchRequest.param.blockGroupIds as UUID[]
+      ),
+      queryFn: async () => {
+        const response = await queryFnGetMyBlockGroupsAndTheirBlocksByIds(
+          prefetchRequest,
+          true
+        );
+
+        response.data.map(blockGroupAndItsBlock => {
+          queryClient.setQueriesData(
+            {
+              queryKey: queryKeys.blockGroupWithBlock.oneById(
+                blockGroupAndItsBlock.id as UUID
+              ),
+            },
+            blockGroupAndItsBlock
+          );
+        });
+
+        return response;
+      },
+      staleTime: PrefetchQueryDefaultOptions.staleTime as number,
+    });
+  };
+
+  return {
+    prefetchQuery: prefetchQuery,
+    nextQueryClient: queryClient,
+    name: "GET_MY_BLOCK_GROUPS_AND_THEIR_BLOCKS_BY_IDS_PREFETCH" as const,
+  };
+};
+
 export const prefetchGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
   initialQueryClient?: QueryClient
 ) => {
@@ -77,7 +121,7 @@ export const prefetchGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     prefetchRequest: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+      queryKey: queryKeys.blockGroupWithBlock.manyByBlockPackId(
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
@@ -105,7 +149,7 @@ export const prefetchGetMyBlockGroupsByPrevBlockGroupId = (
     prefetchRequest: GetMyBlockGroupsByPrevBlockGroupIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByPrevBlockGroupId(
+      queryKey: queryKeys.blockGroup.manyByPrevBlockGroupId(
         prefetchRequest.param.prevBlockGroupId as UUID
       ),
       queryFn: async () =>
@@ -130,7 +174,7 @@ export const prefetchGetAllMyBlockGroupsByBlockPackId = (
     prefetchRequest: GetAllMyBlockGroupsByBlockPackIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.blockGroup.myManyByBlockPackId(
+      queryKey: queryKeys.blockGroup.manyByBlockPackId(
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>

@@ -34,8 +34,11 @@ import { useUserData } from "@/hooks/useUserData";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DefaultAvatar1URL } from "@shared/api/invokers/static.invoker";
 import { UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
-import { AllCountries, AllUserGenders } from "@shared/types/enums";
-import { PrivateUserInfo, PrivateUserInfoSchema } from "@shared/types/models";
+import { AllCountries, AllUserGenders } from "@shared/enums";
+import {
+  PrivateUserInfo,
+  PrivateUserInfoSchema,
+} from "@shared/types/user.type";
 import { format } from "date-fns";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";

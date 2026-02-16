@@ -5,7 +5,7 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { AnalysisStatus } from "@shared/types/enums";
+import { AnalysisStatus } from "@shared/enums";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
@@ -93,7 +93,7 @@ export class SubShelfManipulator {
         parentSubShelfId: subShelfNode.id as UUID,
         name: material.name,
         type: material.type,
-        megaByteSize: material.megaByteSize,
+        size: material.size,
         downloadURL: material.downloadURL,
         updatedAt: material.updatedAt,
         createdAt: material.createdAt,

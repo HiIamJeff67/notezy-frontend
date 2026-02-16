@@ -1,5 +1,5 @@
-import { MaterialType } from "@shared/types/enums/materialType.enum";
-import { SupportedBlockPackIcon } from "@shared/types/enums/supportedBlockPackIcon.enum";
+import { MaterialType } from "@shared/enums/materialType.enum";
+import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
 import { UUID } from "crypto";
 
 export interface MaterialNode {
@@ -7,7 +7,7 @@ export interface MaterialNode {
   parentSubShelfId: UUID;
   name: string;
   type: MaterialType;
-  megaByteSize: bigint;
+  size: bigint;
   downloadURL: string;
   updatedAt: Date;
   createdAt: Date;

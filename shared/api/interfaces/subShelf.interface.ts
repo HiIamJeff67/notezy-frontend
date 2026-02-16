@@ -2,8 +2,8 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialTypes } from "@shared/types/enums";
-import { AllSupportedBlockPackIcon } from "@shared/types/enums/supportedBlockPackIcon.enum";
+import { AllMaterialTypes } from "@shared/enums";
+import { AllSupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
 import { z } from "zod";
 
 /* ============================== GetMySubShelfById ============================== */

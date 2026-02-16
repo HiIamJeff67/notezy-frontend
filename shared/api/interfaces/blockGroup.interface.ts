@@ -74,6 +74,44 @@ export type GetMyBlockGroupAndItsBlocksByIdResponse = z.infer<
   typeof GetMyBlockGroupAndItsBlocksByIdResponseSchema
 >;
 
+/* ============================== GetMyBlockGroupsAndTheirBlocksByIds ============================== */
+
+export const GetMyBlockGroupsAndTheirBlocksByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    param: z.object({
+      blockGroupIds: z.array(z.uuidv4()),
+    }),
+  });
+
+export type GetMyBlockGroupsAndTheirBlocksByIdsRequest = z.infer<
+  typeof GetMyBlockGroupsAndTheirBlocksByIdsRequestSchema
+>;
+
+export const GetMyBlockGroupsAndTheirBlocksByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        blockPackId: z.uuidv4(),
+        prevBlockGroupId: z.uuidv4().nullable(),
+        syncBlockGroupId: z.uuidv4().nullable(),
+        size: z.int64(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+        rawArborizedEditableBlock: z.custom<PartialBlock>(),
+      })
+    ),
+  });
+
+export type GetMyBlockGroupsAndTheirBlocksByIdsResponse = z.infer<
+  typeof GetMyBlockGroupsAndTheirBlocksByIdsResponseSchema
+>;
+
 /* ============================== GetMyBlockGroupsAndTheirBlocksByBlockPackId ============================== */
 
 export const GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema =
@@ -445,7 +483,7 @@ export const DeleteMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   affected: z.object({
     blockPackId: z.uuidv4(),
-    prevBlockGroupId: z.uuidv4(),
+    prevBlockGroupId: z.uuidv4().nullable(),
   }),
 });
 

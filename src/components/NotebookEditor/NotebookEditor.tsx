@@ -23,6 +23,7 @@ import {
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { notebookMaterialMetaReducer } from "@/reducers/notebookMaterialMeta.reducer";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -43,17 +44,14 @@ import {
 } from "@shared/api/hooks/material.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
-import { MaterialLoader } from "@shared/lib/materialLoader";
 import {
   ExportableMaterialContentTypes,
   MaterialContentType,
   MaterialType,
-} from "@shared/types/enums";
+} from "@shared/enums";
+import { MaterialLoader } from "@shared/lib/materialLoader";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import {
-  NotebookMaterialMeta,
-  notebookMaterialMetaReducer,
-} from "@shared/types/notebookMaterialMeta.type";
+import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";

@@ -95,6 +95,8 @@ export const APIURLPathDictionary = {
   blockPack: {
     getMyBlockPackById: "blockPack/getMyBlockPackById",
     getMyBlockPackAndItsParentById: "blockPack/getMyBlockPackAndItsParentById",
+    getMyBlockPackAndItsBlockGroupsAndTheirBlocksById:
+      "blockPack/getMyBlockPackAndItsBlockGroupsAndTheirBlocksById",
     getMyBlockPacksByParentSubShelfId:
       "blockPack/getMyBlockPacksByParentSubShelfId",
     getAllMyBlockPacksByRootShelfId:
@@ -112,6 +114,8 @@ export const APIURLPathDictionary = {
     getMyBlockGroupById: "blockGroup/getMyBlockGroupById",
     getMyBlockGroupAndItsBlocksById:
       "blockGroup/getMyBlockGroupAndItsBlocksById",
+    getMyBlockGroupsAndTheirBlocksByIds:
+      "blockGroup/getMyBlockGroupsAndTheirBlocksByIds",
     getMyBlockGroupsAndTheirBlocksByBlockPackId:
       "blockGroup/getMyBlockGroupsAndTheirBlocksByBlockPackId",
     getMyBlockGroupsByPrevBlockGroupId:
