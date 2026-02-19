@@ -9,8 +9,6 @@ import {
   DeleteMyBlockPacksByIdsResponse,
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetAllMyBlockPacksByRootShelfIdResponse,
-  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
-  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackAndItsParentByIdResponse,
   GetMyBlockPackByIdRequest,
@@ -91,38 +89,6 @@ export async function GetMyBlockPackAndItsParentById(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockPackAndItsParentByIdResponse;
-  if (formattedResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
-  request: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest
-): Promise<GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({ blockPackId: blockPackId }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackAndItsBlockGroupsAndTheirBlocksById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

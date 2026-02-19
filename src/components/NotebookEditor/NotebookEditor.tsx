@@ -39,7 +39,6 @@ import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import {
   useGetMyMaterialAndItsParentById,
-  useGetMyMaterialById,
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -67,7 +66,6 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
 
-  const getMyMaterialQuerier = useGetMyMaterialById();
   const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
   const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
 
@@ -96,9 +94,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     const initializeMaterial = async () => {
       try {
         loadingManager.startAsyncTransactionLoading(async () => {
-          const notebookMaterialMeta = await loadNotebookMaterial(
-            meta.id as UUID
-          );
+          const notebookMaterialMeta = await loadNotebookMaterial(meta.id);
 
           if (notebookMaterialMeta) {
             dispatchMeta({
@@ -496,7 +492,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        {getMyMaterialQuerier.isFetching ? (
+        {getMyMaterialAndItsParentQuerier.isFetching ? (
           <StrictLoadingOutlay />
         ) : (
           <BlockNoteView

@@ -1,4 +1,3 @@
-import { PartialBlock } from "@blocknote/core";
 import {
   NotezyRequestSchema,
   NotezyResponseSchema,
@@ -81,55 +80,6 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
 
 export type GetMyBlockPackAndItsParentByIdResponse = z.infer<
   typeof GetMyBlockPackAndItsParentByIdResponseSchema
->;
-
-/* ============================== GetMyBlockPackAndItsBlockGroupsAndTheirBlocksById ============================== */
-
-export const GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1),
-      authorization: z.string().optional(),
-    }),
-    param: z.object({
-      blockPackId: z.uuidv4(),
-    }),
-  });
-
-export type GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest = z.infer<
-  typeof GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequestSchema
->;
-
-export const GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      id: z.uuidv4(),
-      parentSubShelfId: z.uuidv4(),
-      name: z.string(),
-      icon: z.enum(AllSupportedBlockPackIcon).nullable(),
-      headerBackgroundURL: z.url().nullable(),
-      blockCount: z.int32(),
-      deletedAt: z.coerce.date().nullable(),
-      updatedAt: z.coerce.date(),
-      createdAt: z.coerce.date(),
-      blockGroups: z.array(
-        z.object({
-          id: z.uuidv4(),
-          blockPackId: z.uuidv4(),
-          prevBlockGroupId: z.uuidv4().nullable(),
-          syncBlockGroupId: z.uuidv4().nullable(),
-          size: z.int64(),
-          deletedAt: z.coerce.date().nullable(),
-          updatedAt: z.coerce.date(),
-          createdAt: z.coerce.date(),
-          rawArborizedEditableBlock: z.custom<PartialBlock>(),
-        })
-      ),
-    }),
-  });
-
-export type GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse = z.infer<
-  typeof GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponseSchema
 >;
 
 /* ============================== GetMyBlockPacksByParentSubShelfId ============================== */

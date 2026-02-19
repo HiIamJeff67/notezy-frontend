@@ -6,6 +6,7 @@ import { getDefaultBlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { UUID } from "crypto";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -25,7 +26,7 @@ const BlockPackEditorPage = async ({
   searchParams,
 }: BlockPackEditorPageProps) => {
   const { blockPackId } = await params;
-  const { parentSubShelfId } = await searchParams;
+  const { parentSubShelfId, rootShelfId } = await searchParams;
   if (
     !isValidUUID(blockPackId) ||
     !parentSubShelfId ||
@@ -55,7 +56,8 @@ const BlockPackEditorPage = async ({
           <BlockPackEditor
             defaultBlockPackMeta={getDefaultBlockPackMeta(
               blockPackId,
-              parentSubShelfId
+              parentSubShelfId,
+              rootShelfId as UUID | undefined
             )}
           />
         </Suspense>

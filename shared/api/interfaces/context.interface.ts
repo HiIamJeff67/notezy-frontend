@@ -1,4 +1,4 @@
-import { NotezyExceptionSchema } from "@shared/api/exceptions";
+import { NotezyException, NotezyExceptionSchema } from "@shared/api/exceptions";
 import { z } from "zod";
 
 export const NotezyRequestSchema = z.object({
@@ -13,9 +13,25 @@ export type NotezyRequest = z.infer<typeof NotezyRequestSchema>;
 
 export const NotezyResponseSchema = z.object({
   success: z.boolean(),
-  data: z.object({}).nullable(),
+  data: z.any(),
   newAccessToken: z.string().optional(), // exist if the API route is under the refresh access token middleware
   exception: NotezyExceptionSchema.nullable(),
 });
 
 export type NotezyResponse = z.infer<typeof NotezyResponseSchema>;
+
+export const duplicateResponse = <T>(
+  response: NotezyResponse,
+  success?: boolean,
+  data?: T,
+  newAccessToken?: string,
+  exception?: NotezyException | null
+): NotezyResponse => {
+  return {
+    ...response,
+    ...(success !== undefined && { success: success }),
+    ...(data !== undefined && { data: data }),
+    ...(newAccessToken !== undefined && { newAccessToken: newAccessToken }),
+    ...(exception !== undefined && { exception: exception }),
+  };
+};

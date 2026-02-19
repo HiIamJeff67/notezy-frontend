@@ -1,6 +1,11 @@
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 import { NotezyAPIError } from "../exceptions";
@@ -228,8 +233,41 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     queryKey: queryKeys.blockGroup.manyByBlockPackId(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId(hookRequest),
+    queryFn: async () => {
+      const response =
+        await queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId(hookRequest);
+
+      if (hookRequest) {
+        queryClient.setQueriesData(
+          {
+            queryKey: queryKeys.blockGroup.manyByBlockPackId(
+              hookRequest.param.blockPackId as UUID
+            ),
+          },
+          response
+        );
+        response.data.forEach(blockGroup => {
+          queryClient.setQueriesData(
+            {
+              queryKey: queryKeys.block.manyByBlockGroupId(
+                blockGroup.id as UUID
+              ),
+            },
+            response
+          );
+        });
+        queryClient.setQueriesData(
+          {
+            queryKey: queryKeys.block.manyByBlockPackId(
+              hookRequest.param.blockPackId as UUID
+            ),
+          },
+          response
+        );
+      }
+
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -351,13 +389,12 @@ export const useInsertBlockGroupByBlockPackId = () => {
     onSuccess: (response, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
         queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -408,13 +445,12 @@ export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
     onSuccess: (response, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
         queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -468,7 +504,7 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
     },
     onSuccess: (response, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(variables.body.blockPackId as UUID),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
         ...variables.body.blockGroupContents.map(content =>
@@ -478,7 +514,6 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
         ),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -533,13 +568,12 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
     onSuccess: (response, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const prevBlockGroupId = variables.body.prevBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
         queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -595,7 +629,7 @@ export const useMoveMyBlockGroupsByIds = () => {
       const blockPackId = variables.body.blockPackId as UUID;
       const destinationBlockGroupId = variables.body
         .destinationBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         ...movableBlockGroupIds.flatMap(movableBlockGroupId => [
           queryKeys.blockGroup.oneById(movableBlockGroupId),
@@ -612,7 +646,6 @@ export const useMoveMyBlockGroupsByIds = () => {
         queryKeys.blockGroupWithBlock.manyByIds(movableBlockGroupIds),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -664,13 +697,12 @@ export const useRestoreMyBlockGroupById = () => {
       const blockGroupId = variables.body.blockGroupId as UUID;
       const blockPackId = response.data.blockPackId as UUID;
       const prevBlockGroupId = response.data.prevBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.oneById(blockGroupId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
         queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -720,13 +752,10 @@ export const useRestoreMyBlockGroupsByIds = () => {
     },
     onSuccess: (response, variables) => {
       const blockGroupIds = variables.body.blockGroupIds as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...response.data.flatMap(field => [
           queryKeys.blockPack.oneById(field.blockPackId as UUID),
           queryKeys.blockPackWithBlockGroup.oneById(field.blockPackId as UUID),
-          queryKeys.blockPackWithBlockGroupAndBlock.oneById(
-            field.blockPackId as UUID
-          ),
           queryKeys.blockGroup.manyByBlockPackId(field.blockPackId as UUID),
           queryKeys.blockGroup.manyByPrevBlockGroupId(
             field.prevBlockGroupId as UUID | null
@@ -787,7 +816,7 @@ export const useDeleteMyBlockGroupById = () => {
       const blockPackId = variables.affected.blockPackId as UUID;
       const prevBlockGroupId = variables.affected
         .prevBlockGroupId as UUID | null;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.oneById(blockGroupId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),
@@ -795,7 +824,6 @@ export const useDeleteMyBlockGroupById = () => {
         queryKeys.blockGroupWithBlock.oneById(blockGroupId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -848,13 +876,12 @@ export const useDeleteMyBlockGroupsByIds = () => {
       const blockPackIds = variables.affected.blockPackIds as UUID[];
       const prevBlockGroupIds = variables.affected
         .prevBlockGroupIds as (UUID | null)[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
           queryKeys.blockGroup.manyByBlockPackId(blockPackId),
           queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
           queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
         ]),
         ...blockGroupIds.flatMap(blockGroupId => [
           queryKeys.blockGroup.oneById(blockGroupId),

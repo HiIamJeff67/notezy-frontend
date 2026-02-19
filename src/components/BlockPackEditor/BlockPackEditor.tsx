@@ -1,12 +1,13 @@
 "use client";
 
+import { useSidebar } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { blockPackMetaReducer } from "@/reducers/blockPackMeta.reducer";
 import { BlockNoteEditor } from "@blocknote/core";
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
+import { useGetMyBlockPackById } from "@shared/api/hooks/blockPack.hook";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
-import { useReducer, useState, useTransition } from "react";
-import { useSidebar } from "../ui/sidebar";
+import { useEffect, useReducer, useState, useTransition } from "react";
 
 interface BlockPackEditorProps {
   defaultBlockPackMeta: BlockPackMeta;
@@ -19,6 +20,7 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
 
+  const getMyBlockPackQuerier = useGetMyBlockPackById();
   const getMyBlockGroupsAndTheirBlocksQuerier =
     useGetMyBlockGroupsAndTheirBlocksByBlockPackId();
 
@@ -31,6 +33,25 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
     blockPackMetaReducer,
     defaultBlockPackMeta
   );
+
+  useEffect(() => {
+    if (shelfItemManager.isItemNodeEditing(meta.id)) {
+      dispatchMeta({
+        type: "setName",
+        newName: shelfItemManager.editItemNodeName,
+      });
+    }
+  }, [shelfItemManager.editItemNodeName]);
+
+  //   const loadBlockPack = async (
+  //     blockPackId: UUID
+  //   ): Promise<BlockPackMeta | undefined> => {
+  //     const userAgent = navigator.userAgent;
+  //     const accessToken = LocalStorageManipulator.getItemByKey(
+  //       LocalStorageKeys.accessToken
+  //     );
+
+  //   };
 
   return <div>BlockPackEditor</div>;
 };

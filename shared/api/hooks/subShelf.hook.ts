@@ -58,6 +58,7 @@ import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
+  QueryKey,
   useMutation,
   useQuery,
   useQueryClient,
@@ -235,7 +236,7 @@ export const useCreateSubShelfByRootShelfId = () => {
     onSuccess: (response, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -288,7 +289,7 @@ export const useUpdateMySubShelfById = () => {
     onSuccess: (response, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -346,7 +347,7 @@ export const useMoveMySubShelf = () => {
       const childSubShelfIds = (
         variables.affected.childSubShelfIds || []
       ).filter(Boolean) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         ...childSubShelfIds.map(childSubShelfId =>
           queryKeys.subShelf.oneById(childSubShelfId)
@@ -412,7 +413,7 @@ export const useMoveMySubShelves = () => {
       const childSubShelfIds = (
         variables.affected.childSubShelfIds || []
       ).filter(Boolean) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -475,7 +476,7 @@ export const useRestoreMySubShelfById = () => {
       const subShelfId = variables.body.subShelfId as UUID;
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(subShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
@@ -538,7 +539,7 @@ export const useRestoreMySubShelvesByIds = () => {
       const prevSubShelfIds = (variables.affected.prevSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -600,7 +601,7 @@ export const useDeleteMySubShelfById = () => {
       const subShelfId = variables.body.subShelfId as UUID;
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(subShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
@@ -663,7 +664,7 @@ export const useDeleteMySubShelvesByIds = () => {
       const prevSubShelfIds = (variables.affected.prevSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.subShelf.manyByRootShelfId(rootShelfId),

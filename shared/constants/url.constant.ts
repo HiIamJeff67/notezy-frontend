@@ -135,6 +135,22 @@ export const APIURLPathDictionary = {
     deleteMyBlockGroupById: "blockGroup/deleteMyBlockGroupById",
     deleteMyBlockGroupsByIds: "blockGroup/deleteMyBlockGroupsByIds",
   },
+  block: {
+    getMyBlockById: "block/getMyBlockById",
+    getMyBlocksByIds: "block/getMyBlocksByIds",
+    getMyBlocksByBlockGroupId: "block/getMyBlocksByBlockGroupId",
+    getMyBlocksByBlockGroupIds: "block/getMyBlocksByBlockGroupIds",
+    getMyBlocksByBlockPackId: "block/getMyBlocksByBlockPackId",
+    getAllMyBlocks: "block/getAllMyBlocks",
+    insertBlock: "block/insertBlock",
+    insertBlocks: "block/insertBlocks",
+    updateMyBlockById: "block/updateMyBlockById",
+    updateMyBlocksByIds: "block/updateMyBlocksByIds",
+    restoreMyBlockById: "block/restoreMyBlockById",
+    restoreMyBlocksByIds: "block/restoreMyBlocksByIds",
+    deleteMyBlockById: "block/deleteMyBlockById",
+    deleteMyBlocksByIds: "block/deleteMyBlocksByIds",
+  },
 };
 
 /* ============================== Frontend Web URL ============================== */

@@ -39,7 +39,12 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -165,11 +170,9 @@ export const useUpdateMyRootShelfById = () => {
       return await UpdateMyRootShelfById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const rootShelfId = variables.body.rootShelfId;
+      const rootShelfId = variables.body.rootShelfId as UUID;
       queryClient.invalidateQueries({
-        queryKey: queryKeys.rootShelf.oneById(
-          variables.body.rootShelfId as UUID
-        ),
+        queryKey: queryKeys.rootShelf.oneById(rootShelfId),
       });
       apolloClient.cache.modify({
         id: apolloClient.cache.identify({
@@ -227,7 +230,7 @@ export const useRestoreMyRootShelfById = () => {
     },
     onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
         queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -322,7 +325,7 @@ export const useRestoreMyRootShelvesByIds = () => {
       const rootShelfIds = (variables.body.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -418,7 +421,7 @@ export const useDeleteMyRootShelfById = () => {
     },
     onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
         queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -490,7 +493,7 @@ export const useDeleteMyRootShelvesByIds = () => {
       const rootShelfIds = (variables.body.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.subShelf.manyByRootShelfId(rootShelfId),

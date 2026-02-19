@@ -61,7 +61,12 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -110,7 +115,8 @@ export const useGetMyMaterialAndItsParentById = (
 
   const query = useQuery({
     queryKey: queryKeys.material.oneById(
-      hookRequest?.param.materialId as UUID | undefined
+      hookRequest?.param.materialId as UUID | undefined,
+      true
     ),
     queryFn: async () =>
       await queryFnGetMyMaterialAndItsParentById(hookRequest),
@@ -233,7 +239,7 @@ export const useCreateTextbookMaterial = () => {
     onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -287,7 +293,7 @@ export const useCreateNotebookMaterial = () => {
     onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -341,7 +347,7 @@ export const useUpdateMyMaterialById = () => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -395,7 +401,7 @@ export const useSaveMyNotebookMaterialById = () => {
     onSuccess: (response, variables) => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
       ];
@@ -451,7 +457,7 @@ export const useMoveMyMaterialById = () => {
       const sourceParentSubShelfId = variables.affected
         .sourceParentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(sourceParentSubShelfId),
         queryKeys.material.oneById(materialId),
@@ -509,7 +515,7 @@ export const useRestoreMyMaterialById = () => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -571,7 +577,7 @@ export const useRestoreMyMaterialsByIds = () => {
       const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.material.manyByRootShelfId(rootShelfId),
@@ -632,7 +638,7 @@ export const useDeleteMyMaterialById = () => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -694,7 +700,7 @@ export const useDeleteMyMaterialsByIds = () => {
       const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.material.manyByRootShelfId(rootShelfId),

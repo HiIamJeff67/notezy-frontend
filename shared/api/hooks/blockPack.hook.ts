@@ -2,7 +2,6 @@ import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetAllMyBlockPacksByRootShelfId,
-  queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById,
   queryFnGetMyBlockPackAndItsParentById,
   queryFnGetMyBlockPackById,
   queryFnGetMyBlockPacksByParentSubShelfId,
@@ -19,8 +18,6 @@ import {
   DeleteMyBlockPacksByIdsResponse,
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetAllMyBlockPacksByRootShelfIdResponse,
-  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
-  GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackAndItsParentByIdResponse,
   GetMyBlockPackByIdRequest,
@@ -60,7 +57,12 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -109,7 +111,8 @@ export const useGetMyBlockPackAndItsParentById = (
 
   const query = useQuery({
     queryKey: queryKeys.blockPack.oneById(
-      hookRequest?.param.blockPackId as UUID | undefined
+      hookRequest?.param.blockPackId as UUID | undefined,
+      true
     ),
     queryFn: async () =>
       await queryFnGetMyBlockPackAndItsParentById(hookRequest),
@@ -137,49 +140,6 @@ export const useGetMyBlockPackAndItsParentById = (
     ...query,
     queryAsync,
     name: "GET_MY_BLOCK_PACK_AND_ITS_PARENT_BY_ID_HOOK" as const,
-  };
-};
-
-export const useGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById = (
-  hookRequest?: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest,
-  options?: Partial<UseQueryOptions>
-) => {
-  const queryClient = getQueryClient();
-
-  const query = useQuery({
-    queryKey: queryKeys.blockPackWithBlockGroupAndBlock.oneById(
-      hookRequest?.param.blockPackId as UUID | undefined
-    ),
-    queryFn: async () =>
-      await queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
-        hookRequest
-      ),
-    staleTime: UseQueryDefaultOptions.staleTime,
-    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
-    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
-    ...options,
-    enabled: !!hookRequest && options && options.enabled,
-  });
-
-  const queryAsync = async (
-    callbackRequest: GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdRequest
-  ): Promise<GetMyBlockPackAndItsBlockGroupsAndTheirBlocksByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockPackWithBlockGroupAndBlock.oneById(
-        callbackRequest.param.blockPackId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyBlockPackAndItsBlockGroupsAndTheirBlocksById(
-          callbackRequest
-        ),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
-  return {
-    ...query,
-    queryAsync,
-    name: "GET_MY_BLOCK_AND_ITS_BLOCK_GROUPS_AND_THEIR_BLOCS_BY_ID_HOOK" as const,
   };
 };
 
@@ -274,7 +234,7 @@ export const useCreateBlockPack = () => {
     onSuccess: (response, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(parentSubShelfId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
@@ -330,12 +290,11 @@ export const useUpdateMyBlockPackById = () => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -389,7 +348,7 @@ export const useMoveMyBlockPackById = () => {
       const sourceParentSubShelfId = variables.affected
         .sourceParentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(sourceParentSubShelfId),
         queryKeys.subShelf.oneById(destinationParentSubShelfId),
@@ -454,7 +413,7 @@ export const useMoveMyBlockPacksByIds = () => {
         variables.affected.sourceParentSubShelfIds || []
       ).filter(Boolean) as UUID[];
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         ...sourceParentSubShelfIds.flatMap(sourceParentSubShelfId => [
           queryKeys.subShelf.oneById(sourceParentSubShelfId),
@@ -517,14 +476,13 @@ export const useRestoreMyBlockPackById = () => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(parentSubShelfId),
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
       ];
       Promise.all(
@@ -583,7 +541,7 @@ export const useRestoreMyBlockPacksByIds = () => {
       const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.blockPack.manyByRootShelfId(rootShelfId),
@@ -595,7 +553,6 @@ export const useRestoreMyBlockPacksByIds = () => {
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
           queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
           queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         ]),
       ];
@@ -649,14 +606,13 @@ export const useDeleteMyBlockPackById = () => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(parentSubShelfId),
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-        queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
       ];
       Promise.all(
@@ -715,7 +671,7 @@ export const useDeleteMyBlockPacksByIds = () => {
       const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const targetKeys = [
+      const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
           queryKeys.blockPack.manyByRootShelfId(rootShelfId),
@@ -727,7 +683,6 @@ export const useDeleteMyBlockPacksByIds = () => {
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
           queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
-          queryKeys.blockPackWithBlockGroupAndBlock.oneById(blockPackId),
           queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         ]),
       ];

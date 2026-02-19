@@ -13,20 +13,23 @@ export const queryKeys = {
   rootShelf: {
     all: () => ["rootShelf"] as const,
     oneById: (rootShelfId: UUID | undefined) =>
-      ["rootShelf", "oneById", rootShelfId?.toString()] as const,
+      ["rootShelf", "oneById", rootShelfId] as const,
   },
   subShelf: {
     all: () => ["subShelf"] as const,
     oneById: (subShelfId?: UUID) =>
-      ["subShelf", "oneById", subShelfId?.toString()] as const,
+      ["subShelf", "oneById", subShelfId] as const,
     manyByPrevSubShelfId: (prevSubShelfId?: UUID | null) =>
-      ["subShelf", "manyByPrevSubShelfId", prevSubShelfId?.toString()] as const,
+      ["subShelf", "manyByPrevSubShelfId", prevSubShelfId] as const,
     manyByRootShelfId: (rootShelfId?: UUID) =>
-      ["subShelf", "manyByRootShelfId", rootShelfId?.toString()] as const,
+      ["subShelf", "manyByRootShelfId", rootShelfId] as const,
   },
   material: {
     all: () => ["material"] as const,
-    oneById: (id?: UUID) => ["material", "oneById", id] as const,
+    oneById: (id?: UUID, withParent: boolean = false) =>
+      withParent
+        ? (["material", "oneById", id, "withParent"] as const)
+        : (["material", "oneById", id] as const),
     manyByParentSubShelfId: (parentSubShelfId?: UUID) =>
       ["material", "manyByParentSubShelfId", parentSubShelfId] as const,
     manyByRootShelfId: (rootShelfId?: UUID) =>
@@ -34,7 +37,10 @@ export const queryKeys = {
   },
   blockPack: {
     all: () => ["blockPack"] as const,
-    oneById: (id?: UUID) => ["blockPack", "oneById", id] as const,
+    oneById: (id?: UUID, withParent: boolean = false) =>
+      withParent
+        ? (["blockPack", "oneById", id, "withParent"] as const)
+        : (["blockPack", "oneById", id] as const),
     manyByParentSubShelfId: (parentSubShelfId?: UUID) =>
       ["blockPack", "manyByParentSubShelfId", parentSubShelfId] as const,
     manyByRootShelfId: (rootShelfId?: UUID) =>
@@ -48,22 +54,36 @@ export const queryKeys = {
     manyByPrevBlockGroupId: (prevBlockGroupId?: UUID | null) =>
       ["blockGroup", "manyByPrevBlockGroupId", prevBlockGroupId] as const,
   },
-  block: {},
+  block: {
+    all: () => ["block"] as const,
+    myAll: () => ["block", "myAll"] as const,
+    oneById: (id?: UUID) => ["block", "oneById", id] as const,
+    manyByIds: (ids?: UUID[]) =>
+      [
+        "block",
+        "manyByIds",
+        ids && ids.length > 0 ? ids.slice().sort().join(",") : undefined,
+      ] as const,
+    manyByBlockGroupId: (blockGroupId?: UUID) =>
+      ["block", "manyByBlockGroupId", blockGroupId] as const,
+    manyByBlockGroupIds: (blockGroupIds?: UUID[]) =>
+      [
+        "block",
+        "manyByBlockGroupIds",
+        blockGroupIds && blockGroupIds.length > 0
+          ? blockGroupIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+    manyByBlockPackId: (blockPackId?: UUID) =>
+      ["block", "manyByBlockPackId", blockPackId] as const,
+  },
   blockPackWithBlockGroup: {
-    all: () => [] as const,
+    all: () => ["blockPackWithBlockGroup"] as const,
     oneById: (blockPackId?: UUID) =>
       ["blockPackWithBlockGroup", "oneById", blockPackId] as const,
   },
-  blockPackWithBlockGroupAndBlock: {
-    all: () => [] as const,
-    oneById: (blockPackId?: UUID) => [
-      "blockPackWithBlockGroupAndBlock",
-      "oneById",
-      blockPackId,
-    ],
-  },
   blockGroupWithBlock: {
-    all: () => [] as const,
+    all: () => ["blockGroupWithBlock"] as const,
     oneById: (blockGroupId?: UUID) =>
       ["blockGroupWithBlock", "oneById", blockGroupId] as const,
     manyByIds: (blockGroupIds?: UUID[]) =>

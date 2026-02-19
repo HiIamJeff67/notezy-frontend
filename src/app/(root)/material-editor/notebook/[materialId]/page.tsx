@@ -15,8 +15,8 @@ interface NotebookMaterialEditorPageProps {
     materialId: string;
   }>;
   searchParams: Promise<{
-    parentSubShelfId?: string;
-    rootShelfId?: string;
+    parentSubShelfId: string;
+    rootShelfId: string;
   }>;
 }
 
@@ -25,11 +25,11 @@ const NotebookMaterialEditorPage = async ({
   searchParams,
 }: NotebookMaterialEditorPageProps) => {
   const { materialId } = await params;
-  const { parentSubShelfId } = await searchParams;
+  const { parentSubShelfId, rootShelfId } = await searchParams;
   if (
     !isValidUUID(materialId) ||
-    !parentSubShelfId ||
-    !isValidUUID(parentSubShelfId)
+    !isValidUUID(parentSubShelfId) ||
+    !isValidUUID(rootShelfId)
   )
     return notFound();
 
@@ -55,7 +55,8 @@ const NotebookMaterialEditorPage = async ({
           <NotebookEditor
             defaultMeta={getDefaultNotebookMaterialMeta(
               materialId,
-              parentSubShelfId
+              parentSubShelfId,
+              rootShelfId
             )}
           />
         </Suspense>
