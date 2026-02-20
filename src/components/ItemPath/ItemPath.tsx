@@ -1,7 +1,7 @@
 "use client";
 
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
-import MaterialPathItem from "@/components/MaterialPath/MaterialPathItem";
+import ItemPathItem from "@/components/ItemPath/ItemPathItem";
 import WrapPlaceholder from "@/components/Placeholders/WrapPlaceholder";
 import {
   Breadcrumb,
@@ -15,24 +15,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ItemType } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import { useCallback } from "react";
 
-interface MaterialPathProps {
+interface ItemPathProps {
   parentSubShelfId: UUID;
-  materialId: UUID;
+  itemId: UUID;
+  itemType: ItemType;
   path: UUID[];
   summary?: ShelfTreeSummary;
 }
 
-const MaterialPath = ({
+const ItemPath = ({
   parentSubShelfId,
-  materialId,
+  itemId,
+  itemType,
   path,
   summary,
-}: MaterialPathProps) => {
+}: ItemPathProps) => {
   if (!summary) return <></>;
 
   const tracePathInSummary = useCallback((): SubShelfNode[] => {
@@ -83,26 +86,39 @@ const MaterialPath = ({
           </DropdownMenu>
         </BreadcrumbItem>
         {subShelfNodes.map((subShelfNode, index) => {
-          if (
-            index === subShelfNodes.length - 1 &&
-            subShelfNode.materialNodes[materialId]
-          ) {
-            return (
-              <WrapPlaceholder key={index}>
-                <MaterialPathItem
-                  key={subShelfNode.id}
-                  rootShelfNode={summary.root}
-                  subShelfNode={subShelfNode}
-                />
-                <BreadcrumbSeparator />
-                <BreadcrumbItem className="select-none cursor-pointer hover:underline text-secondary-foreground/80 font-semibold">
-                  {subShelfNode.materialNodes[materialId].name}
-                </BreadcrumbItem>
-              </WrapPlaceholder>
-            );
+          if (index === subShelfNodes.length - 1) {
+            let itemName: string | undefined = undefined;
+
+            switch (itemType) {
+              case "BlockPack":
+                if (subShelfNode.blockPackNodes[itemId])
+                  itemName = subShelfNode.blockPackNodes[itemId].name;
+                break;
+              case "Material":
+                if (subShelfNode.materialNodes[itemId])
+                  itemName = subShelfNode.materialNodes[itemId].name;
+                break;
+            }
+
+            if (itemName) {
+              return (
+                <WrapPlaceholder key={index}>
+                  <ItemPathItem
+                    key={subShelfNode.id}
+                    rootShelfNode={summary.root}
+                    subShelfNode={subShelfNode}
+                  />
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem className="select-none cursor-pointer hover:underline text-secondary-foreground/80 font-semibold">
+                    {itemName}
+                  </BreadcrumbItem>
+                </WrapPlaceholder>
+              );
+            }
           }
+
           return (
-            <MaterialPathItem
+            <ItemPathItem
               key={subShelfNode.id}
               rootShelfNode={summary.root}
               subShelfNode={subShelfNode}
@@ -114,4 +130,4 @@ const MaterialPath = ({
   );
 };
 
-export default MaterialPath;
+export default ItemPath;

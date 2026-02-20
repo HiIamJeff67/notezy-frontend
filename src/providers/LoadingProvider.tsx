@@ -8,7 +8,11 @@ interface LoadingContextType {
   isLaxLoading: boolean;
   setIsLaxLoading: (state: boolean) => void;
   startSyncTransactionLoading: <T>(fn: () => T) => T;
-  startAsyncTransactionLoading: <T>(fn: () => Promise<T>) => Promise<T>;
+  startAsyncTransactionLoading: <T>(
+    fn: () => Promise<T>,
+    loadingTimeout?: number,
+    errorTimeout?: number
+  ) => Promise<T>;
   isAnyLoading: boolean;
 }
 
@@ -56,23 +60,81 @@ export const LoadingProvider = ({
     try {
       return fn();
     } finally {
-      strictLoadingCounterRef.current--;
+      strictLoadingCounterRef.current = Math.min(
+        0,
+        strictLoadingCounterRef.current - 1
+      );
       if (strictLoadingCounterRef.current === 0) {
         _setIsStrictLoading(false);
       }
     }
   };
 
-  const startAsyncTransactionLoading = async <T,>(fn: () => Promise<T>) => {
+  const startAsyncTransactionLoading = async <T,>(
+    fn: () => Promise<T>,
+    loadingTimeout: number = Infinity,
+    errorTimeout: number = Infinity
+  ) => {
     _setIsStrictLoading(true);
     strictLoadingCounterRef.current++;
-    try {
-      return await fn();
-    } finally {
-      strictLoadingCounterRef.current--;
-      if (strictLoadingCounterRef.current === 0) {
-        _setIsStrictLoading(false);
+
+    let isLoadingActive: boolean = true;
+    let loadingTimer: NodeJS.Timeout | null = null;
+    let errorTimer: NodeJS.Timeout | null = null;
+
+    const stopLoading = () => {
+      if (isLoadingActive) {
+        isLoadingActive = false;
+        strictLoadingCounterRef.current = Math.max(
+          0,
+          strictLoadingCounterRef.current - 1
+        );
+        if (strictLoadingCounterRef.current === 0) {
+          _setIsStrictLoading(false);
+        }
+        if (loadingTimer) clearTimeout(loadingTimeout);
+        if (errorTimeout) clearTimeout(errorTimeout);
       }
+    };
+
+    if (loadingTimeout !== Infinity) {
+      loadingTimer = setTimeout(() => {
+        if (isLoadingActive) {
+          console.warn(
+            `[LoadingProvider] Loading UI timed out after ${loadingTimeout} ms`
+          );
+          stopLoading();
+        }
+      }, loadingTimeout);
+    }
+
+    try {
+      let promise = fn();
+
+      if (errorTimeout !== Infinity) {
+        promise = Promise.race([
+          promise,
+          new Promise<T>((_, reject) => {
+            errorTimer = setTimeout(() => {
+              reject(
+                new Error(`Transaction hard timed out after ${errorTimeout}ms`)
+              );
+            }, errorTimeout);
+          }),
+        ]);
+      }
+
+      const result = await promise;
+
+      // resolve the loading states first before heavy response or result
+      // from the async function being returned
+      stopLoading();
+
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      stopLoading();
     }
   };
 

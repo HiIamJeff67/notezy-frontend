@@ -2,6 +2,8 @@ import { MaterialType } from "@shared/enums/materialType.enum";
 import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
 import { UUID } from "crypto";
 
+export type ItemType = "BlockPack" | "Material";
+
 export interface MaterialNode {
   id: UUID;
   parentSubShelfId: UUID;
@@ -13,7 +15,7 @@ export interface MaterialNode {
   createdAt: Date;
 
   isOpen: boolean;
-  nodeType: "MATERIAL";
+  nodeType: "Material";
 }
 
 export interface BlockPackNode {
@@ -27,5 +29,5 @@ export interface BlockPackNode {
   createdAt: Date;
 
   isOpen: boolean;
-  nodeType: "BLOCK_PACK";
+  nodeType: "BlockPack";
 }

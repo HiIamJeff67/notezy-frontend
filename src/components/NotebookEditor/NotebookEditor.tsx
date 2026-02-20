@@ -4,7 +4,6 @@ import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import XIcon from "@/components/icons/XIcon";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import MaterialPath from "@/components/MaterialPath/MaterialPath";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +32,9 @@ import {
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
+import { loadFileFromDownloadURL } from "@/util/loadFiles";
 import { LocalStorageManipulator } from "@/util/localStorageManipulator";
+import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
@@ -48,12 +49,12 @@ import {
   MaterialContentType,
   MaterialType,
 } from "@shared/enums";
-import { MaterialLoader } from "@shared/lib/materialLoader";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import ItemPath from "../ItemPath/ItemPath";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
@@ -93,22 +94,27 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   useEffect(() => {
     const initializeMaterial = async () => {
       try {
-        loadingManager.startAsyncTransactionLoading(async () => {
-          const notebookMaterialMeta = await loadNotebookMaterial(meta.id);
+        loadingManager.startAsyncTransactionLoading(
+          async () => {
+            const notebookMaterialMeta = await loadNotebookMaterial(meta.id);
 
-          if (notebookMaterialMeta) {
-            dispatchMeta({
-              type: "init",
-              payload: notebookMaterialMeta,
-            });
-            setEditor(
-              BlockNoteEditor.create({
-                initialContent:
-                  notebookMaterialMeta.initialContent ?? ([] as PartialBlock[]),
-              })
-            );
-          }
-        });
+            if (notebookMaterialMeta) {
+              dispatchMeta({
+                type: "init",
+                payload: notebookMaterialMeta,
+              });
+              setEditor(
+                BlockNoteEditor.create({
+                  initialContent:
+                    notebookMaterialMeta.initialContent ??
+                    ([] as PartialBlock[]),
+                })
+              );
+            }
+          },
+          3000,
+          5000
+        );
       } catch (error) {
         toast.error(languageManager.tError(error));
       }
@@ -143,10 +149,14 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       return undefined;
     }
 
-    const parsedContent = await MaterialLoader.loadMaterialContent(
-      responseOfGettingMaterial.data.downloadURL,
-      AllDefaultNotebookInitialContents
+    const fileContentString = await loadFileFromDownloadURL(
+      responseOfGettingMaterial.data.downloadURL
     );
+    const parsedContent = (
+      fileContentString && fileContentString.trim() !== ""
+        ? JSON.parse(fileContentString)
+        : choiceRandom(AllDefaultNotebookInitialContents)
+    ) as PartialBlock[];
 
     return {
       id: responseOfGettingMaterial.data.id as UUID,
@@ -162,7 +172,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     };
   };
 
-  if (!editor || !meta.parentId) {
+  if (!editor || !meta.id || !meta.parentId || !meta.rootId) {
     return undefined;
   }
 
@@ -485,9 +495,10 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           </MenubarMenu>
         </Menubar>
       </header>
-      <MaterialPath
+      <ItemPath
         parentSubShelfId={meta.parentId}
-        materialId={meta.id}
+        itemId={meta.id}
+        itemType="Material"
         path={meta.path}
         summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />

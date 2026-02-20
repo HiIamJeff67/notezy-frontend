@@ -35,7 +35,8 @@
     "recodegen",
     "rseidelsohn",
     "cmdk",
-    "metas"
+    "metas",
+    "prefetcher"
   ],
   "ignorePaths": [
     "node_modules/**",

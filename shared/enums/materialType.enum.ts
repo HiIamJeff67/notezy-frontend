@@ -22,8 +22,6 @@ export const AllMaterialContentTypes = Object.values(MaterialContentType);
 export enum MaterialType {
   Textbook = "Textbook",
   Notebook = "Notebook",
-  LearningCard = "LearningCard",
-  Workflow = "Workflow",
 }
 
 export const AllMaterialTypes = Object.values(MaterialType);
@@ -36,11 +34,6 @@ export const ImportableMaterialContentTypes = {
     MaterialContentType.HTML,
     MaterialContentType.JSON,
   ],
-  [MaterialType.LearningCard]: [
-    MaterialContentType.HTML,
-    MaterialContentType.JSON,
-  ],
-  [MaterialType.Workflow]: [MaterialContentType.JSON],
 };
 
 export const ExportableMaterialContentTypes = {
@@ -56,15 +49,5 @@ export const ExportableMaterialContentTypes = {
     MaterialContentType.JSON,
     MaterialContentType.PDF,
     MaterialContentType.DOCX,
-  ],
-  [MaterialType.LearningCard]: [
-    MaterialContentType.HTML,
-    MaterialContentType.JSON,
-  ],
-  [MaterialType.Workflow]: [
-    MaterialContentType.PNG,
-    MaterialContentType.JPG,
-    MaterialContentType.JPEG,
-    MaterialContentType.SVG,
   ],
 } as const satisfies Record<MaterialType, readonly MaterialContentType[]>;

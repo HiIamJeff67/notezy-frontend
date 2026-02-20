@@ -176,15 +176,15 @@ export const WebURLPathDictionary = {
   root: {
     materialEditor: {
       _: "material-editor",
-      notebook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
-      textbook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
+      notebook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
+      textbook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
       notFound: "material-editor/not-found",
     },
     blockPackEditor: {
-      _: (blockPackId: UUID, parentSubShelfId: UUID) =>
-        `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}`,
+      _: (blockPackId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
     },
     documents: {
       _: "documents",

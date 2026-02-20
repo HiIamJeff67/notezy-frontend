@@ -25,7 +25,11 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
   const handleBlockPackOnClick = useCallback(() => {
     try {
       router.push(
-        WebURLPathDictionary.root.blockPackEditor._(current.id, parent.id)
+        WebURLPathDictionary.root.blockPackEditor._(
+          current.id,
+          parent.id,
+          parent.rootShelfId
+        )
       );
       shelfItemManager.toggleBlockPack(current);
     } catch (error) {

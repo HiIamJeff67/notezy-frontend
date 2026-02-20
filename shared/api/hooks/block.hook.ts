@@ -11,8 +11,10 @@ import {
 import {
   DeleteMyBlockByIdRequest,
   DeleteMyBlockByIdRequestSchema,
+  DeleteMyBlockByIdResponse,
   DeleteMyBlocksByIdsRequest,
   DeleteMyBlocksByIdsRequestSchema,
+  DeleteMyBlocksByIdsResponse,
   GetAllMyBlocksRequest,
   GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
@@ -36,6 +38,7 @@ import {
   RestoreMyBlockByIdResponse,
   RestoreMyBlocksByIdsRequest,
   RestoreMyBlocksByIdsRequestSchema,
+  RestoreMyBlocksByIdsResponse,
   UpdateMyBlockByIdRequest,
   UpdateMyBlockByIdRequestSchema,
   UpdateMyBlockByIdResponse,
@@ -70,6 +73,7 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
+import { GetMyBlockPackByIdResponse } from "../interfaces/blockPack.interface";
 
 /* ============================== GET Hooks ============================== */
 
@@ -400,6 +404,20 @@ export const useInsertBlock = () => {
         queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
         queryKeys.block.myAll(),
       ];
+      queryClient.setQueryData(
+        queryKeys.blockPack.oneById(blockPackId),
+        (oldData: GetMyBlockPackByIdResponse | undefined) => {
+          if (!oldData || !oldData.success) return oldData;
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              blockCount: oldData.data.blockCount + 1,
+            },
+          };
+        }
+      );
       Promise.all(
         targetKeys.map(targetKey => {
           queryClient.invalidateQueries({ queryKey: targetKey });
@@ -471,6 +489,21 @@ export const useInsertBlocks = () => {
       );
       targetKeys.push(
         queryKeys.blockGroupWithBlock.manyByIds([...blockGroupIdsSet])
+      );
+      queryClient.setQueryData(
+        queryKeys.blockPack.oneById(blockPackId),
+        (oldData: GetMyBlockPackByIdResponse | undefined) => {
+          if (!oldData || !oldData.success) return oldData;
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              blockCount:
+                oldData.data.blockCount + response.data.successIndexes.length,
+            },
+          };
+        }
       );
       Promise.all(
         targetKeys.map(targetKey =>
@@ -646,14 +679,32 @@ export const useRestoreMyBlockById = () => {
     },
     onSuccess: (response, variables) => {
       const blockId = variables.body.blockId as UUID;
+      const blockGroupId = response.data.blockGroupId as UUID;
+      const blockPackId = variables.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [queryKeys.block.oneById(blockId)];
-      const { blockGroupId } = response.data;
       targetKeys.push(
-        queryKeys.block.manyByBlockGroupId(blockGroupId as UUID),
-        queryKeys.blockGroup.oneById(blockGroupId as UUID),
-        queryKeys.blockGroupWithBlock.oneById(blockGroupId as UUID)
+        queryKeys.block.oneById(blockId),
+        queryKeys.block.manyByBlockGroupId(blockGroupId),
+        queryKeys.block.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.oneById(blockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(blockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.block.myAll()
       );
-      targetKeys.push(queryKeys.block.myAll());
+      queryClient.setQueryData(
+        queryKeys.blockPack.oneById(blockPackId),
+        (oldData: GetMyBlockPackByIdResponse | undefined) => {
+          if (!oldData || !oldData.success) return oldData;
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              blockCount: oldData.data.blockCount + 1,
+            },
+          };
+        }
+      );
       Promise.all(
         targetKeys.map(targetKey =>
           queryClient.invalidateQueries({ queryKey: targetKey })
@@ -690,41 +741,46 @@ export const useRestoreMyBlocksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyBlocksByIdsRequest) => {
+    mutationFn: async (
+      request: RestoreMyBlocksByIdsRequest
+    ): Promise<RestoreMyBlocksByIdsResponse> => {
       const validatedRequest = RestoreMyBlocksByIdsRequestSchema.parse(request);
       return await RestoreMyBlocksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
       const blockIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
+      const blockPackIdsSet = new Set<UUID>();
       const targetKeys: QueryKey[] = [queryKeys.block.myAll()];
-      variables.body.blockIds.forEach(id => {
-        if (!blockIdsSet.has(id as UUID)) {
-          blockIdsSet.add(id as UUID);
-          targetKeys.push(queryKeys.block.oneById(id as UUID));
+      variables.body.blockIds.forEach(blockId => {
+        if (!blockIdsSet.has(blockId as UUID)) {
+          blockIdsSet.add(blockId as UUID);
+          targetKeys.push(queryKeys.block.oneById(blockId as UUID));
         }
       });
-      if (response.data) {
-        response.data.forEach(block => {
-          if (!blockGroupIdsSet.has(block.blockGroupId as UUID)) {
-            blockGroupIdsSet.add(block.blockGroupId as UUID);
-            targetKeys.push(
-              queryKeys.block.manyByBlockGroupId(block.blockGroupId as UUID),
-              queryKeys.blockGroup.oneById(block.blockGroupId as UUID)
-            );
-          }
-        });
-        targetKeys.push(
-          queryKeys.blockGroupWithBlock.manyByIds([...blockGroupIdsSet])
-        );
-      }
-
+      variables.affected.blockPackIds.forEach(blockPackId => {
+        if (!blockPackIdsSet.has(blockPackId as UUID)) {
+          blockPackIdsSet.add(blockPackId as UUID);
+          targetKeys.push(queryKeys.blockPack.oneById(blockPackId as UUID));
+        }
+      });
+      response.data.forEach(block => {
+        if (!blockGroupIdsSet.has(block.blockGroupId as UUID)) {
+          blockGroupIdsSet.add(block.blockGroupId as UUID);
+          targetKeys.push(
+            queryKeys.block.manyByBlockGroupId(block.blockGroupId as UUID),
+            queryKeys.blockGroup.oneById(block.blockGroupId as UUID)
+          );
+        }
+      });
+      targetKeys.push(
+        queryKeys.blockGroupWithBlock.manyByIds([...blockGroupIdsSet])
+      );
       Promise.all(
         targetKeys.map(targetKey =>
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-
       if (response.newAccessToken) {
         LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
         LocalStorageManipulator.setItem(
@@ -756,16 +812,39 @@ export const useDeleteMyBlockById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyBlockByIdRequest) => {
+    mutationFn: async (
+      request: DeleteMyBlockByIdRequest
+    ): Promise<DeleteMyBlockByIdResponse> => {
       const validatedRequest = DeleteMyBlockByIdRequestSchema.parse(request);
       return await DeleteMyBlockById(validatedRequest);
     },
     onSuccess: (response, variables) => {
       const blockId = variables.body.blockId as UUID;
+      const blockGroupId = variables.affected.blockGroupId as UUID;
+      const blockPackId = variables.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.block.oneById(blockId),
+        queryKeys.block.manyByBlockGroupId(blockGroupId),
+        queryKeys.block.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.oneById(blockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(blockGroupId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
         queryKeys.block.myAll(),
       ];
+      queryClient.setQueryData(
+        queryKeys.blockPack.oneById(blockPackId),
+        (oldData: GetMyBlockPackByIdResponse | undefined) => {
+          if (!oldData || !oldData.success) return oldData;
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              blockCount: oldData.data.blockCount - 1,
+            },
+          };
+        }
+      );
       Promise.all(
         targetKeys.map(targetKey =>
           queryClient.invalidateQueries({ queryKey: targetKey })
@@ -802,21 +881,41 @@ export const useDeleteMyBlocksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyBlocksByIdsRequest) => {
+    mutationFn: async (
+      request: DeleteMyBlocksByIdsRequest
+    ): Promise<DeleteMyBlocksByIdsResponse> => {
       const validatedRequest = DeleteMyBlocksByIdsRequestSchema.parse(request);
       return await DeleteMyBlocksByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
       const blockIdsSet = new Set<UUID>();
+      const blockGroupIdsSet = new Set<UUID>();
+      const blockPackIdsSet = new Set<UUID>();
       const targetKeys: QueryKey[] = [queryKeys.block.myAll()];
-      if (variables.body?.blockIds) {
-        variables.body.blockIds.forEach(id => {
-          if (!blockIdsSet.has(id as UUID)) {
-            blockIdsSet.add(id as UUID);
-            targetKeys.push(queryKeys.block.oneById(id as UUID));
-          }
-        });
-      }
+      variables.body.blockIds.forEach(blockId => {
+        if (!blockIdsSet.has(blockId as UUID)) {
+          blockIdsSet.add(blockId as UUID);
+          targetKeys.push(queryKeys.block.oneById(blockId as UUID));
+        }
+      });
+      variables.affected.blockPackIds.forEach(blockPackId => {
+        if (!blockPackIdsSet.has(blockPackId as UUID)) {
+          blockPackIdsSet.add(blockPackId as UUID);
+          targetKeys.push(queryKeys.blockPack.oneById(blockPackId as UUID));
+        }
+      });
+      variables.affected.blockGroupIds.forEach(blockGroupId => {
+        if (!blockGroupIdsSet.has(blockGroupId as UUID)) {
+          blockGroupIdsSet.add(blockGroupId as UUID);
+          targetKeys.push(
+            queryKeys.block.manyByBlockGroupId(blockGroupId as UUID),
+            queryKeys.blockGroup.oneById(blockGroupId as UUID)
+          );
+        }
+      });
+      targetKeys.push(
+        queryKeys.blockGroupWithBlock.manyByIds([...blockGroupIdsSet])
+      );
       Promise.all(
         targetKeys.map(targetKey =>
           queryClient.invalidateQueries({ queryKey: targetKey })

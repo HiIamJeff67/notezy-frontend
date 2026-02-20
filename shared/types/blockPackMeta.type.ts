@@ -10,10 +10,11 @@ export interface BlockPackMeta {
   name: string;
   icon: SupportedBlockPackIcon | null;
   headerBackgroundURL: string | null;
-  blockCount: number;
-  deletedAt?: Date | null;
-  updatedAt?: Date;
-  createdAt?: Date;
+  blockCount: bigint;
+  path: UUID[];
+  deletedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
   blockGroups: BlockGroupMeta[];
 }
 
@@ -29,10 +30,11 @@ export const getDefaultBlockPackMeta = (
     name: "Untitled",
     icon: null,
     headerBackgroundURL: null,
-    blockCount: 0,
-    deletedAt: undefined,
-    updatedAt: undefined,
-    createdAt: undefined,
+    blockCount: BigInt(0),
+    path: [],
+    deletedAt: new Date(),
+    updatedAt: new Date(),
+    createdAt: new Date(),
     blockGroups: [],
   };
 };

@@ -31,13 +31,15 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
         case MaterialType.Notebook:
           nextPath = WebURLPathDictionary.root.materialEditor.notebook(
             current.id,
-            parent.id
+            parent.id,
+            parent.rootShelfId
           );
           break;
         case MaterialType.Textbook:
           nextPath = WebURLPathDictionary.root.materialEditor.textbook(
             current.id,
-            parent.id
+            parent.id,
+            parent.rootShelfId
           );
           break;
         default:

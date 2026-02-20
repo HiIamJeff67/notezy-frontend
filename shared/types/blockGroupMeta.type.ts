@@ -6,11 +6,11 @@ export interface BlockGroupMeta {
   blockPackId: UUID;
   prevBlockGroupId: UUID | null;
   syncBlockGroupId: UUID | null;
-  size: number;
-  deletedAt?: Date | null;
-  updatedAt?: Date;
-  createdAt?: Date;
-  block: PartialBlock;
+  size: bigint;
+  deletedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
+  rawArborizedEditableBlock: PartialBlock;
 }
 
 export const getDefaultBlockGroupMeta = (
@@ -24,10 +24,10 @@ export const getDefaultBlockGroupMeta = (
     blockPackId: blockPackId,
     prevBlockGroupId: prevBlockGroupId,
     syncBlockGroupId: syncBlockGroupId,
-    size: 0,
-    deletedAt: undefined,
-    updatedAt: undefined,
-    createdAt: undefined,
-    block: {},
+    size: BigInt(0),
+    deletedAt: new Date(),
+    updatedAt: new Date(),
+    createdAt: new Date(),
+    rawArborizedEditableBlock: {},
   };
 };

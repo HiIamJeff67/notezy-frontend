@@ -69,7 +69,8 @@ const NotebookMaterialEditorPage = async ({
       <NotebookEditor
         defaultMeta={getDefaultNotebookMaterialMeta(
           materialId,
-          parentSubShelfId
+          parentSubShelfId,
+          rootShelfId
         )}
       />
     </Suspense>

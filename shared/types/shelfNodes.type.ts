@@ -1,6 +1,8 @@
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { UUID } from "crypto";
 
+type ShelfType = "RootShelf" | "SubShelf";
+
 /**
  * Note that we don't implement the deletedAt field here,
  *           since if the node is deleted, it should be put in the trash can
@@ -24,7 +26,7 @@ export interface SubShelfNode {
   // to indicate this sub shelf is currently open and available to see things below it,
   // which means even if the data is fetched, the user can still toggle this value for frontend display
   isOpen: boolean;
-  nodeType: "SUB_SHELF";
+  nodeType: "SubShelf";
 }
 
 export interface RootShelfNode {
@@ -39,5 +41,5 @@ export interface RootShelfNode {
   isExpanded: boolean;
   children: Record<UUID, SubShelfNode>;
   isOpen: boolean;
-  nodeType: "ROOT_SHELF";
+  nodeType: "RootShelf";
 }

@@ -54,8 +54,6 @@ const SubShelfMenuItem = ({
   const languageManager = useLanguage();
   const shelfItemManager = useShelfItem();
 
-  console.log(current);
-
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DNDType.DraggableSubShelf.toString(),
     item: { summary, prev, current, depth },
