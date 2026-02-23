@@ -5,7 +5,7 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 

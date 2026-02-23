@@ -3,6 +3,7 @@
 import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import XIcon from "@/components/icons/XIcon";
+import ItemPath from "@/components/ItemPath/ItemPath";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,6 @@ import {
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
 import { loadFileFromDownloadURL } from "@/util/loadFiles";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import "@blocknote/core/style.css";
@@ -49,12 +49,12 @@ import {
   MaterialContentType,
   MaterialType,
 } from "@shared/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import ItemPath from "../ItemPath/ItemPath";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
@@ -92,9 +92,9 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   }, [shelfItemManager.editItemNodeName]);
 
   useEffect(() => {
-    const initializeMaterial = async () => {
-      try {
-        loadingManager.startAsyncTransactionLoading(
+    const initializeMaterial = async () =>
+      await loadingManager
+        .startAsyncTransactionLoading(
           async () => {
             const notebookMaterialMeta = await loadNotebookMaterial(meta.id);
 
@@ -114,11 +114,8 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           },
           3000,
           5000
-        );
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
+        )
+        .catch(error => toast.error(languageManager.tError(error)));
 
     initializeMaterial();
   }, []);

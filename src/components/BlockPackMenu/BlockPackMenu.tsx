@@ -16,14 +16,13 @@ const BlockPackMenu = ({ parent }: BlockPackMenuProps) => {
   const languageManager = useLanguage();
   const shelfItemManager = useShelfItem();
 
-  const handleRenameBlockPackOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.startAsyncTransactionLoading(async () => {
-      try {
-        await shelfItemManager.renameEditingBlockPack();
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    });
+  const handleRenameBlockPackOnSubmit = useCallback(async () => {
+    await loadingManager.startAsyncTransactionLoading(
+      async () =>
+        await shelfItemManager
+          .renameEditingBlockPack()
+          .catch(error => toast.error(languageManager.tError(error)))
+    );
   }, [loadingManager, languageManager, shelfItemManager]);
 
   return (

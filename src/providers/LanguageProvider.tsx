@@ -1,7 +1,7 @@
 "use client";
 
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LanguageKeyMap, Languages } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey, translations } from "@shared/translations/index";
 import { Language } from "@shared/types/language.type";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";

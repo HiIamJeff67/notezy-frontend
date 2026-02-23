@@ -1,10 +1,10 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdRequestSchema,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { GetMyRootShelfById } from "@shared/api/invokers/rootShelf.invoker";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 

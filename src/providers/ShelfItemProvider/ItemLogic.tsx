@@ -1,5 +1,4 @@
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   useCreateBlockPack,
   useDeleteMyBlockPackById,
@@ -12,6 +11,7 @@ import {
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { AnalysisStatus, MaterialType } from "@shared/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
@@ -65,7 +65,7 @@ export const useItemLogic = ({
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        if (editingItemNode.nodeType === "MATERIAL")
+        if (editingItemNode.nodeType === "Material")
           await renameEditingMaterial(editingItemNode.type);
 
         setEditingItemNode(undefined);
@@ -194,7 +194,7 @@ export const useItemLogic = ({
           updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
           createdAt: responseOfCreatingNotebookMaterial.data.createdAt,
           isOpen: false,
-          nodeType: "MATERIAL",
+          nodeType: "Material",
         };
         forceUpdate();
       }
@@ -259,7 +259,7 @@ export const useItemLogic = ({
           updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
           createdAt: responseOfCreatingNotebookMaterial.data.createdAt,
           isOpen: false,
-          nodeType: "MATERIAL",
+          nodeType: "Material",
         };
         forceUpdate();
       }
@@ -273,7 +273,7 @@ export const useItemLogic = ({
         if (
           !isNewItemNodeName() ||
           !editingItemNode ||
-          editingItemNode.nodeType !== "MATERIAL"
+          editingItemNode.nodeType !== "Material"
         ) {
           throw new Error("the name of the given material node is invalid");
         }
@@ -439,7 +439,7 @@ export const useItemLogic = ({
           updatedAt: responseOfCreatingBlockPack.data.createdAt,
           createdAt: responseOfCreatingBlockPack.data.createdAt,
           isOpen: false,
-          nodeType: "BLOCK_PACK",
+          nodeType: "BlockPack",
         };
         forceUpdate();
       }
@@ -452,7 +452,7 @@ export const useItemLogic = ({
       if (
         !isNewItemNodeName() ||
         !editingItemNode ||
-        editingItemNode.nodeType !== "BLOCK_PACK"
+        editingItemNode.nodeType !== "BlockPack"
       ) {
         throw new Error("the name of the given block pack node is invalid");
       }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { DefaultStandardTheme } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { Theme } from "@shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";

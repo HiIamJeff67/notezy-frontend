@@ -246,7 +246,7 @@ export const UpdateMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
     type: z.enum(MaterialType),
   }),
   affected: z.object({
-    rootShelfId: z.uuidv4(),
+    rootShelfId: z.uuidv4().optional(),
     parentSubShelfId: z.uuidv4(),
   }),
 });

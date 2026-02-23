@@ -5,7 +5,7 @@ import { useLanguage } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { PrivateFakeUser, PrivateFakeUserInfo } from "@shared/constants";
-import { PrivateUser, PrivateUserInfo } from "@shared/types/models";
+import { PrivateUser, PrivateUserInfo } from "@shared/types/user.type";
 import { lazy, Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import AccountModificationTab from "./AccountModificationTab";

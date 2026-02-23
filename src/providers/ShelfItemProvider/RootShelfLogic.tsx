@@ -6,7 +6,6 @@ import {
 } from "@/graphql/generated/graphql";
 import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   useCreateRootShelf,
   useDeleteMyRootShelfById,
@@ -16,6 +15,7 @@ import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.h
 import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
@@ -131,7 +131,7 @@ export const useRootShelfLogic = ({
               isExpanded: false,
               children: {},
               isOpen: false,
-              nodeType: "ROOT_SHELF",
+              nodeType: "RootShelf",
             },
             estimatedByteSize: 0, // may use some field to store the size of rootShelf,
             hasChanged: false,
@@ -258,7 +258,7 @@ export const useRootShelfLogic = ({
           isExpanded: true,
           children: {},
           isOpen: false,
-          nodeType: "ROOT_SHELF",
+          nodeType: "RootShelf",
         });
       expandedShelvesRef.current.set(
         responseOfCreatingRootShelf.data.id as UUID,

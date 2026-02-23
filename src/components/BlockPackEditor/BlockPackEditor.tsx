@@ -1,6 +1,26 @@
 "use client";
 
+import DropFileZone from "@/components/DropFileZone/DropFileZone";
+import ItemPath from "@/components/ItemPath/ItemPath";
+import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import TruncatedText from "@/components/TruncatedText/TruncatedText";
+import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { blockPackMetaReducer } from "@/reducers/blockPackMeta.reducer";
 import {
@@ -12,40 +32,21 @@ import {
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
 import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
 import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
 import { ContentType } from "@shared/enums/blockPackContentType.enum";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import DropFileZone from "../DropFileZone/DropFileZone";
-import ItemPath from "../ItemPath/ItemPath";
-import StrictLoadingOutlay from "../LoadingOutlay/StrictLoadingOutlay";
-import TruncatedText from "../TruncatedText/TruncatedText";
-import ChevronDownIcon from "../icons/ChevronDownIcon";
-import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "../ui/menubar";
-import { Spinner } from "../ui/spinner";
 
 interface BlockPackEditorProps {
   defaultBlockPackMeta: BlockPackMeta;
@@ -82,9 +83,9 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
   }, [shelfItemManager.editItemNodeName]);
 
   useEffect(() => {
-    const initializeBlockPack = async () => {
-      try {
-        loadingManager.startAsyncTransactionLoading(
+    const initializeBlockPack = async () =>
+      await loadingManager
+        .startAsyncTransactionLoading(
           async () => {
             const { blockPackMeta, fallback } = await loadBlockPack(meta.id);
 
@@ -100,16 +101,17 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
                 initialContent:
                   initialContent.length === 0 ? fallback : initialContent,
               });
+              editor.onChange((editor, { getChanges }) => {
+                const changes = getChanges();
+                console.log(changes);
+              });
               setEditor(editor);
             }
           },
           3000,
           5000
-        );
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
+        )
+        .catch(error => toast.error(languageManager.tError(error)));
 
     initializeBlockPack();
   }, []);
@@ -380,9 +382,10 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
             </MenubarTrigger>
             <MenubarContent align="end" side="bottom">
               <MenubarItem
-                onClick={async () =>
-                  await handleExportFiles(ContentType.Markdown)
-                }
+                onClick={async () => {
+                  const blob = await convertBlocksToMarkdown(editor);
+                  await handleExportFiles(ContentType.Markdown);
+                }}
               >
                 <span className="font-semibold">Markdown</span>
                 <span className="text-muted-foreground">(.md)</span>

@@ -1,5 +1,7 @@
 import CheckIcon from "@/components/icons/CheckIcon";
+import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ModifyDotIcon from "@/components/icons/ModifyDotIcon";
+import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/RootShelfMenu/RootShelfMenuItemSkeleton";
 import SubShelfMenu from "@/components/SubShelfMenu/SubShelfMenu";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -23,14 +25,13 @@ import {
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useModal } from "@/hooks/useModal";
 import { DNDType } from "@shared/enums/dndType.enum";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
-import EmptyShelfIcon from "../icons/EmptyShelfIcon";
-import ShelfIcon from "../icons/ShelfIcon";
 
 interface RootShelfMenuItemProps {
   rootShelfEdge: SearchRootShelfEdge;
@@ -43,6 +44,7 @@ const RootShelfMenuItem = ({
 }: RootShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const modalManager = useModal();
   const shelfItemManager = useShelfItem();
 
   const summary = shelfItemManager.expandedShelves.get(rootShelfEdge.node.id);
@@ -75,14 +77,13 @@ const RootShelfMenuItem = ({
   }));
 
   const handleRenameRootShelfOnSubmit = useCallback(
-    async (): Promise<void> =>
-      loadingManager.startAsyncTransactionLoading(async () => {
-        try {
-          await shelfItemManager.renameEditingRootShelf();
-        } catch (error) {
-          toast.error(languageManager.tError(error));
-        }
-      }),
+    async () =>
+      await loadingManager.startAsyncTransactionLoading(
+        async () =>
+          await shelfItemManager
+            .renameEditingRootShelf()
+            .catch(error => toast.error(languageManager.tError(error)))
+      ),
     [loadingManager, languageManager, shelfItemManager]
   );
 
@@ -133,8 +134,8 @@ const RootShelfMenuItem = ({
                   className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
                         whitespace-nowrap text-ellipsis overflow-hidden"
                   onClick={async () => {
-                    await shelfItemManager.expandRootShelf(rootShelfEdge.node);
                     shelfItemManager.toggleRootShelf(summary.root);
+                    await shelfItemManager.expandRootShelf(rootShelfEdge.node);
                   }}
                 >
                   {summary.root.isOpen ? (
@@ -154,29 +155,43 @@ const RootShelfMenuItem = ({
           )}
           <ContextMenuContent>
             <ContextMenuItem
-              onClick={async () => {
+              onClick={async () =>
                 await shelfItemManager.createSubShelf(
                   summary.root.id,
                   null,
                   "new sub shelf"
-                );
-              }}
+                )
+              }
             >
               Create Sub Shelf
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={() => {
-                shelfItemManager.startRenamingRootShelfNode(summary.root);
-              }}
+              onClick={() =>
+                shelfItemManager.startRenamingRootShelfNode(summary.root)
+              }
             >
               Rename
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={async () => {
-                await shelfItemManager.deleteRootShelf(summary.root);
-              }}
+              onClick={() =>
+                modalManager.open("DeleteShelfItemDialog", {
+                  dialogHeader:
+                    "Are you sure you want to delete this root shelf ?",
+                  onDelete: async () =>
+                    await loadingManager.startAsyncTransactionLoading(
+                      async () => {
+                        await shelfItemManager
+                          .deleteRootShelf(summary.root)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }
+                    ),
+                  onCancel: modalManager.close,
+                })
+              }
             >
               Delete
             </ContextMenuItem>

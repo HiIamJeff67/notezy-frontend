@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
@@ -10,6 +9,7 @@ import {
   GetUserDataRequestSchema,
 } from "@shared/api/interfaces/user.interface";
 import { GetMe, GetUserData } from "@shared/api/invokers/user.invoker";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";

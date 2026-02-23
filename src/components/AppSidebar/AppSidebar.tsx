@@ -1,10 +1,7 @@
 "use client";
 
-import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
 import AvatarIcon from "@/components/icons/AvatarIcon";
-import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
 import RootShelfMenu from "@/components/RootShelfMenu/RootShelfMenu";
-import CreateRootShelfDialog from "@/components/ShelfDialog/CreateRootShelfDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,7 +32,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useModal } from "@/hooks/useModal";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -47,7 +45,7 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import ShelfCaseIcon from "../icons/ShelfCaseIcon";
 import ResizableSidebar from "../ResizableSidebar/ResizableSidebar";
@@ -60,8 +58,10 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   if (disabled) return <></>;
 
   const router = useAppRouter();
-  const sidebarManager = useSidebar();
+  const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const modalManager = useModal();
+  const sidebarManager = useSidebar();
   const userDataManager = useUserData();
   const shelfItemManager = useShelfItem();
 
@@ -76,31 +76,12 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
     initialSearchRootShelves();
   }, []);
 
-  const [currentDisplayPopup, setCurrentDisplayPopup] = useState<
-    | "None"
-    | "AccountSettingsPanel"
-    | "PreferencesPanel"
-    | "CreateRootShelfDialog"
-  >("None");
-
   return (
     <ResizableSidebar
       variant="sidebar"
       collapsible="icon"
       className="p-0 m-0 overflow-hidden"
     >
-      <AccountSettingsPanel
-        isOpen={currentDisplayPopup === "AccountSettingsPanel"}
-        onClose={() => setCurrentDisplayPopup("None")}
-      />
-      <PreferencesPanel
-        isOpen={currentDisplayPopup === "PreferencesPanel"}
-        onClose={() => setCurrentDisplayPopup("None")}
-      />
-      <CreateRootShelfDialog
-        isOpen={currentDisplayPopup === "CreateRootShelfDialog"}
-        onClose={() => setCurrentDisplayPopup("None")}
-      />
       <SidebarHeader className="flex flex-col justify-center items-center p-0">
         <SidebarGroup>
           <SidebarGroupContent>
@@ -170,7 +151,25 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                   </CollapsibleTrigger>
                   <SidebarMenuAction
                     onClick={() =>
-                      setCurrentDisplayPopup("CreateRootShelfDialog")
+                      modalManager.open("CreateShelfItemDialog", {
+                        dialogHeader:
+                          "Create a root shelf by typing an new name",
+                        disableInput: false,
+                        inputPlaceholder:
+                          "type your new and unique shelf name here",
+                        onCreate: async (newRootShelfName: string) =>
+                          await loadingManager.startAsyncTransactionLoading(
+                            async () => {
+                              await shelfItemManager
+                                .createRootShelf(newRootShelfName)
+                                .then(modalManager.close)
+                                .catch(error =>
+                                  toast.error(languageManager.tError(error))
+                                );
+                            }
+                          ),
+                        onCancel: modalManager.close,
+                      })
                     }
                   >
                     <PlusIcon />
@@ -211,13 +210,13 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
             <MenubarContent className="w-64 bg-popover border-border">
               <MenubarItem
                 className="cursor-pointer"
-                onClick={() => setCurrentDisplayPopup("AccountSettingsPanel")}
+                onClick={() => modalManager.open("AccountSettingsPanel")}
               >
                 <span>{languageManager.t(tKey.settings.accountSettings)}</span>
               </MenubarItem>
               <MenubarItem
                 className="cursor-pointer"
-                onClick={() => setCurrentDisplayPopup("PreferencesPanel")}
+                onClick={() => modalManager.open("PreferencesPanel")}
               >
                 <span>{languageManager.t(tKey.settings.preferences)}</span>
               </MenubarItem>

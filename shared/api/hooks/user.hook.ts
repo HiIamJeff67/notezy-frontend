@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetMe,
@@ -20,6 +19,7 @@ import {
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ZodError } from "zod";

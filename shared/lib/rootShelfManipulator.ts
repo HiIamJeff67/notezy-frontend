@@ -114,7 +114,7 @@ export class RootShelfManipulator {
         materialNodes: {},
         blockPackNodes: {},
         isOpen: false,
-        nodeType: "SUB_SHELF",
+        nodeType: "SubShelf",
       };
       newRootShelfNode.children[subShelf.id as UUID] = newSubShelfNode;
       prevSubShelfNodes[newSubShelfNode.id] =
@@ -160,7 +160,7 @@ export class RootShelfManipulator {
           materialNodes: {},
           blockPackNodes: {},
           isOpen: false,
-          nodeType: "SUB_SHELF",
+          nodeType: "SubShelf",
         };
 
         if (

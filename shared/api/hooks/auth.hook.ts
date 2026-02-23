@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useApolloClient } from "@apollo/client/react";
 import {
   ExceptionReasonDictionary,
@@ -42,6 +41,7 @@ import {
 } from "@shared/api/invokers/auth.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { SessionStorageKeys } from "@shared/types/sessionStorage.type";

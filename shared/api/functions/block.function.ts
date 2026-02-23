@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   GetAllMyBlocksRequest,
@@ -22,6 +21,7 @@ import {
   GetMyBlocksByBlockPackId,
   GetMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 

@@ -2,13 +2,13 @@
 
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useLogout } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { UserData } from "@shared/types/models";
+import { UserData } from "@shared/types/user.type";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 

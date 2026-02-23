@@ -1,3 +1,4 @@
+import BlockPackMenu from "@/components/BlockPackMenu/BlockPackMenu";
 import CheckIcon from "@/components/icons/CheckIcon";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
@@ -25,6 +26,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useModal } from "@/hooks/useModal";
 import { MaxShelfDepth } from "@shared/constants";
 import { DNDType } from "@shared/enums/dndType.enum";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
@@ -33,7 +35,6 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";
-import BlockPackMenu from "../BlockPackMenu/BlockPackMenu";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -52,6 +53,7 @@ const SubShelfMenuItem = ({
 }: SubShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const modalManager = useModal();
   const shelfItemManager = useShelfItem();
 
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -161,15 +163,16 @@ const SubShelfMenuItem = ({
     }
   }, [root, current, languageManager, shelfItemManager]);
 
-  const handleRenameSubShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.startAsyncTransactionLoading(async () => {
-      try {
-        await shelfItemManager.renameEditingSubShelf();
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    });
-  }, [loadingManager, languageManager, shelfItemManager]);
+  const handleRenameSubShelfOnSubmit = useCallback(
+    async () =>
+      await loadingManager.startAsyncTransactionLoading(
+        async () =>
+          await shelfItemManager
+            .renameEditingSubShelf()
+            .catch(error => toast.error(languageManager.tError(error)))
+      ),
+    [loadingManager, languageManager, shelfItemManager]
+  );
 
   return (
     <Collapsible>
@@ -203,24 +206,18 @@ const SubShelfMenuItem = ({
             <ContextMenuSub>
               <ContextMenuSubTrigger>Create Material</ContextMenuSubTrigger>
               <ContextMenuSubContent>
-                <ContextMenuItem
-                  onClick={async () => await handleCreateTextbookMaterial()}
-                >
+                <ContextMenuItem onClick={handleCreateTextbookMaterial}>
                   Textbook
                 </ContextMenuItem>
-                <ContextMenuItem
-                  onClick={async () => await handleCreateNotebookMaterial()}
-                >
+                <ContextMenuItem onClick={handleCreateNotebookMaterial}>
                   Notebook
                 </ContextMenuItem>
               </ContextMenuSubContent>
             </ContextMenuSub>
-            <ContextMenuItem
-              onClick={async () => await handleCreateBlockPack()}
-            >
+            <ContextMenuItem onClick={handleCreateBlockPack}>
               Create Block Pack
             </ContextMenuItem>
-            <ContextMenuItem onClick={async () => await handleCreateSubShelf()}>
+            <ContextMenuItem onClick={handleCreateSubShelf}>
               Create Sub Shelf
             </ContextMenuItem>
             <ContextMenuSeparator />
@@ -233,9 +230,23 @@ const SubShelfMenuItem = ({
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={async () => {
-                await shelfItemManager.deleteSubShelf(prev, current);
-              }}
+              onClick={() =>
+                modalManager.open("DeleteShelfItemDialog", {
+                  dialogHeader:
+                    "Are you sure you want to delete this sub shelf ?",
+                  onDelete: async () =>
+                    await loadingManager.startAsyncTransactionLoading(
+                      async () => {
+                        await shelfItemManager
+                          .deleteSubShelf(prev, current)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }
+                    ),
+                  onCancel: modalManager.close,
+                })
+              }
             >
               Delete
             </ContextMenuItem>

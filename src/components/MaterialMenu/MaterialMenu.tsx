@@ -18,14 +18,13 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
   const shelfItemManager = useShelfItem();
 
   const handleRenameMaterialOnSubmit = useCallback(
-    async (materialType: MaterialType): Promise<void> =>
-      loadingManager.startAsyncTransactionLoading(async () => {
-        try {
-          await shelfItemManager.renameEditingMaterial(materialType);
-        } catch (error) {
-          toast.error(languageManager.tError(error));
-        }
-      }),
+    async (materialType: MaterialType) =>
+      await loadingManager.startAsyncTransactionLoading(
+        async () =>
+          await shelfItemManager
+            .renameEditingMaterial(materialType)
+            .catch(error => toast.error(languageManager.tError(error)))
+      ),
     [loadingManager, languageManager, shelfItemManager]
   );
 

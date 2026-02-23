@@ -20,14 +20,13 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const shelfItemManager = useShelfItem();
 
   const handleRenameSubShelfOnSubmit = useCallback(
-    async (): Promise<void> =>
-      loadingManager.startAsyncTransactionLoading(async () => {
-        try {
-          await shelfItemManager.renameEditingSubShelf();
-        } catch (error) {
-          toast.error(languageManager.tError(error));
-        }
-      }),
+    async () =>
+      await loadingManager.startAsyncTransactionLoading(
+        async () =>
+          await shelfItemManager
+            .renameEditingSubShelf()
+            .catch(error => toast.error(languageManager.tError(error)))
+      ),
     [loadingManager, languageManager, shelfItemManager]
   );
 
@@ -61,7 +60,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
                   {shelfItemManager.isNewSubShelfNodeName() && (
                     <button
                       className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                      onClick={async () => await handleRenameSubShelfOnSubmit()}
+                      onClick={handleRenameSubShelfOnSubmit}
                       onMouseDown={e => e.stopPropagation()}
                     >
                       <CheckIcon className="w-full h-full" />

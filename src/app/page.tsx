@@ -17,8 +17,8 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { useAppRouter, useLanguage, useTheme, useUserData } from "@/hooks";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";

@@ -211,7 +211,7 @@ export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
     setNull: z.record(z.string(), z.boolean()).optional(),
   }),
   affected: z.object({
-    rootShelfId: z.uuidv4(),
+    rootShelfId: z.uuidv4().optional(),
     parentSubShelfId: z.uuidv4(),
   }),
 });

@@ -1,6 +1,6 @@
 import { useSidebar } from "@/components/ui/sidebar";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { clamp } from "@/util/math";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import {
   CSSProperties,
@@ -115,7 +115,7 @@ export function ResizeSidebarProvider({
     () =>
       ({
         "--sidebar-width": `${clampedWidth}px`,
-      } as CSSProperties),
+      }) as CSSProperties,
     [clampedWidth]
   );
 
@@ -123,7 +123,7 @@ export function ResizeSidebarProvider({
     () =>
       ({
         paddingLeft: `calc(${clampedWidth}px - ${defaultWidth}px)`,
-      } as CSSProperties),
+      }) as CSSProperties,
     [clampedWidth, defaultWidth, sidebarManager?.open]
   );
 

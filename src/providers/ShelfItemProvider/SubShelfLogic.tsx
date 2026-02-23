@@ -1,5 +1,4 @@
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { useGetMyBlockPacksByParentSubShelfId } from "@shared/api/hooks/blockPack.hook";
 import { useGetMyMaterialsByParentSubShelfId } from "@shared/api/hooks/material.hook";
 import {
@@ -12,6 +11,7 @@ import {
 import { GetMyBlockPacksByParentSubShelfIdResponse } from "@shared/api/interfaces/blockPack.interface";
 import { GetMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
 import { GetMySubShelvesByPrevSubShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
@@ -235,7 +235,7 @@ export const useSubShelfLogic = ({
             materialNodes: {},
             blockPackNodes: {},
             isOpen: false,
-            nodeType: "SUB_SHELF",
+            nodeType: "SubShelf",
           };
       } else {
         shelfTreeSummary.maxDepth = Math.max(shelfTreeSummary.maxDepth, 1);
@@ -255,7 +255,7 @@ export const useSubShelfLogic = ({
           materialNodes: {},
           blockPackNodes: {},
           isOpen: false,
-          nodeType: "SUB_SHELF",
+          nodeType: "SubShelf",
         };
       }
       forceUpdate();

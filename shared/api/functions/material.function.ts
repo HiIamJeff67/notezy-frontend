@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   GetAllMyMaterialsByRootShelfIdRequest,
@@ -16,6 +15,7 @@ import {
   GetMyMaterialById,
   GetMyMaterialsByParentSubShelfId,
 } from "@shared/api/invokers/material.invoker";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { ZodError } from "zod";
 

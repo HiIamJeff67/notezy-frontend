@@ -277,10 +277,14 @@ export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   }),
   body: z.object({
     blockId: z.uuidv4(),
-    values: z.object({
-      props: z.json(),
-      content: z.array(z.json()),
-    }),
+    values: z
+      .object({
+        parentBlockId: z.uuidv4().nullable(),
+        blockGroupId: z.uuidv4(),
+        props: z.json(),
+        content: z.array(z.json()),
+      })
+      .partial(),
     setNull: z.record(z.string(), z.boolean()).optional(),
   }),
   affected: z.object({
@@ -314,8 +318,15 @@ export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
     updatedBlocks: z.array(
       z.object({
         blockId: z.uuidv4(),
-        props: z.json(),
-        content: z.array(z.json()),
+        values: z
+          .object({
+            parentBlockId: z.uuidv4().nullable(),
+            blockGroupId: z.uuidv4(),
+            props: z.json(),
+            content: z.array(z.json()),
+          })
+          .partial(),
+        setNull: z.record(z.string(), z.boolean()).optional(),
       })
     ),
   }),
