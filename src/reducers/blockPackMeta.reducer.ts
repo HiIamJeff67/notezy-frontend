@@ -10,7 +10,7 @@ export type BlockPackMetaAction =
   | { type: "setName"; newName: string }
   | { type: "setIcon"; newIcon: SupportedBlockPackIcon }
   | { type: "setHeaderBackgroundURL"; newHeaderBackgroundURL: string }
-  | { type: "setBlockCount"; newBlockCount: number }
+  | { type: "setBlockCount"; newBlockCount: bigint }
   | { type: "setUpdatedAt"; newUpdatedAt: Date }
   | { type: "setCreatedAt"; newCreatedAt: Date }
   | { type: "setBlockGroupMetas"; newBlockGroupMetas: BlockGroupMeta[] };

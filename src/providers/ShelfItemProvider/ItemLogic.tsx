@@ -65,8 +65,14 @@ export const useItemLogic = ({
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        if (editingItemNode.nodeType === "Material")
-          await renameEditingMaterial(editingItemNode.type);
+        switch (editingItemNode.nodeType) {
+          case "Material":
+            await renameEditingMaterial(editingItemNode.type);
+            break;
+          case "BlockPack":
+            await renameEditingBlockPack();
+            break;
+        }
 
         setEditingItemNode(undefined);
         setEditItemNodeName("");

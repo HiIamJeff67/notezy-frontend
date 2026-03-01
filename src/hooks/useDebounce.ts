@@ -26,9 +26,7 @@ export const useDebounceCallback = <
   const countRef = useRef<number>(0);
   const callbackRef = useRef(callback);
 
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
+  callbackRef.current = callback;
 
   const debouncedCallback = useCallback(
     (...args: Parameters<CallbackType>) => {

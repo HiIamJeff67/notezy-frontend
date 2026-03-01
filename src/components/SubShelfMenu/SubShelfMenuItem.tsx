@@ -69,6 +69,9 @@ const SubShelfMenuItem = ({
 
   const [{}, drop] = useDrop(() => ({
     accept: DNDType.DraggableSubShelf.toString(),
+    hover: (_, monitor) => {
+      if (!monitor.canDrop()) return;
+    },
     drop: async (draggedItem: {
       summary: ShelfTreeSummary;
       prev: SubShelfNode | null;

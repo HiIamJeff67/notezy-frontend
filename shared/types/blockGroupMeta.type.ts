@@ -25,7 +25,7 @@ export const getDefaultBlockGroupMeta = (
     prevBlockGroupId: prevBlockGroupId,
     syncBlockGroupId: syncBlockGroupId,
     size: BigInt(0),
-    deletedAt: new Date(),
+    deletedAt: null,
     updatedAt: new Date(),
     createdAt: new Date(),
     rawArborizedEditableBlock: {},

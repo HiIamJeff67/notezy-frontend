@@ -260,6 +260,7 @@ export async function InsertBlocks(
 ): Promise<InsertBlocksResponse> {
   const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
 
+  console.log("request: ", request.body);
   const response = await fetch(url, {
     method: "POST",
     headers: {

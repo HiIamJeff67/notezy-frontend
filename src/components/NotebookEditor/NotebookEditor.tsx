@@ -43,7 +43,7 @@ import {
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { WebURLPathDictionary } from "@shared/constants";
-import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
+import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
 import {
   ExportableMaterialContentTypes,
   MaterialContentType,
@@ -152,7 +152,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     const parsedContent = (
       fileContentString && fileContentString.trim() !== ""
         ? JSON.parse(fileContentString)
-        : choiceRandom(AllDefaultNotebookInitialContents)
+        : choiceRandom(AllDefaultBlockPackInitialContents)
     ) as PartialBlock[];
 
     return {

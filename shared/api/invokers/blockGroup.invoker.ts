@@ -171,6 +171,8 @@ export async function GetMyBlockGroupsAndTheirBlocksByBlockPackId(
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
+  console.log("response", formattedResponse.data);
+
   return formattedResponse;
 }
 
@@ -256,6 +258,7 @@ export async function InsertBlockGroupByBlockPackId(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -287,6 +290,7 @@ export async function InsertBlockGroupAndItsBlocksByBlockPackId(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -318,6 +322,7 @@ export async function InsertBlockGroupsAndTheirBlocksByBlockPackId(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -350,6 +355,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
             ? { Authorization: request.header.authorization }
             : {}),
         },
+        body: JSON.stringify(request.body),
         credentials: "include",
       }
     );
@@ -383,6 +389,7 @@ export async function MoveMyBlockGroupsByIds(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -414,6 +421,7 @@ export async function RestoreMyBlockGroupById(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -445,6 +453,7 @@ export async function RestoreMyBlockGroupsByIds(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -476,6 +485,7 @@ export async function DeleteMyBlockGroupById(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );
@@ -507,6 +517,7 @@ export async function DeleteMyBlockGroupsByIds(
           ? { Authorization: request.header.authorization }
           : {}),
       },
+      body: JSON.stringify(request.body),
       credentials: "include",
     }
   );

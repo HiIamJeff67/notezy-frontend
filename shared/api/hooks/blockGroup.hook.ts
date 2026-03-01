@@ -120,7 +120,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.oneById(
+    queryKey: queryKeys.blockGroupWithBlock.oneById(
       hookRequest?.param.blockGroupId as UUID | undefined
     ),
     queryFn: async () =>
@@ -136,7 +136,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
     callbackRequest: GetMyBlockGroupAndItsBlocksByIdRequest
   ): Promise<GetMyBlockGroupAndItsBlocksByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.oneById(
+      queryKey: queryKeys.blockGroupWithBlock.oneById(
         callbackRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
@@ -230,7 +230,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.blockGroup.manyByBlockPackId(
+    queryKey: queryKeys.blockGroupWithBlock.manyByBlockPackId(
       hookRequest?.param.blockPackId as UUID | undefined
     ),
     queryFn: async () => {
@@ -279,7 +279,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     callbackRequest: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest
   ): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.blockGroup.manyByBlockPackId(
+      queryKey: queryKeys.blockGroupWithBlock.manyByBlockPackId(
         callbackRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>

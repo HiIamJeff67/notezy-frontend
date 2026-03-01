@@ -299,6 +299,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema =
       blockPackId: z.uuidv4(),
       blockGroupContents: z.array(
         z.object({
+          blockGroupId: z.uuidv4(),
           prevBlockGroupId: z.uuidv4().nullable(),
           arborizedEditableBlock: z.custom<PartialBlock>(),
         })
