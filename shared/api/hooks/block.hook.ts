@@ -594,6 +594,10 @@ export const useUpdateMyBlocksByIds = () => {
     mutationFn: async (
       request: UpdateMyBlocksByIdsRequest
     ): Promise<UpdateMyBlocksByIdsResponse> => {
+      console.log(
+        typeof request.body.updatedBlocks[0].values.content,
+        request.body.updatedBlocks[0].values.content
+      );
       const validatedRequest = UpdateMyBlocksByIdsRequestSchema.parse(request);
       return await UpdateMyBlocksByIds(validatedRequest);
     },

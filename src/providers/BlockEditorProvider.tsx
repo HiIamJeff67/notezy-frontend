@@ -141,11 +141,10 @@ export const BlockEditorProvider = ({
         initialContent = [choiceRandom(AllDefaultBlockPackInitialContents)];
       }
 
-      console.log("initialContent: ", initialContent);
-
       return {
         editor: BlockNoteEditor.create({
           initialContent: initialContent,
+          trailingBlock: false,
         }),
         initialContent: initialContent,
         isNewBlockPack: isNewBlockPack,
@@ -432,10 +431,8 @@ export const BlockEditorProvider = ({
       mergeTimeoutRef.current = null;
     }
     setState("merging");
-    console.log("Events before merge: ", eventQueueRef.current);
     const mergedEvents = merge(eventQueueRef.current);
     eventQueueRef.current = mergedEvents;
-    console.log("Events after merge: ", mergedEvents);
     if (mergedEvents.length > MinRequestEvents) {
       // merge events into one insert many request and one update many request and one delete many request.
       // send the above at most four requests to the backend.
@@ -446,13 +443,13 @@ export const BlockEditorProvider = ({
         updateBlocksRequest,
         deleteBlocksRequest,
       } = toRequest(mergedEvents);
-      console.log(
-        "Prepared Requests: ",
-        insertBlocksRequest,
-        insertBlockGroupsAndBlocksRequest,
-        updateBlocksRequest,
-        deleteBlocksRequest
-      );
+      // console.log(
+      //   "Prepared Requests: ",
+      //   insertBlocksRequest,
+      //   insertBlockGroupsAndBlocksRequest,
+      //   updateBlocksRequest,
+      //   deleteBlocksRequest
+      // );
       setState("syncing");
       await Promise.all([
         insertBlocksRequest.body.insertedBlocks.length > 0 &&
@@ -515,18 +512,21 @@ export const BlockEditorProvider = ({
 
   useEffect(() => {
     if (isNewBlockPack && !hasInitializedRef.current) {
-      console.log("initializing...");
       hasInitializedRef.current = true;
       syncNewBlockPack();
     }
 
     const unSubscribe = editor.onChange(async (_, { getChanges }) => {
       const changes = getChanges();
-      console.log("=========== Detected changed ===========");
+      // console.log("=========== Detected changed ===========");
       for (const change of changes) {
-        console.log("type: ", change.type);
-        console.log("block: ", change.block);
-        console.log("prev block: ", editor.getPrevBlock(change.block.id));
+        // console.log("type: ", change.type);
+        // console.log("block: ", change.block);
+        // console.log("prev block: ", editor.getPrevBlock(change.block.id));
+        // console.log(
+        //   "block group: ",
+        //   dsuRef.current.find(change.block.id as UUID)
+        // );
         eventQueueRef.current.push({
           type: change.type,
           payload: {
@@ -544,7 +544,7 @@ export const BlockEditorProvider = ({
           timestamp: new Date(),
         });
       }
-      console.log("=========== End of storing changed ===========");
+      // console.log("=========== End of storing changed ===========");
 
       if (eventQueueRef.current.length > MinForcedMergedEvents) {
         sync();
