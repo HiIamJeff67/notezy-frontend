@@ -6,7 +6,9 @@ import {
 import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetMyInfo = async (
@@ -23,6 +25,13 @@ export const queryFnGetMyInfo = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

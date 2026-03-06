@@ -29,7 +29,6 @@ export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export const RegisterResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
-    refreshToken: z.string(),
     csrfToken: z.string(),
     createdAt: z.coerce.date(),
   }),
@@ -60,7 +59,6 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export const LoginResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
-    refreshToken: z.string(),
     csrfToken: z.string(),
     updatedAt: z.coerce.date(),
   }),
@@ -193,6 +191,29 @@ export type ForgetPasswordResponse = z.infer<
   typeof ForgetPasswordResponseSchema
 >;
 
+/* ============================== ResetMe Context ============================== */
+
+export const ResetMeRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+    csrfToken: z.string(),
+  }),
+  body: z.object({
+    authCode: z.string().length(6),
+  }),
+});
+
+export type ResetMeRequest = z.infer<typeof ResetMeRequestSchema>;
+
+export const ResetMeResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type ResetMeResponse = z.infer<typeof ResetMeResponseSchema>;
+
 /* ============================== DeleteMe Context ============================== */
 
 export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
@@ -202,7 +223,7 @@ export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
     csrfToken: z.string(),
   }),
   body: z.object({
-    authCode: z.string().length(6),
+    authCode: z.string().refine(val => val.length === 0 || val.length === 6),
   }),
 });
 

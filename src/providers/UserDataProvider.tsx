@@ -18,6 +18,7 @@ interface UserDataContextType {
   userData: UserData | null;
   setUserData: (userData: UserData | null) => void;
   updateUserData: (fields: Partial<UserData>) => boolean;
+  fetchUserData: (accessToken: string | null) => Promise<void>;
   logout: () => void;
 }
 
@@ -46,8 +47,16 @@ export const UserDataProvider = ({
       LocalStorageKeys.accessToken
     );
     if (userData === null && accessToken && enableAutoFetching) {
-      loadingManager.startAsyncTransactionLoading(async () => {
+      fetchUserData(accessToken);
+    }
+  }, [enableAutoFetching]);
+
+  const fetchUserData = useCallback(
+    async (accessToken: string | null) =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
         try {
+          if (accessToken === null) throw new Error(); // throw empty error to enter catch scope
+
           const userAgent = navigator.userAgent;
           const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
             {
@@ -79,9 +88,9 @@ export const UserDataProvider = ({
             router.push(WebURLPathDictionary.auth.login);
           }
         }
-      });
-    }
-  }, [enableAutoFetching]);
+      }),
+    [router, loadingManager, getUserDataQuerier]
+  );
 
   /**
    * A method within useUserData() to update the user data of the current user
@@ -97,12 +106,12 @@ export const UserDataProvider = ({
   };
 
   const logout = useCallback(async () => {
+    setUserData(null);
     const userAgent = navigator.userAgent;
     // logout without showing error if there is one
     await logoutMutator.mutateAsync({
       header: { userAgent: userAgent },
     });
-    setUserData(null);
   }, [logoutMutator, setUserData]);
 
   const contextValue: UserDataContextType = {
@@ -111,6 +120,7 @@ export const UserDataProvider = ({
     userData: userData,
     setUserData: setUserData,
     updateUserData: updateUserData,
+    fetchUserData: fetchUserData,
     logout: logout,
   };
 

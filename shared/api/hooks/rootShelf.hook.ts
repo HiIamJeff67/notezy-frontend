@@ -38,7 +38,9 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import {
   QueryKey,
   useMutation,
@@ -134,6 +136,13 @@ export const useCreateRootShelf = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -191,6 +200,13 @@ export const useUpdateMyRootShelfById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -284,6 +300,13 @@ export const useRestoreMyRootShelfById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -384,6 +407,13 @@ export const useRestoreMyRootShelvesByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -455,6 +485,13 @@ export const useDeleteMyRootShelfById = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -511,6 +548,13 @@ export const useDeleteMyRootShelvesByIds = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },

@@ -19,7 +19,7 @@ export class SessionStorageManipulator {
       sessionStorage.removeItem(testKey);
       return true;
     } catch {
-      console.log(`The sessionStorage is not available`);
+      console.error(`The sessionStorage is not available`);
       return false;
     }
   };
@@ -56,7 +56,7 @@ export class SessionStorageManipulator {
   };
 
   static getAllItems = <
-    K extends SessionStorageKeys
+    K extends SessionStorageKeys,
   >(): Partial<SessionStorageItem> => {
     if (!this.isSessionStorageAvailable())
       return {} as Partial<SessionStorageItem>;

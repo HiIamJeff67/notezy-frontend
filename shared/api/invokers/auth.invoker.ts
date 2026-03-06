@@ -13,6 +13,8 @@ import {
   RegisterResponse,
   ResetEmailRequest,
   ResetEmailResponse,
+  ResetMeRequest,
+  ResetMeResponse,
   SendAuthCodeRequest,
   SendAuthCodeResponse,
   ValidateEmailRequest,
@@ -216,6 +218,37 @@ export async function ForgetPassword(
   }
 
   const formattedResponse = (await response.json()) as ForgetPasswordResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
+export async function ResetMe(
+  request: ResetMeRequest
+): Promise<ResetMeResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetMe}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        "X-CSRF-Token": request.header.csrfToken,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse = (await response.json()) as ResetMeResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

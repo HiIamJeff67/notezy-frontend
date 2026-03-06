@@ -22,6 +22,9 @@ import {
   ResetEmailRequest,
   ResetEmailRequestSchema,
   ResetEmailResponse,
+  ResetMeRequest,
+  ResetMeRequestSchema,
+  ResetMeResponse,
   SendAuthCodeRequest,
   SendAuthCodeRequestSchema,
   SendAuthCodeResponse,
@@ -36,16 +39,18 @@ import {
   Logout,
   Register,
   ResetEmail,
+  ResetMe,
   SendAuthCode,
   ValidateEmail,
 } from "@shared/api/invokers/auth.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
 import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
-import { useMutation } from "@tanstack/react-query";
+import { QueryKey, useMutation } from "@tanstack/react-query";
 import { ZodError } from "zod";
 
 export const useRegister = () => {
@@ -64,8 +69,8 @@ export const useRegister = () => {
         LocalStorageKeys.accessToken,
         response.data.accessToken
       );
-      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
-      sessionStorage.setItem(
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
         SessionStorageKeys.csrfToken,
         response.data.csrfToken
       );
@@ -112,8 +117,8 @@ export const useLogin = () => {
         LocalStorageKeys.accessToken,
         response.data.accessToken
       );
-      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
-      sessionStorage.setItem(
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
         SessionStorageKeys.csrfToken,
         response.data.csrfToken
       );
@@ -156,7 +161,7 @@ export const useLogout = () => {
       queryClient.removeQueries();
       apolloClient.clearStore();
       LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
-      sessionStorage.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -187,6 +192,22 @@ export const useSendAuthCode = () => {
     ): Promise<SendAuthCodeResponse> => {
       const validatedRequest = SendAuthCodeRequestSchema.parse(request);
       return await SendAuthCode(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -226,6 +247,13 @@ export const useValidateEmail = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -273,6 +301,13 @@ export const useResetEmail = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -308,9 +343,23 @@ export const useForgetPassword = () => {
       const validatedRequest = ForgetPasswordRequestSchema.parse(request);
       return await ForgetPassword(validatedRequest);
     },
-    onSuccess: _ => {
+    onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -336,6 +385,71 @@ export const useForgetPassword = () => {
   };
 };
 
+export const useResetMe = () => {
+  const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
+
+  const mutation = useMutation({
+    mutationFn: async (request: ResetMeRequest): Promise<ResetMeResponse> => {
+      const validatedRequest = ResetMeRequestSchema.parse(request);
+      return await ResetMe(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      apolloClient.cache.evict({ fieldName: "searchRootShelves" });
+      const targetKeys: QueryKey[] = [
+        queryKeys.user.data(),
+        queryKeys.userInfo.all(),
+        queryKeys.rootShelf.all(),
+        queryKeys.subShelf.all(),
+        queryKeys.material.all(),
+        queryKeys.blockPack.all(),
+        queryKeys.blockGroup.all(),
+        queryKeys.block.all(),
+        queryKeys.blockPackWithBlockGroup.all(),
+        queryKeys.blockGroupWithBlock.all(),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKeys.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "RESET_ME_HOOK" as const,
+  };
+};
+
 export const useDeleteMe = () => {
   const queryClient = getQueryClient();
 
@@ -344,7 +458,7 @@ export const useDeleteMe = () => {
       const validatedRequest = DeleteMeRequestSchema.parse(request);
       return await DeleteMe(validatedRequest);
     },
-    onSuccess: (response, _) => {
+    onSuccess: _ => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
     },
     onError: error => {

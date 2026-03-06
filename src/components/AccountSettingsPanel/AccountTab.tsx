@@ -1,6 +1,6 @@
 "use client";
 
-import SettingMenuItem from "@/components/SettingMenuItem/SettingMenuItem";
+import SettingMenuItem from "@/components/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,25 +24,41 @@ import { useLanguage, useLoading } from "@/hooks";
 import { useUserData } from "@/hooks/useUserData";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
+import { FakePrivateUser } from "@shared/constants";
 import { AllUserStatus } from "@shared/enums";
 import { PrivateUser, PrivateUserSchema } from "@shared/types/user.type";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
-interface AccountTabProps {
-  user: PrivateUser;
-}
-
-const AccountTab = memo(({ user }: AccountTabProps) => {
+const AccountTab = memo(() => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userDataManager = useUserData();
+
+  const user: PrivateUser = useMemo(() => {
+    if (!userDataManager.userData) return FakePrivateUser;
+    return {
+      publicId: userDataManager.userData.publicId,
+      name: userDataManager.userData.name,
+      displayName: userDataManager.userData.displayName,
+      email: userDataManager.userData.email,
+      role: userDataManager.userData.role,
+      plan: userDataManager.userData.plan,
+      status: userDataManager.userData.status,
+      updatedAt: userDataManager.userData.updatedAt,
+      createdAt: userDataManager.userData.createdAt,
+    };
+  }, [userDataManager.userData]);
 
   const userForm = useForm({
     resolver: zodResolver(PrivateUserSchema),
     defaultValues: user,
   });
+
+  useEffect(() => {
+    userForm.reset(user);
+  }, [user, userForm]);
 
   const statusOptions = useMemo(
     () =>
@@ -96,10 +112,18 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
   return (
     <Form {...userForm}>
       <form
-        onSubmit={userForm.handleSubmit(handleSaveUserOnSubmit)}
-        className="w-full h-full overflow-y-scroll"
+        className="w-full h-full overflow-hidden flex flex-col"
+        method="POST"
+        onSubmit={async e => {
+          e.preventDefault();
+          await userForm.handleSubmit(handleSaveUserOnSubmit);
+        }}
       >
-        <div className="px-8 pt-12 pb-8 bg-secondary flex flex-col gap-6 min-h-full">
+        <div
+          className="
+          flex flex-col px-8 pt-12 pb-8 bg-secondary gap-6 min-h-full
+          overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
+        >
           <FormField
             control={userForm.control}
             name="publicId"
@@ -223,7 +247,7 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
                       ? field.value.toLocaleDateString()
                       : field.value
                   }
-                  isLast={true}
+                  hideSeparator
                 >
                   <></>
                 </SettingMenuItem>
@@ -231,7 +255,7 @@ const AccountTab = memo(({ user }: AccountTabProps) => {
             )}
           />
 
-          <div className="flex justify-start gap-4 mt-8 pt-6 border-t border-border/50">
+          <div className="flex justify-start gap-4 pt-6 border-t border-border/50">
             <Button type="submit" className="max-w-2/5">
               Save Account
             </Button>

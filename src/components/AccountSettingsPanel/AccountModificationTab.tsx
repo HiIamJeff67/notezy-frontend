@@ -1,6 +1,6 @@
 "use client";
 
-import SettingMenuItem from "@/components/SettingMenuItem/SettingMenuItem";
+import SettingMenuItem from "@/components/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,236 +11,577 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import {
+  useDeleteMe,
+  useForgetPassword,
+  useResetEmail,
+  useResetMe,
+} from "@shared/api/hooks/auth.hook";
+import { WebURLPathDictionary } from "@shared/constants";
+import { UserRole } from "@shared/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
+import SettingMenu from "../SettingMenu/SettingMenu";
+import SettingMenuButton from "../SettingMenu/SettingMenuButton";
 
-const AccountModificationTab = () => {
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+interface AccountModificationTabProps {
+  sendAuthCodeTimeCounter: number;
+  setSendAuthCodeTimeCounter: (newSendAuthCodeTimeCounter: number) => void;
+  isSendAuthCodePending: boolean;
+  handleSendAuthCode: (
+    onSuccess?: () => void,
+    onBlock?: () => void,
+    fallback?: () => void
+  ) => void;
+  onPanelClose: () => void;
+}
+
+const AccountModificationTab = ({
+  sendAuthCodeTimeCounter,
+  setSendAuthCodeTimeCounter,
+  isSendAuthCodePending,
+  handleSendAuthCode,
+  onPanelClose,
+}: AccountModificationTabProps) => {
+  const router = useAppRouter();
+  const loadingManager = useLoading();
+  const languageManager = useLanguage();
+  const userDataManager = useUserData();
+
+  const resetMeMutator = useResetMe();
+  const resetEmailMutator = useResetEmail();
+  const forgetPasswordMutator = useForgetPassword();
+  const deleteMeMutator = useDeleteMe();
+
+  const [resetMeDialogOpen, setResetMeDialogOpen] = useState<boolean>(false);
+  const [resetEmailDialogOpen, setResetEmailDialogOpen] =
+    useState<boolean>(false);
   const [changePasswordDialogOpen, setChangePasswordDialogOpen] =
-    useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
+    useState<boolean>(false);
+  const [deleteMeDialogOpen, setDeleteMeDialogOpen] = useState<boolean>(false);
 
-  const handleResetAccount = async () => {
-    try {
-      console.log("重置帳戶");
-      toast.success("帳戶已重置");
-      setResetDialogOpen(false);
-    } catch (error) {
-      toast.error("重置帳戶失敗");
-    }
-  };
+  const handleResetMe = useCallback(
+    async (authCode: string): Promise<void> =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          const csrfToken = SessionStorageManipulator.getItemByKey(
+            SessionStorageKeys.csrfToken
+          );
+          await resetMeMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+              csrfToken: csrfToken ?? "",
+            },
+            body: {
+              authCode: authCode,
+            },
+          });
+          setSendAuthCodeTimeCounter(0);
+          setResetMeDialogOpen(false);
+          const accessToken = LocalStorageManipulator.getItemByKey(
+            LocalStorageKeys.accessToken
+          );
+          userDataManager.fetchUserData(accessToken);
+          onPanelClose();
+          toast.success("Your account has been reset");
+          router.push(WebURLPathDictionary.root.dashboard._);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      router,
+      userDataManager,
+      languageManager,
+      resetMeMutator,
+      setSendAuthCodeTimeCounter,
+      setResetMeDialogOpen,
+      SessionStorageManipulator,
+      SessionStorageKeys,
+      onPanelClose,
+    ]
+  );
 
-  const handleChangePassword = async (
-    oldPassword: string,
-    newPassword: string
-  ) => {
-    try {
-      console.log("更改密碼", { oldPassword, newPassword });
-      toast.success("密碼已更新");
-      setChangePasswordDialogOpen(false);
-    } catch (error) {
-      toast.error("密碼更新失敗");
-    }
-  };
+  const handleResetEmail = useCallback(
+    async (newEmail: string, authCode: string) =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          const csrfToken = SessionStorageManipulator.getItemByKey(
+            SessionStorageKeys.csrfToken
+          );
+          await resetEmailMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+              csrfToken: csrfToken ?? "",
+            },
+            body: {
+              newEmail: newEmail,
+              authCode: authCode,
+            },
+          });
+          setSendAuthCodeTimeCounter(0);
+          setResetEmailDialogOpen(true);
+          userDataManager.updateUserData({ email: newEmail });
+          toast.success("Your email has been reset");
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      userDataManager,
+      languageManager,
+      resetEmailMutator,
+      setSendAuthCodeTimeCounter,
+      setResetEmailDialogOpen,
+      SessionStorageManipulator,
+      SessionStorageKeys,
+    ]
+  );
 
-  // 刪除帳戶
-  const handleDeleteAccount = async () => {
-    if (confirmText !== "DELETE") {
-      toast.error("請輸入 DELETE 以確認刪除");
-      return;
-    }
+  const handleChangePassword = useCallback(
+    async (newPassword: string, confirmPassword: string, authCode: string) =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          if (newPassword !== confirmPassword) {
+            throw new Error(
+              "The new password and confirm password does not match"
+            );
+          }
 
-    try {
-      console.log("刪除帳戶");
-      toast.success("帳戶已刪除");
-      setDeleteDialogOpen(false);
-      setConfirmText("");
-    } catch (error) {
-      toast.error("刪除帳戶失敗");
-    }
-  };
+          if (userDataManager.userData?.email === undefined) {
+            router.push(WebURLPathDictionary.home);
+            userDataManager.logout();
+            throw new Error("The user session is expired, please login again");
+          }
+
+          const userAgent = navigator.userAgent;
+          await forgetPasswordMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+            },
+            body: {
+              account: userDataManager.userData?.email,
+              newPassword: newPassword,
+              authCode: authCode,
+            },
+          });
+          setSendAuthCodeTimeCounter(0);
+          setChangePasswordDialogOpen(false);
+          toast.success("Your password has been changed");
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      userDataManager,
+      languageManager,
+      forgetPasswordMutator,
+      setSendAuthCodeTimeCounter,
+      setChangePasswordDialogOpen,
+      onPanelClose,
+    ]
+  );
+
+  const handleDeleteMe = useCallback(
+    async (confirmDeleteText: string, authCode: string) =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          if (confirmDeleteText !== "DELETE") {
+            throw new Error(
+              'Please enter the word "DELETE" to delete your account'
+            );
+          }
+
+          const userAgent = navigator.userAgent;
+          const csrfToken = SessionStorageManipulator.getItemByKey(
+            SessionStorageKeys.csrfToken
+          );
+          await deleteMeMutator.mutateAsync({
+            header: {
+              userAgent: userAgent,
+              csrfToken: csrfToken ?? "",
+            },
+            body: {
+              authCode: authCode,
+            },
+          });
+          setSendAuthCodeTimeCounter(0);
+          setDeleteMeDialogOpen(false);
+          onPanelClose();
+          userDataManager.setUserData(null);
+          toast.success("Your account has been deleted");
+          console.log(WebURLPathDictionary.home);
+          router.push(WebURLPathDictionary.home);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      router,
+      userDataManager,
+      languageManager,
+      deleteMeMutator,
+      setSendAuthCodeTimeCounter,
+      setDeleteMeDialogOpen,
+      onPanelClose,
+    ]
+  );
 
   return (
-    <div className="w-full h-full overflow-y-scroll">
-      <div className="px-8 pt-12 pb-8 bg-secondary flex flex-col gap-6 min-h-full">
-        <SettingMenuItem
-          title="重置帳戶"
-          description="將你的帳戶回復到初始狀態，清除所有個人資料但保留帳戶"
-        >
-          <Button variant="outline" onClick={() => setResetDialogOpen(true)}>
-            重置
-          </Button>
-        </SettingMenuItem>
-
-        <SettingMenuItem
-          title="更改密碼"
-          description="更新你的帳戶密碼以確保安全性"
-        >
-          <Button
-            variant="outline"
-            onClick={() => setChangePasswordDialogOpen(true)}
-          >
-            更改密碼
-          </Button>
-        </SettingMenuItem>
-
-        <SettingMenuItem
-          title="刪除帳戶"
-          description="永久刪除該帳號並無法再存取任何內部資訊"
-          titleClassName="text-destructive"
-          isLast={true}
-        >
-          <Button
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            刪除帳戶
-          </Button>
-        </SettingMenuItem>
-      </div>
-
-      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>確認重置帳戶</DialogTitle>
-            <DialogDescription>
-              這將會清除你的所有個人資料，包括筆記、設定等。此操作無法復原。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setResetDialogOpen(false)}>
-              取消
-            </Button>
-            <Button variant="destructive" onClick={handleResetAccount}>
-              確認重置
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={changePasswordDialogOpen}
-        onOpenChange={setChangePasswordDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>更改密碼</DialogTitle>
-            <DialogDescription>請輸入你的舊密碼和新密碼</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const oldPassword = formData.get("oldPassword") as string;
-              const newPassword = formData.get("newPassword") as string;
-              const confirmPassword = formData.get("confirmPassword") as string;
-
-              if (newPassword !== confirmPassword) {
-                toast.error("新密碼確認不符");
-                return;
-              }
-
-              handleChangePassword(oldPassword, newPassword);
-            }}
-            className="space-y-4"
-          >
-            <div>
-              <Label htmlFor="oldPassword">舊密碼</Label>
-              <Input
-                id="oldPassword"
-                name="oldPassword"
-                type="password"
-                required
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="newPassword">新密碼</Label>
-              <Input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                required
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="confirmPassword">確認新密碼</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="mt-1"
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setChangePasswordDialogOpen(false)}
-              >
-                取消
-              </Button>
-              <Button type="submit">更新密碼</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={deleteDialogOpen}
-        onOpenChange={open => {
-          setDeleteDialogOpen(open);
-          if (!open) setConfirmText("");
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-destructive">永久刪除帳戶</DialogTitle>
-            <DialogDescription>
-              <strong>警告：</strong>
-              這將永久刪除你的帳戶和所有資料，包括所有筆記、個人設定和帳戶資訊。此操作無法復原。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="confirmDelete">
-                請輸入 <code className="bg-muted px-1 rounded">DELETE</code>{" "}
-                以確認刪除
-              </Label>
-              <Input
-                id="confirmDelete"
-                value={confirmText}
-                onChange={e => setConfirmText(e.target.value)}
-                placeholder="輸入 DELETE"
-                className="mt-1"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false);
-                setConfirmText("");
+    <SettingMenu
+      dialogs={[
+        <Dialog open={resetMeDialogOpen} onOpenChange={setResetMeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>重置帳戶</DialogTitle>
+              <DialogDescription>
+                {`這將會清除你的所有個人資料，包括筆記、設定等。此操作無法復原。如果您仍確認要重置，${
+                  userDataManager.userData?.email
+                    ? `請輸入我們剛剛寄到
+                ${userDataManager.userData?.email} 的驗證碼來完成驗證。`
+                    : "請輸入驗證碼來完成驗證。"
+                }`}
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              method="POST"
+              onSubmit={async e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const authCode = formData.get("authCode") as string;
+                await handleResetMe(authCode);
               }}
             >
-              取消
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAccount}
-              disabled={confirmText !== "DELETE"}
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="authCode"
+                  name="authCode"
+                  type="text"
+                  placeholder="輸入驗證碼"
+                  required
+                  className="w-full px-4 py-3"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  disabled={sendAuthCodeTimeCounter > 0}
+                  onClick={() => handleSendAuthCode()}
+                  className="absolute right-0.5 max-w-2/5 top-1/2 px-3 -translate-y-1/2 text-xs font-bold"
+                >
+                  {sendAuthCodeTimeCounter > 0
+                    ? `${sendAuthCodeTimeCounter}s 後重送`
+                    : "重送驗證碼"}
+                </Button>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  onClick={() => setResetMeDialogOpen(false)}
+                >
+                  取消
+                </Button>
+                <Button variant="destructive" type="submit">
+                  確認重置
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>,
+        <Dialog
+          open={resetEmailDialogOpen}
+          onOpenChange={setResetEmailDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>更改電子郵件</DialogTitle>
+              <DialogDescription>
+                請確保輸入跟舊電子郵件不同的新電子郵件
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              method="POST"
+              onSubmit={async e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const authCode = formData.get("authCode") as string;
+                const newEmail = formData.get("newEmail") as string;
+                await handleResetEmail(authCode, newEmail);
+              }}
             >
-              永久刪除帳戶
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="authCode"
+                  name="authCode"
+                  type="text"
+                  placeholder="輸入驗證碼"
+                  required
+                  className="w-full px-4 py-3"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  disabled={sendAuthCodeTimeCounter > 0}
+                  onClick={() => handleSendAuthCode()}
+                  className="absolute right-0.5 max-w-2/5 top-1/2 px-3 -translate-y-1/2 text-xs font-bold"
+                >
+                  {sendAuthCodeTimeCounter > 0
+                    ? `${sendAuthCodeTimeCounter}s 後重送`
+                    : "重送驗證碼"}
+                </Button>
+              </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="newEmail"
+                  name="newEmail"
+                  type="email"
+                  placeholder="輸入新電子郵件"
+                  required
+                  className="w-full px-4 py-3"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  onClick={() => setResetEmailDialogOpen(false)}
+                >
+                  取消
+                </Button>
+                <Button variant="destructive" type="submit">
+                  確認更改
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>,
+        <Dialog
+          open={changePasswordDialogOpen}
+          onOpenChange={setChangePasswordDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>更改密碼</DialogTitle>
+              <DialogDescription>請輸入你的舊密碼和新密碼</DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              method="POST"
+              onSubmit={async e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newPassword = formData.get("newPassword") as string;
+                const confirmPassword = formData.get(
+                  "confirmPassword"
+                ) as string;
+                const authCode = formData.get("authCode") as string;
+                await handleChangePassword(
+                  newPassword,
+                  confirmPassword,
+                  authCode
+                );
+              }}
+            >
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="newPassword"
+                  name="newPassword"
+                  type="password"
+                  placeholder="輸入新密碼"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="輸入確認密碼"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="authCode"
+                  name="authCode"
+                  type="text"
+                  placeholder="輸入驗證碼"
+                  required
+                  className="w-full px-4 py-3"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  disabled={sendAuthCodeTimeCounter > 0}
+                  onClick={() => handleSendAuthCode()}
+                  className="absolute right-0.5 max-w-2/5 top-1/2 px-3 -translate-y-1/2 text-xs font-bold"
+                >
+                  {sendAuthCodeTimeCounter > 0
+                    ? `${sendAuthCodeTimeCounter}s 後重送`
+                    : "重送驗證碼"}
+                </Button>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setChangePasswordDialogOpen(false)}
+                >
+                  取消
+                </Button>
+                <Button type="submit">更新密碼</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>,
+        <Dialog open={deleteMeDialogOpen} onOpenChange={setDeleteMeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">
+                永久刪除帳戶
+              </DialogTitle>
+              <DialogDescription>
+                <strong>警告：</strong>
+                這將永久刪除你的帳戶和所有資料，包括所有筆記、個人設定和帳戶資訊。此操作無法復原。
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              method="POST"
+              onSubmit={async e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const authCode = (formData.get("authCode") ?? "") as string;
+                const confirmDeleteText = formData.get(
+                  "confirmDeleteText"
+                ) as string;
+                await handleDeleteMe(confirmDeleteText, authCode);
+              }}
+            >
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="authCode"
+                  name="authCode"
+                  type="text"
+                  placeholder="輸入驗證碼"
+                  required={userDataManager.userData?.role !== UserRole.Guest}
+                  className="w-full px-4 py-3"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  disabled={sendAuthCodeTimeCounter > 0}
+                  onClick={() => handleSendAuthCode()}
+                  className="absolute right-0.5 max-w-2/5 top-1/2 px-3 -translate-y-1/2 text-xs font-bold"
+                >
+                  {sendAuthCodeTimeCounter > 0
+                    ? `${sendAuthCodeTimeCounter}s 後重送`
+                    : "重送驗證碼"}
+                </Button>
+              </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
+                  id="confirmDeleteText"
+                  name="confirmDeleteText"
+                  type="text"
+                  placeholder="輸入 DELETE 來確認刪除"
+                  required
+                  className="w-full px-4 py-3"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDeleteMeDialogOpen(false);
+                  }}
+                >
+                  取消
+                </Button>
+                <Button variant="destructive" type="submit">
+                  永久刪除
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>,
+      ]}
+    >
+      <SettingMenuItem
+        title="重置帳戶"
+        description="將你的帳戶回復到初始狀態，清除所有個人資料但保留帳戶"
+      >
+        <SettingMenuButton
+          variant="outline"
+          onClick={() => {
+            setResetMeDialogOpen(true);
+            handleSendAuthCode();
+          }}
+        >
+          重置
+        </SettingMenuButton>
+      </SettingMenuItem>
+
+      <SettingMenuItem
+        title="更改電子郵件"
+        description={`變更當前綁定的電子郵件${userDataManager.userData?.email && `(${userDataManager.userData.email})`}`}
+      >
+        <SettingMenuButton
+          variant="outline"
+          onClick={() => {
+            setResetEmailDialogOpen(true);
+            handleSendAuthCode();
+          }}
+        >
+          更改
+        </SettingMenuButton>
+      </SettingMenuItem>
+
+      <SettingMenuItem
+        title="更改密碼"
+        description="更新你的帳戶密碼以確保安全性"
+      >
+        <SettingMenuButton
+          variant="outline"
+          onClick={() => {
+            setChangePasswordDialogOpen(true);
+            handleSendAuthCode();
+          }}
+        >
+          更改
+        </SettingMenuButton>
+      </SettingMenuItem>
+
+      <SettingMenuItem
+        title="刪除帳戶"
+        description="永久刪除該帳號並無法再存取任何內部資訊"
+        titleClassName="text-destructive"
+        hideSeparator
+      >
+        <SettingMenuButton
+          variant="destructive"
+          onClick={() => {
+            setDeleteMeDialogOpen(true);
+            handleSendAuthCode();
+          }}
+        >
+          刪除
+        </SettingMenuButton>
+      </SettingMenuItem>
+    </SettingMenu>
   );
 };
 

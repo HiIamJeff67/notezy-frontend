@@ -56,7 +56,9 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import {
   QueryKey,
   useMutation,
@@ -252,6 +254,13 @@ export const useCreateBlockPack = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -306,6 +315,13 @@ export const useUpdateMyBlockPackById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -367,6 +383,13 @@ export const useMoveMyBlockPackById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -438,6 +461,13 @@ export const useMoveMyBlockPacksByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -495,6 +525,13 @@ export const useRestoreMyBlockPackById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -568,6 +605,13 @@ export const useRestoreMyBlockPacksByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -625,6 +669,13 @@ export const useDeleteMyBlockPackById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -696,6 +747,13 @@ export const useDeleteMyBlockPacksByIds = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },

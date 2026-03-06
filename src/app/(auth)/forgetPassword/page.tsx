@@ -52,7 +52,7 @@ const ForgetPasswordPage = () => {
   }, [sendAuthCodeTimeCounter]);
 
   const handleSendAuthCodeOnClick = useCallback(
-    async function (): Promise<void> {
+    async (): Promise<void> =>
       startSendAuthCodeTransition(async () => {
         try {
           const userAgent = navigator.userAgent;
@@ -79,8 +79,7 @@ const ForgetPasswordPage = () => {
           setSendAuthCodeTimeCounter(0);
           toast.error(languageManager.tError(error));
         }
-      });
-    },
+      }),
     [email, languageManager, sendAuthCodeMutator]
   );
 

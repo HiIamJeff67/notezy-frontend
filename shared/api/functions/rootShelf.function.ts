@@ -5,7 +5,9 @@ import {
 } from "@shared/api/interfaces/rootShelf.interface";
 import { GetMyRootShelfById } from "@shared/api/invokers/rootShelf.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetMyRootShelfById = async (
@@ -22,6 +24,13 @@ export const queryFnGetMyRootShelfById = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

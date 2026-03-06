@@ -63,7 +63,9 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import {
   FetchQueryOptions,
   QueryKey,
@@ -430,6 +432,13 @@ export const useInsertBlock = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -517,6 +526,13 @@ export const useInsertBlocks = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -565,6 +581,13 @@ export const useUpdateMyBlockById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -651,6 +674,13 @@ export const useUpdateMyBlocksByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -719,6 +749,13 @@ export const useRestoreMyBlockById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -792,6 +829,13 @@ export const useRestoreMyBlocksByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -859,6 +903,13 @@ export const useDeleteMyBlockById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -930,6 +981,13 @@ export const useDeleteMyBlocksByIds = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },

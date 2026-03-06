@@ -56,7 +56,9 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import {
   QueryKey,
   useMutation,
@@ -253,6 +255,13 @@ export const useCreateSubShelfByRootShelfId = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -304,6 +313,13 @@ export const useUpdateMySubShelfById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -366,6 +382,13 @@ export const useMoveMySubShelf = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -438,6 +461,13 @@ export const useMoveMySubShelves = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -493,6 +523,13 @@ export const useRestoreMySubShelfById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -564,6 +601,13 @@ export const useRestoreMySubShelvesByIds = () => {
           response.newAccessToken
         );
       }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
+        );
+      }
     },
     onError: error => {
       if (error instanceof ZodError) {
@@ -618,6 +662,13 @@ export const useDeleteMySubShelfById = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -687,6 +738,13 @@ export const useDeleteMySubShelvesByIds = () => {
         LocalStorageManipulator.setItem(
           LocalStorageKeys.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKeys.csrfToken,
+          response.newCSRFToken
         );
       }
     },

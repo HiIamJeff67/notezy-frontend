@@ -22,7 +22,9 @@ import {
   GetMyBlockGroupsByPrevBlockGroupId,
 } from "@shared/api/invokers/blockGroup.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetMyBlockGroupById = async (
@@ -39,6 +41,13 @@ export const queryFnGetMyBlockGroupById = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -72,6 +81,13 @@ export const queryFnGetMyBlockGroupAndItsBlocksById = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -108,6 +124,13 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByIds = async (
         response.newAccessToken
       );
     }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
+      );
+    }
     return response;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -140,6 +163,13 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -175,6 +205,13 @@ export const queryFnGetMyBlockGroupsByPrevBlockGroupId = async (
         response.newAccessToken
       );
     }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
+      );
+    }
     return response;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -206,6 +243,13 @@ export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

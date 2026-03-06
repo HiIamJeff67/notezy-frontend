@@ -16,7 +16,9 @@ import {
   GetMyMaterialsByParentSubShelfId,
 } from "@shared/api/invokers/material.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetMyMaterialById = async (
@@ -33,6 +35,13 @@ export const queryFnGetMyMaterialById = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -68,6 +77,13 @@ export const queryFnGetMyMaterialAndItsParentById = async (
         response.newAccessToken
       );
     }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
+      );
+    }
     return response;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -101,6 +117,13 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
         response.newAccessToken
       );
     }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
+      );
+    }
     return response;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -132,6 +155,13 @@ export const queryFnGetAllMyMaterialsByRootShelfId = async (
       LocalStorageManipulator.setItem(
         LocalStorageKeys.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

@@ -53,7 +53,6 @@ const LoginPage = () => {
           router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
-          console.error(error);
           toast.error(languageManager.tError(error));
         }
       });

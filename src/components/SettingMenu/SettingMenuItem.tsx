@@ -4,7 +4,7 @@ interface SettingMenuItemProps {
   title: string;
   description: string;
   children: ReactNode;
-  isLast?: boolean;
+  hideSeparator?: boolean;
   titleClassName?: string;
 }
 
@@ -12,13 +12,13 @@ const SettingMenuItem = ({
   title,
   description,
   children,
-  isLast = false,
+  hideSeparator = false,
   titleClassName = "",
 }: SettingMenuItemProps) => {
   return (
     <div
       className={`flex items-center justify-between py-3 ${
-        !isLast ? "border-b border-border/50" : ""
+        !hideSeparator ? "border-b border-border/50" : ""
       }`}
     >
       <div className="flex-1">

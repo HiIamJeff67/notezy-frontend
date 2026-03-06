@@ -156,10 +156,10 @@ const AuthPanel = ({
                     <button
                       type="button"
                       className={`
-                        absolute right-0 top-1/2 px-3 py-1 -translate-y-1/2 rounded
+                        absolute right-1 top-1/2 px-3 py-1 -translate-y-1/2 rounded
                         button-gradient border border-green-400
                         text-green-400 font-mono text-xs font-bold
-                        transition-all duration-300 max-w-2/5 h-4/5 mr-1
+                        transition-all duration-300 max-w-2/5 h-4/5
                         hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] 
                         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none
                         ${
