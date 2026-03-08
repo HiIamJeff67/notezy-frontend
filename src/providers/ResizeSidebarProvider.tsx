@@ -20,9 +20,9 @@ export type ResizeSidebarOptions = {
 };
 
 const DEFAULTS = {
-  minWidth: 256,
+  minWidth: 300,
   maxWidth: 512,
-  defaultWidth: 256,
+  defaultWidth: 300,
 } as const;
 
 type ResizeSidebarContextValue = {

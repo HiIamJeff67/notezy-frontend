@@ -1,8 +1,21 @@
 "use client";
 
+import {
+  OAuthAppleIcon,
+  OAuthGithubIcon,
+  OAuthGoogleIcon,
+  OAuthMetaIcon,
+} from "@/components/icons/OAuthIcon";
 import "@/global/styles/panel.css";
 import { useTheme } from "@/hooks";
 import { toCamelCase } from "@/util/stringCaseConversions";
+
+const OAuthIcons = {
+  google: (className: string) => <OAuthGoogleIcon className={className} />,
+  meta: (className: string) => <OAuthMetaIcon className={className} />,
+  github: (className: string) => <OAuthGithubIcon className={className} />,
+  apple: (className: string) => <OAuthAppleIcon className={className} />,
+};
 
 interface AuthPanelInput {
   title: string;
@@ -24,6 +37,13 @@ interface AuthSwitchButton {
   onClick: () => void;
 }
 
+export interface AuthOAuthButton {
+  provider: keyof typeof OAuthIcons;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
 interface AuthPanelProps {
   title: string;
   subtitle?: string;
@@ -31,6 +51,7 @@ interface AuthPanelProps {
   submitButtonText: string;
   onSubmit: () => Promise<void>;
   switchButtons?: AuthSwitchButton[];
+  oauthButtons?: AuthOAuthButton[];
   statusDetail?: string;
   isLoading?: boolean;
 }
@@ -42,6 +63,7 @@ const AuthPanel = ({
   submitButtonText,
   onSubmit,
   switchButtons,
+  oauthButtons,
   statusDetail,
   isLoading = false,
 }: AuthPanelProps) => {
@@ -204,6 +226,62 @@ const AuthPanel = ({
             </button>
           </form>
 
+          {oauthButtons && oauthButtons.length > 0 && (
+            <div className="mt-6">
+              {/* Tech Separator */}
+              <div className="flex items-center justify-center gap-4 mb-6 opacity-70">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
+                <span
+                  className={`font-mono text-[10px] tracking-[3px] uppercase ${
+                    themeManager.currentTheme.isDark
+                      ? "text-gray-500"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Or Continue With
+                </span>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {oauthButtons.map((btn, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={btn.onClick}
+                    disabled={btn.disabled || isLoading}
+                    className={`
+                            group relative w-full flex items-center justify-center gap-4
+                            px-4 py-3 rounded border
+                            font-mono text-sm tracking-wider font-bold
+                            transition-all duration-300
+                            ${
+                              themeManager.currentTheme.isDark
+                                ? "bg-[#1f1f1f] text-gray-300 border-gray-700 hover:text-green-400 hover:border-green-400"
+                                : "bg-white/40 text-gray-700 border-gray-400 hover:text-green-600 hover:border-green-600"
+                            }
+                            hover:shadow-[0_0_15px_rgba(0,255,136,0.15)]
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                        `}
+                  >
+                    {/* Icon Render */}
+                    <div className="w-5 h-5 transition-transform duration-300 group-hover:scale-110">
+                      {OAuthIcons[btn.provider]
+                        ? OAuthIcons[btn.provider]("w-full h-full")
+                        : null}
+                    </div>
+
+                    <span>{btn.label}</span>
+
+                    {/* Hover Corner Accents (Mini styling detail) */}
+                    <div className="absolute top-0 right-0 w-1 h-1 bg-green-400/0 group-hover:bg-green-400/50 transition-colors"></div>
+                    <div className="absolute bottom-0 left-0 w-1 h-1 bg-green-400/0 group-hover:bg-green-400/50 transition-colors"></div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {switchButtons && (
             <div className="mt-4 pt-2 border-t border-gray-700/50">
               {switchButtons.map((switchButton, index) => (
@@ -289,7 +367,7 @@ const AuthPanel = ({
                   : "bg-green-400 status-indicator"
               }
             `}
-              ></div>
+              />
               <span>{statusDetail}</span>
             </div>
           )}

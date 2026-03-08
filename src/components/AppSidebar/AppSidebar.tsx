@@ -32,7 +32,13 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
+import {
+  useAppRouter,
+  useLanguage,
+  useLoading,
+  useResizeSidebar,
+  useShelfItem,
+} from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useUserData } from "@/hooks/useUserData";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -49,6 +55,7 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import ShelfCaseIcon from "../icons/ShelfCaseIcon";
 import ResizableSidebar from "../ResizableSidebar/ResizableSidebar";
+import TruncatedText from "../TruncatedText/TruncatedText";
 
 interface AppSidebarProps {
   disabled?: boolean;
@@ -62,6 +69,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const languageManager = useLanguage();
   const modalManager = useModal();
   const sidebarManager = useSidebar();
+  const resizableSidebarManager = useResizeSidebar();
   const userDataManager = useUserData();
   const shelfItemManager = useShelfItem();
 
@@ -191,15 +199,21 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
       <SidebarFooter className="w-full p-0 m-0">
         <Menubar className="w-full h-full flex flex-row justify-start items-center rounded-none bg-transparent border-none">
           <MenubarMenu>
-            <MenubarTrigger className="w-full h-full my-1 flex flex-row gap-4 bg-transparent hover:bg-transparent">
-              <AvatarIcon avatarURL="" size={28} />
+            <MenubarTrigger className="h-full my-1 flex flex-1 flex-row min-w-0 gap-2 bg-transparent hover:bg-transparent">
+              <AvatarIcon avatarURL="" size={30} />
               <div className="w-full flex flex-col text-start">
-                <span className="text-xs font-semibold text-foreground">
+                <TruncatedText
+                  className="text-xs font-semibold text-foreground transition-all"
+                  width={`${resizableSidebarManager.width - 160}px`}
+                >
                   {userDataManager.userData?.name || "User Name"}
-                </span>
-                <span className="text-xs font-light text-foreground">
+                </TruncatedText>
+                <TruncatedText
+                  className="text-xs font-light text-foreground transition-all"
+                  width={`${resizableSidebarManager.width - 160}px`}
+                >
                   {userDataManager.userData?.status || "Offline"}
-                </span>
+                </TruncatedText>
               </div>
             </MenubarTrigger>
           </MenubarMenu>

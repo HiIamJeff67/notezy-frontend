@@ -7,10 +7,14 @@ import {
   ForgetPasswordResponse,
   LoginRequest,
   LoginResponse,
+  LoginViaGoogleRequest,
+  LoginViaGoogleResponse,
   LogoutRequest,
   LogoutResponse,
   RegisterRequest,
   RegisterResponse,
+  RegisterViaGoogleRequest,
+  RegisterViaGoogleResponse,
   ResetEmailRequest,
   ResetEmailResponse,
   ResetMeRequest,
@@ -50,6 +54,34 @@ export async function Register(
   return formattedResponse;
 }
 
+export async function RegisterViaGoogle(
+  request: RegisterViaGoogleRequest
+): Promise<RegisterViaGoogleResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.registerViaGoogle}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as RegisterViaGoogleResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
 export async function Login(request: LoginRequest): Promise<LoginResponse> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
@@ -69,6 +101,33 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
   }
 
   const formattedResponse = (await response.json()) as LoginResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
+export async function LoginViaGoogle(
+  request: LoginViaGoogleRequest
+): Promise<LoginViaGoogleResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.loginViaGoogle}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse = (await response.json()) as LoginViaGoogleResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

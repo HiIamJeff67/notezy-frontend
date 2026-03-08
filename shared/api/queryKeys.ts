@@ -10,6 +10,10 @@ export const queryKeys = {
     all: () => ["userInfo"] as const,
     my: () => ["userInfo", "my"] as const,
   },
+  userAccount: {
+    all: () => ["userAccount"] as const,
+    my: () => ["userAccount", "my"] as const,
+  },
   rootShelf: {
     all: () => ["rootShelf"] as const,
     oneById: (rootShelfId: UUID | undefined) =>

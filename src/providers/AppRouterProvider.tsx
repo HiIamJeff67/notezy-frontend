@@ -23,6 +23,7 @@ interface AppRouterContextType {
   getCurrentPath: () => string;
   getPrevPaths: () => string[];
   push: (path: string) => void;
+  forceNavigate: (path: string) => void;
   replace: (path: string) => void;
   back: (steps?: number) => void;
   forward: (steps?: number) => void;
@@ -88,6 +89,18 @@ export const AppRouterProvider = ({
     [getCurrentPath, isSamePath, router]
   );
 
+  const forceNavigate = useCallback(
+    (path: string) => {
+      if (!isSamePath(getCurrentPath(), path)) {
+        setIsOptimisticNavigating(true);
+        _startRouteTransition(() => {
+          window.location.href = path;
+        });
+      }
+    },
+    [getCurrentPath, isSamePath, router]
+  );
+
   const replace = useCallback(
     (path: string) => {
       if (!isSamePath(getCurrentPath(), path)) {
@@ -134,6 +147,7 @@ export const AppRouterProvider = ({
     getCurrentPath: getCurrentPath,
     getPrevPaths: getPrevPaths,
     push: push,
+    forceNavigate: forceNavigate,
     replace: replace,
     back: back,
     forward: forward,

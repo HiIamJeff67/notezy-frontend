@@ -33,7 +33,9 @@ export const APIURLPathDictionary = {
   },
   auth: {
     register: "auth/register",
+    registerViaGoogle: "auth/registerViaGoogle",
     login: "auth/login",
+    loginViaGoogle: "auth/loginViaGoogle",
     logout: "auth/logout",
     sendAuthCode: "auth/sendAuthCode",
     validateEmail: "auth/validateEmail",
@@ -50,6 +52,12 @@ export const APIURLPathDictionary = {
   userInfo: {
     getMyInfo: "userInfo/getMyInfo",
     updateMyInfo: "userInfo/updateMyInfo",
+  },
+  userAccount: {
+    getMyAccount: "userAccount/getMyAccount",
+    updatedMyAccount: "userAccount/updateMyAccount",
+    bindGoogleAccount: "userAccount/bindGoogleAccount",
+    unbindGoogleAccount: "userAccount/unbindGoogleAccount",
   },
   rootShelf: {
     getMyRootShelfById: "rootShelf/getMyRootShelfById",
@@ -173,6 +181,18 @@ export const WebURLPathDictionary = {
     register: "register",
     login: "login",
     forgetPassword: "forgetPassword",
+    redirect: {
+      error: (title?: string, description?: string) =>
+        `redirect/error?title=${title}&description=${description}`,
+      google: "redirect/google",
+      meta: "redirect/meta",
+    },
+  },
+  oauth: {
+    // the url to start the oauth services
+    google: (qs: string) => {
+      return `https://accounts.google.com/o/oauth2/v2/auth?${qs}`;
+    },
   },
   root: {
     materialEditor: {

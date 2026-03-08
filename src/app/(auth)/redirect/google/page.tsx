@@ -1,71 +1,149 @@
 "use client";
 
-import { useAppRouter } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { getAuthorization } from "@/util/getAuthorization";
+import {
+  useLoginViaGoogle,
+  useRegisterViaGoogle,
+} from "@shared/api/hooks/auth.hook";
+import { useGetUserData } from "@shared/api/hooks/user.hook";
+import { useBindGoogleAccount } from "@shared/api/hooks/userAccount.hook";
+import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { RedirectState } from "@shared/types/redirectState.type";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 function GoogleRedirectPageContent() {
   const searchParams = useSearchParams();
+
   const router = useAppRouter();
-  const effectRan = useRef(false);
+  const loadingManager = useLoading();
+  const languageManager = useLanguage();
+  const userDataManager = useUserData();
+
+  const registerViaGoogleMutator = useRegisterViaGoogle();
+  const loginViaGoogleMutator = useLoginViaGoogle();
+  const bindGoogleAccountMutator = useBindGoogleAccount();
+  const userDataQuerier = useGetUserData();
+
+  const hasRendered = useRef(false);
 
   useEffect(() => {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
+    const state = searchParams.get("state");
 
-    if (effectRan.current || !code || error) {
-      if (error) {
-        console.error("Google Auth Error:", error);
-        router.push("/login?error=google_auth_failed");
-      }
+    if (hasRendered.current) return;
+
+    if (code === null || error !== null) {
+      toast.error(`Google Auth Error: ${error}`);
+      router.push(
+        WebURLPathDictionary.auth.redirect.error(
+          "Google oauth error",
+          languageManager.tError(error)
+        )
+      );
       return;
     }
 
-    effectRan.current = true; // 標記為已執行
+    hasRendered.current = true;
 
-    const loginWithGoogle = async () => {
+    const handleOAuthOnRedirect = async () => {
       try {
-        console.log("Sending code to backend:", code);
+        let action: "register" | "login" | "binding" = "login";
 
-        const res = await fetch(
-          "http://localhost:8080/api/v1/auth/google/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ authCode: code }),
+        if (state) {
+          const decoded = state.startsWith("{") ? state : atob(state);
+          const parsedState = JSON.parse(decoded) as RedirectState;
+          if (parsedState.action) {
+            action = parsedState.action;
           }
-        );
-
-        if (!res.ok) {
-          throw new Error("Backend validation failed");
         }
 
-        const data = await res.json();
-        localStorage.setItem("accessToken", data.token); // 或存入 cookie / zustand
+        let accessToken: string | null = null;
+        const userAgent = navigator.userAgent;
+        switch (action) {
+          case "register":
+            const responseOfRegistering =
+              await registerViaGoogleMutator.mutateAsync({
+                header: {
+                  userAgent: userAgent,
+                },
+                body: {
+                  authorizationCode: code,
+                },
+              });
+            accessToken = responseOfRegistering.data.accessToken;
+            break;
+          case "login":
+            const responseOfLogin = await loginViaGoogleMutator.mutateAsync({
+              header: {
+                userAgent: userAgent,
+              },
+              body: {
+                authorizationCode: code,
+              },
+            });
+            accessToken = responseOfLogin.data.accessToken;
+            break;
+          case "binding":
+            accessToken = LocalStorageManipulator.getItemByKey(
+              LocalStorageKeys.accessToken
+            );
+            await bindGoogleAccountMutator.mutateAsync({
+              header: {
+                userAgent: userAgent,
+                authorization: getAuthorization(accessToken),
+              },
+              body: {
+                authorizationCode: code,
+              },
+            });
+            break;
+          default:
+            throw new Error("Undefined action type");
+        }
 
-        router.push("/dashboard");
-      } catch (err) {
-        console.error("Login failed:", err);
-        router.push("/login?error=backend_validation_failed");
+        const responseOfGettingUserData = await userDataQuerier.queryAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: {},
+        });
+
+        userDataManager.setUserData(responseOfGettingUserData.data);
+        router.push(WebURLPathDictionary.root.dashboard._);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+        router.push(
+          WebURLPathDictionary.auth.redirect.error(
+            "Redirect to backend error",
+            languageManager.tError(error)
+          )
+        );
       }
     };
 
-    loginWithGoogle();
+    handleOAuthOnRedirect();
   }, [searchParams, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
-      <p>正在驗證 Google 登入中...</p>
+      <p>Validating Google Authentication...</p>
     </div>
   );
 }
 
-export default function GoogleRedirectPage() {
+function GoogleRedirectPage() {
   return (
     <Suspense fallback={<div>Loading authn data...</div>}>
       <GoogleRedirectPageContent />
     </Suspense>
   );
 }
+
+export default GoogleRedirectPage;

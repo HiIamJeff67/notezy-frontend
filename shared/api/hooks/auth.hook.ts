@@ -13,12 +13,18 @@ import {
   LoginRequest,
   LoginRequestSchema,
   LoginResponse,
+  LoginViaGoogleRequest,
+  LoginViaGoogleRequestSchema,
+  LoginViaGoogleResponse,
   LogoutRequest,
   LogoutRequestSchema,
   LogoutResponse,
   RegisterRequest,
   RegisterRequestSchema,
   RegisterResponse,
+  RegisterViaGoogleRequest,
+  RegisterViaGoogleRequestSchema,
+  RegisterViaGoogleResponse,
   ResetEmailRequest,
   ResetEmailRequestSchema,
   ResetEmailResponse,
@@ -36,8 +42,10 @@ import {
   DeleteMe,
   ForgetPassword,
   Login,
+  LoginViaGoogle,
   Logout,
   Register,
+  RegisterViaGoogle,
   ResetEmail,
   ResetMe,
   SendAuthCode,
@@ -101,6 +109,55 @@ export const useRegister = () => {
   };
 };
 
+export const useRegisterViaGoogle = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: RegisterViaGoogleRequest
+    ): Promise<RegisterViaGoogleResponse> => {
+      const validatedRequest = RegisterViaGoogleRequestSchema.parse(request);
+      return await RegisterViaGoogle(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.accessToken,
+        response.data.accessToken
+      );
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.data.csrfToken
+      );
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "REGISTER_VIA_GOOGLE_HOOK" as const,
+  };
+};
+
 export const useLogin = () => {
   const queryClient = getQueryClient();
 
@@ -145,6 +202,55 @@ export const useLogin = () => {
   return {
     ...mutation,
     name: "LOGIN_HOOK" as const,
+  };
+};
+
+export const useLoginViaGoogle = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: LoginViaGoogleRequest
+    ): Promise<LoginViaGoogleResponse> => {
+      const validatedRequest = LoginViaGoogleRequestSchema.parse(request);
+      return await LoginViaGoogle(validatedRequest);
+    },
+    onSuccess: (response, _) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
+      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKeys.accessToken,
+        response.data.accessToken
+      );
+      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKeys.csrfToken,
+        response.data.csrfToken
+      );
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.user.notFound:
+            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "LOGIN_VIA_GOOGLE_HOOK" as const,
   };
 };
 

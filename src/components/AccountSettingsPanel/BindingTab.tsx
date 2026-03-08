@@ -1,4 +1,7 @@
 import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { WebURLPathDictionary } from "@shared/constants";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import SettingMenu from "../SettingMenu/SettingMenu";
 import SettingMenuButton from "../SettingMenu/SettingMenuButton";
 import SettingMenuItem from "../SettingMenu/SettingMenuItem";
@@ -49,7 +52,20 @@ const BindingTab = ({
         title="綁定 Gmail 賬號"
         description="綁定 Gmail 帳號可在登入時快速登入"
       >
-        <SettingMenuButton variant="outline" onClick={() => {}}>
+        <SettingMenuButton
+          variant="outline"
+          onClick={() =>
+            router.forceNavigate(
+              WebURLPathDictionary.oauth.google(
+                getOAuthGoogleSearchParamsString({
+                  csrfToken: CSRFTokenGenerator.generate(),
+                  action: "binding",
+                  from: router.getCurrentPath(),
+                })
+              )
+            )
+          }
+        >
           綁定
         </SettingMenuButton>
       </SettingMenuItem>

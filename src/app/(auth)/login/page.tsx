@@ -7,6 +7,8 @@ import { useAppRouter, useLanguage, useUserData } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -115,6 +117,22 @@ const LoginPage = () => {
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.forgetPassword);
               },
+            },
+          ]}
+          oauthButtons={[
+            {
+              provider: "google",
+              label: "Login via Google",
+              onClick: () =>
+                router.forceNavigate(
+                  WebURLPathDictionary.oauth.google(
+                    getOAuthGoogleSearchParamsString({
+                      csrfToken: CSRFTokenGenerator.generate(),
+                      action: "login",
+                      from: router.getCurrentPath(),
+                    })
+                  )
+                ),
             },
           ]}
           statusDetail={"System Ready"}

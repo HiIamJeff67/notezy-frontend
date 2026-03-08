@@ -7,6 +7,8 @@ import { useAppRouter, useLanguage, useUserData } from "@/hooks";
 import { useRegister } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -147,6 +149,22 @@ const RegisterPage = () => {
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.login);
               },
+            },
+          ]}
+          oauthButtons={[
+            {
+              provider: "google",
+              label: "Register via Google",
+              onClick: () =>
+                router.forceNavigate(
+                  WebURLPathDictionary.oauth.google(
+                    getOAuthGoogleSearchParamsString({
+                      csrfToken: CSRFTokenGenerator.generate(),
+                      action: "register",
+                      from: router.getCurrentPath(),
+                    })
+                  )
+                ),
             },
           ]}
           statusDetail={"System Ready"}

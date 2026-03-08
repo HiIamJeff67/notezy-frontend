@@ -77,8 +77,6 @@ import { UUID } from "crypto";
 import { ZodError } from "zod";
 import { GetMyBlockPackByIdResponse } from "../interfaces/blockPack.interface";
 
-/* ============================== GET Hooks ============================== */
-
 export const useGetMyBlockById = (
   hookRequest?: GetMyBlockByIdRequest,
   options?: Partial<UseQueryOptions>
@@ -379,8 +377,6 @@ export const useGetAllMyBlocks = (
     name: "GET_ALL_MY_BLOCKS_HOOK" as const,
   };
 };
-
-/* ============================== Mutation Hooks ============================== */
 
 export const useInsertBlock = () => {
   const queryClient = getQueryClient();

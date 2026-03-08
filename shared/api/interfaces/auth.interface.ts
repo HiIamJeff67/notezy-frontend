@@ -1,5 +1,8 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
 import z from "zod";
-import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
 /* ============================== Register Context ============================== */
 
@@ -36,6 +39,33 @@ export const RegisterResponseSchema = NotezyResponseSchema.extend({
 
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 
+/* ============================== RegisterViaGoogle Context ============================== */
+
+export const RegisterViaGoogleRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+  }),
+  body: z.object({
+    authorizationCode: z.string(),
+  }),
+});
+
+export type RegisterViaGoogleRequest = z.infer<
+  typeof RegisterViaGoogleRequestSchema
+>;
+
+export const RegisterViaGoogleResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    accessToken: z.string(),
+    csrfToken: z.string(),
+    createdAt: z.coerce.date(),
+  }),
+});
+
+export type RegisterViaGoogleResponse = z.infer<
+  typeof RegisterViaGoogleResponseSchema
+>;
+
 /* ============================== Login Context ============================== */
 
 export const LoginRequestSchema = NotezyRequestSchema.extend({
@@ -65,6 +95,31 @@ export const LoginResponseSchema = NotezyResponseSchema.extend({
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+
+/* ============================== LoginViaGoogle Context ============================== */
+
+export const LoginViaGoogleRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+  }),
+  body: z.object({
+    authorizationCode: z.string(),
+  }),
+});
+
+export type LoginViaGoogleRequest = z.infer<typeof LoginViaGoogleRequestSchema>;
+
+export const LoginViaGoogleResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    accessToken: z.string(),
+    csrfToken: z.string(),
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type LoginViaGoogleResponse = z.infer<
+  typeof LoginViaGoogleResponseSchema
+>;
 
 /* ============================== Logout Context ============================== */
 
