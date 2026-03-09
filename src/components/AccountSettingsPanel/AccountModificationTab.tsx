@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 import {
   useDeleteMe,
   useForgetPassword,
@@ -51,7 +51,7 @@ const AccountModificationTab = ({
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const resetMeMutator = useResetMe();
   const resetEmailMutator = useResetEmail();
@@ -87,7 +87,7 @@ const AccountModificationTab = ({
           const accessToken = LocalStorageManipulator.getItemByKey(
             LocalStorageKeys.accessToken
           );
-          userDataManager.fetchUserData(accessToken);
+          userManager.fetchUserData(accessToken);
           onPanelClose();
           toast.success("Your account has been reset");
           router.push(WebURLPathDictionary.root.dashboard._);
@@ -97,7 +97,7 @@ const AccountModificationTab = ({
       }),
     [
       router,
-      userDataManager,
+      userManager,
       languageManager,
       resetMeMutator,
       setSendAuthCodeTimeCounter,
@@ -127,15 +127,15 @@ const AccountModificationTab = ({
             },
           });
           setSendAuthCodeTimeCounter(0);
-          setResetEmailDialogOpen(true);
-          userDataManager.updateUserData({ email: newEmail });
+          setResetEmailDialogOpen(false);
+          userManager.updateUserData({ email: newEmail });
           toast.success("Your email has been reset");
         } catch (error) {
           toast.error(languageManager.tError(error));
         }
       }),
     [
-      userDataManager,
+      userManager,
       languageManager,
       resetEmailMutator,
       setSendAuthCodeTimeCounter,
@@ -155,9 +155,9 @@ const AccountModificationTab = ({
             );
           }
 
-          if (userDataManager.userData?.email === undefined) {
+          if (userManager.userData?.email === undefined) {
             router.push(WebURLPathDictionary.home);
-            userDataManager.logout();
+            userManager.logout();
             throw new Error("The user session is expired, please login again");
           }
 
@@ -167,7 +167,7 @@ const AccountModificationTab = ({
               userAgent: userAgent,
             },
             body: {
-              account: userDataManager.userData?.email,
+              account: userManager.userData?.email,
               newPassword: newPassword,
               authCode: authCode,
             },
@@ -180,7 +180,7 @@ const AccountModificationTab = ({
         }
       }),
     [
-      userDataManager,
+      userManager,
       languageManager,
       forgetPasswordMutator,
       setSendAuthCodeTimeCounter,
@@ -215,9 +215,8 @@ const AccountModificationTab = ({
           setSendAuthCodeTimeCounter(0);
           setDeleteMeDialogOpen(false);
           onPanelClose();
-          userDataManager.setUserData(null);
+          userManager.setUserData(null);
           toast.success("Your account has been deleted");
-          console.log(WebURLPathDictionary.home);
           router.push(WebURLPathDictionary.home);
         } catch (error) {
           toast.error(languageManager.tError(error));
@@ -225,7 +224,7 @@ const AccountModificationTab = ({
       }),
     [
       router,
-      userDataManager,
+      userManager,
       languageManager,
       deleteMeMutator,
       setSendAuthCodeTimeCounter,
@@ -243,9 +242,9 @@ const AccountModificationTab = ({
               <DialogTitle>重置帳戶</DialogTitle>
               <DialogDescription>
                 {`這將會清除你的所有個人資料，包括筆記、設定等。此操作無法復原。如果您仍確認要重置，${
-                  userDataManager.userData?.email
+                  userManager.userData?.email
                     ? `請輸入我們剛剛寄到
-                ${userDataManager.userData?.email} 的驗證碼來完成驗證。`
+                ${userManager.userData?.email} 的驗證碼來完成驗證。`
                     : "請輸入驗證碼來完成驗證。"
                 }`}
               </DialogDescription>
@@ -264,8 +263,12 @@ const AccountModificationTab = ({
                 <Input
                   id="authCode"
                   name="authCode"
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   placeholder="輸入驗證碼"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  minLength={6}
                   required
                   className="w-full px-4 py-3"
                 />
@@ -320,10 +323,24 @@ const AccountModificationTab = ({
             >
               <div className="relative flex justify-between items-center mt-1">
                 <Input
+                  id="newEmail"
+                  name="newEmail"
+                  type="email"
+                  placeholder="輸入新電子郵件"
+                  required
+                  className="w-full px-4 py-3"
+                />
+              </div>
+              <div className="relative flex justify-between items-center mt-1">
+                <Input
                   id="authCode"
                   name="authCode"
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   placeholder="輸入驗證碼"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  minLength={6}
                   required
                   className="w-full px-4 py-3"
                 />
@@ -339,16 +356,6 @@ const AccountModificationTab = ({
                     ? `${sendAuthCodeTimeCounter}s 後重送`
                     : "重送驗證碼"}
                 </Button>
-              </div>
-              <div className="relative flex justify-between items-center mt-1">
-                <Input
-                  id="newEmail"
-                  name="newEmail"
-                  type="email"
-                  placeholder="輸入新電子郵件"
-                  required
-                  className="w-full px-4 py-3"
-                />
               </div>
               <DialogFooter>
                 <Button
@@ -415,8 +422,12 @@ const AccountModificationTab = ({
                 <Input
                   id="authCode"
                   name="authCode"
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   placeholder="輸入驗證碼"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  minLength={6}
                   required
                   className="w-full px-4 py-3"
                 />
@@ -474,9 +485,13 @@ const AccountModificationTab = ({
                 <Input
                   id="authCode"
                   name="authCode"
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   placeholder="輸入驗證碼"
-                  required={userDataManager.userData?.role !== UserRole.Guest}
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  minLength={6}
+                  required={userManager.userData?.role !== UserRole.Guest}
                   className="w-full px-4 py-3"
                 />
                 <Button
@@ -537,7 +552,7 @@ const AccountModificationTab = ({
 
       <SettingMenuItem
         title="更改電子郵件"
-        description={`變更當前綁定的電子郵件${userDataManager.userData?.email && `(${userDataManager.userData.email})`}`}
+        description={`變更當前綁定的電子郵件${userManager.userData?.email && `(${userManager.userData.email})`}`}
       >
         <SettingMenuButton
           variant="outline"

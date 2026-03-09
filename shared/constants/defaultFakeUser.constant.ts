@@ -1,7 +1,7 @@
 import { UserGender, UserPlan, UserRole, UserStatus } from "../enums";
-import { PrivateUser, PrivateUserInfo } from "../types/user.type";
+import { User, UserInfo } from "../types/user.type";
 
-export const FakePrivateUser: PrivateUser = {
+export const FakeUser: User = {
   publicId: "FAKE_PUBLIC_ID",
   name: "FAKE_NAME",
   displayName: "FAKE_DISPLAY_NAME",
@@ -13,7 +13,7 @@ export const FakePrivateUser: PrivateUser = {
   createdAt: new Date(),
 };
 
-export const FakePrivateUserInfo: PrivateUserInfo = {
+export const FakeUserInfo: UserInfo = {
   avatarURL: null,
   coverBackgroundURL: null,
   header: null,

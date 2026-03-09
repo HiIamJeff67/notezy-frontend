@@ -171,8 +171,6 @@ export async function GetMyBlockGroupsAndTheirBlocksByBlockPackId(
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
-  console.log("response", formattedResponse.data);
-
   return formattedResponse;
 }
 

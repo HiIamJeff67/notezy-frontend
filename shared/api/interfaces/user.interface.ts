@@ -1,5 +1,5 @@
 import { UserStatus } from "@shared/enums";
-import { PrivateUserSchema, UserDataSchema } from "@shared/types/user.type";
+import { UserDataSchema, UserSchema } from "@shared/types/user.type";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
@@ -32,7 +32,7 @@ export const GetMeRequestSchema = NotezyRequestSchema.extend({
 export type GetMeRequest = z.infer<typeof GetMeRequestSchema>;
 
 export const GetMeResponseSchema = NotezyResponseSchema.extend({
-  data: PrivateUserSchema,
+  data: UserSchema,
 });
 
 export type GetMeResponse = z.infer<typeof GetMeResponseSchema>;

@@ -8,33 +8,12 @@ import {
 } from "@shared/enums";
 import { z } from "zod";
 
-export type PublicUser = {
-  publicId: string;
-  name: string;
-  displayName: string;
-  role: UserRole;
-  plan: UserPlan;
-  status: UserStatus;
-  updatedAt: Date;
-  createdAt: Date;
-};
-
-export type PublicUserInfo = {
-  avatarURL: string;
-  coverBackgroundURL: string;
-  header: string;
-  introduction: string;
-  gender: UserGender;
-  country: Country;
-  birthDate: Date;
-};
-
-export const PrivateUserSchema = z.object({
+export const UserSchema = z.object({
   publicId: z.string(),
   name: z
     .string()
     .min(6)
-    .max(16)
+    .max(32)
     .regex(/^[a-zA-Z0-9]+/),
   displayName: z
     .string()
@@ -45,24 +24,40 @@ export const PrivateUserSchema = z.object({
   role: z.enum(UserRole),
   plan: z.enum(UserPlan),
   status: z.enum(UserStatus),
-  updatedAt: z.date(),
-  createdAt: z.date(),
+  updatedAt: z.coerce.date(),
+  createdAt: z.coerce.date(),
 });
 
-export type PrivateUser = z.infer<typeof PrivateUserSchema>;
+export type User = z.infer<typeof UserSchema>;
 
-export const PrivateUserInfoSchema = z.object({
+export const UserInfoSchema = z.object({
   avatarURL: z.url().nullable(),
   coverBackgroundURL: z.url().nullable(),
   header: z.string().min(0).max(64).nullable(),
   introduction: z.string().min(0).max(256).nullable(),
   gender: z.enum(UserGender),
   country: z.enum(Country).nullable(),
-  birthDate: z.date(),
-  updatedAt: z.date(),
+  birthDate: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
-export type PrivateUserInfo = z.infer<typeof PrivateUserInfoSchema>;
+export type UserInfo = z.infer<typeof UserInfoSchema>;
+
+export const UserAccountSchema = z.object({
+  countryCode: z.string().nullable(),
+  phoneNumber: z.string().nullable(),
+  googleCredential: z.string().nullable(),
+  discordCredential: z.string().nullable(),
+  rootShelfCount: z.int32().min(0),
+  blockPackCount: z.int32().min(0),
+  blockCount: z.int32().min(0),
+  materialCount: z.int32().min(0),
+  workflowCount: z.int32().min(0),
+  additionalItemCount: z.int32().min(0),
+  updatedAt: z.coerce.date(),
+});
+
+export type UserAccount = z.infer<typeof UserAccountSchema>;
 
 /**
  * This type is the same as the user data cache
@@ -73,7 +68,7 @@ export const UserDataSchema = z.object({
   name: z
     .string()
     .min(6)
-    .max(16)
+    .max(32)
     .regex(/^[a-zA-Z0-9]+/),
   displayName: z
     .string()
@@ -87,8 +82,8 @@ export const UserDataSchema = z.object({
   status: z.enum(UserStatus),
   avatarURL: z.string().nullable(),
   language: z.enum(Language),
-  generalSettingCode: z.int64(),
-  privacySettingCode: z.int64(),
+  generalSettingCode: z.coerce.bigint(),
+  privacySettingCode: z.coerce.bigint(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

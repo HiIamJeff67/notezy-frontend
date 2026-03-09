@@ -3,8 +3,10 @@ import { UUID } from "crypto";
 export const queryKeys = {
   user: {
     all: () => ["user"] as const,
-    data: () => ["user", "data"] as const,
-    me: () => ["user", "me"] as const,
+    data: (isAsync: boolean = false) =>
+      ["user", isAsync ? "dataAsync" : "data"] as const,
+    me: (isAsync: boolean = false) =>
+      ["user", isAsync ? "meAsync" : "me"] as const,
   },
   userInfo: {
     all: () => ["userInfo"] as const,

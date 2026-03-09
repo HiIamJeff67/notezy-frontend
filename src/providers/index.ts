@@ -4,4 +4,4 @@ export * from "./LanguageProvider";
 export * from "./LoadingProvider";
 export * from "./ShelfItemProvider/ShelfItemProvider";
 export * from "./ThemeProvider";
-export * from "./UserDataProvider";
+export * from "./UserProvider";

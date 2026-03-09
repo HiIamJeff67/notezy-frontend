@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
 import {
   useLoginViaGoogle,
@@ -22,7 +22,7 @@ function GoogleRedirectPageContent() {
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const registerViaGoogleMutator = useRegisterViaGoogle();
   const loginViaGoogleMutator = useLoginViaGoogle();
@@ -112,10 +112,9 @@ function GoogleRedirectPageContent() {
             userAgent: navigator.userAgent,
             authorization: getAuthorization(accessToken),
           },
-          body: {},
         });
 
-        userDataManager.setUserData(responseOfGettingUserData.data);
+        userManager.setUserData(responseOfGettingUserData.data);
         router.push(WebURLPathDictionary.root.dashboard._);
       } catch (error) {
         toast.error(languageManager.tError(error));
@@ -129,7 +128,7 @@ function GoogleRedirectPageContent() {
     };
 
     handleOAuthOnRedirect();
-  }, [searchParams, router]);
+  }, [searchParams, router]); // do not add other dependencies here
 
   return (
     <div className="flex h-screen w-full items-center justify-center">

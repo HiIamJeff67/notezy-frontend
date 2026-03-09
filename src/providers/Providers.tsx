@@ -6,7 +6,7 @@ import { LanguageProvider } from "@/providers/LanguageProvider";
 import { LoadingProvider } from "@/providers/LoadingProvider";
 import { ModalProvider } from "@/providers/ModalProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { UserDataProvider } from "@/providers/UserDataProvider";
+import { UserProvider } from "@/providers/UserProvider";
 import { getQueryClient } from "@shared/api/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
@@ -23,11 +23,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <LoadingProvider>
             <LanguageProvider>
               <ThemeProvider>
-                <UserDataProvider>
+                <UserProvider>
                   <DndProvider backend={HTML5Backend}>
                     <ModalProvider>{children}</ModalProvider>
                   </DndProvider>
-                </UserDataProvider>
+                </UserProvider>
               </ThemeProvider>
             </LanguageProvider>
           </LoadingProvider>

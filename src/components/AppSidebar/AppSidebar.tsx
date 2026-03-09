@@ -40,7 +40,7 @@ import {
   useShelfItem,
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
-import { useUserData } from "@/hooks/useUserData";
+import { useUser } from "@/hooks/useUser";
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import {
@@ -70,7 +70,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const modalManager = useModal();
   const sidebarManager = useSidebar();
   const resizableSidebarManager = useResizeSidebar();
-  const userDataManager = useUserData();
+  const userManager = useUser();
   const shelfItemManager = useShelfItem();
 
   useEffect(() => {
@@ -206,13 +206,13 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                   className="text-xs font-semibold text-foreground transition-all"
                   width={`${resizableSidebarManager.width - 160}px`}
                 >
-                  {userDataManager.userData?.name || "User Name"}
+                  {userManager.userData?.name || "User Name"}
                 </TruncatedText>
                 <TruncatedText
                   className="text-xs font-light text-foreground transition-all"
                   width={`${resizableSidebarManager.width - 160}px`}
                 >
-                  {userDataManager.userData?.status || "Offline"}
+                  {userManager.userData?.status || "Offline"}
                 </TruncatedText>
               </div>
             </MenubarTrigger>
@@ -242,7 +242,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 className="cursor-pointer text-destructive focus:text-destructive"
                 onClick={async () => {
                   router.push(WebURLPathDictionary.home);
-                  await userDataManager.logout();
+                  await userManager.logout();
                   toast.success("Logout successfully, see you next time ~");
                 }}
               >

@@ -96,16 +96,13 @@ export const useGetMyBlockById = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetMyBlockByIdRequest,
-    options?: Partial<FetchQueryOptions>
+    callbackRequest: GetMyBlockByIdRequest
   ): Promise<GetMyBlockByIdResponse> => {
-    const response = await queryClient.fetchQuery({
+    return await queryClient.fetchQuery({
       queryKey: queryKeys.block.oneById(callbackRequest.param.blockId as UUID),
       queryFn: async () => await queryFnGetMyBlockById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
+      staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
-    return response as GetMyBlockByIdResponse;
   };
 
   return {
@@ -613,10 +610,6 @@ export const useUpdateMyBlocksByIds = () => {
     mutationFn: async (
       request: UpdateMyBlocksByIdsRequest
     ): Promise<UpdateMyBlocksByIdsResponse> => {
-      console.log(
-        typeof request.body.updatedBlocks[0].values.content,
-        request.body.updatedBlocks[0].values.content
-      );
       const validatedRequest = UpdateMyBlocksByIdsRequestSchema.parse(request);
       return await UpdateMyBlocksByIds(validatedRequest);
     },

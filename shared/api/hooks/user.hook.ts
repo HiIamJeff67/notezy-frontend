@@ -47,7 +47,7 @@ export const useGetUserData = (
   ): Promise<GetUserDataResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.user.data(),
-      queryFn: async () => await queryFnGetUserData(callbackRequest), // use the request from the param of useGetUserData.queryAsync()
+      queryFn: async () => await queryFnGetUserData(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };

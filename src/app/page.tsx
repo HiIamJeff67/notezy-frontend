@@ -16,7 +16,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useTheme, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useTheme, useUser } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
@@ -32,7 +32,7 @@ const HomePage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
   const themeManager = useTheme();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
@@ -211,7 +211,7 @@ const HomePage = () => {
                     LocalStorageKeys.accessToken
                   );
                   router.push(
-                    userDataManager.userData !== null && accessToken
+                    userManager.userData !== null && accessToken
                       ? WebURLPathDictionary.root.dashboard._
                       : WebURLPathDictionary.auth.login
                   );

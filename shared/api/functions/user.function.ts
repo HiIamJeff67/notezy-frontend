@@ -20,7 +20,8 @@ export const queryFnGetUserData = async (
   request?: GetUserDataRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) throw new Error("got undefined request in query function");
+  if (request === undefined)
+    throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetUserDataRequestSchema.parse(request);

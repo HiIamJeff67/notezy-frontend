@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAppRouter, useLanguage, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useSendAuthCode } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
 import {
@@ -43,7 +43,7 @@ const AccountSettingsPanel = ({
 }: AccountSettingsPanelProps) => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const sendAuthCodeMutator = useSendAuthCode();
 
@@ -93,9 +93,9 @@ const AccountSettingsPanel = ({
             );
             return; // return here to avoid sending another api request to send the auth code
           }
-          if (userDataManager.userData?.email === undefined) {
+          if (userManager.userData?.email === undefined) {
             router.push(WebURLPathDictionary.home);
-            userDataManager.logout();
+            userManager.logout();
             throw new Error("The user session is expired, please login again");
           }
 
@@ -106,7 +106,7 @@ const AccountSettingsPanel = ({
                 userAgent: userAgent,
               },
               body: {
-                email: userDataManager.userData.email,
+                email: userManager.userData.email,
               },
             });
 
@@ -121,7 +121,7 @@ const AccountSettingsPanel = ({
             Math.max(AuthCodeBlockedSecond, blockTime)
           );
           toast.success(
-            `Auth code email sent, please check your email of ${userDataManager.userData.email}`
+            `Auth code email sent, please check your email of ${userManager.userData.email}`
           );
         } catch (error) {
           if (fallback) fallback();
@@ -130,7 +130,7 @@ const AccountSettingsPanel = ({
         }
       }),
     [
-      userDataManager,
+      userManager,
       languageManager,
       sendAuthCodeMutator,
       sendAuthCodeTimeCounter,

@@ -1,10 +1,10 @@
 "use client";
 
-import { UserDataContext } from "@/providers/UserDataProvider";
+import { UserContext } from "@/providers/UserProvider";
 import { useContext } from "react";
 
-export const useUserData = () => {
-  const ctx = useContext(UserDataContext);
+export const useUser = () => {
+  const ctx = useContext(UserContext);
   if (!ctx) throw new Error("useUserContext must be used within UserProvider");
   return ctx;
 };

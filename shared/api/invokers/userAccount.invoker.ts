@@ -49,6 +49,7 @@ export async function UpdateMyAccount(
       headers: {
         "Content-Type": "application/json",
         "User-Agent": request.header.userAgent,
+        "X-CSRF-Token": request.header.csrfToken,
       },
       body: JSON.stringify(request.body),
       credentials: "include",

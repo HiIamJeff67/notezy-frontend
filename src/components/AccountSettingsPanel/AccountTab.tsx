@@ -21,40 +21,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage, useLoading } from "@/hooks";
-import { useUserData } from "@/hooks/useUserData";
+import { useUser } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
-import { FakePrivateUser } from "@shared/constants";
+import { FakeUser } from "@shared/constants";
 import { AllUserStatus } from "@shared/enums";
-import { PrivateUser, PrivateUserSchema } from "@shared/types/user.type";
+import { User, UserSchema } from "@shared/types/user.type";
 import { memo, useCallback, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import toast from "react-hot-toast";
 
 const AccountTab = memo(() => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
-  const user: PrivateUser = useMemo(() => {
-    if (!userDataManager.userData) return FakePrivateUser;
+  const user: User = useMemo(() => {
+    if (!userManager.user) return FakeUser;
     return {
-      publicId: userDataManager.userData.publicId,
-      name: userDataManager.userData.name,
-      displayName: userDataManager.userData.displayName,
-      email: userDataManager.userData.email,
-      role: userDataManager.userData.role,
-      plan: userDataManager.userData.plan,
-      status: userDataManager.userData.status,
-      updatedAt: userDataManager.userData.updatedAt,
-      createdAt: userDataManager.userData.createdAt,
+      publicId: userManager.user.publicId,
+      name: userManager.user.name,
+      displayName: userManager.user.displayName,
+      email: userManager.user.email,
+      role: userManager.user.role,
+      plan: userManager.user.plan,
+      status: userManager.user.status,
+      updatedAt: userManager.user.updatedAt,
+      createdAt: userManager.user.createdAt,
     };
-  }, [userDataManager.userData]);
+  }, [userManager.user]);
 
-  const userForm = useForm({
-    resolver: zodResolver(PrivateUserSchema),
+  const userForm: UseFormReturn<User> = useForm({
+    resolver: zodResolver(UserSchema),
     defaultValues: user,
-  });
+  }) as UseFormReturn<User>;
 
   useEffect(() => {
     userForm.reset(user);
@@ -71,42 +71,39 @@ const AccountTab = memo(() => {
   );
 
   const handleSaveUserOnSubmit = useCallback(
-    async (user: PrivateUser) => {
-      loadingManager.setIsStrictLoading(true);
+    async (user: User) =>
+      await loadingManager.startAsyncTransactionLoading(async () => {
+        try {
+          const userAgent = navigator.userAgent;
+          await UpdateMe({
+            header: { userAgent },
+            body: {
+              values: {
+                displayName: user.displayName,
+                status: user.status,
+              },
+              setNull: {
+                displayName: user.displayName === null,
+                status: user.status === null,
+              },
+            },
+          });
 
-      try {
-        const userAgent = navigator.userAgent;
-        await UpdateMe({
-          header: { userAgent },
-          body: {
-            values: {
+          userManager.updateUserData({
+            ...(user.displayName !== undefined && {
               displayName: user.displayName,
+            }),
+            ...(user.status !== undefined && {
               status: user.status,
-            },
-            setNull: {
-              displayName: user.displayName === null,
-              status: user.status === null,
-            },
-          },
-        });
+            }),
+          });
 
-        userDataManager.updateUserData({
-          ...(user.displayName !== undefined && {
-            displayName: user.displayName,
-          }),
-          ...(user.status !== undefined && {
-            status: user.status,
-          }),
-        });
-
-        toast.success("Successfully updated account");
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      } finally {
-        loadingManager.setIsStrictLoading(false);
-      }
-    },
-    [loadingManager, userDataManager, languageManager]
+          toast.success("Successfully updated account");
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [loadingManager, userManager, languageManager]
   );
 
   return (

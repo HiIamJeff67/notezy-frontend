@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppRouter, useLanguage, useLoading, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 import { Dialog } from "@radix-ui/react-dialog";
 import { useValidateEmail } from "@shared/api/hooks/auth.hook";
 import { UserRole } from "@shared/enums";
@@ -41,7 +41,7 @@ const SecurityTab = ({
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const validateEmailMutator = useValidateEmail();
 
@@ -69,13 +69,13 @@ const SecurityTab = ({
           });
           setSendAuthCodeTimeCounter(0);
           setValidateEmailDialogOpen(false);
-          userDataManager.updateUserData({ role: UserRole.Normal });
+          userManager.updateUserData({ role: UserRole.Normal });
         } catch (error) {
           toast.error(languageManager.tError(error));
         }
       }),
     [
-      userDataManager,
+      userManager,
       languageManager,
       validateEmailMutator,
       setSendAuthCodeTimeCounter,
@@ -96,9 +96,9 @@ const SecurityTab = ({
             <DialogHeader>
               <DialogTitle>驗證電子郵件</DialogTitle>
               <DialogDescription>
-                {userDataManager.userData?.email
+                {userManager.userData?.email
                   ? `請輸入我們剛剛寄到
-                ${userDataManager.userData?.email} 的驗證碼來完成驗證`
+                ${userManager.userData?.email} 的驗證碼來完成驗證`
                   : "請輸入驗證碼來完成驗證"}
               </DialogDescription>
             </DialogHeader>
@@ -116,8 +116,12 @@ const SecurityTab = ({
                 <Input
                   id="authCode"
                   name="authCode"
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   placeholder="輸入驗證碼"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  minLength={6}
                   required
                   className="w-full px-4 py-3"
                 />
@@ -167,12 +171,12 @@ const SecurityTab = ({
             )
           }
           disable={
-            userDataManager.userData?.role &&
-            userDataManager.userData.role !== UserRole.Guest
+            userManager.userData?.role &&
+            userManager.userData.role !== UserRole.Guest
           }
         >
-          {userDataManager.userData?.role &&
-          userDataManager.userData.role !== UserRole.Guest
+          {userManager.userData?.role &&
+          userManager.userData.role !== UserRole.Guest
             ? "已驗證"
             : "驗證"}
         </SettingMenuButton>

@@ -7,4 +7,4 @@ export * from "./useResizeSidebar";
 export * from "./useShelfItem";
 export * from "./useTheme";
 export * from "./useThemeStore";
-export * from "./useUserData";
+export * from "./useUser";

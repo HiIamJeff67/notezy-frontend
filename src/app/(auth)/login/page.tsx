@@ -3,7 +3,7 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 const LoginPage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const loginMutator = useLogin();
   const getUserDataQuerier = useGetUserData();
@@ -51,7 +51,7 @@ const LoginPage = () => {
 
           setAccount("");
           setPassword("");
-          userDataManager.setUserData(responseOfGettingUserData.data);
+          userManager.setUserData(responseOfGettingUserData.data);
           router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
@@ -63,7 +63,7 @@ const LoginPage = () => {
       account,
       password,
       languageManager,
-      userDataManager,
+      userManager,
       loginMutator,
       getUserDataQuerier,
       router,

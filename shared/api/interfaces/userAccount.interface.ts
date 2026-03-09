@@ -22,6 +22,13 @@ export const GetMyAccountResponseSchema = NotezyResponseSchema.extend({
     phoneNumber: z.string().nullable(),
     googleCredential: z.string().nullable(),
     discordCredential: z.string().nullable(),
+    rootShelfCount: z.int32().min(0),
+    blockPackCount: z.int32().min(0),
+    blockCount: z.int32().min(0),
+    materialCount: z.int32().min(0),
+    workflowCount: z.int32().min(0),
+    additionalItemCount: z.int32().min(0),
+    updatedAt: z.coerce.date(),
   }),
 });
 
@@ -33,14 +40,18 @@ export const UpdateMyAccountRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1),
     authorization: z.string().optional(),
+    csrfToken: z.string(),
   }),
   body: z.object({
     authCode: z.string().length(6),
-    values: z.object({
-      countryCode: z.enum(CountryCode).nullable(),
-      backupEmail: z.email().nullable(),
-      phoneNumber: z.number().nullable(),
-    }),
+    values: z
+      .object({
+        countryCode: z.enum(CountryCode).nullable(),
+        backupEmail: z.email().nullable(),
+        phoneNumber: z.string().min(1).max(15).regex(/^\d+$/).nullable(),
+      })
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
   }),
 });
 
