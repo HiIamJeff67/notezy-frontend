@@ -1,7 +1,7 @@
 import { useSidebar } from "@/components/ui/sidebar";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { clamp } from "@/util/math";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import {
   CSSProperties,
   MouseEvent as ReactMouseEvent,
@@ -20,9 +20,9 @@ export type ResizeSidebarOptions = {
 };
 
 const DEFAULTS = {
-  minWidth: 256,
+  minWidth: 260, // this is the minimum value so that the sidebar won't overlap on its inset
   maxWidth: 512,
-  defaultWidth: 256,
+  defaultWidth: 260,
 } as const;
 
 type ResizeSidebarContextValue = {
@@ -57,7 +57,7 @@ export function ResizeSidebarProvider({
 
   useEffect(() => {
     const saved = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.sidebarWidth
+      LocalStorageKey.sidebarWidth
     );
     if (saved) {
       const parsed = Number(saved);
@@ -74,7 +74,7 @@ export function ResizeSidebarProvider({
       const clamped = clamp(next, minWidth, maxWidth);
       setWidth(clamped);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.sidebarWidth,
+        LocalStorageKey.sidebarWidth,
         String(clamped)
       );
     },
@@ -115,7 +115,7 @@ export function ResizeSidebarProvider({
     () =>
       ({
         "--sidebar-width": `${clampedWidth}px`,
-      } as CSSProperties),
+      }) as CSSProperties,
     [clampedWidth]
   );
 
@@ -123,7 +123,7 @@ export function ResizeSidebarProvider({
     () =>
       ({
         paddingLeft: `calc(${clampedWidth}px - ${defaultWidth}px)`,
-      } as CSSProperties),
+      }) as CSSProperties,
     [clampedWidth, defaultWidth, sidebarManager?.open]
   );
 

@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetMe,
@@ -15,11 +14,15 @@ import {
   GetUserDataResponse,
   UpdateMeRequest,
   UpdateMeRequestSchema,
+  UpdateMeResponse,
 } from "@shared/api/interfaces/user.interface";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ZodError } from "zod";
 
@@ -44,7 +47,7 @@ export const useGetUserData = (
   ): Promise<GetUserDataResponse> => {
     return await queryClient.fetchQuery({
       queryKey: queryKeys.user.data(),
-      queryFn: async () => await queryFnGetUserData(callbackRequest), // use the request from the param of useGetUserData.queryAsync()
+      queryFn: async () => await queryFnGetUserData(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -93,17 +96,24 @@ export const useUpdateMe = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMeRequest) => {
+    mutationFn: async (request: UpdateMeRequest): Promise<UpdateMeResponse> => {
       const validatedRequest = UpdateMeRequestSchema.parse(request);
       return await UpdateMe(validatedRequest);
     },
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -113,8 +123,7 @@ export const useUpdateMe = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);

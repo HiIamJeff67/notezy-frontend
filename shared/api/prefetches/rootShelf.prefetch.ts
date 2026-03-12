@@ -15,7 +15,7 @@ export const prefetchGetMyRootShelfById = (
     prefetchRequest: GetMyRootShelfByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.rootShelf.myOneById(
+      queryKey: queryKeys.rootShelf.oneById(
         prefetchRequest?.param.rootShelfId as UUID | undefined
       ),
       queryFn: async () =>

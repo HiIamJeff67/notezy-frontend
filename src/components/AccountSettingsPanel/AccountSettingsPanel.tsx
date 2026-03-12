@@ -1,12 +1,17 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useLanguage } from "@/hooks";
-import { useUserData } from "@/hooks/useUserData";
-import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
-import { PrivateFakeUser, PrivateFakeUserInfo } from "@shared/constants";
-import { PrivateUser, PrivateUserInfo } from "@shared/types/models";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
+import { useSendAuthCode } from "@shared/api/hooks/auth.hook";
+import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import toast from "react-hot-toast";
 import AccountModificationTab from "./AccountModificationTab";
 import AccountTab from "./AccountTab";
@@ -36,75 +41,19 @@ const AccountSettingsPanel = ({
   isOpen,
   onClose,
 }: AccountSettingsPanelProps) => {
+  const router = useAppRouter();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
+
+  const sendAuthCodeMutator = useSendAuthCode();
+
   const [currentPage, setCurrentPage] =
     useState<AccountSettingsPage>("profile");
-  const [user, setUser] = useState<PrivateUser>(PrivateFakeUser);
-  const [userInfo, setUserInfo] =
-    useState<PrivateUserInfo>(PrivateFakeUserInfo);
-
   const [showProfileContent, setShowProfileContent] = useState(false);
+  const [sendAuthCodeTimeCounter, setSendAuthCodeTimeCounter] =
+    useState<number>(0);
 
-  useEffect(() => {
-    const refreshUser = async function (): Promise<void> {
-      if (
-        userDataManager.userData !== undefined &&
-        userDataManager.userData !== null
-      ) {
-        setUser(init => ({
-          publicId: userDataManager.userData?.publicId ?? init.publicId,
-          name: userDataManager.userData?.name ?? init.name,
-          displayName:
-            userDataManager.userData?.displayName ?? init.displayName,
-          email: userDataManager.userData?.email ?? init.email,
-          role: userDataManager.userData?.role ?? init.role,
-          plan: userDataManager.userData?.plan ?? init.plan,
-          status: userDataManager.userData?.status ?? init.status,
-          updatedAt: userDataManager.userData
-            ? new Date(userDataManager.userData.updatedAt)
-            : init.updatedAt,
-          createdAt: userDataManager.userData
-            ? new Date(userDataManager.userData.createdAt)
-            : init.createdAt,
-        }));
-      }
-    };
-
-    if (isOpen) {
-      refreshUser();
-    }
-  }, [isOpen, userDataManager.userData]);
-
-  useEffect(() => {
-    const refreshUserInfo = async function (): Promise<void> {
-      try {
-        const userAgent = navigator.userAgent;
-        const response = await GetMyInfo({
-          header: {
-            userAgent: userAgent,
-          },
-        });
-        setUserInfo(init => ({
-          ...init,
-          avatarURL: response.data.avatarURL,
-          coverBackgroundURL: response.data.coverBackgroundURL,
-          header: response.data.header,
-          introduction: response.data.introduction,
-          gender: response.data.gender,
-          country: response.data.country,
-          birthDate: new Date(response.data.birthDate),
-          updatedAt: new Date(response.data.updatedAt),
-        }));
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
-
-    if (isOpen) {
-      refreshUserInfo();
-    }
-  }, [isOpen, languageManager]);
+  const [isSendAuthCodePending, startSendAuthCodeTransition] = useTransition();
 
   useEffect(() => {
     if (isOpen && currentPage === "profile") {
@@ -118,6 +67,77 @@ const AccountSettingsPanel = ({
     }
   }, [isOpen, currentPage]);
 
+  useEffect(() => {
+    if (sendAuthCodeTimeCounter === 0) return;
+    const timer = setInterval(() => {
+      setSendAuthCodeTimeCounter(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [sendAuthCodeTimeCounter]);
+
+  const handleSendAuthCode = useCallback(
+    (onSuccess?: () => void, onBlock?: () => void, fallback?: () => void) =>
+      startSendAuthCodeTransition(async () => {
+        try {
+          if (sendAuthCodeTimeCounter > 0) {
+            if (onBlock) onBlock();
+            toast.error(
+              `The auth code is already sent, please wait until ${sendAuthCodeTimeCounter} seconds later to resent again`
+            );
+            return; // return here to avoid sending another api request to send the auth code
+          }
+          if (userManager.userData?.email === undefined) {
+            router.push(WebURLPathDictionary.home);
+            userManager.logout();
+            throw new Error("The user session is expired, please login again");
+          }
+
+          const userAgent = navigator.userAgent;
+          const responseOfSendingAuthCode =
+            await sendAuthCodeMutator.mutateAsync({
+              header: {
+                userAgent: userAgent,
+              },
+              body: {
+                email: userManager.userData.email,
+              },
+            });
+
+          const blockUntil = new Date(
+            responseOfSendingAuthCode.data.blockAuthCodeUntil
+          );
+          const blockTime = Math.floor(
+            (blockUntil.getTime() - new Date().getTime()) / 1000
+          );
+          if (onSuccess) onSuccess();
+          setSendAuthCodeTimeCounter(
+            Math.max(AuthCodeBlockedSecond, blockTime)
+          );
+          toast.success(
+            `Auth code email sent, please check your email of ${userManager.userData.email}`
+          );
+        } catch (error) {
+          if (fallback) fallback();
+          setSendAuthCodeTimeCounter(0);
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      userManager,
+      languageManager,
+      sendAuthCodeMutator,
+      sendAuthCodeTimeCounter,
+      setSendAuthCodeTimeCounter,
+    ]
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogTitle />
@@ -130,15 +150,36 @@ const AccountSettingsPanel = ({
                 <ProfileTabSkeleton />
               ) : (
                 <Suspense fallback={<ProfileTabSkeleton />}>
-                  <ProfileTab userInfo={userInfo} />
+                  <ProfileTab />
                 </Suspense>
               ))}
-            {currentPage === "account" && <AccountTab user={user} />}
+            {currentPage === "account" && <AccountTab />}
             {currentPage === "upgrade" && <UpgradeTab />}
-            {currentPage === "security" && <SecurityTab />}
-            {currentPage === "binding" && <BindingTab />}
+            {currentPage === "security" && (
+              <SecurityTab
+                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                isSendAuthCodePending={isSendAuthCodePending}
+                handleSendAuthCode={handleSendAuthCode}
+              />
+            )}
+            {currentPage === "binding" && (
+              <BindingTab
+                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                isSendAuthCodePending={isSendAuthCodePending}
+                handleSendAuthCode={handleSendAuthCode}
+                onPanelClose={onClose}
+              />
+            )}
             {currentPage === "accountModification" && (
-              <AccountModificationTab />
+              <AccountModificationTab
+                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                isSendAuthCodePending={isSendAuthCodePending}
+                handleSendAuthCode={handleSendAuthCode}
+                onPanelClose={onClose}
+              />
             )}
           </div>
         </div>

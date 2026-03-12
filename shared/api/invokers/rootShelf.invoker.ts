@@ -21,8 +21,6 @@ import {
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
 
-/* ============================== GetMyRootShelfById ============================== */
-
 export async function GetMyRootShelfById(
   request: GetMyRootShelfByIdRequest
 ): Promise<GetMyRootShelfByIdResponse> {
@@ -47,14 +45,13 @@ export async function GetMyRootShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as GetMyRootShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as GetMyRootShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== SearchRecentRootShelves ============================== */
 
 // for testing
 export async function SearchRecentRootShelves(
@@ -85,15 +82,13 @@ export async function SearchRecentRootShelves(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as SearchRecentRootShelvesResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== CreateRootShelf ============================== */
 
 export async function CreateRootShelf(
   request: CreateRootShelfRequest
@@ -117,14 +112,12 @@ export async function CreateRootShelf(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as CreateRootShelfResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as CreateRootShelfResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== UpdateMyRootShelfById ============================== */
 
 export async function UpdateMyRootShelfById(
   request: UpdateMyRootShelfByIdRequest
@@ -148,14 +141,13 @@ export async function UpdateMyRootShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as UpdateMyRootShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as UpdateMyRootShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== RestoreMyRootShelfById ============================== */
 
 export async function RestoreMyRootShelfById(
   request: RestoreMyRootShelfByIdRequest
@@ -179,15 +171,13 @@ export async function RestoreMyRootShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as RestoreMyRootShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== RestoreMyRootShelvesByIds ============================== */
 
 export async function RestoreMyRootShelvesByIds(
   request: RestoreMyRootShelvesByIdsRequest
@@ -211,15 +201,13 @@ export async function RestoreMyRootShelvesByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as RestoreMyRootShelvesByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== DeleteMyRootShelfById ============================== */
 
 export async function DeleteMyRootShelfById(
   request: DeleteMyRootShelfByIdRequest
@@ -243,14 +231,13 @@ export async function DeleteMyRootShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as DeleteMyRootShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as DeleteMyRootShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== DeleteMyRootShelvesByIds ============================== */
 
 export async function DeleteMyRootShelvesByIds(
   request: DeleteMyRootShelvesByIdsRequest
@@ -274,10 +261,10 @@ export async function DeleteMyRootShelvesByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as DeleteMyRootShelvesByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }

@@ -7,7 +7,7 @@ export const makeQueryClient = (): QueryClient => {
     defaultOptions: {
       queries: {
         staleTime: 30 * 60 * 1000, // 30 minutes
-        retry: 3,
+        retry: 1,
         refetchOnWindowFocus: false,
       },
       mutations: {

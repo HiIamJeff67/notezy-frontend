@@ -4,7 +4,7 @@ import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyMaterialAndItsParentById } from "@shared/api/prefetches/material.prefetch";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
-import { isValidUUID } from "@shared/types/uuid_v4.type";
+import { isValidUUID } from "@shared/types/uuidv4.type";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -15,8 +15,8 @@ interface NotebookMaterialEditorPageProps {
     materialId: string;
   }>;
   searchParams: Promise<{
-    parentSubShelfId?: string;
-    rootShelfId?: string;
+    parentSubShelfId: string;
+    rootShelfId: string;
   }>;
 }
 
@@ -25,11 +25,11 @@ const NotebookMaterialEditorPage = async ({
   searchParams,
 }: NotebookMaterialEditorPageProps) => {
   const { materialId } = await params;
-  const { parentSubShelfId } = await searchParams;
+  const { parentSubShelfId, rootShelfId } = await searchParams;
   if (
     !isValidUUID(materialId) ||
-    !parentSubShelfId ||
-    !isValidUUID(parentSubShelfId)
+    !isValidUUID(parentSubShelfId) ||
+    !isValidUUID(rootShelfId)
   )
     return notFound();
 
@@ -55,7 +55,8 @@ const NotebookMaterialEditorPage = async ({
           <NotebookEditor
             defaultMeta={getDefaultNotebookMaterialMeta(
               materialId,
-              parentSubShelfId
+              parentSubShelfId,
+              rootShelfId
             )}
           />
         </Suspense>
@@ -68,7 +69,8 @@ const NotebookMaterialEditorPage = async ({
       <NotebookEditor
         defaultMeta={getDefaultNotebookMaterialMeta(
           materialId,
-          parentSubShelfId
+          parentSubShelfId,
+          rootShelfId
         )}
       />
     </Suspense>

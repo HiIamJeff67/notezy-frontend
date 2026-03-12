@@ -3,10 +3,12 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useRegister } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -14,7 +16,7 @@ import toast from "react-hot-toast";
 const RegisterPage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const registerMutator = useRegister();
   const getUserDataQuerier = useGetUserData();
@@ -71,7 +73,7 @@ const RegisterPage = () => {
           setEmail("");
           setPassword("");
           setConfirmPassword("");
-          userDataManager.setUserData(responseOfGettingUserData.data);
+          userManager.setUserData(responseOfGettingUserData.data);
           router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
@@ -86,7 +88,7 @@ const RegisterPage = () => {
       password,
       confirmPassword,
       languageManager,
-      userDataManager,
+      userManager,
       registerMutator,
       getUserDataQuerier,
       router,
@@ -147,6 +149,22 @@ const RegisterPage = () => {
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.login);
               },
+            },
+          ]}
+          oauthButtons={[
+            {
+              provider: "google",
+              label: "Register via Google",
+              onClick: () =>
+                router.forceNavigate(
+                  WebURLPathDictionary.oauth.google(
+                    getOAuthGoogleSearchParamsString({
+                      csrfToken: CSRFTokenGenerator.generate(),
+                      action: "register",
+                      from: router.getCurrentPath(),
+                    })
+                  )
+                ),
             },
           ]}
           statusDetail={"System Ready"}

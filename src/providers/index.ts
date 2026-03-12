@@ -2,6 +2,6 @@ export * from "./ApolloProvider";
 export * from "./AppRouterProvider";
 export * from "./LanguageProvider";
 export * from "./LoadingProvider";
-export * from "./ShelfMaterialProvider";
+export * from "./ShelfItemProvider/ShelfItemProvider";
 export * from "./ThemeProvider";
-export * from "./UserDataProvider";
+export * from "./UserProvider";

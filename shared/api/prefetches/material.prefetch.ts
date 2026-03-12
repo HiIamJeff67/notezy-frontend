@@ -1,13 +1,13 @@
 import {
-  queryFnGetAllMyMaterialsByParentSubShelfId,
   queryFnGetAllMyMaterialsByRootShelfId,
   queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
+  queryFnGetMyMaterialsByParentSubShelfId,
 } from "@shared/api/functions/material.function";
 import {
-  GetAllMyMaterialsByParentSubShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetMyMaterialByIdRequest,
+  GetMyMaterialsByParentSubShelfIdRequest,
 } from "@shared/api/interfaces/material.interface";
 import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
 import { getQueryClient } from "@shared/api/queryClient";
@@ -22,10 +22,11 @@ export const prefetchGetMyMaterialById = (initialQueryClient?: QueryClient) => {
     prefetchRequest: GetMyMaterialByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         prefetchRequest.param.materialId as UUID
       ),
-      queryFn: async () => queryFnGetMyMaterialById(prefetchRequest, true),
+      queryFn: async () =>
+        await queryFnGetMyMaterialById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -46,11 +47,11 @@ export const prefetchGetMyMaterialAndItsParentById = (
     prefetchRequest: GetMyMaterialByIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         prefetchRequest.param.materialId as UUID
       ),
       queryFn: async () =>
-        queryFnGetMyMaterialAndItsParentById(prefetchRequest, true),
+        await queryFnGetMyMaterialAndItsParentById(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -62,20 +63,20 @@ export const prefetchGetMyMaterialAndItsParentById = (
   };
 };
 
-export const prefetchGetAllMyMaterialsByParentSubShelfId = (
+export const prefetchGetMyMaterialsByParentSubShelfId = (
   initialQueryClient?: QueryClient
 ) => {
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const prefetchQuery = async (
-    prefetchRequest: GetAllMyMaterialsByParentSubShelfIdRequest
+    prefetchRequest: GetMyMaterialsByParentSubShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
+      queryKey: queryKeys.material.manyByParentSubShelfId(
         prefetchRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByParentSubShelfId(prefetchRequest, true),
+        await queryFnGetMyMaterialsByParentSubShelfId(prefetchRequest, true),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -96,7 +97,7 @@ export const prefetchGetAllMyMaterialsByRootShelfId = (
     prefetchRequest: GetAllMyMaterialsByRootShelfIdRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.material.manyByRootShelfId(
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>

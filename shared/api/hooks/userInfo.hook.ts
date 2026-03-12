@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
 import {
@@ -10,11 +9,15 @@ import {
   GetMyInfoResponse,
   UpdateMyInfoRequest,
   UpdateMyInfoRequestSchema,
+  UpdateMyInfoResponse,
 } from "@shared/api/interfaces/userInfo.interface";
 import { UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ZodError } from "zod";
 
@@ -55,17 +58,26 @@ export const useUpdateMyInfo = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMyInfoRequest) => {
+    mutationFn: async (
+      request: UpdateMyInfoRequest
+    ): Promise<UpdateMyInfoResponse> => {
       const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
       return await UpdateMyInfo(validatedRequest);
     },
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -75,8 +87,7 @@ export const useUpdateMyInfo = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);

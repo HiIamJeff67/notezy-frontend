@@ -3,7 +3,7 @@
 import GraduationCapIcon from "@/components/icons/GraduationCapIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { tKey } from "@shared/translations";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 const MaterialEditorPage = () => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
 
@@ -22,14 +22,14 @@ const MaterialEditorPage = () => {
           throw new Error("new shelf name must not be empty");
         }
 
-        await shelfMaterialManager.createRootShelf(newShelfName);
+        await shelfItemManager.createRootShelf(newShelfName);
       } catch (error) {
         toast.error(languageManager.tError(error));
       } finally {
         setNewShelfName("");
       }
     });
-  }, [newShelfName, loadingManager, languageManager, shelfMaterialManager]);
+  }, [newShelfName, loadingManager, languageManager, shelfItemManager]);
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center gap-4">

@@ -3,6 +3,8 @@
 import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import XIcon from "@/components/icons/XIcon";
+import ItemPath from "@/components/ItemPath/ItemPath";
+import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import TruncatedText from "@/components/TruncatedText/TruncatedText";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,12 +22,8 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  useAppRouter,
-  useLanguage,
-  useLoading,
-  useShelfMaterial,
-} from "@/hooks";
+import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { notebookMaterialMetaReducer } from "@/reducers/notebookMaterialMeta.reducer";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -35,7 +33,8 @@ import {
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
 import { getAuthorization } from "@/util/getAuthorization";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
+import { loadFileFromDownloadURL } from "@/util/loadFiles";
+import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
@@ -45,22 +44,18 @@ import {
   useSaveMyNotebookMaterialById,
 } from "@shared/api/hooks/material.hook";
 import { WebURLPathDictionary } from "@shared/constants";
-import { AllDefaultNotebookInitialContents } from "@shared/constants/defaultNotebookInitialContent.constant";
-import { MaterialLoader } from "@shared/lib/materialLoader";
+import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
 import {
   ExportableMaterialContentTypes,
   MaterialContentType,
   MaterialType,
-} from "@shared/types/enums";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import {
-  NotebookMaterialMeta,
-  notebookMaterialMetaReducer,
-} from "@shared/types/notebookMaterialMeta.type";
+} from "@shared/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import MaterialPath from "../MaterialPath/MaterialPath";
 
 interface NotebookEditorProps {
   defaultMeta: NotebookMaterialMeta;
@@ -71,7 +66,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
   const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
@@ -89,39 +84,39 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
   // update the file name in this page
   useEffect(() => {
-    if (shelfMaterialManager.isMaterialNodeEditing(meta.id)) {
+    if (shelfItemManager.isItemNodeEditing(meta.id)) {
       dispatchMeta({
         type: "setName",
-        newName: shelfMaterialManager.editMaterialNodeName,
+        newName: shelfItemManager.editItemNodeName,
       });
     }
-  }, [shelfMaterialManager.editMaterialNodeName]);
+  }, [shelfItemManager.editItemNodeName]);
 
   useEffect(() => {
-    const initializeMaterial = async () => {
-      try {
-        loadingManager.startAsyncTransactionLoading(async () => {
-          const notebookMaterialMeta = await loadNotebookMaterial(
-            meta.id as UUID
-          );
+    const initializeMaterial = async () =>
+      await loadingManager
+        .startAsyncTransactionLoading(
+          async () => {
+            const notebookMaterialMeta = await loadNotebookMaterial(meta.id);
 
-          if (notebookMaterialMeta) {
-            dispatchMeta({
-              type: "init",
-              payload: notebookMaterialMeta,
-            });
-            setEditor(
-              BlockNoteEditor.create({
-                initialContent:
-                  notebookMaterialMeta.initialContent ?? ([] as PartialBlock[]),
-              })
-            );
-          }
-        });
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
+            if (notebookMaterialMeta) {
+              dispatchMeta({
+                type: "init",
+                payload: notebookMaterialMeta,
+              });
+              setEditor(
+                BlockNoteEditor.create({
+                  initialContent:
+                    notebookMaterialMeta.initialContent ??
+                    ([] as PartialBlock[]),
+                })
+              );
+            }
+          },
+          3000,
+          5000
+        )
+        .catch(error => toast.error(languageManager.tError(error)));
 
     initializeMaterial();
   }, []);
@@ -131,7 +126,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   ): Promise<NotebookMaterialMeta | undefined> => {
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const responseOfGettingMaterial =
       await getMyMaterialAndItsParentQuerier.queryAsync({
@@ -152,10 +147,14 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       return undefined;
     }
 
-    const parsedContent = await MaterialLoader.loadMaterialContent(
-      responseOfGettingMaterial.data.downloadURL,
-      AllDefaultNotebookInitialContents
+    const fileContentString = await loadFileFromDownloadURL(
+      responseOfGettingMaterial.data.downloadURL
     );
+    const parsedContent = (
+      fileContentString && fileContentString.trim() !== ""
+        ? JSON.parse(fileContentString)
+        : choiceRandom(AllDefaultBlockPackInitialContents)
+    ) as PartialBlock[];
 
     return {
       id: responseOfGettingMaterial.data.id as UUID,
@@ -171,7 +170,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
     };
   };
 
-  if (!editor || !meta.parentId) {
+  if (!editor || !meta.id || !meta.parentId || !meta.rootId) {
     return undefined;
   }
 
@@ -201,7 +200,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
         const userAgent = navigator.userAgent;
         const accessToken = LocalStorageManipulator.getItemByKey(
-          LocalStorageKeys.accessToken
+          LocalStorageKey.accessToken
         );
         await saveMyNotebookMaterialMutator.mutateAsync({
           header: {
@@ -494,19 +493,22 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
           </MenubarMenu>
         </Menubar>
       </header>
-      <MaterialPath
+      <ItemPath
         parentSubShelfId={meta.parentId}
-        materialId={meta.id}
+        itemId={meta.id}
+        itemType="Material"
         path={meta.path}
-        summary={shelfMaterialManager.expandedShelves.get(
-          meta.rootId.toString()
-        )}
+        summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        <BlockNoteView
-          editor={editor}
-          className="caret-muted-foreground z-10"
-        />
+        {getMyMaterialAndItsParentQuerier.isFetching ? (
+          <StrictLoadingOutlay />
+        ) : (
+          <BlockNoteView
+            editor={editor}
+            className="caret-muted-foreground z-10"
+          />
+        )}
       </div>
     </div>
   );

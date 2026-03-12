@@ -33,12 +33,15 @@ export const APIURLPathDictionary = {
   },
   auth: {
     register: "auth/register",
+    registerViaGoogle: "auth/registerViaGoogle",
     login: "auth/login",
+    loginViaGoogle: "auth/loginViaGoogle",
     logout: "auth/logout",
     sendAuthCode: "auth/sendAuthCode",
     validateEmail: "auth/validateEmail",
     resetEmail: "auth/resetEmail",
     forgetPassword: "auth/forgetPassword",
+    resetMe: "auth/resetMe",
     deleteMe: "auth/deleteMe",
   },
   user: {
@@ -49,6 +52,12 @@ export const APIURLPathDictionary = {
   userInfo: {
     getMyInfo: "userInfo/getMyInfo",
     updateMyInfo: "userInfo/updateMyInfo",
+  },
+  userAccount: {
+    getMyAccount: "userAccount/getMyAccount",
+    updatedMyAccount: "userAccount/updateMyAccount",
+    bindGoogleAccount: "userAccount/bindGoogleAccount",
+    unbindGoogleAccount: "userAccount/unbindGoogleAccount",
   },
   rootShelf: {
     getMyRootShelfById: "rootShelf/getMyRootShelfById",
@@ -64,6 +73,8 @@ export const APIURLPathDictionary = {
     getMySubShelfById: "subShelf/getMySubShelfById",
     getMySubShelvesByPrevSubShelfId: "subShelf/getMySubShelvesByPrevSubShelfId",
     getAllMySubShelvesByRootShelfId: "subShelf/getAllMySubShelvesByRootShelfId",
+    getMySubShelvesAndItemsByPrevSubShelfId:
+      "subShelf/getMySubShelvesAndItemsByPrevSubShelfId",
     createSubShelfByRootShelfId: "subShelf/createSubShelfByRootShelfId",
     updateMySubShelfById: "subShelf/updateMySubShelfById",
     moveMySubShelf: "subShelf/moveMySubShelf",
@@ -73,20 +84,11 @@ export const APIURLPathDictionary = {
     deleteMySubShelfById: "subShelf/deleteMySubShelfById",
     deleteMySubShelvesByIds: "subShelf/deleteMySubShelvesByIds",
   },
-  shelf: {
-    getMyShelfById: "shelf/getMyShelfById",
-    createShelf: "shelf/createShelf",
-    synchronizeShelves: "shelf/synchronizeShelves",
-    restoreMyShelfById: "shelf/restoreMyShelfById",
-    restoreMyShelvesByIds: "shelf/restoreMyShelvesByIds",
-    deleteMyShelfById: "shelf/deleteMyShelfById",
-    deleteMyShelvesByIds: "shelf/deleteMyShelvesByIds",
-  },
   material: {
     getMyMaterialById: "material/getMyMaterialById",
     getMyMaterialAndItsParentById: "material/getMyMaterialAndItsParentById",
-    getAllMyMaterialsByParentSubShelfId:
-      "material/getAllMyMaterialsByParentSubShelfId",
+    getMyMaterialsByParentSubShelfId:
+      "material/getMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
     createTextbookMaterial: "material/createTextbookMaterial",
     createNotebookMaterial: "material/createNotebookMaterial",
@@ -98,6 +100,65 @@ export const APIURLPathDictionary = {
     restoreMyMaterialsByIds: "material/restoreMyMaterialsByIds",
     deleteMyMaterialById: "material/deleteMyMaterialById",
     deleteMyMaterialsByIds: "material/deleteMyMaterialsByIds",
+  },
+  blockPack: {
+    getMyBlockPackById: "blockPack/getMyBlockPackById",
+    getMyBlockPackAndItsParentById: "blockPack/getMyBlockPackAndItsParentById",
+    getMyBlockPackAndItsBlockGroupsAndTheirBlocksById:
+      "blockPack/getMyBlockPackAndItsBlockGroupsAndTheirBlocksById",
+    getMyBlockPacksByParentSubShelfId:
+      "blockPack/getMyBlockPacksByParentSubShelfId",
+    getAllMyBlockPacksByRootShelfId:
+      "blockPack/getAllMyBlockPacksByRootShelfId",
+    createBlockPack: "blockPack/createBlockPack",
+    updateMyBlockPackById: "blockPack/updateMyBlockPackById",
+    moveMyBlockPackById: "blockPack/moveMyBlockPackById",
+    moveMyBlockPacksByIds: "blockPack/moveMyBlockPacksByIds",
+    restoreMyBlockPackById: "blockPack/restoreMyBlockPackById",
+    restoreMyBlockPacksByIds: "blockPack/restoreMyBlockPacksByIds",
+    deleteMyBlockPackById: "blockPack/deleteMyBlockPackById",
+    deleteMyBlockPacksByIds: "blockPack/deleteMyBlockPacksByIds",
+  },
+  blockGroup: {
+    getMyBlockGroupById: "blockGroup/getMyBlockGroupById",
+    getMyBlockGroupAndItsBlocksById:
+      "blockGroup/getMyBlockGroupAndItsBlocksById",
+    getMyBlockGroupsAndTheirBlocksByIds:
+      "blockGroup/getMyBlockGroupsAndTheirBlocksByIds",
+    getMyBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/getMyBlockGroupsAndTheirBlocksByBlockPackId",
+    getMyBlockGroupsByPrevBlockGroupId:
+      "blockGroup/getMyBlockGroupsByPrevBlockGroupId",
+    getAllMyBlockGroupsByBlockPackId:
+      "blockGroup/getAllMyBlockGroupsByBlockPackId",
+    insertBlockGroupByBlockPackId: "blockGroup/insertBlockGroupByBlockPackId",
+    insertBlockGroupAndItsBlocksByBlockPackId:
+      "blockGroup/insertBlockGroupAndItsBlocksByBlockPackId",
+    insertBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/insertBlockGroupsAndTheirBlocksByBlockPackId",
+    insertSequentialBlockGroupsAndTheirBlocksByBlockPackId:
+      "blockGroup/insertSequentialBlockGroupsAndTheirBlocksByBlockPackId",
+    moveMyBlockGroupsByIds: "blockGroup/moveMyBlockGroupsByIds",
+    restoreMyBlockGroupById: "blockGroup/restoreMyBlockGroupById",
+    restoreMyBlockGroupsByIds: "blockGroup/restoreMyBlockGroupsByIds",
+    deleteMyBlockGroupById: "blockGroup/deleteMyBlockGroupById",
+    deleteMyBlockGroupsByIds: "blockGroup/deleteMyBlockGroupsByIds",
+  },
+  block: {
+    getMyBlockById: "block/getMyBlockById",
+    getMyBlocksByIds: "block/getMyBlocksByIds",
+    getMyBlocksByBlockGroupId: "block/getMyBlocksByBlockGroupId",
+    getMyBlocksByBlockGroupIds: "block/getMyBlocksByBlockGroupIds",
+    getMyBlocksByBlockPackId: "block/getMyBlocksByBlockPackId",
+    getAllMyBlocks: "block/getAllMyBlocks",
+    insertBlock: "block/insertBlock",
+    insertBlocks: "block/insertBlocks",
+    updateMyBlockById: "block/updateMyBlockById",
+    updateMyBlocksByIds: "block/updateMyBlocksByIds",
+    restoreMyBlockById: "block/restoreMyBlockById",
+    restoreMyBlocksByIds: "block/restoreMyBlocksByIds",
+    deleteMyBlockById: "block/deleteMyBlockById",
+    deleteMyBlocksByIds: "block/deleteMyBlocksByIds",
   },
 };
 
@@ -120,15 +181,34 @@ export const WebURLPathDictionary = {
     register: "register",
     login: "login",
     forgetPassword: "forgetPassword",
+    redirect: {
+      error: (title?: string, description?: string) =>
+        `redirect/error?title=${title}&description=${description}`,
+      google: "redirect/google",
+      meta: "redirect/meta",
+    },
+  },
+  oauth: {
+    // the url to start the oauth services
+    google: (qs: string) => {
+      return `https://accounts.google.com/o/oauth2/v2/auth?${qs}`;
+    },
+    x: (qs: string) => {
+      return `https://x.com/i/oauth2/authorize?${qs}`;
+    },
   },
   root: {
     materialEditor: {
       _: "material-editor",
-      notebook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
-      textbook: (materialId: UUID, parentSubShelfId: UUID) =>
-        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}`,
+      notebook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
+      textbook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
       notFound: "material-editor/not-found",
+    },
+    blockPackEditor: {
+      _: (blockPackId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
+        `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
     },
     documents: {
       _: "documents",

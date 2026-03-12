@@ -1,7 +1,4 @@
-"use client";
-
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useGetMyMaterialById } from "@shared/api/hooks/material.hook";
 import { Suspense } from "react";
 
 /*
@@ -18,12 +15,5 @@ export default function MaterialEditorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const getMyMaterialQuerier = useGetMyMaterialById();
-
-  return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
-      <StrictLoadingOutlay condition={getMyMaterialQuerier.isFetching} />
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={<StrictLoadingOutlay />}>{children}</Suspense>;
 }

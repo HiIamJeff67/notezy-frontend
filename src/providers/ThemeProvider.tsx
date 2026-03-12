@@ -1,9 +1,9 @@
 "use client";
 
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { DefaultStandardTheme } from "@shared/constants";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { Theme } from "@shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
 
@@ -29,12 +29,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   // initialize the default theme
   useEffect(() => {
     const savedTheme = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.theme
+      LocalStorageKey.theme
     );
     if (!savedTheme) {
       setCurrentTheme(DefaultStandardTheme);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.theme,
+        LocalStorageKey.theme,
         DefaultStandardTheme
       );
       return;
@@ -47,7 +47,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (!isThemeExists) {
       setCurrentTheme(DefaultStandardTheme);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.theme,
+        LocalStorageKey.theme,
         DefaultStandardTheme
       );
       return;
@@ -60,7 +60,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!currentTheme) return;
 
-    LocalStorageManipulator.setItem(LocalStorageKeys.theme, currentTheme);
+    LocalStorageManipulator.setItem(LocalStorageKey.theme, currentTheme);
 
     if (prevTheme !== null) {
       const prevDefaultThemeCSSClassName = !prevTheme.isDark ? "light" : "dark";

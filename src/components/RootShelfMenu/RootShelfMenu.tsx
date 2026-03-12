@@ -1,15 +1,21 @@
+import RootShelfMenuItem from "@/components/RootShelfMenu/RootShelfMenuItem";
+import RootShelfMenuItemSkeleton from "@/components/RootShelfMenu/RootShelfMenuItemSkeleton";
 import { SidebarMenu } from "@/components/ui/sidebar";
-import { useShelfMaterial } from "@/hooks";
-import RootShelfMenuItem from "./RootShelfMenuItem";
+import { useShelfItem } from "@/hooks";
+import { Suspense } from "react";
 
 const RootShelfMenu = () => {
-  const shelfMaterialManager = useShelfMaterial();
+  const shelfItemManager = useShelfItem();
 
   return (
     <SidebarMenu className="overflow-hidden">
-      {shelfMaterialManager.rootShelfEdges.map((edge, index) => (
-        <RootShelfMenuItem key={index} rootShelfEdge={edge} index={index} />
-      ))}
+      <Suspense fallback={<RootShelfMenuItemSkeleton />}>
+        {shelfItemManager.rootShelfEdges.map((edge, index) => (
+          <Suspense fallback={<RootShelfMenuItemSkeleton />} key={index}>
+            <RootShelfMenuItem key={index} rootShelfEdge={edge} index={index} />
+          </Suspense>
+        ))}
+      </Suspense>
     </SidebarMenu>
   );
 };

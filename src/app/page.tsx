@@ -16,9 +16,11 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useTheme, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useTheme, useUser } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -30,7 +32,7 @@ const HomePage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
   const themeManager = useTheme();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
@@ -103,7 +105,6 @@ const HomePage = () => {
 
   useEffect(() => {
     startCycle();
-    userDataManager.setEnableAutoFetching(false);
     return () => clearAllTimers();
   }, []);
 
@@ -206,8 +207,14 @@ const HomePage = () => {
                 variant="default"
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
-                  router.push(WebURLPathDictionary.auth.login);
-                  userDataManager.setEnableAutoFetching(true);
+                  const accessToken = LocalStorageManipulator.getItemByKey(
+                    LocalStorageKey.accessToken
+                  );
+                  router.push(
+                    userManager.userData !== null && accessToken
+                      ? WebURLPathDictionary.root.dashboard._
+                      : WebURLPathDictionary.auth.login
+                  );
                 }}
               >
                 <NoteIcon size={18} />

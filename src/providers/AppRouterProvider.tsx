@@ -23,6 +23,7 @@ interface AppRouterContextType {
   getCurrentPath: () => string;
   getPrevPaths: () => string[];
   push: (path: string) => void;
+  forceNavigate: (path: string) => void;
   replace: (path: string) => void;
   back: (steps?: number) => void;
   forward: (steps?: number) => void;
@@ -50,7 +51,6 @@ export const AppRouterProvider = ({
   const isNavigating = isOptimisticNavigating || isRoutePending;
 
   const isSamePath = useCallback((a: string, b: string): boolean => {
-    if (a.length === 0 || b.length === 0) return false;
     if (a[0] === "/") {
       return b[0] === "/" ? a === b : a === "/" + b;
     }
@@ -83,6 +83,18 @@ export const AppRouterProvider = ({
         setIsOptimisticNavigating(true);
         _startRouteTransition(() => {
           router.push(path.startsWith("/") ? path : "/" + path);
+        });
+      }
+    },
+    [getCurrentPath, isSamePath, router]
+  );
+
+  const forceNavigate = useCallback(
+    (path: string) => {
+      if (!isSamePath(getCurrentPath(), path)) {
+        setIsOptimisticNavigating(true);
+        _startRouteTransition(() => {
+          window.location.href = path;
         });
       }
     },
@@ -135,6 +147,7 @@ export const AppRouterProvider = ({
     getCurrentPath: getCurrentPath,
     getPrevPaths: getPrevPaths,
     push: push,
+    forceNavigate: forceNavigate,
     replace: replace,
     back: back,
     forward: forward,

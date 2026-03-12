@@ -1,7 +1,10 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
 import z from "zod";
-import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
-/* ============================== Request Context ============================== */
+/* ============================== Register Context ============================== */
 
 export const RegisterRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
@@ -29,13 +32,39 @@ export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export const RegisterResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
-    refreshToken: z.string(),
     csrfToken: z.string(),
     createdAt: z.coerce.date(),
   }),
 });
 
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
+
+/* ============================== RegisterViaGoogle Context ============================== */
+
+export const RegisterViaGoogleRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+  }),
+  body: z.object({
+    authorizationCode: z.string(),
+  }),
+});
+
+export type RegisterViaGoogleRequest = z.infer<
+  typeof RegisterViaGoogleRequestSchema
+>;
+
+export const RegisterViaGoogleResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    accessToken: z.string(),
+    csrfToken: z.string(),
+    createdAt: z.coerce.date(),
+  }),
+});
+
+export type RegisterViaGoogleResponse = z.infer<
+  typeof RegisterViaGoogleResponseSchema
+>;
 
 /* ============================== Login Context ============================== */
 
@@ -60,13 +89,37 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export const LoginResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     accessToken: z.string(),
-    refreshToken: z.string(),
     csrfToken: z.string(),
     updatedAt: z.coerce.date(),
   }),
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+
+/* ============================== LoginViaGoogle Context ============================== */
+
+export const LoginViaGoogleRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+  }),
+  body: z.object({
+    authorizationCode: z.string(),
+  }),
+});
+
+export type LoginViaGoogleRequest = z.infer<typeof LoginViaGoogleRequestSchema>;
+
+export const LoginViaGoogleResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    accessToken: z.string(),
+    csrfToken: z.string(),
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type LoginViaGoogleResponse = z.infer<
+  typeof LoginViaGoogleResponseSchema
+>;
 
 /* ============================== Logout Context ============================== */
 
@@ -193,6 +246,29 @@ export type ForgetPasswordResponse = z.infer<
   typeof ForgetPasswordResponseSchema
 >;
 
+/* ============================== ResetMe Context ============================== */
+
+export const ResetMeRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+    csrfToken: z.string(),
+  }),
+  body: z.object({
+    authCode: z.string().length(6),
+  }),
+});
+
+export type ResetMeRequest = z.infer<typeof ResetMeRequestSchema>;
+
+export const ResetMeResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type ResetMeResponse = z.infer<typeof ResetMeResponseSchema>;
+
 /* ============================== DeleteMe Context ============================== */
 
 export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
@@ -202,7 +278,7 @@ export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
     csrfToken: z.string(),
   }),
   body: z.object({
-    authCode: z.string().length(6),
+    authCode: z.string().refine(val => val.length === 0 || val.length === 6),
   }),
 });
 

@@ -9,12 +9,9 @@ import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { AnalysisStatus } from "@shared/types/enums";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { AnalysisStatus } from "@shared/enums";
+import { MaterialNode } from "@shared/types/itemNodes.type";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 
@@ -115,7 +112,9 @@ export class RootShelfManipulator {
         isExpanded: false,
         children: {},
         materialNodes: {},
+        blockPackNodes: {},
         isOpen: false,
+        nodeType: "SubShelf",
       };
       newRootShelfNode.children[subShelf.id as UUID] = newSubShelfNode;
       prevSubShelfNodes[newSubShelfNode.id] =
@@ -159,7 +158,9 @@ export class RootShelfManipulator {
           isExpanded: false,
           children: {},
           materialNodes: {},
+          blockPackNodes: {},
           isOpen: false,
+          nodeType: "SubShelf",
         };
 
         if (
@@ -411,7 +412,7 @@ export class RootShelfManipulator {
   public static analysisAndGenerateSummary(
     rootShelfNode: RootShelfNode
   ): ShelfTreeSummary {
-    let totalShelfNodes: number = 0,
+    let subShelfCount: number = 0,
       maxWidth: number = 0,
       maxDepth: number = 0,
       estimatedByteSize: number = 0;
@@ -421,7 +422,7 @@ export class RootShelfManipulator {
       queue.push(subShelf);
     }
     const visited: Set<UUID> = new Set<UUID>();
-    const uniqueMaterialIdsSet: Set<UUID> = new Set<UUID>();
+    const uniqueItemIdsSet: Set<UUID> = new Set<UUID>();
 
     while (queue.length > 0) {
       let levelSize = queue.length;
@@ -429,14 +430,14 @@ export class RootShelfManipulator {
       maxDepth++;
 
       while (levelSize--) {
-        if (totalShelfNodes > RootShelfManipulator.maxTraverseCount) {
+        if (subShelfCount > RootShelfManipulator.maxTraverseCount) {
           throw new Error(
             `Maximum iterations (${RootShelfManipulator.maxTraverseCount}) exceeded`
           );
         }
 
         const current = queue.shift()!;
-        totalShelfNodes++;
+        subShelfCount++;
 
         if (visited.has(current.id)) {
           throw new Error(`Cycle detected at node: ${current.id}`);
@@ -455,12 +456,12 @@ export class RootShelfManipulator {
           }
           uniqueMaterialNamesSet.add(material.name);
 
-          if (uniqueMaterialIdsSet.has(materialId as UUID)) {
+          if (uniqueItemIdsSet.has(materialId as UUID)) {
             throw new Error(
               `Repeated material ids detected in the same shelf tree`
             );
           }
-          uniqueMaterialIdsSet.add(materialId as UUID);
+          uniqueItemIdsSet.add(materialId as UUID);
 
           estimatedByteSize += this.estimateMaterialNode(material);
         }
@@ -472,8 +473,8 @@ export class RootShelfManipulator {
         }
       }
     }
-    rootShelfNode.totalShelfNodes = totalShelfNodes;
-    rootShelfNode.totalMaterials = uniqueMaterialIdsSet.size;
+    rootShelfNode.subShelfCount = subShelfCount;
+    rootShelfNode.itemCount = uniqueItemIdsSet.size;
 
     return {
       root: rootShelfNode,

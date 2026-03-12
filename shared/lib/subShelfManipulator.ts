@@ -1,15 +1,13 @@
-import { GetAllMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
+import { GetMyBlockPacksByParentSubShelfIdResponse } from "@shared/api/interfaces/blockPack.interface";
+import { GetMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
 import { GetMySubShelvesByPrevSubShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
 } from "@shared/constants";
-import { AnalysisStatus } from "@shared/types/enums";
-import {
-  MaterialNode,
-  RootShelfNode,
-  SubShelfNode,
-} from "@shared/types/shelfMaterialNodes";
+import { AnalysisStatus } from "@shared/enums";
+import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
+import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 
@@ -45,9 +43,9 @@ export class SubShelfManipulator {
   public static initializeSubShelfNodesByResponse(
     rootShelfNode: RootShelfNode,
     subShelfNode: SubShelfNode | null,
-    responseOfSubShelves: GetMySubShelvesByPrevSubShelfIdResponse
+    responseOfSubShelves: GetMySubShelvesByPrevSubShelfIdResponse["data"]
   ): SubShelfNode | null {
-    for (const subShelf of responseOfSubShelves.data) {
+    for (const subShelf of responseOfSubShelves) {
       if (subShelfNode && subShelf.prevSubShelfId !== subShelfNode.id) {
         throw new Error(`Insert sub shelves to wrong parent sub shelf`);
       }
@@ -66,7 +64,9 @@ export class SubShelfManipulator {
         isExpanded: false,
         children: {},
         materialNodes: {},
+        blockPackNodes: {},
         isOpen: false,
+        nodeType: "SubShelf",
       };
 
       if (subShelfNode) {
@@ -81,9 +81,9 @@ export class SubShelfManipulator {
 
   public static initializeMaterialNodesByResponse(
     subShelfNode: SubShelfNode,
-    responseOfMaterials: GetAllMyMaterialsByParentSubShelfIdResponse
+    responseOfMaterials: GetMyMaterialsByParentSubShelfIdResponse["data"]
   ): SubShelfNode {
-    for (const material of responseOfMaterials.data) {
+    for (const material of responseOfMaterials) {
       if (material.parentSubShelfId !== subShelfNode.id) {
         throw new Error(`Insert materials to wrong parent sub shelf`);
       }
@@ -93,14 +93,42 @@ export class SubShelfManipulator {
         parentSubShelfId: subShelfNode.id as UUID,
         name: material.name,
         type: material.type,
+        size: material.size,
         downloadURL: material.downloadURL,
         updatedAt: material.updatedAt,
         createdAt: material.createdAt,
         isOpen: false,
+        nodeType: "Material",
       };
       subShelfNode.materialNodes[material.id as UUID] = newMaterialNode;
     }
-    subShelfNode.isExpanded = true;
+
+    return subShelfNode;
+  }
+
+  public static initializeBlockPackNodesByResponse(
+    subShelfNode: SubShelfNode,
+    responseOfBlockPacks: GetMyBlockPacksByParentSubShelfIdResponse["data"]
+  ): SubShelfNode {
+    for (const blockPack of responseOfBlockPacks) {
+      if (blockPack.parentSubShelfId !== subShelfNode.id) {
+        throw new Error(`Insert block packs to wrong parent sub shelf`);
+      }
+
+      const newBlockPackNode: BlockPackNode = {
+        id: blockPack.id as UUID,
+        parentSubShelfId: blockPack.parentSubShelfId as UUID,
+        name: blockPack.name,
+        icon: blockPack.icon,
+        headerBackgroundURL: blockPack.headerBackgroundURL,
+        blockCount: blockPack.blockCount,
+        updatedAt: blockPack.updatedAt,
+        createdAt: blockPack.createdAt,
+        isOpen: false,
+        nodeType: "BlockPack",
+      };
+      subShelfNode.blockPackNodes[blockPack.id as UUID] = newBlockPackNode;
+    }
 
     return subShelfNode;
   }

@@ -1,10 +1,10 @@
 "use client";
 
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { LanguageKeyMap, Languages } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey, translations } from "@shared/translations/index";
 import { Language } from "@shared/types/language.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {
@@ -30,14 +30,14 @@ export const LanguageProvider = ({
 
   useEffect(() => {
     const savedLanguage = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.language
+      LocalStorageKey.language
     );
     if (savedLanguage !== null) setCurrentLanguage(savedLanguage);
   }, []);
 
   // update the HTML lang attribute
   useEffect(() => {
-    LocalStorageManipulator.setItem(LocalStorageKeys.language, currentLanguage);
+    LocalStorageManipulator.setItem(LocalStorageKey.language, currentLanguage);
     const langCode = currentLanguage.code;
     document.documentElement.lang = langCode;
   }, [currentLanguage]);

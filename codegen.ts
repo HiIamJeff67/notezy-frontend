@@ -28,7 +28,7 @@ const config: CodegenConfig = {
         useTypeImports: true,
         strictScalars: true,
         scalars: {
-          UUID: "UUID",
+          UUID: "crypto#UUID",
           Time: "Date",
           Base64Bytes: "string",
           Int32: "number",

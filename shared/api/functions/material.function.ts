@@ -1,38 +1,47 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdRequestSchema,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdRequestSchema,
   GetMyMaterialAndItsParentByIdRequest,
   GetMyMaterialAndItsParentByIdRequestSchema,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdRequestSchema,
+  GetMyMaterialsByParentSubShelfIdRequest,
+  GetMyMaterialsByParentSubShelfIdRequestSchema,
 } from "@shared/api/interfaces/material.interface";
 import {
-  GetAllMyMaterialsByParentSubShelfId,
   GetAllMyMaterialsByRootShelfId,
   GetMyMaterialAndItsParentById,
   GetMyMaterialById,
+  GetMyMaterialsByParentSubShelfId,
 } from "@shared/api/invokers/material.invoker";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetMyMaterialById = async (
   request?: GetMyMaterialByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
     const response = await GetMyMaterialById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -55,17 +64,24 @@ export const queryFnGetMyMaterialAndItsParentById = async (
   request?: GetMyMaterialAndItsParentByIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
       GetMyMaterialAndItsParentByIdRequestSchema.parse(request);
     const response = await GetMyMaterialAndItsParentById(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -84,23 +100,28 @@ export const queryFnGetMyMaterialAndItsParentById = async (
   }
 };
 
-export const queryFnGetAllMyMaterialsByParentSubShelfId = async (
-  request?: GetAllMyMaterialsByParentSubShelfIdRequest,
+export const queryFnGetMyMaterialsByParentSubShelfId = async (
+  request?: GetMyMaterialsByParentSubShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
-      GetAllMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
-    const response = await GetAllMyMaterialsByParentSubShelfId(
-      validatedRequest
-    );
+      GetMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
+    const response = await GetMyMaterialsByParentSubShelfId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -123,17 +144,24 @@ export const queryFnGetAllMyMaterialsByRootShelfId = async (
   request?: GetAllMyMaterialsByRootShelfIdRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest =
       GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
     const response = await GetAllMyMaterialsByRootShelfId(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

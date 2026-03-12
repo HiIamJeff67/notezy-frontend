@@ -12,7 +12,7 @@ export class LRUCache<K, V> {
   private tail: LRUNode<K, V>; // dummy tail (direction of LRU)
 
   constructor(capacity: number) {
-    if (capacity <= 0) throw new Error("LRU capacity must be > 0");
+    if (capacity <= 0) throw new Error("LRU cache capacity must be > 0");
     this.capacity = capacity;
     this.map = new Map();
     this.head = {

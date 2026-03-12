@@ -1,38 +1,46 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  queryFnGetAllMyMaterialsByParentSubShelfId,
   queryFnGetAllMyMaterialsByRootShelfId,
   queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
+  queryFnGetMyMaterialsByParentSubShelfId,
 } from "@shared/api/functions/material.function";
 import {
   CreateNotebookMaterialRequest,
   CreateNotebookMaterialRequestSchema,
+  CreateNotebookMaterialResponse,
   CreateTextbookMaterialRequest,
   CreateTextbookMaterialRequestSchema,
+  CreateTextbookMaterialResponse,
   DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdRequestSchema,
+  DeleteMyMaterialByIdResponse,
   DeleteMyMaterialsByIdsRequest,
   DeleteMyMaterialsByIdsRequestSchema,
-  GetAllMyMaterialsByParentSubShelfIdRequest,
-  GetAllMyMaterialsByParentSubShelfIdResponse,
+  DeleteMyMaterialsByIdsResponse,
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialAndItsParentByIdRequest,
   GetMyMaterialAndItsParentByIdResponse,
   GetMyMaterialByIdRequest,
   GetMyMaterialByIdResponse,
+  GetMyMaterialsByParentSubShelfIdRequest,
+  GetMyMaterialsByParentSubShelfIdResponse,
   MoveMyMaterialByIdRequest,
   MoveMyMaterialByIdRequestSchema,
+  MoveMyMaterialByIdResponse,
   RestoreMyMaterialByIdRequest,
   RestoreMyMaterialByIdRequestSchema,
+  RestoreMyMaterialByIdResponse,
   RestoreMyMaterialsByIdsRequest,
   RestoreMyMaterialsByIdsRequestSchema,
+  RestoreMyMaterialsByIdsResponse,
   SaveMyNotebookMaterialByIdRequest,
   SaveMyNotebookMaterialByIdRequestSchema,
+  SaveMyNotebookMaterialByIdResponse,
   UpdateMyMaterialByIdRequest,
   UpdateMyMaterialByIdRequestSchema,
+  UpdateMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import {
   QueryAsyncDefaultOptions,
@@ -51,8 +59,16 @@ import {
 } from "@shared/api/invokers/material.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
 
@@ -63,7 +79,7 @@ export const useGetMyMaterialById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
+    queryKey: queryKeys.material.oneById(
       hookRequest?.param.materialId as UUID | undefined
     ),
     queryFn: async () => await queryFnGetMyMaterialById(hookRequest),
@@ -78,7 +94,7 @@ export const useGetMyMaterialById = (
     callbackRequest: GetMyMaterialByIdRequest
   ): Promise<GetMyMaterialByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         callbackRequest.param.materialId as UUID
       ),
       queryFn: async () => await queryFnGetMyMaterialById(callbackRequest),
@@ -100,8 +116,9 @@ export const useGetMyMaterialAndItsParentById = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myOneById(
-      hookRequest?.param.materialId as UUID | undefined
+    queryKey: queryKeys.material.oneById(
+      hookRequest?.param.materialId as UUID | undefined,
+      true
     ),
     queryFn: async () =>
       await queryFnGetMyMaterialAndItsParentById(hookRequest),
@@ -116,7 +133,7 @@ export const useGetMyMaterialAndItsParentById = (
     callbackRequest: GetMyMaterialAndItsParentByIdRequest
   ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myOneById(
+      queryKey: queryKeys.material.oneById(
         callbackRequest.param.materialId as UUID
       ),
       queryFn: async () =>
@@ -132,18 +149,18 @@ export const useGetMyMaterialAndItsParentById = (
   };
 };
 
-export const useGetAllMyMaterialsByParentSubShelfId = (
-  hookRequest?: GetAllMyMaterialsByParentSubShelfIdRequest,
+export const useGetMyMaterialsByParentSubShelfId = (
+  hookRequest?: GetMyMaterialsByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByParentSubShelfId(
+    queryKey: queryKeys.material.manyByParentSubShelfId(
       hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
     queryFn: async () =>
-      await queryFnGetAllMyMaterialsByParentSubShelfId(hookRequest),
+      await queryFnGetMyMaterialsByParentSubShelfId(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -152,14 +169,14 @@ export const useGetAllMyMaterialsByParentSubShelfId = (
   });
 
   const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByParentSubShelfIdRequest
-  ): Promise<GetAllMyMaterialsByParentSubShelfIdResponse> => {
+    callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
+  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByParentSubShelfId(
+      queryKey: queryKeys.material.manyByParentSubShelfId(
         callbackRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByParentSubShelfId(callbackRequest),
+        await queryFnGetMyMaterialsByParentSubShelfId(callbackRequest),
       staleTime: QueryAsyncDefaultOptions.staleTime as number,
     });
   };
@@ -178,7 +195,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
   const queryClient = getQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.material.myManyByRootShelfId(
+    queryKey: queryKeys.material.manyByRootShelfId(
       hookRequest?.param.rootShelfId as UUID | undefined
     ),
     queryFn: async () =>
@@ -194,7 +211,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
     callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
   ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
     return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.myManyByRootShelfId(
+      queryKey: queryKeys.material.manyByRootShelfId(
         callbackRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
@@ -214,43 +231,38 @@ export const useCreateTextbookMaterial = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateTextbookMaterialRequest) => {
+    mutationFn: async (
+      request: CreateTextbookMaterialRequest
+    ): Promise<CreateTextbookMaterialResponse> => {
       const validatedRequest =
         CreateTextbookMaterialRequestSchema.parse(request);
       return await CreateTextbookMaterial(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return false;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -260,8 +272,7 @@ export const useCreateTextbookMaterial = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -281,43 +292,38 @@ export const useCreateNotebookMaterial = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: CreateNotebookMaterialRequest) => {
+    mutationFn: async (
+      request: CreateNotebookMaterialRequest
+    ): Promise<CreateNotebookMaterialResponse> => {
       const validatedRequest =
         CreateNotebookMaterialRequestSchema.parse(request);
       return await CreateNotebookMaterial(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return false;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return false;
-            case "material":
-              switch (k[1]) {
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -327,8 +333,7 @@ export const useCreateNotebookMaterial = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -348,37 +353,38 @@ export const useUpdateMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMyMaterialByIdRequest) => {
+    mutationFn: async (
+      request: UpdateMyMaterialByIdRequest
+    ): Promise<UpdateMyMaterialByIdResponse> => {
       const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
       return await UpdateMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -388,8 +394,7 @@ export const useUpdateMyMaterialById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -409,38 +414,37 @@ export const useSaveMyNotebookMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: SaveMyNotebookMaterialByIdRequest) => {
+    mutationFn: async (
+      request: SaveMyNotebookMaterialByIdRequest
+    ): Promise<SaveMyNotebookMaterialByIdResponse> => {
       const validatedRequest =
         SaveMyNotebookMaterialByIdRequestSchema.parse(request);
       return await SaveMyNotebookMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -450,8 +454,7 @@ export const useSaveMyNotebookMaterialById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -471,55 +474,44 @@ export const useMoveMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: MoveMyMaterialByIdRequest) => {
+    mutationFn: async (
+      request: MoveMyMaterialByIdRequest
+    ): Promise<MoveMyMaterialByIdResponse> => {
       const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
       return await MoveMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const destinationParentSubShelfId =
-        variables.body.destinationParentSubShelfId;
-      const sourceParentSubShelfId = variables.affected.sourceParentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (
-                k[1] === "myOneById" &&
-                (sourceParentSubShelfId === k[2] ||
-                  destinationParentSubShelfId === k[2])
-              )
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (
-                    sourceParentSubShelfId === k[2] ||
-                    destinationParentSubShelfId === k[2]
-                  )
-                    return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const destinationParentSubShelfId = variables.body
+        .destinationParentSubShelfId as UUID;
+      const sourceParentSubShelfId = variables.affected
+        .sourceParentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.subShelf.oneById(sourceParentSubShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(sourceParentSubShelfId),
+        queryKeys.material.manyByParentSubShelfId(destinationParentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -529,8 +521,7 @@ export const useMoveMyMaterialById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -550,46 +541,40 @@ export const useRestoreMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyMaterialByIdRequest) => {
+    mutationFn: async (
+      request: RestoreMyMaterialByIdRequest
+    ): Promise<RestoreMyMaterialByIdResponse> => {
       const validatedRequest =
         RestoreMyMaterialByIdRequestSchema.parse(request);
       return await RestoreMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -599,8 +584,7 @@ export const useRestoreMyMaterialById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -620,53 +604,52 @@ export const useRestoreMyMaterialsByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: RestoreMyMaterialsByIdsRequest) => {
+    mutationFn: async (
+      request: RestoreMyMaterialsByIdsRequest
+    ): Promise<RestoreMyMaterialsByIdsResponse> => {
       const validatedRequest =
         RestoreMyMaterialsByIdsRequestSchema.parse(request);
       return await RestoreMyMaterialsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const materialIds = (variables.body.materialIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.map(parentSubShelfId =>
+          queryKeys.material.manyByParentSubShelfId(parentSubShelfId)
+        ),
+        ...materialIds.map(materialId =>
+          queryKeys.material.oneById(materialId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -676,8 +659,7 @@ export const useRestoreMyMaterialsByIds = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -697,45 +679,39 @@ export const useDeleteMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyMaterialByIdRequest) => {
+    mutationFn: async (
+      request: DeleteMyMaterialByIdRequest
+    ): Promise<DeleteMyMaterialByIdResponse> => {
       const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
       return await DeleteMyMaterialById(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialId = variables.body.materialId;
-      const parentSubShelfId = variables.affected.parentSubShelfId;
-      const rootShelfId = variables.affected.rootShelfId;
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k) || k.length < 3) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfId === k[2]) return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfId === k[2])
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialId === k[2]) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfId === k[2]) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfId === k[2]) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
+      const materialId = variables.body.materialId as UUID;
+      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const targetKeys: QueryKey[] = [
+        queryKeys.rootShelf.oneById(rootShelfId),
+        queryKeys.material.oneById(materialId),
+        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
+        queryKeys.material.manyByRootShelfId(rootShelfId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -745,8 +721,7 @@ export const useDeleteMyMaterialById = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);
@@ -766,53 +741,52 @@ export const useDeleteMyMaterialsByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: DeleteMyMaterialsByIdsRequest) => {
+    mutationFn: async (
+      request: DeleteMyMaterialsByIdsRequest
+    ): Promise<DeleteMyMaterialsByIdsResponse> => {
       const validatedRequest =
         DeleteMyMaterialsByIdsRequestSchema.parse(request);
       return await DeleteMyMaterialsByIds(validatedRequest);
     },
     onSuccess: (response, variables) => {
-      const materialIdsSet = new Set(
-        (variables.body.materialIds || []).filter(Boolean) as UUID[]
+      const materialIds = (variables.body.materialIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.material.manyByRootShelfId(rootShelfId),
+        ]),
+        ...parentSubShelfIds.map(parentSubShelfId =>
+          queryKeys.material.manyByParentSubShelfId(parentSubShelfId)
+        ),
+        ...materialIds.map(materialId =>
+          queryKeys.material.oneById(materialId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
       );
-      const parentSubShelfIdsSet = new Set(
-        (variables.affected.parentSubShelfIds || []).filter(Boolean) as UUID[]
-      );
-      const rootShelfIdsSet = new Set(
-        (variables.affected.rootShelfIds || []).filter(Boolean) as UUID[]
-      );
-      queryClient.invalidateQueries({
-        predicate: q => {
-          const k = q.queryKey as any[];
-          if (!Array.isArray(k)) return false;
-
-          switch (k[0]) {
-            case "rootShelf":
-              if (k[1] === "myOneById" && rootShelfIdsSet.has(k[2]))
-                return true;
-            case "subShelf":
-              if (k[1] === "myOneById" && parentSubShelfIdsSet.has(k[2]))
-                return true;
-            case "material":
-              switch (k[1]) {
-                case "myOneById":
-                  if (materialIdsSet.has(k[2])) return true;
-                case "myManyByParentSubShelfId":
-                  if (parentSubShelfIdsSet.has(k[2])) return true;
-                case "myManyByRootShelfId":
-                  if (rootShelfIdsSet.has(k[2])) return true;
-              }
-          }
-
-          return false;
-        },
-        refetchType: "active",
-      });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
         );
       }
     },
@@ -822,8 +796,7 @@ export const useDeleteMyMaterialsByIds = () => {
           .map(issue => issue.message)
           .join(", ");
         throw new Error(`validation failed : ${errorMessage}`);
-      }
-      if (error instanceof NotezyAPIError) {
+      } else if (error instanceof NotezyAPIError) {
         switch (error.unWrap.reason) {
           default:
             throw new Error(error.unWrap.message);

@@ -11,6 +11,8 @@ import {
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
   GetMySubShelfByIdResponse,
+  GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
@@ -26,8 +28,6 @@ import {
 } from "@shared/api/interfaces/subShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-
-/* ============================== GetMySubShelfById ============================== */
 
 export async function GetMySubShelfById(
   request: GetMySubShelfByIdRequest
@@ -53,14 +53,13 @@ export async function GetMySubShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as GetMySubShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as GetMySubShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== GetMySubShelvesByPrevSubShelfId ============================== */
 
 export async function GetMySubShelvesByPrevSubShelfId(
   request: GetMySubShelvesByPrevSubShelfIdRequest
@@ -86,15 +85,13 @@ export async function GetMySubShelvesByPrevSubShelfId(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as GetMySubShelvesByPrevSubShelfIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== GetAllMySubShelvesByRootShelfId ============================== */
 
 export async function GetAllMySubShelvesByRootShelfId(
   request: GetAllMySubShelvesByRootShelfIdRequest
@@ -120,15 +117,49 @@ export async function GetAllMySubShelvesByRootShelfId(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+
+  const formattedResponse =
     (await response.json()) as GetAllMySubShelvesByRootShelfIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+
+  return formattedResponse;
 }
 
-/* ============================== CreateSubShelfByRootShelfId ============================== */
+export async function GetMySubShelvesAndItemsByPrevSubShelfId(
+  request: GetMySubShelvesAndItemsByPrevSubShelfIdRequest
+): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> {
+  const { prevSubShelfId } = request.param;
+  const params = new URLSearchParams({
+    prevSubShelfId: prevSubShelfId,
+  }).toString();
+  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": request.header.userAgent,
+      ...(request.header.authorization
+        ? { Authorization: request.header.authorization }
+        : {}),
+    },
+    credentials: "include",
+  });
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
 
 export async function CreateSubShelfByRootShelfId(
   request: CreateSubShelfByRootShelfIdRequest
@@ -152,15 +183,13 @@ export async function CreateSubShelfByRootShelfId(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as CreateSubShelfByRootShelfIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== UpdateMySubShelfById ============================== */
 
 export async function UpdateMySubShelfById(
   request: UpdateMySubShelfByIdRequest
@@ -184,14 +213,13 @@ export async function UpdateMySubShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as UpdateMySubShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as UpdateMySubShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== MoveMySubShelf ============================== */
 
 export async function MoveMySubShelf(
   request: MoveMySubShelfRequest
@@ -215,14 +243,12 @@ export async function MoveMySubShelf(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as MoveMySubShelfResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as MoveMySubShelfResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== MoveMySubShelves ============================== */
 
 export async function MoveMySubShelves(
   request: MoveMySubShelvesRequest
@@ -246,14 +272,12 @@ export async function MoveMySubShelves(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as MoveMySubShelvesResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse = (await response.json()) as MoveMySubShelvesResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== RestoreMySubShelfById ============================== */
 
 export async function RestoreMySubShelfById(
   request: RestoreMySubShelfByIdRequest
@@ -277,14 +301,13 @@ export async function RestoreMySubShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as RestoreMySubShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as RestoreMySubShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== RestoreMySubShelvesByIds ============================== */
 
 export async function RestoreMySubShelvesByIds(
   request: RestoreMySubShelvesByIdsRequest
@@ -308,15 +331,13 @@ export async function RestoreMySubShelvesByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as RestoreMySubShelvesByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== DeleteMySubShelfById ============================== */
 
 export async function DeleteMySubShelfById(
   request: DeleteMySubShelfByIdRequest
@@ -340,14 +361,13 @@ export async function DeleteMySubShelfById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse = (await response.json()) as DeleteMySubShelfByIdResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  const formattedResponse =
+    (await response.json()) as DeleteMySubShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }
-
-/* ============================== DeleteMySubShelvesByIds ============================== */
 
 export async function DeleteMySubShelvesByIds(
   request: DeleteMySubShelvesByIdsRequest
@@ -371,10 +391,10 @@ export async function DeleteMySubShelvesByIds(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-  const jsonResponse =
+  const formattedResponse =
     (await response.json()) as DeleteMySubShelvesByIdsResponse;
-  if (jsonResponse.exception) {
-    throw new NotezyAPIError(new NotezyException(jsonResponse.exception));
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
-  return jsonResponse;
+  return formattedResponse;
 }

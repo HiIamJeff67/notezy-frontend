@@ -1,4 +1,3 @@
-import { LocalStorageManipulator } from "@/util/localStorageManipulator";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
@@ -10,24 +9,35 @@ import {
   GetUserDataRequestSchema,
 } from "@shared/api/interfaces/user.interface";
 import { GetMe, GetUserData } from "@shared/api/invokers/user.invoker";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { tKey } from "@shared/translations";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 
 export const queryFnGetUserData = async (
   request?: GetUserDataRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (request === undefined)
+    throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetUserDataRequestSchema.parse(request);
     const response = await GetUserData(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;
@@ -52,16 +62,23 @@ export const queryFnGetMe = async (
   request?: GetMeRequest,
   isCallerServerOnly: boolean = false
 ) => {
-  if (!request) return;
+  if (!request) throw new Error("got undefined request in query function");
 
   try {
     const validatedRequest = GetMeRequestSchema.parse(request);
     const response = await GetMe(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
+      );
+    }
+    if (!isCallerServerOnly && response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
       );
     }
     return response;

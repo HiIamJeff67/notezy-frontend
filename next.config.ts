@@ -3,6 +3,7 @@ import { CurrentWebBaseURL } from "./shared/constants";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  transpilePackages: ["../shared"],
   basePath: "/" + CurrentWebBaseURL,
 };
 

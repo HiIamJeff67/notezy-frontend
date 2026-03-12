@@ -3,7 +3,7 @@
 import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
 import AppSidebarInset from "@/components/AppSidebar/AppSidebarInset";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ShelfMaterialProvider } from "@/providers";
+import { ShelfItemProvider } from "@/providers";
 import { ResizeSidebarProvider } from "@/providers/ResizeSidebarProvider";
 
 export default function RootLayout({
@@ -14,10 +14,10 @@ export default function RootLayout({
   return (
     <SidebarProvider>
       <ResizeSidebarProvider>
-        <ShelfMaterialProvider>
+        <ShelfItemProvider>
           <AppSidebar />
           <AppSidebarInset>{children}</AppSidebarInset>
-        </ShelfMaterialProvider>
+        </ShelfItemProvider>
       </ResizeSidebarProvider>
     </SidebarProvider>
   );

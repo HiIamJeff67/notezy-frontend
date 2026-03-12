@@ -1,18 +1,20 @@
 import { Language } from "./language.type";
 import { Theme } from "./theme.type";
 
-export enum LocalStorageKeys {
-  accessToken = "AccessToken",
-  theme = "Theme",
-  language = "Language",
-  lastVisitedAt = "LastVisitedAt",
-  sidebarWidth = "SidebarWidth",
+export enum LocalStorageKey {
+  accessToken = "access_token",
+  theme = "theme",
+  language = "language",
+  lastVisitedAt = "last_visited_at",
+  sidebarWidth = "sidebar_width",
+  dashboardWidgets = "dashboard_widgets",
 }
 
 export interface LocalStorageItem {
-  [LocalStorageKeys.theme]: Theme | null;
-  [LocalStorageKeys.language]: Language | null;
-  [LocalStorageKeys.lastVisitedAt]: Date | null;
-  [LocalStorageKeys.accessToken]: string | null;
-  [LocalStorageKeys.sidebarWidth]: string | null;
+  [LocalStorageKey.theme]: Theme | null;
+  [LocalStorageKey.language]: Language | null;
+  [LocalStorageKey.lastVisitedAt]: Date | null;
+  [LocalStorageKey.accessToken]: string | null;
+  [LocalStorageKey.sidebarWidth]: string | null;
+  [LocalStorageKey.dashboardWidgets]: string | null;
 }

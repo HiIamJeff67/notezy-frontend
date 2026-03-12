@@ -1,9 +1,9 @@
-import { UserStatus } from "@shared/types/enums";
-import { PrivateUserSchema, UserDataSchema } from "@shared/types/models";
+import { UserStatus } from "@shared/enums";
+import { UserDataSchema, UserSchema } from "@shared/types/user.type";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
-/* ============================== GetUserDate Context ============================== */
+/* ============================== GetUserData ============================== */
 
 export const GetUserDataRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
@@ -20,7 +20,7 @@ export const GetUserDataResponseSchema = NotezyResponseSchema.extend({
 
 export type GetUserDataResponse = z.infer<typeof GetUserDataResponseSchema>;
 
-/* ============================== GetMe Context ============================== */
+/* ============================== GetMe ============================== */
 
 export const GetMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
@@ -32,12 +32,12 @@ export const GetMeRequestSchema = NotezyRequestSchema.extend({
 export type GetMeRequest = z.infer<typeof GetMeRequestSchema>;
 
 export const GetMeResponseSchema = NotezyResponseSchema.extend({
-  data: PrivateUserSchema,
+  data: UserSchema,
 });
 
 export type GetMeResponse = z.infer<typeof GetMeResponseSchema>;
 
-/* ============================== UpdateMe Context ============================== */
+/* ============================== UpdateMe ============================== */
 
 export const UpdateMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({

@@ -3,10 +3,12 @@
 import AuthPanel from "@/components/AuthPanel/AuthPanel";
 import GridBackground from "@/components/GridBackground/GridBackground";
 import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import { useAppRouter, useLanguage, useUserData } from "@/hooks";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -14,7 +16,7 @@ import toast from "react-hot-toast";
 const LoginPage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
-  const userDataManager = useUserData();
+  const userManager = useUser();
 
   const loginMutator = useLogin();
   const getUserDataQuerier = useGetUserData();
@@ -49,11 +51,10 @@ const LoginPage = () => {
 
           setAccount("");
           setPassword("");
-          userDataManager.setUserData(responseOfGettingUserData.data);
+          userManager.setUserData(responseOfGettingUserData.data);
           router.push(WebURLPathDictionary.root.dashboard._);
         } catch (error) {
           setPassword("");
-          console.error(error);
           toast.error(languageManager.tError(error));
         }
       });
@@ -62,7 +63,7 @@ const LoginPage = () => {
       account,
       password,
       languageManager,
-      userDataManager,
+      userManager,
       loginMutator,
       getUserDataQuerier,
       router,
@@ -116,6 +117,22 @@ const LoginPage = () => {
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.forgetPassword);
               },
+            },
+          ]}
+          oauthButtons={[
+            {
+              provider: "google",
+              label: "Login via Google",
+              onClick: () =>
+                router.forceNavigate(
+                  WebURLPathDictionary.oauth.google(
+                    getOAuthGoogleSearchParamsString({
+                      csrfToken: CSRFTokenGenerator.generate(),
+                      action: "login",
+                      from: router.getCurrentPath(),
+                    })
+                  )
+                ),
             },
           ]}
           statusDetail={"System Ready"}

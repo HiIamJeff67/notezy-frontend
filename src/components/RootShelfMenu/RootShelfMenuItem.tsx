@@ -1,5 +1,7 @@
 import CheckIcon from "@/components/icons/CheckIcon";
+import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ModifyDotIcon from "@/components/icons/ModifyDotIcon";
+import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/RootShelfMenu/RootShelfMenuItemSkeleton";
 import SubShelfMenu from "@/components/SubShelfMenu/SubShelfMenu";
 import SubShelfMenuItemSkeleton from "@/components/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -22,15 +24,14 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
-import { useLanguage, useLoading, useShelfMaterial } from "@/hooks";
-import { DNDType } from "@shared/types/enums/dndType.enum";
-import { SubShelfNode } from "@shared/types/shelfMaterialNodes";
+import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useModal } from "@/hooks/useModal";
+import { DNDType } from "@shared/enums/dndType.enum";
+import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { Suspense, useCallback } from "react";
+import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
-import EmptyShelfIcon from "../icons/EmptyShelfIcon";
-import ShelfIcon from "../icons/ShelfIcon";
 
 interface RootShelfMenuItemProps {
   rootShelfEdge: SearchRootShelfEdge;
@@ -43,11 +44,10 @@ const RootShelfMenuItem = ({
 }: RootShelfMenuItemProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
-  const shelfMaterialManager = useShelfMaterial();
+  const modalManager = useModal();
+  const shelfItemManager = useShelfItem();
 
-  const summary = shelfMaterialManager.expandedShelves.get(
-    rootShelfEdge.node.id
-  );
+  const summary = shelfItemManager.expandedShelves.get(rootShelfEdge.node.id);
   if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
 
   // the hook should be place before break
@@ -64,7 +64,7 @@ const RootShelfMenuItem = ({
         return;
       }
 
-      await shelfMaterialManager.moveSubShelf(
+      await shelfItemManager.moveSubShelf(
         draggedItem.prev,
         draggedItem.current,
         summary.root,
@@ -76,132 +76,138 @@ const RootShelfMenuItem = ({
     }),
   }));
 
-  const handleRenameRootShelfOnSubmit = useCallback(async (): Promise<void> => {
-    loadingManager.setIsStrictLoading(true);
-
-    try {
-      await shelfMaterialManager.renameEditingRootShelf();
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    } finally {
-      loadingManager.setIsStrictLoading(false);
-    }
-  }, [loadingManager, languageManager, shelfMaterialManager]);
+  const handleRenameRootShelfOnSubmit = useCallback(
+    async () =>
+      await loadingManager.startAsyncTransactionLoading(
+        async () =>
+          await shelfItemManager
+            .renameEditingRootShelf()
+            .catch(error => toast.error(languageManager.tError(error)))
+      ),
+    [loadingManager, languageManager, shelfItemManager]
+  );
 
   return (
-    <Suspense fallback={<RootShelfMenuItemSkeleton />} key={index}>
-      <Collapsible>
-        <SidebarMenuItem>
-          <ContextMenu>
-            {shelfMaterialManager.isRootShelfNodeEditing(summary.root.id) ? (
-              <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-none border-foreground relative">
-                <input
-                  ref={shelfMaterialManager.inputRef}
-                  type="text"
-                  value={shelfMaterialManager.editRootShelfNodeName}
-                  className="flex-1 bg-transparent h-6 outline-none overflow-hidden"
-                  onChange={e =>
-                    shelfMaterialManager.setEditRootShelfNodeName(
-                      e.target.value
-                    )
+    <Collapsible>
+      <SidebarMenuItem>
+        <ContextMenu>
+          {shelfItemManager.isRootShelfNodeEditing(summary.root.id) ? (
+            <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-none border-foreground relative">
+              <input
+                ref={shelfItemManager.inputRef}
+                type="text"
+                value={shelfItemManager.editRootShelfNodeName}
+                className="flex-1 bg-transparent h-6 outline-none overflow-hidden"
+                onChange={e =>
+                  shelfItemManager.setEditRootShelfNodeName(e.target.value)
+                }
+                onKeyDown={async e => {
+                  if (e.key === "Enter") {
+                    await handleRenameRootShelfOnSubmit();
+                  } else if (e.key === "Escape") {
+                    shelfItemManager.cancelRenamingRootShelfNode();
                   }
-                  onKeyDown={async e => {
-                    if (e.key === "Enter") {
-                      await handleRenameRootShelfOnSubmit();
-                    } else if (e.key === "Escape") {
-                      shelfMaterialManager.cancelRenamingRootShelfNode();
-                    }
+                }}
+                // note that autoFocus doesn't work in this case,
+                // bcs the user clicked context menu trigger before the input element rendering
+              />
+              {shelfItemManager.isNewRootShelfNodeName() && (
+                <button
+                  onClick={async e => {
+                    await handleRenameRootShelfOnSubmit();
+                    e.stopPropagation();
                   }}
-                  // note that autoFocus doesn't work in this case,
-                  // bcs the user clicked context menu trigger before the input element rendering
-                />
-                {shelfMaterialManager.isNewRootShelfNodeName() && (
-                  <button
-                    onClick={async e => {
-                      await handleRenameRootShelfOnSubmit();
-                      e.stopPropagation();
-                    }}
-                    className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                    onMouseDown={e => e.stopPropagation()}
-                  >
-                    <CheckIcon className="w-full h-full" />
-                  </button>
-                )}
-              </div>
-            ) : (
-              <ContextMenuTrigger asChild>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    ref={node => {
-                      drop(node);
-                    }}
-                    className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
+                  className="rounded hover:bg-primary/60 absolute w-4 h-4"
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <CheckIcon className="w-full h-full" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <ContextMenuTrigger asChild>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton
+                  ref={node => {
+                    drop(node);
+                  }}
+                  className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
                         whitespace-nowrap text-ellipsis overflow-hidden"
-                    onClick={async () => {
-                      await shelfMaterialManager.expandRootShelf(
-                        rootShelfEdge.node
-                      );
-                      shelfMaterialManager.toggleRootShelf(summary.root);
-                    }}
-                  >
-                    {summary.root.isOpen ? (
-                      <EmptyShelfIcon size={16} />
-                    ) : (
-                      <ShelfIcon size={16} />
-                    )}
-                    <span>{summary.root.name}</span>
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-              </ContextMenuTrigger>
+                  onClick={async () => {
+                    shelfItemManager.toggleRootShelf(summary.root);
+                    await shelfItemManager.expandRootShelf(rootShelfEdge.node);
+                  }}
+                >
+                  {summary.root.isOpen ? (
+                    <EmptyShelfIcon size={16} />
+                  ) : (
+                    <ShelfIcon size={16} />
+                  )}
+                  <span>{summary.root.name}</span>
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+            </ContextMenuTrigger>
+          )}
+          {!shelfItemManager.isNewRootShelfNodeName() && summary.hasChanged && (
+            <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
+              <ModifyDotIcon className="max-w-3.5 max-h-3.5" />
+            </SidebarMenuAction>
+          )}
+          <ContextMenuContent>
+            <ContextMenuItem
+              onClick={async () =>
+                await shelfItemManager.createSubShelf(
+                  summary.root.id,
+                  null,
+                  "new sub shelf"
+                )
+              }
+            >
+              Create Sub Shelf
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() =>
+                shelfItemManager.startRenamingRootShelfNode(summary.root)
+              }
+            >
+              Rename
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() =>
+                modalManager.open("DeleteShelfItemDialog", {
+                  dialogHeader:
+                    "Are you sure you want to delete this root shelf ?",
+                  onDelete: async () =>
+                    await loadingManager.startAsyncTransactionLoading(
+                      async () => {
+                        await shelfItemManager
+                          .deleteRootShelf(summary.root)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }
+                    ),
+                  onCancel: modalManager.close,
+                })
+              }
+            >
+              Delete
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {!summary.root.isExpanded ? (
+              <SubShelfMenuItemSkeleton />
+            ) : (
+              <SubShelfMenu summary={summary} root={summary.root} />
             )}
-            {!shelfMaterialManager.isNewRootShelfNodeName() &&
-              summary.hasChanged && (
-                <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
-                  <ModifyDotIcon className="max-w-3.5 max-h-3.5" />
-                </SidebarMenuAction>
-              )}
-            <ContextMenuContent>
-              <ContextMenuItem
-                onClick={async () => {
-                  await shelfMaterialManager.createSubShelf(
-                    summary.root.id,
-                    null,
-                    "undefined"
-                  );
-                }}
-              >
-                Create Sub Shelf
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                onClick={() => {
-                  shelfMaterialManager.startRenamingRootShelfNode(summary.root);
-                }}
-              >
-                Rename
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                onClick={async () => {
-                  await shelfMaterialManager.deleteRootShelf(summary.root);
-                }}
-              >
-                Delete
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              {!summary.root.isExpanded ? (
-                <SubShelfMenuItemSkeleton />
-              ) : (
-                <SubShelfMenu summary={summary} root={summary.root} />
-              )}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </SidebarMenuItem>
-      </Collapsible>
-    </Suspense>
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   );
 };
 
