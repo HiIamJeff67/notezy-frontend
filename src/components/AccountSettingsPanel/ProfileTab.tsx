@@ -38,12 +38,13 @@ import { DefaultAvatar1URL } from "@shared/api/invokers/static.invoker";
 import { FakeUserInfo } from "@shared/constants";
 import { AllCountries, AllUserGenders } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UserInfo, UserInfoSchema } from "@shared/types/user.type";
 import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import toast from "react-hot-toast";
+import ModifyImageHover from "../Hovers/ModifyImageHover";
 
 const ProfileTab = memo(() => {
   const loadingManager = useLoading();
@@ -57,7 +58,7 @@ const ProfileTab = memo(() => {
   useEffect(() => {
     const fetchUserInfo = async () =>
       await userManager.fetchUserInfo(
-        LocalStorageManipulator.getItemByKey(LocalStorageKeys.accessToken)
+        LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
       );
 
     fetchUserInfo();
@@ -121,7 +122,7 @@ const ProfileTab = memo(() => {
         try {
           const userAgent = navigator.userAgent;
           const accessToken = LocalStorageManipulator.getItemByKey(
-            LocalStorageKeys.accessToken
+            LocalStorageKey.accessToken
           );
           await updateUserInfoMutator.mutateAsync({
             header: {
@@ -177,19 +178,15 @@ const ProfileTab = memo(() => {
           overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
         >
           <div className="relative w-full group" style={backgroundStyle}>
-            <div
-              className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition"
+            <ModifyImageHover
               onClick={() => {}}
-            >
-              <span className="text-white text-xl font-semibold">
-                點擊即可變更背景圖片
-              </span>
-            </div>
-            <div
-              className="absolute right-8 bottom-[-64px] z-10 group/avatar"
-              onClick={() => {}}
-            >
-              <div className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer">
+              hoverText="點擊以變更背景圖片"
+            />
+            <div className="absolute right-8 bottom-[-64px] z-10 group/avatar">
+              <div
+                className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer"
+                onClick={() => {}}
+              >
                 <img
                   src={avatarSrc}
                   alt="Avatar"
@@ -197,8 +194,8 @@ const ProfileTab = memo(() => {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition">
-                  <span className="text-white text-center font-semibold text-sm">
-                    點擊即可變更頭像
+                  <span className="text-white text-center font-semibold text-sm select-none">
+                    點擊以變更大頭貼
                   </span>
                 </div>
               </div>

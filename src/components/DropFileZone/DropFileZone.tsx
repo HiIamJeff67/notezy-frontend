@@ -21,7 +21,7 @@ const DropFileZone = ({
   onDrop,
   children = (
     <p className="text-sm text-muted-foreground">
-      Drop Files or Click Here to Select Uploaded Files (.json)
+      Drop Files or Click Here to Select Uploaded Files
     </p>
   ),
 }: DropFileZoneProps) => {
@@ -42,10 +42,10 @@ const DropFileZone = ({
           disabled
             ? "cursor-not-allowed opacity-60"
             : isDragReject
-            ? "border-destructive bg-destructive/10"
-            : isDragActive
-            ? "border-primary bg-muted"
-            : "border-muted-foreground/30 hover:border-primary/60"
+              ? "border-destructive bg-destructive/10"
+              : isDragActive
+                ? "border-primary bg-muted"
+                : "border-muted-foreground/30 hover:border-primary/60"
         } ${className}`}
     >
       <input {...getInputProps()} />

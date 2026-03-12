@@ -20,7 +20,7 @@ import { useAppRouter, useLanguage, useTheme, useUser } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -208,7 +208,7 @@ const HomePage = () => {
                 className="cursor-pointer font-bold hover:bg-primary/90 focus:bg-primary/90 active:bg-primary/90"
                 onClick={() => {
                   const accessToken = LocalStorageManipulator.getItemByKey(
-                    LocalStorageKeys.accessToken
+                    LocalStorageKey.accessToken
                   );
                   router.push(
                     userManager.userData !== null && accessToken

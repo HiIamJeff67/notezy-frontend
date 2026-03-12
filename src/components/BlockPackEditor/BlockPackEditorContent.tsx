@@ -257,7 +257,11 @@ const BlockPackEditorContent = ({
                 width="300px"
                 height="200px"
                 onDrop={handleImportFiles}
-              />
+              >
+                <p className="text-sm text-muted-foreground">
+                  Drop Files or Click Here to Select Uploaded Files (.json)
+                </p>
+              </DropFileZone>
             </MenubarContent>
           </MenubarMenu>
           <MenubarMenu>

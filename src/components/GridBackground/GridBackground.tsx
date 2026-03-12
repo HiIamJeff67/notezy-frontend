@@ -1,18 +1,17 @@
 import { useTheme } from "@/hooks";
 import React from "react";
 
-const getTheme = () =>
-  typeof window !== "undefined" &&
-  document.documentElement.classList.contains("dark")
-    ? "dark"
-    : "light";
+interface GridBackgroundProps {
+  className?: string;
+  children?: React.ReactNode;
+}
 
-const GridBackground = ({ children }: { children: React.ReactNode }) => {
+const GridBackground = ({ className, children }: GridBackgroundProps) => {
   const themeManager = useTheme();
 
   return (
     <div
-      className="min-h-full w-full relative overflow-hidden"
+      className={`w-full min-h-full relative overflow-hidden ${className}`}
       style={{
         background: themeManager.currentTheme.isDark ? "black" : "white",
       }}

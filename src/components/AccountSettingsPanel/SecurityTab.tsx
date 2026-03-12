@@ -5,7 +5,7 @@ import { Dialog } from "@radix-ui/react-dialog";
 import { useValidateEmail } from "@shared/api/hooks/auth.hook";
 import { UserRole } from "@shared/enums";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import SettingMenu from "../SettingMenu/SettingMenu";
@@ -56,7 +56,7 @@ const SecurityTab = ({
         try {
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           await validateEmailMutator.mutateAsync({
             header: {
@@ -81,7 +81,7 @@ const SecurityTab = ({
       setSendAuthCodeTimeCounter,
       setValidateEmailDialogOpen,
       SessionStorageManipulator,
-      SessionStorageKeys,
+      SessionStorageKey,
     ]
   );
 

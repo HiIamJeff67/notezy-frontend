@@ -193,6 +193,9 @@ export const WebURLPathDictionary = {
     google: (qs: string) => {
       return `https://accounts.google.com/o/oauth2/v2/auth?${qs}`;
     },
+    x: (qs: string) => {
+      return `https://x.com/i/oauth2/authorize?${qs}`;
+    },
   },
   root: {
     materialEditor: {

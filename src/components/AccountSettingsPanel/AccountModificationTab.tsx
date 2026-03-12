@@ -22,8 +22,8 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { UserRole } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import SettingMenu from "../SettingMenu/SettingMenu";
@@ -71,7 +71,7 @@ const AccountModificationTab = ({
         try {
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           await resetMeMutator.mutateAsync({
             header: {
@@ -85,7 +85,7 @@ const AccountModificationTab = ({
           setSendAuthCodeTimeCounter(0);
           setResetMeDialogOpen(false);
           const accessToken = LocalStorageManipulator.getItemByKey(
-            LocalStorageKeys.accessToken
+            LocalStorageKey.accessToken
           );
           userManager.fetchUserData(accessToken);
           onPanelClose();
@@ -103,7 +103,7 @@ const AccountModificationTab = ({
       setSendAuthCodeTimeCounter,
       setResetMeDialogOpen,
       SessionStorageManipulator,
-      SessionStorageKeys,
+      SessionStorageKey,
       onPanelClose,
     ]
   );
@@ -114,7 +114,7 @@ const AccountModificationTab = ({
         try {
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           await resetEmailMutator.mutateAsync({
             header: {
@@ -141,7 +141,7 @@ const AccountModificationTab = ({
       setSendAuthCodeTimeCounter,
       setResetEmailDialogOpen,
       SessionStorageManipulator,
-      SessionStorageKeys,
+      SessionStorageKey,
     ]
   );
 
@@ -201,7 +201,7 @@ const AccountModificationTab = ({
 
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           await deleteMeMutator.mutateAsync({
             header: {

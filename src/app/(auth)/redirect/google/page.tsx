@@ -10,7 +10,7 @@ import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { useBindGoogleAccount } from "@shared/api/hooks/userAccount.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RedirectState } from "@shared/types/redirectState.type";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
@@ -91,7 +91,7 @@ function GoogleRedirectPageContent() {
             break;
           case "binding":
             accessToken = LocalStorageManipulator.getItemByKey(
-              LocalStorageKeys.accessToken
+              LocalStorageKey.accessToken
             );
             await bindGoogleAccountMutator.mutateAsync({
               header: {

@@ -57,8 +57,8 @@ import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   QueryKey,
   useMutation,
@@ -248,16 +248,16 @@ export const useCreateBlockPack = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -311,16 +311,16 @@ export const useUpdateMyBlockPackById = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -379,16 +379,16 @@ export const useMoveMyBlockPackById = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -455,16 +455,16 @@ export const useMoveMyBlockPacksByIds = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -521,16 +521,16 @@ export const useRestoreMyBlockPackById = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -599,16 +599,16 @@ export const useRestoreMyBlockPacksByIds = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -665,16 +665,16 @@ export const useDeleteMyBlockPackById = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -743,16 +743,16 @@ export const useDeleteMyBlockPacksByIds = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }

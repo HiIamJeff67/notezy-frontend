@@ -21,8 +21,8 @@ import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { tKey } from "@shared/translations";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   FetchQueryOptions,
   useMutation,
@@ -86,16 +86,16 @@ export const useUpdateMyAccount = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -137,16 +137,16 @@ export const useBindGoogleAccount = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -188,16 +188,16 @@ export const useUnbindGoogleAccount = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }

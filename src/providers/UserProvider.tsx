@@ -9,7 +9,7 @@ import { useGetMyInfo } from "@shared/api/hooks/userInfo.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -64,7 +64,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   // For maintaining the basic user data in the context
   useEffect(() => {
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     if (userData === null && accessToken && enableAutoFetching) {
       console.log("fetching user automatically...");

@@ -5,8 +5,8 @@ import {
 import { GetMyAccount } from "@shared/api/invokers/userAccount.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
 import { NotezyAPIError } from "../exceptions";
 
@@ -20,16 +20,16 @@ export const queryFnGetMyAccount = async (
     const validatedRequest = GetMyAccountRequestSchema.parse(request);
     const response = await GetMyAccount(validatedRequest);
     if (!isCallerServerOnly && response.newAccessToken) {
-      LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
-        LocalStorageKeys.accessToken,
+        LocalStorageKey.accessToken,
         response.newAccessToken
       );
     }
     if (!isCallerServerOnly && response.newCSRFToken) {
-      SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
-        SessionStorageKeys.csrfToken,
+        SessionStorageKey.csrfToken,
         response.newCSRFToken
       );
     }

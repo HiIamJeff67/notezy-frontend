@@ -39,8 +39,8 @@ import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   QueryKey,
   useMutation,
@@ -130,16 +130,16 @@ export const useCreateRootShelf = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -196,16 +196,16 @@ export const useUpdateMyRootShelfById = () => {
       });
 
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -296,16 +296,16 @@ export const useRestoreMyRootShelfById = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -401,16 +401,16 @@ export const useRestoreMyRootShelvesByIds = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -479,16 +479,16 @@ export const useDeleteMyRootShelfById = () => {
         },
       });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }
@@ -544,16 +544,16 @@ export const useDeleteMyRootShelvesByIds = () => {
         )
       );
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }

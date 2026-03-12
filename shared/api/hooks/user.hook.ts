@@ -21,8 +21,8 @@ import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ZodError } from "zod";
 
@@ -103,16 +103,16 @@ export const useUpdateMe = () => {
     onSuccess: (response, _) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
       if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKeys.accessToken);
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
         LocalStorageManipulator.setItem(
-          LocalStorageKeys.accessToken,
+          LocalStorageKey.accessToken,
           response.newAccessToken
         );
       }
       if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKeys.csrfToken);
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
         SessionStorageManipulator.setItem(
-          SessionStorageKeys.csrfToken,
+          SessionStorageKey.csrfToken,
           response.newCSRFToken
         );
       }

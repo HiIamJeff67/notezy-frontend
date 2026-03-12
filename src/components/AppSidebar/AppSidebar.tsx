@@ -217,44 +217,50 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
               </div>
             </MenubarTrigger>
           </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
-              <SettingsIcon size={20} />
-            </MenubarTrigger>
-            <MenubarContent className="w-64 bg-popover border-border">
-              <MenubarItem
-                className="cursor-pointer"
-                onClick={() => modalManager.open("AccountSettingsPanel")}
-              >
-                <span>{languageManager.t(tKey.settings.accountSettings)}</span>
-              </MenubarItem>
-              <MenubarItem
-                className="cursor-pointer"
-                onClick={() => modalManager.open("PreferencesPanel")}
-              >
-                <span>{languageManager.t(tKey.settings.preferences)}</span>
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem className="cursor-pointer">
-                <span>{languageManager.t(tKey.auth.switchAccount)}</span>
-              </MenubarItem>
-              <MenubarItem
-                className="cursor-pointer text-destructive focus:text-destructive"
-                onClick={async () => {
-                  router.push(WebURLPathDictionary.home);
-                  await userManager.logout();
-                  toast.success("Logout successfully, see you next time ~");
-                }}
-              >
-                <span>{languageManager.t(tKey.auth.logout)}</span>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
-              <BellIcon size={20} />
-            </MenubarTrigger>
-          </MenubarMenu>
+          {sidebarManager.open && (
+            <MenubarMenu>
+              <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
+                <SettingsIcon size={20} />
+              </MenubarTrigger>
+              <MenubarContent className="w-64 bg-popover border-border">
+                <MenubarItem
+                  className="cursor-pointer"
+                  onClick={() => modalManager.open("AccountSettingsPanel")}
+                >
+                  <span>
+                    {languageManager.t(tKey.settings.accountSettings)}
+                  </span>
+                </MenubarItem>
+                <MenubarItem
+                  className="cursor-pointer"
+                  onClick={() => modalManager.open("PreferencesPanel")}
+                >
+                  <span>{languageManager.t(tKey.settings.preferences)}</span>
+                </MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem className="cursor-pointer">
+                  <span>{languageManager.t(tKey.auth.switchAccount)}</span>
+                </MenubarItem>
+                <MenubarItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={async () => {
+                    router.push(WebURLPathDictionary.home);
+                    await userManager.logout();
+                    toast.success("Logout successfully, see you next time ~");
+                  }}
+                >
+                  <span>{languageManager.t(tKey.auth.logout)}</span>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          )}
+          {sidebarManager.open && (
+            <MenubarMenu>
+              <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
+                <BellIcon size={20} />
+              </MenubarTrigger>
+            </MenubarMenu>
+          )}
         </Menubar>
       </SidebarFooter>
     </ResizableSidebar>

@@ -2,13 +2,13 @@
 
 import {
   LocalStorageItem,
-  LocalStorageKeys,
+  LocalStorageKey,
 } from "@shared/types/localStorage.type";
 
 export class LocalStorageManipulator {
   private static readonly LocalStoragePrefix = "notezy_";
 
-  private static getStorageKey(key: LocalStorageKeys): string {
+  private static getStorageKey(key: LocalStorageKey): string {
     return this.LocalStoragePrefix + key;
   }
 
@@ -19,13 +19,13 @@ export class LocalStorageManipulator {
       localStorage.removeItem(testKey);
       return true;
     } catch {
-      console.log(`The localStorage is not available`);
+      console.error(`The localStorage is not available`);
       return false;
     }
   };
 
   // get an item from local storage by providing a key
-  static getItemByKey = <K extends LocalStorageKeys>(
+  static getItemByKey = <K extends LocalStorageKey>(
     key: K
   ): LocalStorageItem[K] | null => {
     try {
@@ -36,13 +36,16 @@ export class LocalStorageManipulator {
 
       return item === null ? null : JSON.parse(item);
     } catch (error) {
-      console.error(`Failed to get localStorage item "${key}":`, error);
+      console.error(
+        `Failed to get localStorage item with key of "${key}":`,
+        error
+      );
       return null;
     }
   };
 
   // get items from local storage by providing the keys of them
-  static getItemsByKeys = <K extends LocalStorageKeys>(
+  static getItemsByKeys = <K extends LocalStorageKey>(
     keys: K[]
   ): Pick<LocalStorageItem, K> => {
     if (!this.isLocalStorageAvailable()) return {} as Pick<LocalStorageItem, K>;
@@ -58,7 +61,7 @@ export class LocalStorageManipulator {
 
   // get all items from local storage
   static getAllItems = <
-    K extends LocalStorageKeys,
+    K extends LocalStorageKey,
   >(): Partial<LocalStorageItem> => {
     if (!this.isLocalStorageAvailable()) return {} as Partial<LocalStorageItem>;
 
@@ -81,14 +84,14 @@ export class LocalStorageManipulator {
     return result;
   };
 
-  static hasItem = <K extends LocalStorageKeys>(key: K): boolean => {
+  static hasItem = <K extends LocalStorageKey>(key: K): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     return this.getItemByKey(key) !== null;
   };
 
   // set an item to local storage by providing a key-value pair
-  static setItem = <K extends LocalStorageKeys>(
+  static setItem = <K extends LocalStorageKey>(
     key: K,
     value: LocalStorageItem[K] // use the key of the Storage
   ): boolean => {
@@ -99,7 +102,10 @@ export class LocalStorageManipulator {
       localStorage.setItem(storageKey, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error(`Failed to set localStorage item "${key}":`, error);
+      console.error(
+        `Failed to set localStorage item with key of "${key}":`,
+        error
+      );
       return false;
     }
   };
@@ -111,13 +117,13 @@ export class LocalStorageManipulator {
     let success = true;
     Object.entries(items).forEach(([key, value]) => {
       if (value !== undefined) {
-        success = success && this.setItem(key as LocalStorageKeys, value);
+        success = success && this.setItem(key as LocalStorageKey, value);
       }
     });
     return success;
   };
 
-  static removeItem = <K extends LocalStorageKeys>(key: K): boolean => {
+  static removeItem = <K extends LocalStorageKey>(key: K): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     try {
@@ -125,11 +131,15 @@ export class LocalStorageManipulator {
       localStorage.removeItem(storageKey);
       return true;
     } catch (error) {
+      console.error(
+        `Failed to remove localStorage item with key of "${key}": `,
+        error
+      );
       return false;
     }
   };
 
-  static removeItems = <K extends LocalStorageKeys>(keys: K[]): boolean => {
+  static removeItems = <K extends LocalStorageKey>(keys: K[]): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
@@ -137,10 +147,9 @@ export class LocalStorageManipulator {
     return success;
   };
 
-  static clearAllItems = <K extends LocalStorageKeys>(keys: K[]): boolean => {
+  static clearAllItems = <K extends LocalStorageKey>(keys: K[]): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
-    let success = true;
     try {
       const keysToRemove: string[] = [];
 
@@ -154,11 +163,10 @@ export class LocalStorageManipulator {
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
       });
+      return true;
     } catch (error) {
       console.error("Failed to clear all localStorage items:", error);
-      success = false;
+      return false;
     }
-
-    return success;
   };
 }

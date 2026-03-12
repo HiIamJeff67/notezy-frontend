@@ -36,7 +36,9 @@
     "rseidelsohn",
     "cmdk",
     "metas",
-    "prefetcher"
+    "prefetcher",
+    "keyval",
+    "colorthief"
   ],
   "ignorePaths": [
     "node_modules/**",

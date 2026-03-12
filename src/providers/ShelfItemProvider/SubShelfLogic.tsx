@@ -15,7 +15,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
@@ -106,7 +106,7 @@ export const useSubShelfLogic = ({
       // the isExpanded may be modified if the user just drag and drop something in below the `subShelfNode`
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const authorization = getAuthorization(accessToken);
       const responseOfGettingSubShelves =
@@ -187,7 +187,7 @@ export const useSubShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const responseOfCreatingSubShelf =
         await createSubShelfMutator.mutateAsync({
@@ -309,7 +309,7 @@ export const useSubShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await updateSubShelfMutator.mutateAsync({
         header: {
@@ -367,7 +367,7 @@ export const useSubShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await deleteSubShelfMutator.mutateAsync({
         header: {
@@ -443,7 +443,7 @@ export const useSubShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await moveSubShelfMutator.mutateAsync({
         header: {

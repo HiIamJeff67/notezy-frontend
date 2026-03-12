@@ -15,7 +15,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
@@ -158,7 +158,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const responseOfCreatingNotebookMaterial =
         await createTextbookMaterialMutator.mutateAsync({
@@ -223,7 +223,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const responseOfCreatingNotebookMaterial =
         await createNotebookMaterialMutator.mutateAsync({
@@ -286,7 +286,7 @@ export const useItemLogic = ({
 
         const userAgent = navigator.userAgent;
         const accessToken = LocalStorageManipulator.getItemByKey(
-          LocalStorageKeys.accessToken
+          LocalStorageKey.accessToken
         );
         await updateMaterialMutator.mutateAsync({
           header: {
@@ -345,7 +345,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await deleteMaterialMutator.mutateAsync({
         header: {
@@ -400,7 +400,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const responseOfCreatingBlockPack =
         await createBlockPackMutator.mutateAsync({
@@ -465,7 +465,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await updateBlockPackMutator.mutateAsync({
         header: {
@@ -520,7 +520,7 @@ export const useItemLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await deleteBlockPackMutator.mutateAsync({
         header: {

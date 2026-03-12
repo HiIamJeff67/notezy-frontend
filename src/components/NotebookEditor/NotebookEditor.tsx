@@ -50,7 +50,7 @@ import {
   MaterialType,
 } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
 import { useEffect, useReducer, useState, useTransition } from "react";
@@ -125,7 +125,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   ): Promise<NotebookMaterialMeta | undefined> => {
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const responseOfGettingMaterial =
       await getMyMaterialAndItsParentQuerier.queryAsync({
@@ -199,7 +199,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
 
         const userAgent = navigator.userAgent;
         const accessToken = LocalStorageManipulator.getItemByKey(
-          LocalStorageKeys.accessToken
+          LocalStorageKey.accessToken
         );
         await saveMyNotebookMaterialMutator.mutateAsync({
           header: {

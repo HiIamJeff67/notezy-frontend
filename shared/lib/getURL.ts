@@ -18,3 +18,20 @@ export const getOAuthGoogleSearchParamsString = (
 
   return new URLSearchParams(config as Record<string, string>).toString();
 };
+
+export const getOAuthXSearchParamsString = (
+  state: RedirectState,
+  codeChallenge: string
+): string => {
+  const config = {
+    response_type: "code",
+    redirect_uri: process.env.NEXT_PUBLIC_OAUTH_X_REDIRECT_URL,
+    client_id: process.env.NEXT_PUBLIC_OAUTH_X_CLIENT_ID,
+    scope: "tweet.read users.read offline.access",
+    state: btoa(JSON.stringify(state)),
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+  };
+
+  return new URLSearchParams(config as Record<string, string>).toString();
+};

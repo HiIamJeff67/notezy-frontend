@@ -19,7 +19,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
@@ -194,7 +194,7 @@ export const useRootShelfLogic = ({
 
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const responseOfGettingAllSubShelves =
       (await getAllMySubShelvesQuerier.queryAsync({
@@ -233,7 +233,7 @@ export const useRootShelfLogic = ({
     async (name: string): Promise<void> => {
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       const responseOfCreatingRootShelf =
         await createRootShelfMutator.mutateAsync({
@@ -324,7 +324,7 @@ export const useRootShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await updateRootShelfMutator.mutateAsync({
         header: {
@@ -379,7 +379,7 @@ export const useRootShelfLogic = ({
 
       const userAgent = navigator.userAgent;
       const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKeys.accessToken
+        LocalStorageKey.accessToken
       );
       await deleteRootShelfMutator.mutateAsync({
         header: {

@@ -30,7 +30,7 @@ import {
   getDefaultBlockGroupMeta,
 } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
 import {
@@ -213,7 +213,7 @@ export const BlockEditorProvider = ({
     // at most four requests are sent in this function
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest =
       {
@@ -433,7 +433,7 @@ export const BlockEditorProvider = ({
     setState("merging");
     const mergedEvents = merge(eventQueueRef.current);
     eventQueueRef.current = mergedEvents;
-    if (mergedEvents.length > MinRequestEvents) {
+    if (mergedEvents.length >= MinRequestEvents) {
       // merge events into one insert many request and one update many request and one delete many request.
       // send the above at most four requests to the backend.
       // reset the eventQueueRef.current.
@@ -471,7 +471,7 @@ export const BlockEditorProvider = ({
   const syncNewBlockPack = useCallback(async () => {
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const newBlockId = editor.document[0].id as UUID; // should exist
     const newBlockGroupId = generateUUID();

@@ -10,7 +10,7 @@ import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.h
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
-import { LocalStorageKeys } from "@shared/types/localStorage.type";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UUID } from "crypto";
 import { Suspense, useEffect, useReducer, useState } from "react";
 import toast from "react-hot-toast";
@@ -69,7 +69,7 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
   const loadBlockPack = async (blockPackId: UUID): Promise<BlockPackMeta> => {
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKeys.accessToken
+      LocalStorageKey.accessToken
     );
     const responseOfGettingBlockPack =
       await getMyBlockPackAndItsParentQuerier.queryAsync({

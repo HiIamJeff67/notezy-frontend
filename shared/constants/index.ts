@@ -4,7 +4,6 @@ export * from "./defaultBlockPackInitialContent.constant";
 export * from "./defaultFakeUser.constant";
 export * from "./defaultThemes.constant";
 export * from "./searchLimitations.constant";
-export * from "./sessionStorageKeys.constant";
 export * from "./shelfMaterialLimitations.constant";
 export * from "./size.constant";
 export * from "./triggerLimitations.constant";

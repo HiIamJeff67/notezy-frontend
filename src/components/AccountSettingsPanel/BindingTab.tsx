@@ -8,7 +8,7 @@ import { AllCountryCodes, CountryCode } from "@shared/enums";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
-import { SessionStorageKeys } from "@shared/types/sessionStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useCallback, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "../ui/button";
@@ -87,7 +87,7 @@ const BindingTab = ({
         try {
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           await updateUserAccountMutator.mutateAsync({
             header: {
@@ -124,7 +124,7 @@ const BindingTab = ({
         try {
           const userAgent = navigator.userAgent;
           const csrfToken = SessionStorageManipulator.getItemByKey(
-            SessionStorageKeys.csrfToken
+            SessionStorageKey.csrfToken
           );
           console.log(csrfToken);
           await updateUserAccountMutator.mutateAsync({
