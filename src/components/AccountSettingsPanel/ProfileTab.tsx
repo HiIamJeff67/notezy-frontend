@@ -44,7 +44,7 @@ import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import toast from "react-hot-toast";
-import ModifyImageHover from "../Hovers/ModifyImageHover";
+import ModifyImageHover from "../ModifyImageHover/ModifyImageHover";
 
 const ProfileTab = memo(() => {
   const loadingManager = useLoading();

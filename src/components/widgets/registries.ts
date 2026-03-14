@@ -1,24 +1,30 @@
-import ClockWidget from "./ClockWidget/ClockWidget";
-import TodoWidget from "./TodoWidget/TodoWidget";
+import ClockWidget from "./clock-widget";
+import TodoWidget from "./todo-widget";
 
 export type WidgetRegistryProps = {
   name: string;
-  component: () => React.ReactNode;
-  defaultWidth: string;
-  defaultHeight: string;
+  description: string;
+  component: React.ComponentType<any>;
+  widthOptions: number[];
+  heightOptions: number[];
+  availableAspects: Set<string>;
 };
 
-export const BasicWidgetRegistry: Record<string, WidgetRegistryProps> = {
+export const BasicWidgetRegistries: Record<string, WidgetRegistryProps> = {
   clock: {
     name: "Clock",
+    description: "A simple clock",
     component: ClockWidget,
-    defaultWidth: "col-span-4",
-    defaultHeight: "h-32",
+    widthOptions: [100],
+    heightOptions: [100],
+    availableAspects: new Set(["100|100", "200|200"]),
   },
   todo: {
     name: "Todo",
+    description: "A simple todo list",
     component: TodoWidget,
-    defaultWidth: "col-span-4",
-    defaultHeight: "h-32",
+    widthOptions: [100],
+    heightOptions: [100],
+    availableAspects: new Set(["100|150", "100|200", "150|200"]),
   },
 };

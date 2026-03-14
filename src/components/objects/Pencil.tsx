@@ -1,5 +1,5 @@
 import { Float } from "@react-three/drei";
-import { ThreeCord } from "@shared/types/threeCord.type";
+import { ThreeCord } from "@shared/types/cord";
 import { useRef } from "react";
 import * as THREE from "three";
 

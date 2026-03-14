@@ -3,7 +3,6 @@
 import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useTheme } from "@/hooks";
 import { useState } from "react";
 import XIcon from "../icons/XIcon";
 
@@ -24,7 +23,6 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
   onUpload,
   onCancel,
 }) => {
-  const theme = useTheme();
   const [uploadedImages, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>("");
 

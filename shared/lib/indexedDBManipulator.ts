@@ -111,9 +111,7 @@ export class IndexedDBManipulator {
     }
   }
 
-  static async setItems<K extends IndexedDBKey>(
-    items: Partial<IndexedDBItem>
-  ): Promise<boolean> {
+  static async setItems(items: Partial<IndexedDBItem>): Promise<boolean> {
     if (!this.isIndexedDBAvailable()) return false;
     try {
       const entriesArr: [string, any][] = Object.entries(items)
