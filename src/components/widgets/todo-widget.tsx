@@ -1,11 +1,8 @@
 import { useState } from "react";
 
-export interface TodoWidgetProps {
-  width: number;
-  height: number;
-}
+export interface TodoWidgetProps {}
 
-const TodoWidget = ({ width, height }: TodoWidgetProps) => {
+const TodoWidget = ({}: TodoWidgetProps) => {
   const [todos, setTodos] = useState<string[]>([]);
   const [input, setInput] = useState("");
 
@@ -17,17 +14,17 @@ const TodoWidget = ({ width, height }: TodoWidgetProps) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-lg shadow p-4 text-[1em]">
+    <div className="w-full h-full flex flex-col items-center justify-center rounded-lg shadow p-4 text-[1em]">
       <div className="w-full flex mb-3">
         <input
-          className="flex-1 border border-gray-300 rounded-l px-3 py-2 text-sm focus:outline-none focus:border-blue-400 transition"
+          className="flex-1 border rounded-l px-3 py-2 text-sm focus:outline-none focus:border-blue-400 transition"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="新增待辦事項"
           onKeyDown={e => e.key === "Enter" && addTodo()}
         />
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-r text-sm font-semibold hover:bg-blue-600 transition"
+          className="px-4 py-2 text-white rounded-r text-sm font-semibold hover:bg-blue-600 transition"
           onClick={addTodo}
         >
           +

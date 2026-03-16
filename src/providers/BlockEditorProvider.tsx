@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
 import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
@@ -41,6 +42,7 @@ import {
   useRef,
   useState,
 } from "react";
+import toast from "react-hot-toast";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor;
@@ -62,6 +64,8 @@ export const BlockEditorProvider = ({
   blockPackMeta,
   isBlockPackMetaInitialized,
 }: BlockEditorProviderProps) => {
+  const languageManager = useLanguage();
+
   const insertBlocksMutator = useInsertBlocks();
   const insertBlockGroupsAndBlocksMutator =
     useInsertBlockGroupsAndTheirBlocksByBlockPackId();
@@ -462,7 +466,7 @@ export const BlockEditorProvider = ({
           updateBlocksMutator.mutateAsync(updateBlocksRequest),
         deleteBlocksRequest.body.blockIds.length > 0 &&
           deleteBlocksMutator.mutateAsync(deleteBlocksRequest),
-      ]);
+      ]).catch(error => toast.error(languageManager.tError(error)));
       eventQueueRef.current = [];
       setState("idle");
     }

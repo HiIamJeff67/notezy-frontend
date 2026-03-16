@@ -4,7 +4,7 @@ import DropFileZone from "@/components/DropFileZone/DropFileZone";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
-import XIcon from "../icons/XIcon";
+import Closeable from "../Closeable/Closeable";
 
 interface UploadImageDialogProps {
   open: boolean;
@@ -71,27 +71,20 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         {uploadedImages.length > 0 && (
           <div className="w-full flex flex-wrap gap-2 mt-2">
             {uploadedImages.map((image, index) => (
-              <div
-                key={image.name}
-                className="relative w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border"
+              <Closeable
+                key={index}
+                onClose={() => {
+                  setSelectedFiles(
+                    uploadedImages.filter((_, i) => i !== index)
+                  );
+                }}
               >
-                <button // we don't use <Button /> component here, since it will cause some padding or margin like UI problem
-                  className="absolute top-1 left-1 w-3 h-3 flex justify-center items-center rounded-full bg-(--destructive)"
-                  onClick={() => {
-                    setSelectedFiles(
-                      uploadedImages.filter((_, i) => i !== index)
-                    );
-                  }}
-                  type="button"
-                >
-                  <XIcon size={8} />
-                </button>
                 <img
                   src={URL.createObjectURL(image)}
                   alt={image.name}
                   className="object-cover w-full h-full"
                 />
-              </div>
+              </Closeable>
             ))}
           </div>
         )}

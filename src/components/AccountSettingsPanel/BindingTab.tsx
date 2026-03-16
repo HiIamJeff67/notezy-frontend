@@ -126,7 +126,6 @@ const BindingTab = ({
           const csrfToken = SessionStorageManipulator.getItemByKey(
             SessionStorageKey.csrfToken
           );
-          console.log(csrfToken);
           await updateUserAccountMutator.mutateAsync({
             header: {
               userAgent: userAgent,

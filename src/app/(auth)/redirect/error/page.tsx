@@ -18,15 +18,17 @@ function RedirectErrorPage() {
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-red-500">{title}</h1>
         <p className="text-gray-600">{description}</p>
-        <Button variant="outline" onClick={() => {}}>
-          聯絡我們
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => router.push(WebURLPathDictionary.home)}
-        >
-          返回首頁
-        </Button>
+        <div className="flex justify-center items-center gap-4">
+          <Button variant="outline" onClick={() => {}}>
+            聯絡我們
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push(WebURLPathDictionary.home)}
+          >
+            返回首頁
+          </Button>
+        </div>
       </div>
     </Suspense>
   );

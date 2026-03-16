@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 
-export interface ClockWidgetProps {
-  width: number;
-  height: number;
-}
+export interface ClockWidgetProps {}
 
-const ClockWidget = ({ width, height }: ClockWidgetProps) => {
+const ClockWidget = ({}: ClockWidgetProps) => {
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -15,7 +12,7 @@ const ClockWidget = ({ width, height }: ClockWidgetProps) => {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center 
+      className="flex items-center justify-center 
                     text-[1em] font-mono"
     >
       {time.toLocaleTimeString()}

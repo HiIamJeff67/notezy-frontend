@@ -1,9 +1,10 @@
 "use client";
 
+import Closeable from "@/components/Closeable/Closeable";
 import GridBackground from "@/components/GridBackground/GridBackground";
+import CheckIcon from "@/components/icons/CheckIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import PlusIcon from "@/components/icons/PlusIcon";
-import XIcon from "@/components/icons/XIcon";
 import ImageCropper from "@/components/ImageCropper/ImageCropper";
 import ModifyImageHover from "@/components/ModifyImageHover/ModifyImageHover";
 import { Button } from "@/components/ui/button";
@@ -23,27 +24,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import UploadImageDialog from "@/components/UploadImageDialog/UploadImageDialog";
-import {
-  BasicWidgetRegistries,
-  WidgetRegistryProps,
-} from "@/components/widgets/registries";
+import { BasicWidgets } from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
+import { useWidget } from "@/hooks/useWidget";
 import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 
 const DashboardContainer = () => {
   const themeManager = useTheme();
   const languageManager = useLanguage();
+  const widgetManager = useWidget();
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [widgets, setWidgets] = useState<WidgetRegistryProps[]>([]);
   const [backgroundImageURL, setBackgroundImageURL] = useState<string | null>(
     null
   );
@@ -59,21 +55,6 @@ const DashboardContainer = () => {
   const backgroundDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const initializeWidgets = () => {
-      const widgetsEncoded = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.dashboardWidgets
-      );
-      if (widgetsEncoded !== null) {
-        try {
-          const widgets = JSON.parse(widgetsEncoded);
-          setWidgets(widgets);
-        } catch (error) {
-          toast.error(languageManager.tError(error));
-          setWidgets([]);
-        }
-      }
-    };
-
     const initializeBackgroundImageURL = async () => {
       const imageId = await IndexedDBManipulator.getItemByKey(
         IndexedDBKey.currentDashboardBackgroundImageId
@@ -91,13 +72,10 @@ const DashboardContainer = () => {
         setBackgroundImageURL(url);
         const image = new Image();
         image.src = url;
-        image.onload = () => {
-          setCropperAspectRatio(image.width / image.height);
-        };
+        image.onload = () => setCropperAspectRatio(image.width / image.height);
       }
     };
 
-    initializeWidgets();
     initializeBackgroundImageURL();
   }, []);
 
@@ -108,15 +86,6 @@ const DashboardContainer = () => {
       if (width && height) setCropperAspectRatio(width / height);
     }
   }, [backgroundImageURL]);
-
-  useEffect(() => {
-    if (!isEditing) {
-      LocalStorageManipulator.setItem(
-        LocalStorageKey.dashboardWidgets,
-        JSON.stringify(widgets)
-      );
-    }
-  }, [isEditing]);
 
   return (
     <div className="w-full h-full flex-col justify-between items-center min-h-[calc(100vh-4rem)] overflow-auto relative">
@@ -158,12 +127,24 @@ const DashboardContainer = () => {
         </div>
       )}
       <div className="w-full border-2 min-h-2/3 border-none relative overflow-hidden grid grid-cols-12 gap-4 p-4">
+        {widgetManager.widgets.map((widget, index) => (
+          <Closeable
+            key={index}
+            className={`${widget.currentAspect} border-1 border-foreground shadow`}
+            closeButtonClassName="top-1 left-1 w-4 h-4 border-1 border-foreground/70 !bg-transparent"
+            iconSize={12}
+            displayCloseButton={isEditing}
+            onClose={() => widgetManager.remove(index)}
+          >
+            <widget.component />
+          </Closeable>
+        ))}
         {isEditing && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="col-span-2 h-32 flex items-center justify-center border-dashed border-2 border-gray-400 rounded cursor-pointer"
+                className="col-span-2 h-32 flex justify-center items-center aspect-square border-dashed border-2 border-gray-400 rounded cursor-pointer"
               >
                 <PlusIcon />
               </Button>
@@ -171,21 +152,24 @@ const DashboardContainer = () => {
             <DropdownMenuContent side="right" align="start">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Basic</DropdownMenuLabel>
-                {Object.values(BasicWidgetRegistries).map((widget, index) => (
+                {Object.values(BasicWidgets).map((previewWidget, index) => (
                   <DropdownMenuItem
                     key={index}
                     className="w-full flex justify-between items-start"
+                    onClick={() => widgetManager.append(previewWidget)}
                   >
                     <div className="w-[180px]">
-                      <div className="font-bold">{widget.name}</div>
-                      <div className="font-light">{widget.description}</div>
+                      <div className="font-bold">{previewWidget.name}</div>
+                      <div className="font-light">
+                        {previewWidget.description}
+                      </div>
                     </div>
                     <div
                       className="w-[100px] aspect-square flex justify-center items-center border-1 rounded-lg overflow-hidden relative pointer-events-none select-none"
                       tabIndex={-1}
                       aria-hidden="true"
                     >
-                      <widget.component />
+                      <previewWidget.component />
                     </div>
                   </DropdownMenuItem>
                 ))}
@@ -199,13 +183,26 @@ const DashboardContainer = () => {
           </DropdownMenu>
         )}
       </div>
-      <Button
-        variant="secondary"
-        className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg z-10 w-10 h-10 flex items-center justify-center"
-        onClick={() => setIsEditing(prev => !prev)}
-      >
-        {isEditing ? <XIcon size={18} /> : <EditIcon />}
-      </Button>
+      {isEditing ? (
+        <Button
+          variant="secondary"
+          className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg z-10 w-10 h-10 flex items-center justify-center"
+          onClick={() => {
+            widgetManager.sync();
+            setIsEditing(false);
+          }}
+        >
+          <CheckIcon size={18} />
+        </Button>
+      ) : (
+        <Button
+          variant="secondary"
+          className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg z-10 w-10 h-10 flex items-center justify-center"
+          onClick={() => setIsEditing(true)}
+        >
+          <EditIcon size={18} />
+        </Button>
+      )}
       <UploadImageDialog
         open={uploadImageDialogOpen}
         onOpenChange={setUploadImageDialogOpen}
@@ -220,9 +217,8 @@ const DashboardContainer = () => {
           const url = URL.createObjectURL(files[files.length - 1]);
           const image = new Image();
           image.src = url;
-          image.onload = () => {
+          image.onload = () =>
             setCropperAspectRatio(image.width / image.height);
-          };
           setUploadBackgroundImageURL(url);
           let lastId: UUID = generateUUID();
           files.forEach(file => {

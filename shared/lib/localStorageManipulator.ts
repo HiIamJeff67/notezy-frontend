@@ -8,7 +8,13 @@ import {
 export class LocalStorageManipulator {
   private static readonly LocalStoragePrefix = "notezy_";
 
-  private static getStorageKey(key: LocalStorageKey): string {
+  private static getStorageKey(
+    key: LocalStorageKey,
+    publicId?: string
+  ): string {
+    if (publicId !== undefined) {
+      return this.LocalStoragePrefix + publicId.toString() + "_" + key;
+    }
     return this.LocalStoragePrefix + key;
   }
 
@@ -26,12 +32,13 @@ export class LocalStorageManipulator {
 
   // get an item from local storage by providing a key
   static getItemByKey = <K extends LocalStorageKey>(
-    key: K
+    key: K,
+    publicId?: string
   ): LocalStorageItem[K] | null => {
     try {
       if (!this.isLocalStorageAvailable()) return null;
 
-      const storageKey = this.getStorageKey(key);
+      const storageKey = this.getStorageKey(key, publicId);
       const item = localStorage.getItem(storageKey);
 
       return item === null ? null : JSON.parse(item);
@@ -46,14 +53,15 @@ export class LocalStorageManipulator {
 
   // get items from local storage by providing the keys of them
   static getItemsByKeys = <K extends LocalStorageKey>(
-    keys: K[]
+    keys: K[],
+    publicId?: string
   ): Pick<LocalStorageItem, K> => {
     if (!this.isLocalStorageAvailable()) return {} as Pick<LocalStorageItem, K>;
 
     const result = {} as Pick<LocalStorageItem, K>;
 
     keys.forEach(key => {
-      result[key] = this.getItemByKey(key);
+      result[key] = this.getItemByKey(key, publicId);
     });
 
     return result;
@@ -84,21 +92,25 @@ export class LocalStorageManipulator {
     return result;
   };
 
-  static hasItem = <K extends LocalStorageKey>(key: K): boolean => {
+  static hasItem = <K extends LocalStorageKey>(
+    key: K,
+    publicId?: string
+  ): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
-    return this.getItemByKey(key) !== null;
+    return this.getItemByKey(key, publicId) !== null;
   };
 
   // set an item to local storage by providing a key-value pair
   static setItem = <K extends LocalStorageKey>(
     key: K,
-    value: LocalStorageItem[K] // use the key of the Storage
+    value: LocalStorageItem[K], // use the key of the Storage
+    publicId?: string
   ): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     try {
-      const storageKey = this.getStorageKey(key);
+      const storageKey = this.getStorageKey(key, publicId);
       localStorage.setItem(storageKey, JSON.stringify(value));
       return true;
     } catch (error) {
@@ -111,23 +123,30 @@ export class LocalStorageManipulator {
   };
 
   // set items to local storage by providing key-value pairs
-  static setItems = (items: Partial<LocalStorageItem>): boolean => {
+  static setItems = (
+    items: Partial<LocalStorageItem>,
+    publicId?: string
+  ): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
     Object.entries(items).forEach(([key, value]) => {
       if (value !== undefined) {
-        success = success && this.setItem(key as LocalStorageKey, value);
+        success =
+          success && this.setItem(key as LocalStorageKey, value, publicId);
       }
     });
     return success;
   };
 
-  static removeItem = <K extends LocalStorageKey>(key: K): boolean => {
+  static removeItem = <K extends LocalStorageKey>(
+    key: K,
+    publicId?: string
+  ): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     try {
-      const storageKey = this.LocalStoragePrefix + key;
+      const storageKey = this.getStorageKey(key, publicId);
       localStorage.removeItem(storageKey);
       return true;
     } catch (error) {
@@ -139,11 +158,16 @@ export class LocalStorageManipulator {
     }
   };
 
-  static removeItems = <K extends LocalStorageKey>(keys: K[]): boolean => {
+  static removeItems = <K extends LocalStorageKey>(
+    keys: K[],
+    publicId?: string
+  ): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
-    keys.forEach((key, _) => (success = success && this.removeItem(key)));
+    keys.forEach(
+      (key, _) => (success = success && this.removeItem(key, publicId))
+    );
     return success;
   };
 
