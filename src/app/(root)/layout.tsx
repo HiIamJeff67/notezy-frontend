@@ -1,7 +1,7 @@
 "use client";
 
-import { AppSidebar } from "@/components/AppSidebar/AppSidebar";
-import AppSidebarInset from "@/components/AppSidebar/AppSidebarInset";
+import { AppSidebar } from "@/components/sidebar/AppSidebar/AppSidebar";
+import AppSidebarInset from "@/components/sidebar/AppSidebar/AppSidebarInset";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ShelfItemProvider } from "@/providers";
 import { ResizeSidebarProvider } from "@/providers/ResizeSidebarProvider";

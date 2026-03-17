@@ -1,12 +1,12 @@
 "use client";
 
-import GridBlackBackground from "@/components/GridBackground/GridBackground";
+import GridBlackBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import CheckIcon from "@/components/icons/CheckIcon";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
 import DocumentIcon from "@/components/icons/DocumentIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";
 import NoteIcon from "@/components/icons/NoteIcon";
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
 import { Button } from "@/components/ui/button";
 import {
   Menubar,
@@ -110,7 +110,7 @@ const HomePage = () => {
 
   return (
     <GridBlackBackground>
-      <Suspense fallback={<StrictLoadingOutlay />}>
+      <Suspense fallback={<StrictLoadingCover />}>
         <div className="fixed top-2 right-2 z-50">
           <Menubar className="bg-secondary border-border border shadow-lg">
             <MenubarMenu>

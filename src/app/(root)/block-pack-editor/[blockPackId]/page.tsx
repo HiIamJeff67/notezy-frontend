@@ -1,5 +1,5 @@
-import BlockPackEditor from "@/components/BlockPackEditor/BlockPackEditor";
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import BlockPackEditor from "@/components/editors/BlockPackEditor/BlockPackEditor";
 import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/prefetches/blockGroup.prefetch";
 import { prefetchGetMyBlockPackAndItsParentById } from "@shared/api/prefetches/blockPack.prefetch";
@@ -69,7 +69,7 @@ const BlockPackEditorPage = async ({
           getMyBlockGroupsAndTheirBlocksByBlockPackIdPrefetcher.nextQueryClient
         )}
       >
-        <Suspense fallback={<StrictLoadingOutlay />}>
+        <Suspense fallback={<StrictLoadingCover />}>
           <BlockPackEditor
             defaultBlockPackMeta={getDefaultBlockPackMeta(
               blockPackId,
@@ -83,7 +83,7 @@ const BlockPackEditorPage = async ({
   }
 
   return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
+    <Suspense fallback={<StrictLoadingCover />}>
       <BlockPackEditor
         defaultBlockPackMeta={getDefaultBlockPackMeta(
           blockPackId,

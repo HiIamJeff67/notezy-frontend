@@ -1,9 +1,9 @@
 "use client";
 
-import AccountSettingsPanel from "@/components/AccountSettingsPanel/AccountSettingsPanel";
-import PreferencesPanel from "@/components/PreferencesPanel/PreferencesPanel";
-import CreateShelfItemDialog from "@/components/ShelfItemDialog/CreateShelfItemDialog";
-import DeleteShelfItemDialog from "@/components/ShelfItemDialog/DeleteShelfItemDialog";
+import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
+import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
+import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
+import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
 import React, { createContext, useState } from "react";
 
 export type ModalPropsMap = {

@@ -1,6 +1,6 @@
 "use client";
 
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 import { useAppRouter } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -14,7 +14,7 @@ function RedirectErrorPage() {
   const description = searchParams.get("description") || "重導向時發生未知錯誤";
 
   return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
+    <Suspense fallback={<StrictLoadingCover />}>
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-red-500">{title}</h1>
         <p className="text-gray-600">{description}</p>

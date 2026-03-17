@@ -1,8 +1,8 @@
 "use client";
 
-import AuthPanel from "@/components/AuthPanel/AuthPanel";
-import GridBackground from "@/components/GridBackground/GridBackground";
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage } from "@/hooks";
 import {
   useForgetPassword,
@@ -131,8 +131,8 @@ const ForgetPasswordPage = () => {
 
   return (
     <GridBackground>
-      <Suspense fallback={<StrictLoadingOutlay />}>
-        <StrictLoadingOutlay
+      <Suspense fallback={<StrictLoadingCover />}>
+        <StrictLoadingCover
           condition={
             sendAuthCodeMutator.isPending ||
             forgetPasswordMutator.isPending ||

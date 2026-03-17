@@ -1,8 +1,8 @@
 "use client";
 
-import AuthPanel from "@/components/AuthPanel/AuthPanel";
-import GridBackground from "@/components/GridBackground/GridBackground";
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useRegister } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
@@ -97,8 +97,8 @@ const RegisterPage = () => {
 
   return (
     <GridBackground>
-      <Suspense fallback={<StrictLoadingOutlay />}>
-        <StrictLoadingOutlay
+      <Suspense fallback={<StrictLoadingCover />}>
+        <StrictLoadingCover
           condition={registerMutator.isPending || getUserDataQuerier.isFetching}
         />
         <AuthPanel

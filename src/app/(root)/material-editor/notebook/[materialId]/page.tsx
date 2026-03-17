@@ -1,5 +1,5 @@
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import NotebookEditor from "@/components/NotebookEditor/NotebookEditor";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import NotebookEditor from "@/components/editors/NotebookEditor/NotebookEditor";
 import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyMaterialAndItsParentById } from "@shared/api/prefetches/material.prefetch";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
@@ -51,7 +51,7 @@ const NotebookMaterialEditorPage = async ({
 
     return (
       <HydrationBoundary state={dehydrate(nextQueryClient)}>
-        <Suspense fallback={<StrictLoadingOutlay />}>
+        <Suspense fallback={<StrictLoadingCover />}>
           <NotebookEditor
             defaultMeta={getDefaultNotebookMaterialMeta(
               materialId,
@@ -65,7 +65,7 @@ const NotebookMaterialEditorPage = async ({
   }
 
   return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
+    <Suspense fallback={<StrictLoadingCover />}>
       <NotebookEditor
         defaultMeta={getDefaultNotebookMaterialMeta(
           materialId,

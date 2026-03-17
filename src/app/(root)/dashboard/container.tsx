@@ -1,12 +1,13 @@
 "use client";
 
-import Closeable from "@/components/Closeable/Closeable";
-import GridBackground from "@/components/GridBackground/GridBackground";
+import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import Closeable from "@/components/commons/Closeable/Closeable";
+import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
+import UploadImageDialog from "@/components/dialogs/UploadImageDialog/UploadImageDialog";
+import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import CheckIcon from "@/components/icons/CheckIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import PlusIcon from "@/components/icons/PlusIcon";
-import ImageCropper from "@/components/ImageCropper/ImageCropper";
-import ModifyImageHover from "@/components/ModifyImageHover/ModifyImageHover";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UploadImageDialog from "@/components/UploadImageDialog/UploadImageDialog";
 import { BasicWidgets } from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
 import { useWidget } from "@/hooks/useWidget";
@@ -126,7 +126,12 @@ const DashboardContainer = () => {
           )}
         </div>
       )}
-      <div className="w-full border-2 min-h-2/3 border-none relative overflow-hidden grid grid-cols-12 gap-4 p-4">
+      <div
+        className="
+          w-full border-2 min-h-2/3 border-none relative overflow-hidden gap-4 p-4
+          grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 xl:grid-cols-16
+        "
+      >
         {widgetManager.widgets.map((widget, index) => (
           <Closeable
             key={index}

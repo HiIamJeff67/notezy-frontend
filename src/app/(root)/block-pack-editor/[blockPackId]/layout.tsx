@@ -1,8 +1,8 @@
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Suspense } from "react";
 
 const BlockPackEditorLayout = ({ children }: { children: React.ReactNode }) => {
-  return <Suspense fallback={<StrictLoadingOutlay />}>{children}</Suspense>;
+  return <Suspense fallback={<StrictLoadingCover />}>{children}</Suspense>;
 };
 
 export default BlockPackEditorLayout;

@@ -43,13 +43,14 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
       if (widgetsEncoded !== null) {
         try {
-          const widgets: Widget[] = (
-            JSON.parse(widgetsEncoded).map((w: any) => ({
-              ...w,
-              component: BasicWidgets[w.name]?.component,
-            })) as Partial<Widget>[]
-          ).filter(widget => widget.component !== undefined) as Widget[];
-          setWidgets(widgets);
+          setWidgets(
+            (
+              JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
+                ...widgetEncoded,
+                component: BasicWidgets[widgetEncoded.name]?.component,
+              })) as Partial<Widget>[]
+            ).filter(widget => widget.component !== undefined) as Widget[]
+          );
         } catch (error) {
           toast.error(languageManager.tError(error));
         }

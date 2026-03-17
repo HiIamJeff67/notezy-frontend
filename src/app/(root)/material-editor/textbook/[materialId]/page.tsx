@@ -1,5 +1,5 @@
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
-import TextbookEditor from "@/components/TextbookEditor/TextbookEditor";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import TextbookEditor from "@/components/editors/TextbookEditor/TextbookEditor";
 import { isValidUUID } from "@shared/types/uuidv4.type";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -31,7 +31,7 @@ const TextbookMaterialEditorPage = async ({
   // since the server component will not have the authorization tokens in cookie
 
   return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
+    <Suspense fallback={<StrictLoadingCover />}>
       <TextbookEditor materialId={materialId} />
     </Suspense>
   );

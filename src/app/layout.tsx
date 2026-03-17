@@ -1,4 +1,4 @@
-import LoadingOverlay from "@/components/LoadingOutlay/LoadingOutlay";
+import LoadingOverlay from "@/components/covers/LoadingCover/LoadingCover";
 import Providers from "@/providers/Providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

@@ -20,12 +20,12 @@ export type ResizeSidebarOptions = {
 };
 
 const DEFAULTS = {
-  minWidth: 260, // this is the minimum value so that the sidebar won't overlap on its inset
+  minWidth: 255, // this is the minimum value so that the sidebar won't overlap on its inset
   maxWidth: 512,
-  defaultWidth: 260,
+  defaultWidth: 255,
 } as const;
 
-type ResizeSidebarContextValue = {
+type ResizeSidebarContextType = {
   width: number;
   setWidth: (next: number) => void;
   sidebarStyle: CSSProperties;
@@ -36,7 +36,7 @@ type ResizeSidebarContextValue = {
 };
 
 export const ResizeSidebarContext =
-  createContext<ResizeSidebarContextValue | null>(null);
+  createContext<ResizeSidebarContextType | null>(null);
 
 export function ResizeSidebarProvider({
   children,
@@ -127,7 +127,7 @@ export function ResizeSidebarProvider({
     [clampedWidth, defaultWidth, sidebarManager?.open]
   );
 
-  const value = useMemo(
+  const value: ResizeSidebarContextType = useMemo(
     () => ({
       width: width,
       setWidth: persist,

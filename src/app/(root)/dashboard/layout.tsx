@@ -1,6 +1,6 @@
 "use client";
 
-import StrictLoadingOutlay from "@/components/LoadingOutlay/StrictLoadingOutlay";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import WidgetProvider from "@/providers/WidgetProvider";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
@@ -12,8 +12,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const getUserDataQuerier = useGetUserData();
 
   return (
-    <Suspense fallback={<StrictLoadingOutlay />}>
-      <StrictLoadingOutlay condition={getUserDataQuerier.isFetching} />
+    <Suspense fallback={<StrictLoadingCover />}>
+      <StrictLoadingCover condition={getUserDataQuerier.isFetching} />
       {sidebarManager.isMobile && <SidebarTrigger className="fixed m-2" />}
       <WidgetProvider>{children}</WidgetProvider>
     </Suspense>
