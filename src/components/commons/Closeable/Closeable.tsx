@@ -1,9 +1,10 @@
 import XIcon from "@/components/icons/XIcon";
-import React from "react";
+import React, { CSSProperties } from "react";
 
 interface CloseableProps {
   children?: React.ReactNode;
   className?: string;
+  style?: CSSProperties;
   closeButtonClassName?: string;
   iconSize?: number;
   displayCloseButton?: boolean;
@@ -13,6 +14,7 @@ interface CloseableProps {
 const Closeable = ({
   children,
   className = "w-16 h-16",
+  style,
   closeButtonClassName = "top-1 left-1 w-3 h-3",
   iconSize = 8,
   displayCloseButton = true,
@@ -20,7 +22,8 @@ const Closeable = ({
 }: CloseableProps) => {
   return (
     <div
-      className={`relative rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border ${className}`}
+      className={`rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border ${className}`}
+      style={style}
     >
       {displayCloseButton && (
         <button // we don't use <Button /> component here, since it will cause some padding or margin like UI problem

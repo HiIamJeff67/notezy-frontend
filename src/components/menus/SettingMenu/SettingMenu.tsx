@@ -1,4 +1,4 @@
-import WrapPlaceholder from "@/components/placeholders/WrapPlaceholder";
+import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 
 interface SettingMenuProps {
   children: React.ReactNode;

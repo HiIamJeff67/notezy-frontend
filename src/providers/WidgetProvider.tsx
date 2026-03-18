@@ -1,4 +1,4 @@
-import { BasicWidgets, Widget } from "@/components/widgets/widget";
+import { BasicPreviewWidgets, Widget } from "@/components/widgets/widget";
 import { useLanguage, useUser } from "@/hooks";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -47,7 +47,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
             (
               JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
                 ...widgetEncoded,
-                component: BasicWidgets[widgetEncoded.name]?.component,
+                component: BasicPreviewWidgets[widgetEncoded.name]?.component,
               })) as Partial<Widget>[]
             ).filter(widget => widget.component !== undefined) as Widget[]
           );
@@ -58,7 +58,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
     };
 
     initializeWidgets();
-  }, []);
+  }, [userManager.userData]);
 
   const append = useCallback((widget: Widget) => {
     setWidgets(prev => [...prev, widget]);

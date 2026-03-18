@@ -38,7 +38,9 @@
     "metas",
     "prefetcher",
     "keyval",
-    "colorthief"
+    "colorthief",
+    "baseholder",
+    "baseholders"
   ],
   "ignorePaths": [
     "node_modules/**",

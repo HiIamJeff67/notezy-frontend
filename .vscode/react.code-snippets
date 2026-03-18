@@ -1,0 +1,38 @@
+{
+  "Initialize a Provider": {
+    "prefix": ["pro", "provide", "provider"],
+    "body": [
+      "import { createContext } from \"react\";",
+      "",
+      "interface ${1:ProviderName}ContextType {}",
+      "",
+      "export const ${1:ProviderName}Context = createContext<${1:ProviderName}ContextType | undefined>(undefined);",
+      "",
+      "interface ${1:ProviderName}ProviderProps {children: React.ReactNode;}",
+      "",
+      "const ${1:ProviderName}Provider = ({ children }: ${1:ProviderName}ProviderProps) => {",
+      "\treturn (<${1:ProviderName}Context.Provider value={{}}>{children}</${1:ProviderName}Context.Provider>);",
+      "};",
+      "",
+      "export default ${1:ProviderName}Provider;",
+    ],
+    "description": "Create the basic part of a react provider",
+  },
+  "Initialize a Context": {
+    "prefix": ["ctx", "context"],
+    "body": [
+      "import { ${1:ContextName}Context } from \"@/providers/${1:ContextName}Provider\";",
+      "import { useContext } from \"react\";",
+      "",
+      "export function use${1:ContextName}() {",
+      "\tconst context = useContext(${1:ContextName}Context);",
+      "\tif (!context) {",
+      "\t\tthrow new Error(",
+      "\t\t\t\"use${1:ContextName} must be used within ${1:ContextName}Provider\"",
+      "\t\t);",
+      "\t}",
+      "\treturn context;",
+      "}",
+    ],
+  },
+}

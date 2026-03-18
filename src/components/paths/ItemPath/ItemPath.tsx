@@ -1,8 +1,8 @@
 "use client";
 
+import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import ItemPathItem from "@/components/paths/ItemPath/ItemPathItem";
-import WrapPlaceholder from "@/components/placeholders/WrapPlaceholder";
 import {
   Breadcrumb,
   BreadcrumbItem,

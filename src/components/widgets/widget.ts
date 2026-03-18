@@ -5,20 +5,45 @@ export type Widget = {
   name: string;
   description: string;
   component: React.ComponentType<any>;
-  currentAspect: string;
+  leftFrameCount: number;
+  topFrameCount: number;
+  widthFrameCount: number;
+  heightFrameCount: number;
 };
 
-export const BasicWidgets: Record<string, Widget> = {
+export type PreviewWidget = {
+  name: string;
+  description: string;
+  component: React.ComponentType<any>;
+  widthFrameCount: number;
+  heightFrameCount: number;
+};
+
+export const toWidget = (
+  previewWidget: PreviewWidget,
+  leftFrameCount: number,
+  topFrameCount: number
+): Widget => {
+  return {
+    ...previewWidget,
+    leftFrameCount: leftFrameCount,
+    topFrameCount: topFrameCount,
+  } as Widget;
+};
+
+export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   clock: {
     name: "clock",
     description: "A simple clock",
     component: ClockWidget,
-    currentAspect: "col-span-2 aspect-[1/1]",
+    widthFrameCount: 1,
+    heightFrameCount: 1,
   },
   todo: {
     name: "todo",
     description: "A simple todo list",
     component: TodoWidget,
-    currentAspect: "col-span-4 aspect-[1/1]",
+    widthFrameCount: 2,
+    heightFrameCount: 3,
   },
 };

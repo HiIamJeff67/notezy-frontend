@@ -1,5 +1,5 @@
+import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
-import WrapPlaceholder from "@/components/placeholders/WrapPlaceholder";
 import {
   BreadcrumbItem,
   BreadcrumbSeparator,
