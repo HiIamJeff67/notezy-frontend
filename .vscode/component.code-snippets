@@ -1,0 +1,14 @@
+{
+  "Initialize a svg icon component": {
+    "prefix": ["icon"],
+    "body": [
+      "import { IconProps } from \"@shared/types/iconProps.type\";",
+      "",
+      "const ${1:IconComponentName}Icon = ({ size = 24, className = \"\", ...props }: IconProps) => {",
+      "\t return (${2:SvgComponent});",
+      "};",
+      "",
+      "export default ${1:IconComponentName}Icon;",
+    ],
+  },
+}

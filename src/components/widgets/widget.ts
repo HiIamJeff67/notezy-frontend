@@ -1,8 +1,11 @@
 import ClockWidget from "@/components/widgets/ClockWidget/ClockWidget";
 import TodoWidget from "@/components/widgets/TodoWidget/TodoWidget";
+import { generateUUID } from "@shared/types/uuidv4.type";
+import { UUID } from "crypto";
 import CalendarWidget from "./CalendarWidget/CalendarWidget";
 
 export type Widget = {
+  id: UUID;
   name: string;
   description: string;
   component: React.ComponentType<any>;
@@ -31,10 +34,12 @@ export const toWidget = (
   position: {
     leftFrameCount: number;
     topFrameCount: number;
-  }
+  },
+  id: UUID = generateUUID()
 ): Widget => {
   return {
     ...previewWidget,
+    id: id,
     position: position,
   } as Widget;
 };

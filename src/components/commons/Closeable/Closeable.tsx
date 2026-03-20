@@ -5,9 +5,11 @@ interface CloseableProps {
   children?: React.ReactNode;
   className?: string;
   style?: CSSProperties;
-  closeButtonClassName?: string;
-  iconSize?: number;
-  displayCloseButton?: boolean;
+  closeButtonProps?: {
+    className?: string;
+    disabled?: boolean;
+    size?: number;
+  };
   onClose: () => void | Promise<void>;
 }
 
@@ -15,23 +17,33 @@ const Closeable = ({
   children,
   className = "w-16 h-16",
   style,
-  closeButtonClassName = "top-1 left-1 w-3 h-3",
-  iconSize = 8,
-  displayCloseButton = true,
+  closeButtonProps,
   onClose,
 }: CloseableProps) => {
   return (
     <div
-      className={`rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border ${className}`}
+      className={`
+        relative w-full h-full overflow-hidden
+        flex justify-center items-center
+        bg-muted border-border rounded-lg
+        ${className}
+      `}
       style={style}
     >
-      {displayCloseButton && (
+      {(closeButtonProps === undefined ||
+        closeButtonProps.disabled === undefined ||
+        !closeButtonProps.disabled) && (
         <button // we don't use <Button /> component here, since it will cause some padding or margin like UI problem
-          className={`absolute flex justify-center items-center rounded-full bg-(--destructive) ${closeButtonClassName}`}
+          className={`
+            absolute top-1 left-1 w-3 h-3
+            flex justify-center items-center
+            rounded-full bg-(--destructive) transition
+            ${closeButtonProps && closeButtonProps.className}
+          `}
           onClick={onClose}
           type="button"
         >
-          <XIcon size={iconSize} />
+          <XIcon size={(closeButtonProps && closeButtonProps.size) ?? 8} />
         </button>
       )}
       {children}

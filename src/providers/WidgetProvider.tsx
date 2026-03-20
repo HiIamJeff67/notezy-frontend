@@ -15,6 +15,11 @@ interface WidgetContextType {
     field: keyof Widget,
     newValue: Widget[keyof Widget]
   ) => void;
+  updateByWidget: (
+    widget: Widget,
+    field: keyof Widget,
+    newValue: Widget[keyof Widget]
+  ) => void;
   remove: (index: number) => void;
   reset: () => void;
   sync: () => void;
@@ -85,6 +90,16 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
     []
   );
 
+  const updateByWidget = useCallback(
+    (widget: Widget, field: keyof Widget, newValue: Widget[keyof Widget]) => {
+      setWidgets(prev =>
+        prev.map(w => (w.id === widget.id ? { ...w, [field]: newValue } : w))
+      );
+      setHasChanged(true);
+    },
+    []
+  );
+
   const remove = useCallback((index: number) => {
     setWidgets(prev => prev.filter((_, i) => i !== index));
     setHasChanged(true);
@@ -113,6 +128,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
         append: append,
         replace: replace,
         update: update,
+        updateByWidget: updateByWidget,
         remove: remove,
         reset: reset,
         sync: sync,

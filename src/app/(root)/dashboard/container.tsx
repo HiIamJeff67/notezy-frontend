@@ -3,6 +3,8 @@
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/PlaceableBackground";
 import Closeable from "@/components/commons/Closeable/Closeable";
+import Draggable from "@/components/commons/Draggable/Draggable";
+import Editable from "@/components/commons/Editable/Editable";
 import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import UploadImageDialog from "@/components/dialogs/UploadImageDialog/UploadImageDialog";
 import CreateWidgetDialog from "@/components/dialogs/WidgetDialog/CreateWidgetDialog";
@@ -17,10 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PreviewWidget, toWidget } from "@/components/widgets/widget";
+import { PreviewWidget, toWidget, Widget } from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
 import { useScreen } from "@/hooks/useScreen";
 import { useWidget } from "@/hooks/useWidget";
+import { DNDType } from "@shared/enums";
 import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
 import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
@@ -34,6 +37,21 @@ import {
   useRef,
   useState,
 } from "react";
+import { DropTargetMonitor } from "react-dnd";
+
+const DashboardElementZIndexes = {
+  headerBackgroundImage: 50,
+  placeableBackground: 50,
+  placeableFrames: 50,
+  widgets: {
+    draggable: 75,
+    editable: 125,
+    closeable: 125,
+    content: 100,
+  },
+  editButton: 150,
+  // all the dialogs can be consider to have the same z index of infinity
+};
 
 const DashboardContainer = () => {
   const screenManager = useScreen();
@@ -61,6 +79,9 @@ const DashboardContainer = () => {
     useState<boolean>(false);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
+  const potentialConflictingWidgetsRef = useRef<Widget[]>(
+    widgetManager.widgets
+  );
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
     useMemo(() => {
@@ -88,12 +109,12 @@ const DashboardContainer = () => {
       }
 
       let heightTotalFrameCount = 0;
-      for (const widget of widgetManager.widgets) {
+      widgetManager.widgets.forEach(widget => {
         heightTotalFrameCount = Math.max(
           heightTotalFrameCount,
           widget.position.topFrameCount + widget.size.heightFrameCount
         );
-      }
+      });
       return {
         widthTotalFrameCount: widthTotalFrameCount,
         heightTotalFrameCount: heightTotalFrameCount,
@@ -126,6 +147,10 @@ const DashboardContainer = () => {
     initializeBackgroundImageURL();
   }, []);
 
+  useEffect(() => {
+    potentialConflictingWidgetsRef.current = widgetManager.widgets;
+  }, [widgetManager.widgets]);
+
   useLayoutEffect(() => {
     if (headerBackgroundImageRef.current !== null) {
       const { width, height } =
@@ -144,7 +169,7 @@ const DashboardContainer = () => {
       ) {
         createdFramePosition.leftFrameCount = 0;
         let availableTopFrameCount = 0;
-        for (const widget of widgetManager.widgets) {
+        widgetManager.widgets.forEach(widget => {
           if (
             widget.position.leftFrameCount < previewWidget.size.widthFrameCount
           ) {
@@ -153,19 +178,26 @@ const DashboardContainer = () => {
               widget.position.topFrameCount + widget.size.heightFrameCount
             );
           }
-        }
+        });
         createdFramePosition.topFrameCount = availableTopFrameCount;
       }
       widgetManager.append(toWidget(previewWidget, createdFramePosition));
       setCreateWidgetDialogOpen(false);
     },
-    [currentFramePosition]
+    [widgetManager, currentFramePosition]
   );
 
   return (
-    <div className="w-full h-full flex-col justify-center items-center min-h-[calc(100vh-4rem)] overflow-hidden relative">
+    <div
+      className="
+        relative w-full h-full min-h-[calc(100vh-4rem)] overflow-hidden
+        flex-col justify-center items-center
+      "
+    >
       {headerBackgroundImageURL === null ? (
-        <GridBackground className="!w-full !min-h-[240] !max-h-[300] relative">
+        <GridBackground
+          className={`!w-full !min-h-[240] !max-h-[300] relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+        >
           {isEditing && (
             <ModifyImageHover
               className="absolute"
@@ -179,7 +211,7 @@ const DashboardContainer = () => {
       ) : (
         <div
           ref={headerBackgroundImageRef}
-          className="w-full min-h-[240] max-h-[300] border-none relative"
+          className={`w-full min-h-[240] max-h-[300] border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
           style={
             headerBackgroundImageURL === null
               ? {}
@@ -202,16 +234,56 @@ const DashboardContainer = () => {
         </div>
       )}
       <PlaceableBackground
-        className="overflow-x-hidden overflow-y-auto relative"
+        className="overflow-x-hidden overflow-y-auto relative bg-background"
         style={{ height: (heightTotalFrameCount + 1) * frameSize }}
+        zIndex={DashboardElementZIndexes.placeableBackground}
         frameSizeSource="horizontal"
         frameSize={frameSize}
         setFrameSize={setFrameSize}
         widthTotalFrameCount={widthTotalFrameCount}
         heightTotalFrameCount={heightTotalFrameCount + 1}
         frameProps={{
+          children: <PlusIcon />,
+          zIndex: DashboardElementZIndexes.placeableFrames,
+          className: "cursor-pointer",
           gap: frameGap,
           isEditing: isEditing,
+          droppableProps: {
+            type: DNDType.DraggableWidget,
+            hover: (_, monitor) => {
+              if (!monitor.canDrop()) return;
+            },
+            canDrop: (
+              draggedItem: Widget,
+              _: DropTargetMonitor,
+              position: {
+                leftFrameCount: number;
+                topFrameCount: number;
+              }
+            ) => {
+              return !potentialConflictingWidgetsRef.current.some(
+                widget =>
+                  widget.id != draggedItem.id &&
+                  widget.position.leftFrameCount > position.leftFrameCount &&
+                  widget.position.leftFrameCount <
+                    position.leftFrameCount +
+                      draggedItem.size.widthFrameCount &&
+                  widget.position.topFrameCount > position.topFrameCount &&
+                  widget.position.topFrameCount <
+                    position.topFrameCount + draggedItem.size.heightFrameCount
+              );
+            },
+            drop: (
+              draggedItem: Widget,
+              _: DropTargetMonitor,
+              position: {
+                leftFrameCount: number;
+                topFrameCount: number;
+              }
+            ) => {
+              widgetManager.updateByWidget(draggedItem, "position", position);
+            },
+          },
           onClick: (position: {
             leftFrameCount: number;
             topFrameCount: number;
@@ -219,38 +291,55 @@ const DashboardContainer = () => {
             setCreateWidgetDialogOpen(true);
             setCurrentFramePosition(position);
           },
-          children: <PlusIcon />,
-          className: "cursor-pointer",
         }}
       >
         {widgetManager.widgets.map((widget, index) => (
-          <Closeable
+          <Draggable // a draggable wrapper to locate the widget base on the correct position
             key={index}
             style={{
               left: widget.position.leftFrameCount * frameSize + frameGap,
               top: widget.position.topFrameCount * frameSize + frameGap,
               width: widget.size.widthFrameCount * frameSize - frameGap,
               height: widget.size.heightFrameCount * frameSize - frameGap,
-              zIndex: 150,
+              zIndex: DashboardElementZIndexes.widgets.draggable,
             }}
-            className="absolute border-1 border-foreground shadow"
-            closeButtonClassName="top-1 left-1 w-4 h-4 border-1 border-foreground/70 !bg-transparent"
-            iconSize={12}
-            displayCloseButton={isEditing}
-            onClose={() => widgetManager.remove(index)}
+            className="absolute shadow rounded-lg"
+            type={DNDType.DraggableWidget}
+            item={widget}
+            canDrag={isEditing}
           >
-            <widget.component
-              style={{
-                width: widget.size.widthFrameCount * frameSize - frameGap,
-                height: widget.size.heightFrameCount * frameSize - frameGap,
+            <Editable
+              editButtonProps={{
+                className: `!top-1 !left-6 w-4 h-4 !bg-transparent border-1 border-foreground !z-${DashboardElementZIndexes.widgets.editable}`,
+                disabled: !isEditing,
+                size: 10,
               }}
-            />
-          </Closeable>
+              onEdit={() => console.log("editing the widget...")}
+            >
+              <Closeable
+                closeButtonProps={{
+                  className: `top-1 left-1 w-4 h-4 !bg-transparent border-1 border-foreground !z-${DashboardElementZIndexes.widgets.closeable}`,
+                  disabled: !isEditing,
+                  size: 12,
+                }}
+                onClose={() => widgetManager.remove(index)}
+              >
+                <widget.component
+                  style={{
+                    width: widget.size.widthFrameCount * frameSize - frameGap,
+                    height: widget.size.heightFrameCount * frameSize - frameGap,
+                    zIndex: DashboardElementZIndexes.widgets.content,
+                  }}
+                  className="bg-background/80 border-1 border-foreground/20 rounded-lg"
+                />
+              </Closeable>
+            </Editable>
+          </Draggable>
         ))}
         {isEditing ? (
           <Button
             variant="secondary"
-            style={{ zIndex: 200 }}
+            style={{ zIndex: DashboardElementZIndexes.editButton }}
             className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center"
             onClick={() => {
               widgetManager.sync();
@@ -262,7 +351,7 @@ const DashboardContainer = () => {
         ) : (
           <Button
             variant="secondary"
-            style={{ zIndex: 200 }}
+            style={{ zIndex: DashboardElementZIndexes.editButton }}
             className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center"
             onClick={() => setIsEditing(true)}
           >
