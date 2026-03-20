@@ -33,6 +33,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
   const userManager = useUser();
 
   const [widgets, setWidgets] = useState<Widget[]>([]);
+
   const [hasChanged, setHasChanged] = useState<boolean>(false);
 
   useEffect(() => {

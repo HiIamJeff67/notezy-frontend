@@ -8,7 +8,7 @@ interface ModifyImageHoverProps {
 }
 
 const ModifyImageHover = ({
-  imageSrc,
+  imageSrc = "",
   imageAlt = "",
   onClick,
   className = "bg-black/30",

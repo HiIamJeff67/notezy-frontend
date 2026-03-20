@@ -1,16 +1,25 @@
 interface PlaceableFrameProps {
   className?: string;
-  children?: (leftFrameCount: number, topFrameCount: number) => React.ReactNode;
+  children?: React.ReactNode;
   frameSize: number;
-  leftFrameCount: number;
-  topFrameCount: number;
-  widthFrameCount: number;
-  heightFrameCount: number;
-  horizontalGap: number;
-  verticalGap: number;
-  isActive?: boolean; // 是否可放置
-  isDisabled?: boolean; // 是否被佔用
-  onClick?: () => void;
+  // note that the value of position and size, and gap are based on the frame size
+  position: {
+    leftFrameCount: number;
+    topFrameCount: number;
+  };
+  size: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  };
+  gap: {
+    horizontal: number;
+    vertical: number;
+  };
+  isActive?: boolean;
+  onClick: (position: {
+    leftFrameCount: number;
+    topFrameCount: number;
+  }) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }
@@ -19,14 +28,10 @@ const PlaceableFrame = ({
   className = "",
   children,
   frameSize,
-  leftFrameCount,
-  topFrameCount,
-  widthFrameCount,
-  heightFrameCount,
-  horizontalGap,
-  verticalGap,
+  position,
+  size,
+  gap,
   isActive = false,
-  isDisabled = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -34,22 +39,21 @@ const PlaceableFrame = ({
   return (
     <div
       className={`
-        w-16 h-16 rounded transition
-        ${isActive && "border-2 border-dotted border-foreground/50"}
-        ${isDisabled && "bg-gray-200 opacity-50 cursor-not-allowed"}
+        w-16 h-16 rounded-lg transition flex justify-center items-center
+        ${isActive ? "border-2 border-dotted border-foreground/50" : "invisible"}
         ${className}
       `}
       style={{
-        left: leftFrameCount * frameSize + horizontalGap,
-        top: topFrameCount * frameSize + verticalGap,
-        width: widthFrameCount * frameSize - horizontalGap,
-        height: heightFrameCount * frameSize - verticalGap,
+        left: position.leftFrameCount * frameSize + gap.horizontal,
+        top: position.topFrameCount * frameSize + gap.vertical,
+        width: size.widthFrameCount * frameSize - gap.horizontal,
+        height: size.heightFrameCount * frameSize - gap.vertical,
       }}
-      onClick={isDisabled ? undefined : onClick}
+      onClick={isActive ? () => onClick(position) : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {children && children(leftFrameCount, topFrameCount)}
+      {children}
     </div>
   );
 };

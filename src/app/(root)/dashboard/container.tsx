@@ -5,6 +5,7 @@ import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/Pl
 import Closeable from "@/components/commons/Closeable/Closeable";
 import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import UploadImageDialog from "@/components/dialogs/UploadImageDialog/UploadImageDialog";
+import CreateWidgetDialog from "@/components/dialogs/WidgetDialog/CreateWidgetDialog";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import CheckIcon from "@/components/icons/CheckIcon";
 import EditIcon from "@/components/icons/EditIcon";
@@ -16,16 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { BasicPreviewWidgets, toWidget } from "@/components/widgets/widget";
+import { PreviewWidget, toWidget } from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
 import { useScreen } from "@/hooks/useScreen";
 import { useWidget } from "@/hooks/useWidget";
@@ -34,7 +26,14 @@ import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const DashboardContainer = () => {
   const screenManager = useScreen();
@@ -49,51 +48,58 @@ const DashboardContainer = () => {
   const [uploadHeaderBackgroundImageURL, setUploadHeaderBackgroundImageURL] =
     useState<string | null>(null);
   const [cropperAspectRatio, setCropperAspectRatio] = useState<number>(16 / 9);
+  const [frameSize, setFrameSize] = useState<number>(0);
+  const [currentFramePosition, setCurrentFramePosition] = useState<{
+    leftFrameCount: number;
+    topFrameCount: number;
+  }>({ leftFrameCount: 0, topFrameCount: 0 });
   const [uploadImageDialogOpen, setUploadImageDialogOpen] =
     useState<boolean>(false);
   const [imageCropperDialogOpen, setImageCropperDialogOpen] =
     useState<boolean>(false);
-  const [frameSize, setFrameSize] = useState<number>(120);
+  const [createWidgetDialogOpen, setCreateWidgetDialogOpen] =
+    useState<boolean>(false);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
 
-  const { horizontalFrameCount, verticalFrameCount, gap } = useMemo(() => {
-    let horizontalFrameCount = 4;
-    let gap = 4;
-    switch (screenManager.breakpoint) {
-      case "base":
-      case "sm":
-        horizontalFrameCount = 4;
-        break;
-      case "md":
-      case "lg":
-        horizontalFrameCount = 6;
-        break;
-      case "xl":
-        horizontalFrameCount = 8;
-        gap = 6;
-        break;
-      case "2xl":
-        horizontalFrameCount = 12;
-        break;
-      case "3xl":
-        horizontalFrameCount = 16;
-        break;
-    }
+  const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
+    useMemo(() => {
+      let widthTotalFrameCount = 4;
+      let frameGap = 4;
+      switch (screenManager.breakpoint) {
+        case "base":
+        case "sm":
+          widthTotalFrameCount = 4;
+          break;
+        case "md":
+        case "lg":
+          widthTotalFrameCount = 6;
+          break;
+        case "xl":
+          widthTotalFrameCount = 8;
+          frameGap = 6;
+          break;
+        case "2xl":
+          widthTotalFrameCount = 12;
+          break;
+        case "3xl":
+          widthTotalFrameCount = 16;
+          break;
+      }
 
-    let verticalFrameCount = 0;
-    for (const widget of widgetManager.widgets) {
-      verticalFrameCount = Math.max(
-        verticalFrameCount,
-        widget.topFrameCount + widget.heightFrameCount
-      );
-    }
-    return {
-      horizontalFrameCount: horizontalFrameCount,
-      verticalFrameCount: verticalFrameCount + 1, // at least one empty row
-      gap: gap,
-    };
-  }, [screenManager.breakpoint, widgetManager.widgets]);
+      let heightTotalFrameCount = 0;
+      for (const widget of widgetManager.widgets) {
+        heightTotalFrameCount = Math.max(
+          heightTotalFrameCount,
+          widget.position.topFrameCount + widget.size.heightFrameCount
+        );
+      }
+      return {
+        widthTotalFrameCount: widthTotalFrameCount,
+        heightTotalFrameCount: heightTotalFrameCount,
+        frameGap: frameGap,
+      };
+    }, [screenManager.breakpoint, widgetManager.widgets]);
 
   useEffect(() => {
     const initializeBackgroundImageURL = async () => {
@@ -128,10 +134,38 @@ const DashboardContainer = () => {
     }
   }, [headerBackgroundImageURL]);
 
+  const handleCreateWidgetOnClick = useCallback(
+    (previewWidget: PreviewWidget) => {
+      const createdFramePosition = currentFramePosition;
+      if (
+        createdFramePosition.leftFrameCount +
+          previewWidget.size.widthFrameCount >
+        widthTotalFrameCount
+      ) {
+        createdFramePosition.leftFrameCount = 0;
+        let availableTopFrameCount = 0;
+        for (const widget of widgetManager.widgets) {
+          if (
+            widget.position.leftFrameCount < previewWidget.size.widthFrameCount
+          ) {
+            availableTopFrameCount = Math.max(
+              availableTopFrameCount,
+              widget.position.topFrameCount + widget.size.heightFrameCount
+            );
+          }
+        }
+        createdFramePosition.topFrameCount = availableTopFrameCount;
+      }
+      widgetManager.append(toWidget(previewWidget, createdFramePosition));
+      setCreateWidgetDialogOpen(false);
+    },
+    [currentFramePosition]
+  );
+
   return (
-    <div className="w-full h-full flex-col justify-center items-center min-h-[calc(100vh-4rem)] overflow-x-hidden overflow-y-scroll relative">
+    <div className="w-full h-full flex-col justify-center items-center min-h-[calc(100vh-4rem)] overflow-hidden relative">
       {headerBackgroundImageURL === null ? (
-        <GridBackground className="!w-full !min-h-1/3 !max-h-full relative">
+        <GridBackground className="!w-full !min-h-[240] !max-h-[300] relative">
           {isEditing && (
             <ModifyImageHover
               className="absolute"
@@ -145,7 +179,7 @@ const DashboardContainer = () => {
       ) : (
         <div
           ref={headerBackgroundImageRef}
-          className="w-full min-h-1/3 max-h-full border-none relative"
+          className="w-full min-h-[240] max-h-[300] border-none relative"
           style={
             headerBackgroundImageURL === null
               ? {}
@@ -159,8 +193,7 @@ const DashboardContainer = () => {
         >
           {isEditing && (
             <ModifyImageHover
-              className="absolute"
-              imageSrc=""
+              className="absolute inset-0"
               imageAlt="Dashboard background image"
               onClick={() => setUploadImageDialogOpen(true)}
               hoverText="點擊以變更背景圖片"
@@ -168,148 +201,36 @@ const DashboardContainer = () => {
           )}
         </div>
       )}
-      {/* <div
-        className="
-          w-full border-2 min-h-2/3 border-none relative overflow-hidden 
-          flex flex-wrap items-start gap-4 p-4
-        "
-      >
-        {widgetManager.widgets.map((widget, index) => (
-          <Closeable
-            key={index}
-            className="border-1 border-foreground shadow"
-            closeButtonClassName="top-1 left-1 w-4 h-4 border-1 border-foreground/70 !bg-transparent"
-            iconSize={12}
-            displayCloseButton={isEditing}
-            onClose={() => widgetManager.remove(index)}
-          >
-            <widget.component />
-          </Closeable>
-        ))}
-        {isEditing && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="col-span-full h-32 flex justify-center items-center aspect-square border-dashed border-2 border-gray-400 rounded cursor-pointer"
-              >
-                <PlusIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Basic</DropdownMenuLabel>
-                {Object.values(BasicWidgets).map((previewWidget, index) => (
-                  <DropdownMenuItem
-                    key={index}
-                    className="w-full flex justify-between items-start"
-                    onClick={() => widgetManager.append(previewWidget)}
-                  >
-                    <div className="w-[180px]">
-                      <div className="font-bold">{previewWidget.name}</div>
-                      <div className="font-light">
-                        {previewWidget.description}
-                      </div>
-                    </div>
-                    <div
-                      className="w-[100px] aspect-square flex justify-center items-center border-1 rounded-lg overflow-hidden relative pointer-events-none select-none"
-                      tabIndex={-1}
-                      aria-hidden="true"
-                    >
-                      <previewWidget.component />
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Account</DropdownMenuLabel>
-                <DropdownMenuItem></DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div> */}
       <PlaceableBackground
-        className="m-2 overflow-y-scroll"
+        className="overflow-x-hidden overflow-y-auto relative"
+        style={{ height: (heightTotalFrameCount + 1) * frameSize }}
+        frameSizeSource="horizontal"
         frameSize={frameSize}
         setFrameSize={setFrameSize}
-        isEditing={isEditing}
-        horizontalFrameCount={horizontalFrameCount}
-        verticalFrameCount={verticalFrameCount}
-        gap={gap}
-        frameChildren={(leftFrameCount: number, topFrameCount: number) =>
-          isEditing && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full h-full flex justify-center items-center border-dashed cursor-pointer"
-                >
-                  <PlusIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Basic</DropdownMenuLabel>
-                  {Object.values(BasicPreviewWidgets).map(
-                    (previewWidget, index) => (
-                      <DropdownMenuItem
-                        key={index}
-                        className="w-full flex justify-between items-start"
-                        onClick={() =>
-                          widgetManager.append(
-                            toWidget(
-                              previewWidget,
-                              leftFrameCount,
-                              topFrameCount
-                            )
-                          )
-                        }
-                      >
-                        <div className="w-[180px]">
-                          <div className="font-bold">{previewWidget.name}</div>
-                          <div className="font-light">
-                            {previewWidget.description}
-                          </div>
-                        </div>
-                        <div
-                          className="w-[100px] aspect-square flex justify-center items-center border-1 rounded-lg overflow-hidden relative pointer-events-none select-none"
-                          tabIndex={-1}
-                          aria-hidden="true"
-                        >
-                          <previewWidget.component />
-                        </div>
-                      </DropdownMenuItem>
-                    )
-                  )}
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Account</DropdownMenuLabel>
-                  <DropdownMenuItem></DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )
-        }
+        widthTotalFrameCount={widthTotalFrameCount}
+        heightTotalFrameCount={heightTotalFrameCount + 1}
+        frameProps={{
+          gap: frameGap,
+          isEditing: isEditing,
+          onClick: (position: {
+            leftFrameCount: number;
+            topFrameCount: number;
+          }) => {
+            setCreateWidgetDialogOpen(true);
+            setCurrentFramePosition(position);
+          },
+          children: <PlusIcon />,
+          className: "cursor-pointer",
+        }}
       >
         {widgetManager.widgets.map((widget, index) => (
           <Closeable
             key={index}
             style={{
-              left:
-                widget.leftFrameCount * frameSize +
-                (widget.leftFrameCount === 0 ? 0 : gap),
-              top:
-                widget.topFrameCount * frameSize +
-                (widget.topFrameCount === 0 ? 0 : gap),
-              width:
-                widget.widthFrameCount * frameSize -
-                (widget.leftFrameCount === 0 ? 0 : gap),
-              height:
-                widget.heightFrameCount * frameSize -
-                (widget.topFrameCount === 0 ? 0 : gap),
+              left: widget.position.leftFrameCount * frameSize + frameGap,
+              top: widget.position.topFrameCount * frameSize + frameGap,
+              width: widget.size.widthFrameCount * frameSize - frameGap,
+              height: widget.size.heightFrameCount * frameSize - frameGap,
               zIndex: 150,
             }}
             className="absolute border-1 border-foreground shadow"
@@ -320,12 +241,8 @@ const DashboardContainer = () => {
           >
             <widget.component
               style={{
-                width:
-                  widget.widthFrameCount * frameSize -
-                  (widget.leftFrameCount === 0 ? 0 : gap),
-                height:
-                  widget.heightFrameCount * frameSize -
-                  (widget.topFrameCount === 0 ? 0 : gap),
+                width: widget.size.widthFrameCount * frameSize - frameGap,
+                height: widget.size.heightFrameCount * frameSize - frameGap,
               }}
             />
           </Closeable>
@@ -333,7 +250,7 @@ const DashboardContainer = () => {
         {isEditing ? (
           <Button
             variant="secondary"
-            style={{ zIndex: 100 }}
+            style={{ zIndex: 200 }}
             className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center"
             onClick={() => {
               widgetManager.sync();
@@ -345,7 +262,7 @@ const DashboardContainer = () => {
         ) : (
           <Button
             variant="secondary"
-            style={{ zIndex: 100 }}
+            style={{ zIndex: 200 }}
             className="fixed right-4 bottom-4 border border-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center"
             onClick={() => setIsEditing(true)}
           >
@@ -441,6 +358,11 @@ const DashboardContainer = () => {
           </DialogContent>
         </Dialog>
       )}
+      <CreateWidgetDialog
+        open={createWidgetDialogOpen}
+        onOpenChange={setCreateWidgetDialogOpen}
+        onCreate={handleCreateWidgetOnClick}
+      />
     </div>
   );
 };

@@ -3,7 +3,9 @@ import { createContext, useEffect, useState } from "react";
 
 interface ScreenContextType {
   width: number;
+  height: number;
   breakpoint: ScreenBreakpoint;
+  isZooming: boolean;
 }
 
 export const ScreenContext = createContext<ScreenContextType | undefined>(
@@ -28,14 +30,20 @@ const ScreenProvider = ({ children }: ScreenProviderProps) => {
   const [width, setWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 0
   );
+  const [height, setHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 0
+  );
   const [breakpoint, setBreakpoint] = useState<ScreenBreakpoint>(
     getBreakpoint(width)
   );
+  const [isZooming, setIsZooming] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
       setWidth(newWidth);
+      setHeight(newHeight);
       setBreakpoint(getBreakpoint(newWidth));
     };
     window.addEventListener("resize", handleResize);
@@ -43,8 +51,23 @@ const ScreenProvider = ({ children }: ScreenProviderProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    setIsZooming(true);
+    const timer = setTimeout(() => {
+      setIsZooming(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [width, height]);
+
   return (
-    <ScreenContext.Provider value={{ width, breakpoint }}>
+    <ScreenContext.Provider
+      value={{
+        width: width,
+        height: height,
+        breakpoint: breakpoint,
+        isZooming: isZooming,
+      }}
+    >
       {children}
     </ScreenContext.Provider>
   );

@@ -19,7 +19,7 @@ const TodoWidget = ({ className, style }: TodoWidgetProps) => {
   return (
     <div
       style={style}
-      className={`${className} flex flex-col items-center justify-center rounded-lg shadow p-4 text-[1em]`}
+      className={`${className} flex flex-col items-center justify-center shadow p-4 text-[1em]`}
     >
       <div className="flex mb-3">Todo</div>
     </div>

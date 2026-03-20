@@ -15,7 +15,7 @@ const ClockWidget = ({ className, style }: ClockWidgetProps) => {
 
   return (
     <div
-      className={`flex items-center justify-center 
+      className={`flex items-center justify-center
                     text-[1em] font-mono ${className}`}
       style={style}
     >
