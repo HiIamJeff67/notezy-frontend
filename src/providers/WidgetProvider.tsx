@@ -111,9 +111,15 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
   }, []);
 
   const sync = useCallback(() => {
+    const sortedWidgets = widgets.sort((a: Widget, b: Widget) =>
+      a.position.topFrameCount === b.position.topFrameCount
+        ? a.position.leftFrameCount - b.position.leftFrameCount
+        : a.position.topFrameCount - b.position.topFrameCount
+    );
+    setWidgets(sortedWidgets);
     LocalStorageManipulator.setItem(
       LocalStorageKey.dashboardWidgets,
-      JSON.stringify(widgets),
+      JSON.stringify(sortedWidgets),
       userManager.userData?.publicId
     );
     if (hasChanged) toast.success("Successfully save the widgets");

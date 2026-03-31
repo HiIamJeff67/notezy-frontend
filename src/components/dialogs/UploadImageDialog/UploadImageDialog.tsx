@@ -33,7 +33,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
       );
       return;
     }
-    setSelectedFiles(files);
+    setSelectedFiles(prev => [...prev, ...files]);
     setError("");
   };
 
@@ -71,20 +71,25 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         {uploadedImages.length > 0 && (
           <div className="w-full flex flex-wrap gap-2 mt-2">
             {uploadedImages.map((image, index) => (
-              <Closeable
+              <div
                 key={index}
-                onClose={() => {
-                  setSelectedFiles(
-                    uploadedImages.filter((_, i) => i !== index)
-                  );
-                }}
+                className="w-16 h-16 relative rounded-lg overflow-hidden"
               >
-                <img
-                  src={URL.createObjectURL(image)}
-                  alt={image.name}
-                  className="object-cover w-full h-full"
-                />
-              </Closeable>
+                <Closeable
+                  className="w-2 h-2 top-1 left-1 absolute"
+                  onClose={() => {
+                    setSelectedFiles(
+                      uploadedImages.filter((_, i) => i !== index)
+                    );
+                  }}
+                >
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={image.name}
+                    className="object-cover w-16 h-16"
+                  />
+                </Closeable>
+              </div>
             ))}
           </div>
         )}

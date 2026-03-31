@@ -18,15 +18,18 @@ const Draggable = ({
   canDrag = true,
   collect,
 }: DraggableProps) => {
-  const [{ isDragging }, _drag] = useDrag(() => ({
-    type: type.toString(),
-    item: item,
-    canDrag: canDrag,
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-      ...(collect ? collect(monitor) : {}),
+  const [{ isDragging }, _drag] = useDrag(
+    () => ({
+      type: type.toString(),
+      item: item,
+      canDrag: canDrag,
+      collect: monitor => ({
+        isDragging: monitor.isDragging(),
+        ...(collect ? collect(monitor) : {}),
+      }),
     }),
-  }));
+    [canDrag]
+  );
 
   return (
     <div
@@ -35,7 +38,7 @@ const Draggable = ({
       }}
       className={className}
       style={{
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0 : 1,
         ...style,
         zIndex: isDragging ? 0 : style?.zIndex, // this should be placed at the end
       }}

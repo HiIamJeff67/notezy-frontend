@@ -17,6 +17,21 @@ export type Widget = {
     widthFrameCount: number;
     heightFrameCount: number;
   };
+  minSize: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  };
+  maxSize: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  };
+  // The attribute of `availableSizes` should be sorted
+  // (related to the distance of { widthFrameCount: 0, heightFrameCount: 0 })
+  // in ascending order by default
+  availableSizes: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  }[];
 };
 
 export type PreviewWidget = {
@@ -27,6 +42,18 @@ export type PreviewWidget = {
     widthFrameCount: number;
     heightFrameCount: number;
   };
+  minSize: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  };
+  maxSize: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  };
+  availableSizes: {
+    widthFrameCount: number;
+    heightFrameCount: number;
+  }[];
 };
 
 export const toWidget = (
@@ -53,6 +80,18 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
       widthFrameCount: 1,
       heightFrameCount: 1,
     },
+    minSize: {
+      widthFrameCount: 1,
+      heightFrameCount: 1,
+    },
+    maxSize: {
+      widthFrameCount: 2,
+      heightFrameCount: 2,
+    },
+    availableSizes: [
+      { widthFrameCount: 1, heightFrameCount: 1 },
+      { widthFrameCount: 2, heightFrameCount: 2 },
+    ],
   },
   todo: {
     name: "todo",
@@ -62,6 +101,23 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
       widthFrameCount: 2,
       heightFrameCount: 3,
     },
+    minSize: {
+      widthFrameCount: 2,
+      heightFrameCount: 3,
+    },
+    maxSize: {
+      widthFrameCount: 4,
+      heightFrameCount: 6,
+    },
+    availableSizes: [
+      { widthFrameCount: 2, heightFrameCount: 3 },
+      { widthFrameCount: 2, heightFrameCount: 4 },
+      { widthFrameCount: 2, heightFrameCount: 5 },
+      { widthFrameCount: 3, heightFrameCount: 4 },
+      { widthFrameCount: 3, heightFrameCount: 5 },
+      { widthFrameCount: 4, heightFrameCount: 5 },
+      { widthFrameCount: 4, heightFrameCount: 6 },
+    ],
   },
   calendar: {
     name: "calendar",
@@ -71,6 +127,18 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
       widthFrameCount: 2,
       heightFrameCount: 3,
     },
+    minSize: {
+      widthFrameCount: 2,
+      heightFrameCount: 3,
+    },
+    maxSize: {
+      widthFrameCount: 3,
+      heightFrameCount: 4,
+    },
+    availableSizes: [
+      { widthFrameCount: 2, heightFrameCount: 3 },
+      { widthFrameCount: 3, heightFrameCount: 4 },
+    ],
   },
 };
 

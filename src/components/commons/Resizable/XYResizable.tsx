@@ -1,51 +1,95 @@
+import { useTheme } from "@/hooks";
 import { clamp } from "@/util/math";
-import { MouseEvent as ReactMouseEvent, useCallback, useState } from "react";
+import {
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface XYResizableProps {
   children?: React.ReactNode;
   className?: string;
+  style?: CSSProperties;
+  size?: number;
+  width: number;
+  setWidth: (newWidth: number) => void;
+  height: number;
+  setHeight: (newHeight: number) => void;
   minWidth?: number;
   maxWidth?: number;
   minHeight?: number;
   maxHeight?: number;
-  control?: {
-    width: number;
-    setWidth: (newWidth: number) => void;
-    height: number;
-    setHeight: (newHeight: number) => void;
-    validate: (width: number, height: number) => boolean;
-    getRecentValidated: (
-      width: number,
-      height: number
-    ) => { width: number; height: number };
-  };
+  hasParent?: boolean;
+  parentClassName?: string;
+  parentStyle?: CSSProperties;
+  onBeforeResize?: () => void;
+  onResize?: (
+    width: number,
+    height: number
+  ) => { availableWidth: number; availableHeight: number };
+  onAfterResize?: (width: number, height: number) => void;
+  disabled?: boolean;
 }
 
 const XYResizable = ({
   children,
   className,
+  style,
+  size = 2,
+  width,
+  setWidth,
+  height,
+  setHeight,
   minWidth = 100,
   maxWidth = 800,
   minHeight = 100,
   maxHeight = 800,
-  control,
+  hasParent = false,
+  parentClassName,
+  parentStyle,
+  onBeforeResize,
+  onResize,
+  onAfterResize,
+  disabled = false,
 }: XYResizableProps) => {
-  const [width, setWidth] = useState<number>(minWidth);
-  const [height, setHeight] = useState<number>(minHeight);
+  const themeManager = useTheme();
+
+  const [actualWidth, setActualWidth] = useState<number>(0);
+  const [actualHeight, setActualHeight] = useState<number>(0);
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+
+  const widthRef = useRef(width);
+  const heightRef = useRef(height);
+  useEffect(() => {
+    widthRef.current = width;
+  }, [width]);
+  useEffect(() => {
+    heightRef.current = height;
+  }, [height]);
 
   const handleMouseDown = useCallback(
     (e: ReactMouseEvent) => {
       e.preventDefault();
+      if (onBeforeResize) onBeforeResize();
       const startX = e.clientX;
       const startY = e.clientY;
-      const startWidth = width;
-      const startHeight = height;
+      const startWidth = widthRef.current;
+      const startHeight = heightRef.current;
 
       const move = (ev: MouseEvent) => {
+        setIsResizing(true);
         const deltaX = ev.clientX - startX;
         const deltaY = ev.clientY - startY;
         const newWidth = clamp(startWidth + deltaX, minWidth, maxWidth);
         const newHeight = clamp(startHeight + deltaY, minHeight, maxHeight);
+        if (onResize) {
+          const availableSize = onResize(newWidth, newHeight);
+          setActualWidth(availableSize.availableWidth);
+          setActualHeight(availableSize.availableHeight);
+        }
         setWidth(newWidth);
         setHeight(newHeight);
         document.body.style.cursor = "nwse-resize";
@@ -53,18 +97,15 @@ const XYResizable = ({
       };
 
       const up = () => {
+        setIsResizing(false);
         window.removeEventListener("mousemove", move);
         window.removeEventListener("mouseup", up);
-        if (control !== undefined) {
-          if (control.validate(width, height)) {
-            control.setWidth(width);
-            control.setHeight(height);
-          } else {
-            const recentValidated = control.getRecentValidated(width, height);
-            setWidth(recentValidated.width);
-            setHeight(recentValidated.height);
-          }
+        if (onResize) {
+          const availableSize = onResize(widthRef.current, heightRef.current);
+          setWidth(availableSize.availableWidth);
+          setHeight(availableSize.availableHeight);
         }
+        if (onAfterResize) onAfterResize(widthRef.current, heightRef.current);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
       };
@@ -75,16 +116,124 @@ const XYResizable = ({
     [width, height, minWidth, maxWidth, minHeight, maxHeight]
   );
 
+  if (hasParent) {
+    return (
+      <>
+        {children}
+        <div
+          className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: size + 12,
+            height: size + 12,
+            ...style,
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {!disabled && (
+            <span
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+                width: size,
+                height: "100%",
+                background: themeManager.currentTheme.isDark
+                  ? "white"
+                  : "black",
+                borderRadius: 2,
+              }}
+            />
+          )}
+          {!disabled && (
+            <span
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+                width: "100%",
+                height: size,
+                background: themeManager.currentTheme.isDark
+                  ? "white"
+                  : "black",
+                borderRadius: 2,
+              }}
+            />
+          )}
+        </div>
+        {isResizing && (
+          <div
+            className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
+            style={{
+              left: 0,
+              top: 0,
+              width: actualWidth,
+              height: actualHeight,
+            }}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div
-      className={`relative ${className ?? ""}`}
-      style={{ width: width, height: height }}
+      className={`relative ${parentClassName}`}
+      style={{ width: width, height: height, ...parentStyle }}
     >
       {children}
       <div
-        className="absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize z-10"
+        className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
+        style={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          width: size + 12,
+          height: size + 12,
+          ...style,
+        }}
         onMouseDown={handleMouseDown}
-      />
+      >
+        {!disabled && (
+          <span
+            style={{
+              position: "absolute",
+              right: 0,
+              bottom: 0,
+              width: size,
+              height: "100%",
+              background: themeManager.currentTheme.isDark ? "white" : "black",
+              borderRadius: 2,
+            }}
+          />
+        )}
+        {!disabled && (
+          <span
+            style={{
+              position: "absolute",
+              right: 0,
+              bottom: 0,
+              width: "100%",
+              height: size,
+              background: themeManager.currentTheme.isDark ? "white" : "black",
+              borderRadius: 2,
+            }}
+          />
+        )}
+      </div>
+      {isResizing && (
+        <div
+          className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
+          style={{
+            left: 0,
+            top: 0,
+            width: actualWidth,
+            height: actualHeight,
+          }}
+        />
+      )}
     </div>
   );
 };

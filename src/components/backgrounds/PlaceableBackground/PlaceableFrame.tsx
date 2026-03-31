@@ -56,7 +56,7 @@ const PlaceableFrame = ({
   position,
   size,
   gap,
-  disabled = true,
+  disabled = false,
   droppableProps,
   onClick,
   onMouseEnter,
@@ -65,7 +65,10 @@ const PlaceableFrame = ({
   return (
     <Droppable
       type={droppableProps.type}
-      hover={droppableProps.hover}
+      hover={(item: any, monitor: DropTargetMonitor): void => {
+        if (droppableProps.hover === undefined) return;
+        droppableProps.hover(item, monitor);
+      }}
       canDrop={(item: any, monitor: DropTargetMonitor): boolean => {
         return (
           droppableProps.canDrop === undefined ||
@@ -75,14 +78,15 @@ const PlaceableFrame = ({
       drop={(item: any, monitor: DropTargetMonitor) => {
         if (droppableProps.drop) droppableProps.drop(item, monitor, position);
       }}
-      className=""
     >
       <div
         className={`
-        w-16 h-16 rounded-lg transition flex justify-center items-center
-        ${disabled ? "invisible" : "border-2 border-dotted border-foreground/50"}
-        ${className}
-      `}
+          absolute rounded-lg transition flex justify-center items-center
+          ${disabled ? "invisible" : "bg-transparent"}
+          opacity-0 hover:opacity-100
+          border-2 border-foreground/50 border-dotted
+          ${className}
+        `}
         style={{
           left: position.leftFrameCount * frameSize + gap.horizontal,
           top: position.topFrameCount * frameSize + gap.vertical,

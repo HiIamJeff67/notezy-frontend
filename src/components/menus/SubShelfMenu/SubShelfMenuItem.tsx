@@ -56,16 +56,22 @@ const SubShelfMenuItem = ({
   const modalManager = useModal();
   const shelfItemManager = useShelfItem();
 
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: DNDType.DraggableSubShelf.toString(),
-    item: { summary, prev, current, depth },
-    canDrag:
-      !shelfItemManager.isAnyRootShelfNodeEditing &&
-      !shelfItemManager.isAnySubShelfNodeEditing,
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
+  const [{ isDragging }, drag] = useDrag(
+    () => ({
+      type: DNDType.DraggableSubShelf.toString(),
+      item: { summary, prev, current, depth },
+      canDrag:
+        !shelfItemManager.isAnyRootShelfNodeEditing &&
+        !shelfItemManager.isAnySubShelfNodeEditing,
+      collect: monitor => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }));
+    [
+      shelfItemManager.isAnyRootShelfNodeEditing,
+      shelfItemManager.isAnySubShelfNodeEditing,
+    ]
+  );
 
   const [{}, drop] = useDrop(() => ({
     accept: DNDType.DraggableSubShelf.toString(),

@@ -1,5 +1,5 @@
+import { Widget } from "@/components/widgets/widget";
 import { useTheme } from "@/hooks";
-import { useScreen } from "@/hooks/useScreen";
 import {
   DefaultHeightTotalFrameCount,
   DefaultWidthTotalFrameCount,
@@ -25,10 +25,13 @@ interface PlaceableBackgroundProps {
     zIndex?: number;
     children?: React.ReactNode;
     gap: number;
-    isEditing: boolean;
+    disabled: boolean;
     droppableProps: {
       type: DNDType;
-      hover?: (item: any, monitor: DropTargetMonitor) => void;
+      hover?: (
+        item: any,
+        monitor: DropTargetMonitor
+      ) => { widthFrameCount: number; heightFrameCount: number };
       canDrop?: (
         item: any,
         monitor: DropTargetMonitor,
@@ -66,54 +69,68 @@ const PlaceableBackground = ({
   heightTotalFrameCount,
   frameProps,
 }: PlaceableBackgroundProps) => {
-  const screenManager = useScreen();
   const themeManager = useTheme();
 
   const [frames, setFrames] = useState<Cord[]>([]);
+  const [dropPlaceholderSize, setDropPlaceholderSize] = useState<
+    { widthFrameCount: number; heightFrameCount: number } | undefined
+  >(undefined);
+  const [hoveredFrameCord, setHoveredFrameCord] = useState<Cord>([0, 0]);
 
   // the reference of the background element which will be used to define the base size
   const backgroundRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const width = backgroundRef.current
-      ? backgroundRef.current.offsetWidth
-      : window.innerWidth;
-    const height = backgroundRef.current
-      ? backgroundRef.current.offsetHeight
-      : window.innerHeight;
+    const target = backgroundRef.current;
+    if (target === null) return;
 
-    let horizontal = widthTotalFrameCount;
-    let vertical = heightTotalFrameCount;
+    const handleResize = () => {
+      const width = backgroundRef.current
+        ? backgroundRef.current.offsetWidth
+        : window.innerWidth;
+      const height = backgroundRef.current
+        ? backgroundRef.current.offsetHeight
+        : window.innerHeight;
 
-    if (horizontal === Infinity && vertical === Infinity) {
-      horizontal = DefaultWidthTotalFrameCount;
-      vertical = DefaultHeightTotalFrameCount;
-    } else if (horizontal === Infinity) {
-      horizontal = Math.floor(width / (height / vertical));
-    } else if (vertical === Infinity) {
-      vertical = Math.floor(height / (width / horizontal));
-    }
+      let horizontal = widthTotalFrameCount;
+      let vertical = heightTotalFrameCount;
 
-    let newFrameSize = Math.min(
-      Math.floor(width / horizontal),
-      Math.floor(height / vertical)
-    );
-    if (frameSizeSource === "horizontal") {
-      newFrameSize = Math.floor(width / horizontal);
-    } else if (frameSizeSource === "vertical") {
-      newFrameSize = Math.floor(height / vertical) - 2 * frameProps.gap;
-    }
-    setFrameSize(newFrameSize);
-    const frames = [];
-    for (let y = 0; y < vertical; y++) {
-      for (let x = 0; x < horizontal; x++) {
-        frames.push([x, y] as Cord);
+      if (horizontal === Infinity && vertical === Infinity) {
+        horizontal = DefaultWidthTotalFrameCount;
+        vertical = DefaultHeightTotalFrameCount;
+      } else if (horizontal === Infinity) {
+        horizontal = Math.floor(width / (height / vertical));
+      } else if (vertical === Infinity) {
+        vertical = Math.floor(height / (width / horizontal));
       }
-    }
-    setFrames(frames);
+
+      let newFrameSize = Math.min(
+        Math.floor(width / horizontal),
+        Math.floor(height / vertical)
+      );
+      if (frameSizeSource === "horizontal") {
+        newFrameSize = Math.floor(width / horizontal);
+      } else if (frameSizeSource === "vertical") {
+        newFrameSize = Math.floor(height / vertical) - 2 * frameProps.gap;
+      }
+      setFrameSize(newFrameSize);
+      const frames = [];
+      for (let y = 0; y < vertical; y++) {
+        for (let x = 0; x < horizontal; x++) {
+          frames.push([x, y] as Cord);
+        }
+      }
+      setFrames(frames);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(target);
+    handleResize();
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [
     // except for listening the changed of backgroundRef to avoid UI zooming while user adding new widgets
-    screenManager.isZooming,
     widthTotalFrameCount,
     heightTotalFrameCount,
   ]);
@@ -128,11 +145,25 @@ const PlaceableBackground = ({
         ...style,
       }}
     >
+      {children}
+      {dropPlaceholderSize && (
+        <div
+          className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
+          style={{
+            left: hoveredFrameCord[0] * frameSize + frameProps.gap,
+            top: hoveredFrameCord[1] * frameSize + frameProps.gap,
+            width:
+              dropPlaceholderSize.widthFrameCount * frameSize - frameProps.gap,
+            height:
+              dropPlaceholderSize.heightFrameCount * frameSize - frameProps.gap,
+          }}
+        />
+      )}
       {frames.map(([x, y]) => (
         <PlaceableFrame
           key={`${x}-${y}`}
           className={`absolute z-${frameProps.zIndex ?? zIndex} ${frameProps.className}`}
-          disabled={!frameProps.isEditing}
+          disabled={frameProps.disabled}
           frameSize={frameSize}
           position={{ leftFrameCount: x, topFrameCount: y }}
           size={{ widthFrameCount: 1, heightFrameCount: 1 }}
@@ -140,13 +171,36 @@ const PlaceableBackground = ({
             horizontal: frameProps.gap,
             vertical: frameProps.gap,
           }}
-          droppableProps={frameProps.droppableProps}
+          droppableProps={{
+            ...frameProps.droppableProps,
+            hover: (draggedItem: Widget, monitor: DropTargetMonitor) => {
+              if (frameProps.droppableProps.hover === undefined) return;
+              setHoveredFrameCord([x, y]);
+              const newSize = frameProps.droppableProps.hover(
+                draggedItem,
+                monitor
+              );
+              setDropPlaceholderSize(newSize);
+            },
+            drop: (
+              draggedItem: Widget,
+              monitor: DropTargetMonitor,
+              position: {
+                leftFrameCount: number;
+                topFrameCount: number;
+              }
+            ) => {
+              if (frameProps.droppableProps.drop !== undefined) {
+                frameProps.droppableProps.drop(draggedItem, monitor, position);
+                setDropPlaceholderSize(undefined);
+              }
+            },
+          }}
           onClick={frameProps.onClick}
         >
           {frameProps.children}
         </PlaceableFrame>
       ))}
-      {children}
     </div>
   );
 };
