@@ -1,11 +1,15 @@
-import { Widget } from "@/components/widgets/widget";
+import {
+  getPositionValue,
+  getSizeValue,
+  Widget,
+} from "@/components/widgets/widget";
 import { useTheme } from "@/hooks";
 import {
   DefaultHeightTotalFrameCount,
   DefaultWidthTotalFrameCount,
 } from "@shared/constants/widgetLayout.constant";
 import { DNDType } from "@shared/enums";
-import { Cord } from "@shared/types/cord";
+import { Cord, FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import PlaceableFrame from "./PlaceableFrame";
@@ -28,32 +32,20 @@ interface PlaceableBackgroundProps {
     disabled: boolean;
     droppableProps: {
       type: DNDType;
-      hover?: (
-        item: any,
-        monitor: DropTargetMonitor
-      ) => { widthFrameCount: number; heightFrameCount: number };
+      hover?: (item: any, monitor: DropTargetMonitor) => FrameCountSize;
       canDrop?: (
         item: any,
         monitor: DropTargetMonitor,
-        position: {
-          leftFrameCount: number;
-          topFrameCount: number;
-        }
+        position: FrameCountPosition
       ) => boolean;
       drop?: (
         item: any,
         monitor: DropTargetMonitor,
-        position: {
-          leftFrameCount: number;
-          topFrameCount: number;
-        }
+        position: FrameCountPosition
       ) => void;
       collect?: (monitor: DropTargetMonitor) => Record<string, any>;
     };
-    onClick: (position: {
-      leftFrameCount: number;
-      topFrameCount: number;
-    }) => void;
+    onClick: (position: FrameCountPosition) => void;
   };
 }
 
@@ -73,7 +65,7 @@ const PlaceableBackground = ({
 
   const [frames, setFrames] = useState<Cord[]>([]);
   const [dropPlaceholderSize, setDropPlaceholderSize] = useState<
-    { widthFrameCount: number; heightFrameCount: number } | undefined
+    FrameCountSize | undefined
   >(undefined);
   const [hoveredFrameCord, setHoveredFrameCord] = useState<Cord>([0, 0]);
 
@@ -150,12 +142,26 @@ const PlaceableBackground = ({
         <div
           className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
           style={{
-            left: hoveredFrameCord[0] * frameSize + frameProps.gap,
-            top: hoveredFrameCord[1] * frameSize + frameProps.gap,
-            width:
-              dropPlaceholderSize.widthFrameCount * frameSize - frameProps.gap,
-            height:
-              dropPlaceholderSize.heightFrameCount * frameSize - frameProps.gap,
+            left: getPositionValue(
+              hoveredFrameCord[0],
+              frameSize,
+              frameProps.gap
+            ),
+            top: getPositionValue(
+              hoveredFrameCord[1],
+              frameSize,
+              frameProps.gap
+            ),
+            width: getSizeValue(
+              dropPlaceholderSize.widthFrameCount,
+              frameSize,
+              frameProps.gap
+            ),
+            height: getSizeValue(
+              dropPlaceholderSize.heightFrameCount,
+              frameSize,
+              frameProps.gap
+            ),
           }}
         />
       )}
@@ -182,13 +188,27 @@ const PlaceableBackground = ({
               );
               setDropPlaceholderSize(newSize);
             },
+            canDrop: (
+              draggedItem: Widget,
+              monitor: DropTargetMonitor,
+              position: FrameCountPosition
+            ): boolean => {
+              const canDrop: boolean =
+                frameProps.droppableProps.canDrop !== undefined
+                  ? frameProps.droppableProps.canDrop(
+                      draggedItem,
+                      monitor,
+                      position
+                    )
+                  : true;
+              // disabled the drop placeholder if the user is trying to drop on a non droppable position
+              if (!canDrop) setDropPlaceholderSize(undefined);
+              return canDrop;
+            },
             drop: (
               draggedItem: Widget,
               monitor: DropTargetMonitor,
-              position: {
-                leftFrameCount: number;
-                topFrameCount: number;
-              }
+              position: FrameCountPosition
             ) => {
               if (frameProps.droppableProps.drop !== undefined) {
                 frameProps.droppableProps.drop(draggedItem, monitor, position);

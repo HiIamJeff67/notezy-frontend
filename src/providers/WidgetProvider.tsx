@@ -2,7 +2,7 @@ import { BasicPreviewWidgets, Widget } from "@/components/widgets/widget";
 import { useLanguage, useUser } from "@/hooks";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { createContext, useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 interface WidgetContextType {
@@ -39,7 +39,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
 
   const [widgets, setWidgets] = useState<Widget[]>([]);
 
-  const [hasChanged, setHasChanged] = useState<boolean>(false);
+  const hasChangedRef = useRef<boolean>(false);
 
   useEffect(() => {
     const initializeWidgets = async () => {
@@ -68,14 +68,14 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
 
   const append = useCallback((widget: Widget) => {
     setWidgets(prev => [...prev, widget]);
-    setHasChanged(true);
+    hasChangedRef.current = true;
   }, []);
 
   const replace = useCallback((index: number, widget: Widget) => {
     setWidgets(prev =>
       prev.map((prevWidget, i) => (i === index ? widget : prevWidget))
     );
-    setHasChanged(true);
+    hasChangedRef.current = true;
   }, []);
 
   const update = useCallback(
@@ -85,7 +85,7 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
           i === index ? { ...widget, [field]: newValue } : widget
         )
       );
-      setHasChanged(true);
+      hasChangedRef.current = true;
     },
     []
   );
@@ -95,19 +95,19 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
       setWidgets(prev =>
         prev.map(w => (w.id === widget.id ? { ...w, [field]: newValue } : w))
       );
-      setHasChanged(true);
+      hasChangedRef.current = true;
     },
     []
   );
 
   const remove = useCallback((index: number) => {
     setWidgets(prev => prev.filter((_, i) => i !== index));
-    setHasChanged(true);
+    hasChangedRef.current = true;
   }, []);
 
   const reset = useCallback(() => {
     setWidgets([]);
-    setHasChanged(true);
+    hasChangedRef.current = true;
   }, []);
 
   const sync = useCallback(() => {
@@ -122,15 +122,15 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
       JSON.stringify(sortedWidgets),
       userManager.userData?.publicId
     );
-    if (hasChanged) toast.success("Successfully save the widgets");
-    setHasChanged(false);
+    if (hasChangedRef.current) toast.success("Successfully save the widgets");
+    hasChangedRef.current = false;
   }, [widgets]);
 
   return (
     <WidgetContext.Provider
       value={{
         widgets: widgets,
-        hasChanged: hasChanged,
+        hasChanged: hasChangedRef.current,
         append: append,
         replace: replace,
         update: update,

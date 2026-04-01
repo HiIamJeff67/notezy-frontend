@@ -40,7 +40,9 @@
     "keyval",
     "colorthief",
     "baseholder",
-    "baseholders"
+    "baseholders",
+    "conflictable",
+    "kolkata"
   ],
   "ignorePaths": [
     "node_modules/**",

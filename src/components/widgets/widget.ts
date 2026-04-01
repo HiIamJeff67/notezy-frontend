@@ -1,5 +1,11 @@
 import ClockWidget from "@/components/widgets/ClockWidget/ClockWidget";
 import TodoWidget from "@/components/widgets/TodoWidget/TodoWidget";
+import {
+  FrameCountPosition,
+  FrameCountSize,
+  Position,
+  Size,
+} from "@shared/types/cord";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
 import CalendarWidget from "./CalendarWidget/CalendarWidget";
@@ -9,59 +15,29 @@ export type Widget = {
   name: string;
   description: string;
   component: React.ComponentType<any>;
-  position: {
-    leftFrameCount: number;
-    topFrameCount: number;
-  };
-  size: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
-  minSize: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
-  maxSize: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
+  position: FrameCountPosition;
+  size: FrameCountSize;
+  minSize: FrameCountSize;
+  maxSize: FrameCountSize;
   // The attribute of `availableSizes` should be sorted
   // (related to the distance of { widthFrameCount: 0, heightFrameCount: 0 })
   // in ascending order by default
-  availableSizes: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  }[];
+  availableSizes: FrameCountSize[];
 };
 
 export type PreviewWidget = {
   name: string;
   description: string;
   component: React.ComponentType<any>;
-  size: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
-  minSize: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
-  maxSize: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
-  availableSizes: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  }[];
+  size: FrameCountSize;
+  minSize: FrameCountSize;
+  maxSize: FrameCountSize;
+  availableSizes: FrameCountSize[];
 };
 
 export const toWidget = (
   previewWidget: PreviewWidget,
-  position: {
-    leftFrameCount: number;
-    topFrameCount: number;
-  },
+  position: FrameCountPosition,
   id: UUID = generateUUID()
 ): Widget => {
   return {
@@ -69,6 +45,44 @@ export const toWidget = (
     id: id,
     position: position,
   } as Widget;
+};
+
+export const getPositionValue = (
+  frameCount: number,
+  frameSize: number,
+  frameGap: number
+) => {
+  return frameCount * frameSize + frameGap;
+};
+
+export const getPositionValues = (
+  position: FrameCountPosition,
+  frameSize: number,
+  frameGap: number
+): Position => {
+  return {
+    left: getPositionValue(position.leftFrameCount, frameSize, frameGap),
+    top: getPositionValue(position.topFrameCount, frameSize, frameGap),
+  };
+};
+
+export const getSizeValue = (
+  frameCount: number,
+  frameSize: number,
+  frameGap: number
+) => {
+  return frameCount * frameSize - frameGap;
+};
+
+export const getSizeValues = (
+  size: FrameCountSize,
+  frameSize: number,
+  frameGap: number
+): Size => {
+  return {
+    width: getSizeValue(size.widthFrameCount, frameSize, frameGap),
+    height: getSizeValue(size.heightFrameCount, frameSize, frameGap),
+  };
 };
 
 export const BasicPreviewWidgets: Record<string, PreviewWidget> = {

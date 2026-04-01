@@ -61,6 +61,8 @@ const XYResizable = ({
   const [actualHeight, setActualHeight] = useState<number>(0);
   const [isResizing, setIsResizing] = useState<boolean>(false);
 
+  // since the width and height coming from the props which are passing to the move() and up() functions in the handleMouseDown() callback
+  // will not update their value if the props changed either inside or outside, so we have to make them references and use a useEffect hook to listen to their current values
   const widthRef = useRef(width);
   const heightRef = useRef(height);
   useEffect(() => {
@@ -120,19 +122,19 @@ const XYResizable = ({
     return (
       <>
         {children}
-        <div
-          className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
-          style={{
-            position: "absolute",
-            right: 0,
-            bottom: 0,
-            width: size + 12,
-            height: size + 12,
-            ...style,
-          }}
-          onMouseDown={handleMouseDown}
-        >
-          {!disabled && (
+        {!disabled && (
+          <div
+            className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
+            style={{
+              position: "absolute",
+              right: 0,
+              bottom: 0,
+              width: size + 12,
+              height: size + 12,
+              ...style,
+            }}
+            onMouseDown={handleMouseDown}
+          >
             <span
               style={{
                 position: "absolute",
@@ -146,8 +148,7 @@ const XYResizable = ({
                 borderRadius: 2,
               }}
             />
-          )}
-          {!disabled && (
+
             <span
               style={{
                 position: "absolute",
@@ -161,9 +162,9 @@ const XYResizable = ({
                 borderRadius: 2,
               }}
             />
-          )}
-        </div>
-        {isResizing && (
+          </div>
+        )}
+        {isResizing && !disabled && (
           <div
             className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
             style={{
@@ -181,22 +182,26 @@ const XYResizable = ({
   return (
     <div
       className={`relative ${parentClassName}`}
-      style={{ width: width, height: height, ...parentStyle }}
+      style={{
+        width: width,
+        height: height,
+        ...parentStyle,
+      }}
     >
       {children}
-      <div
-        className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
-        style={{
-          position: "absolute",
-          right: 0,
-          bottom: 0,
-          width: size + 12,
-          height: size + 12,
-          ...style,
-        }}
-        onMouseDown={handleMouseDown}
-      >
-        {!disabled && (
+      {!disabled && (
+        <div
+          className={`absolute right-0 bottom-0 w-4 h-4 cursor-nwse-resize ${className}`}
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: size + 12,
+            height: size + 12,
+            ...style,
+          }}
+          onMouseDown={handleMouseDown}
+        >
           <span
             style={{
               position: "absolute",
@@ -208,8 +213,6 @@ const XYResizable = ({
               borderRadius: 2,
             }}
           />
-        )}
-        {!disabled && (
           <span
             style={{
               position: "absolute",
@@ -221,9 +224,9 @@ const XYResizable = ({
               borderRadius: 2,
             }}
           />
-        )}
-      </div>
-      {isResizing && (
+        </div>
+      )}
+      {!disabled && isResizing && (
         <div
           className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
           style={{

@@ -1,5 +1,7 @@
 import Droppable from "@/components/commons/Droppable/Droppable";
+import { getPositionValue, getSizeValue } from "@/components/widgets/widget";
 import { DNDType } from "@shared/enums";
+import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { DropTargetMonitor } from "react-dnd";
 
 interface PlaceableFrameProps {
@@ -7,14 +9,8 @@ interface PlaceableFrameProps {
   children?: React.ReactNode;
   frameSize: number;
   // note that the value of position and size, and gap are based on the frame size
-  position: {
-    leftFrameCount: number;
-    topFrameCount: number;
-  };
-  size: {
-    widthFrameCount: number;
-    heightFrameCount: number;
-  };
+  position: FrameCountPosition;
+  size: FrameCountSize;
   gap: {
     horizontal: number;
     vertical: number;
@@ -26,25 +22,16 @@ interface PlaceableFrameProps {
     canDrop?: (
       item: any,
       monitor: DropTargetMonitor,
-      position: {
-        leftFrameCount: number;
-        topFrameCount: number;
-      }
+      position: FrameCountPosition
     ) => boolean;
     drop?: (
       item: any,
       monitor: DropTargetMonitor,
-      position: {
-        leftFrameCount: number;
-        topFrameCount: number;
-      }
+      position: FrameCountPosition
     ) => void;
     collect?: (monitor: DropTargetMonitor) => Record<string, any>;
   };
-  onClick: (position: {
-    leftFrameCount: number;
-    topFrameCount: number;
-  }) => void;
+  onClick: (position: FrameCountPosition) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }
@@ -88,10 +75,18 @@ const PlaceableFrame = ({
           ${className}
         `}
         style={{
-          left: position.leftFrameCount * frameSize + gap.horizontal,
-          top: position.topFrameCount * frameSize + gap.vertical,
-          width: size.widthFrameCount * frameSize - gap.horizontal,
-          height: size.heightFrameCount * frameSize - gap.vertical,
+          left: getPositionValue(
+            position.leftFrameCount,
+            frameSize,
+            gap.horizontal
+          ),
+          top: getPositionValue(
+            position.topFrameCount,
+            frameSize,
+            gap.vertical
+          ),
+          width: getSizeValue(size.widthFrameCount, frameSize, gap.horizontal),
+          height: getSizeValue(size.heightFrameCount, frameSize, gap.vertical),
         }}
         onClick={disabled ? undefined : () => onClick(position)}
         onMouseEnter={onMouseEnter}

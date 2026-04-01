@@ -20,12 +20,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { PreviewWidget, toWidget, Widget } from "@/components/widgets/widget";
+import {
+  getPositionValue,
+  getSizeValue,
+  PreviewWidget,
+  toWidget,
+  Widget,
+} from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
 import { useScreen } from "@/hooks/useScreen";
 import { useWidget } from "@/hooks/useWidget";
 import { DNDType } from "@shared/enums";
 import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
+import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
@@ -60,6 +67,7 @@ const DashboardContainer = () => {
   const widgetManager = useWidget();
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingWidgetIndex, setEditingWidgetIndex] = useState<number>(-1);
   const [headerBackgroundImageURL, setHeaderBackgroundImageURL] = useState<
     string | null
   >(null);
@@ -86,9 +94,7 @@ const DashboardContainer = () => {
     useState<boolean>(false);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
-  const potentialConflictingWidgetsRef = useRef<Widget[]>(
-    widgetManager.widgets
-  );
+  const widgetsRef = useRef<Widget[]>(widgetManager.widgets);
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
     useMemo(() => {
@@ -155,7 +161,7 @@ const DashboardContainer = () => {
   }, []);
 
   useEffect(() => {
-    potentialConflictingWidgetsRef.current = widgetManager.widgets;
+    widgetsRef.current = widgetManager.widgets;
   }, [widgetManager.widgets]);
 
   useLayoutEffect(() => {
@@ -165,6 +171,41 @@ const DashboardContainer = () => {
       if (width && height) setCropperAspectRatio(width / height);
     }
   }, [headerBackgroundImageURL]);
+
+  const handleBackgroundImagesOnUpload = useCallback(async (files: File[]) => {
+    const imageInfo: ImageInfo = (await IndexedDBManipulator.getItemByKey(
+      IndexedDBKey.backgroundImages
+    )) ?? {
+      header: { totalSize: 0 },
+      content: [],
+    };
+    const url = URL.createObjectURL(files[files.length - 1]);
+    const image = new Image();
+    image.src = url;
+    image.onload = () => setCropperAspectRatio(image.width / image.height);
+    setUploadHeaderBackgroundImageURL(url);
+    let lastId: UUID = generateUUID();
+    files.forEach(file => {
+      lastId = generateUUID();
+      imageInfo.header.totalSize += file.size;
+      imageInfo.content.push({
+        id: lastId,
+        contentType: file.type,
+        file: file,
+        timestamp: new Date(),
+      });
+    });
+    await IndexedDBManipulator.setItem(
+      IndexedDBKey.backgroundImages,
+      imageInfo
+    );
+    await IndexedDBManipulator.setItem(
+      IndexedDBKey.currentDashboardBackgroundImageId,
+      lastId
+    );
+    setUploadImageDialogOpen(false);
+    setImageCropperDialogOpen(true);
+  }, []);
 
   const handleCreateWidgetOnClick = useCallback(
     (previewWidget: PreviewWidget) => {
@@ -187,7 +228,7 @@ const DashboardContainer = () => {
           })
         );
       } else {
-        const createdFramePosition = currentFramePosition;
+        const createdFramePosition: FrameCountPosition = currentFramePosition;
         if (
           createdFramePosition.leftFrameCount +
             previewWidget.size.widthFrameCount >
@@ -223,20 +264,96 @@ const DashboardContainer = () => {
       resizedWidget: Widget
     ): {
       size: { availableWidth: number; availableHeight: number };
-      frameCount: { widthFrameCount: number; heightFrameCount: number };
+      frameCount: FrameCountSize;
     } => {
+      const compatibleSizes: FrameCountSize[] = []; // the non conflicted widgets
+
+      // Pass 1: Eliminate the available sizes which may cause a conflict to other widgets
+      resizedWidget.availableSizes.forEach(availableSize => {
+        if (
+          !widgetsRef.current.some(
+            potentialConflictableWidget =>
+              potentialConflictableWidget.id != resizedWidget.id &&
+              // if the right border of the current resized widget is between the left border and the right border of some other widgets
+              getPositionValue(
+                resizedWidget.position.leftFrameCount,
+                frameSize,
+                frameGap
+              ) +
+                width >=
+                getPositionValue(
+                  potentialConflictableWidget.position.leftFrameCount,
+                  frameSize,
+                  frameGap
+                ) &&
+              getPositionValue(
+                resizedWidget.position.leftFrameCount,
+                frameSize,
+                frameGap
+              ) +
+                width <=
+                getPositionValue(
+                  potentialConflictableWidget.position.leftFrameCount,
+                  frameSize,
+                  frameGap
+                ) +
+                  getSizeValue(
+                    potentialConflictableWidget.size.widthFrameCount,
+                    frameSize,
+                    frameGap
+                  ) &&
+              // if the bottom border of the current resized widget is between the left border and the right border of some other widgets
+              getPositionValue(
+                resizedWidget.position.topFrameCount,
+                frameSize,
+                frameGap
+              ) +
+                height >=
+                getPositionValue(
+                  potentialConflictableWidget.position.topFrameCount,
+                  frameSize,
+                  frameGap
+                ) &&
+              getPositionValue(
+                resizedWidget.position.topFrameCount,
+                frameSize,
+                frameGap
+              ) +
+                height <=
+                getPositionValue(
+                  potentialConflictableWidget.position.topFrameCount,
+                  frameSize,
+                  frameGap
+                ) +
+                  getSizeValue(
+                    potentialConflictableWidget.size.heightFrameCount,
+                    frameSize,
+                    frameGap
+                  )
+          )
+        ) {
+          // we check the right and the bottom border to handle the resize of the expansion on the right and the bottom border
+          // we don't need check the left and top border, since if the resized widget is shrinking, it will not be smaller than its smallest size
+          compatibleSizes.push(availableSize);
+        }
+      });
+
+      // Pass 2: Find the closest available sizes when there're no available sizes which will cause the conflict
       let result: {
         size: { availableWidth: number; availableHeight: number };
-        frameCount: {
-          widthFrameCount: number;
-          heightFrameCount: number;
-        };
+        frameCount: FrameCountSize;
       } = {
         size: {
-          availableWidth:
-            resizedWidget.size.widthFrameCount * frameSize - frameGap,
-          availableHeight:
-            resizedWidget.size.heightFrameCount * frameSize - frameGap,
+          availableWidth: getSizeValue(
+            resizedWidget.size.widthFrameCount,
+            frameSize,
+            frameGap
+          ),
+          availableHeight: getSizeValue(
+            resizedWidget.size.heightFrameCount,
+            frameSize,
+            frameGap
+          ),
         },
         frameCount: {
           widthFrameCount: resizedWidget.size.widthFrameCount,
@@ -247,34 +364,44 @@ const DashboardContainer = () => {
         Math.pow(result.size.availableWidth - width, 2) +
           Math.pow(result.size.availableHeight - height, 2)
       );
-
-      for (const availableSize of resizedWidget.availableSizes) {
+      compatibleSizes.forEach(compatibleSize => {
         const currentDistance = Math.sqrt(
           Math.pow(
-            availableSize.widthFrameCount * frameSize - frameGap - width,
+            getSizeValue(compatibleSize.widthFrameCount, frameSize, frameGap) -
+              width,
             2
           ) +
             Math.pow(
-              availableSize.heightFrameCount * frameSize - frameGap - height,
+              getSizeValue(
+                compatibleSize.heightFrameCount,
+                frameSize,
+                frameGap
+              ) - height,
               2
             )
         );
         if (currentDistance < resultDistance) {
+          resultDistance = currentDistance;
           result = {
             size: {
-              availableWidth:
-                availableSize.widthFrameCount * frameSize - frameGap,
-              availableHeight:
-                availableSize.heightFrameCount * frameSize - frameGap,
+              availableWidth: getSizeValue(
+                compatibleSize.widthFrameCount,
+                frameSize,
+                frameGap
+              ),
+              availableHeight: getSizeValue(
+                compatibleSize.heightFrameCount,
+                frameSize,
+                frameGap
+              ),
             },
             frameCount: {
-              widthFrameCount: availableSize.widthFrameCount,
-              heightFrameCount: availableSize.heightFrameCount,
+              widthFrameCount: compatibleSize.widthFrameCount,
+              heightFrameCount: compatibleSize.heightFrameCount,
             },
           };
-          resultDistance = currentDistance;
         }
-      }
+      });
 
       return result;
     },
@@ -350,43 +477,40 @@ const DashboardContainer = () => {
             ): { widthFrameCount: number; heightFrameCount: number } => {
               if (!monitor.canDrop())
                 return { widthFrameCount: 0, heightFrameCount: 0 };
-              return draggedItem.size;
+              return (
+                widgetsRef.current.find(widget => widget.id === draggedItem.id)
+                  ?.size ?? draggedItem.size
+              );
             },
             canDrop: (
               draggedItem: Widget,
               _: DropTargetMonitor,
-              position: {
-                leftFrameCount: number;
-                topFrameCount: number;
-              }
+              position: FrameCountPosition
             ) => {
-              return !potentialConflictingWidgetsRef.current.some(
-                widget =>
-                  widget.id != draggedItem.id &&
-                  widget.position.leftFrameCount > position.leftFrameCount &&
-                  widget.position.leftFrameCount <
+              return !widgetsRef.current.some(
+                potentialConflictableWidget =>
+                  potentialConflictableWidget.id != draggedItem.id &&
+                  potentialConflictableWidget.position.leftFrameCount >=
+                    position.leftFrameCount &&
+                  potentialConflictableWidget.position.leftFrameCount +
+                    potentialConflictableWidget.size.widthFrameCount <=
                     position.leftFrameCount +
                       draggedItem.size.widthFrameCount &&
-                  widget.position.topFrameCount > position.topFrameCount &&
-                  widget.position.topFrameCount <
+                  potentialConflictableWidget.position.topFrameCount >=
+                    position.topFrameCount &&
+                  potentialConflictableWidget.position.topFrameCount +
+                    potentialConflictableWidget.size.heightFrameCount <=
                     position.topFrameCount + draggedItem.size.heightFrameCount
               );
             },
             drop: (
               draggedItem: Widget,
               _: DropTargetMonitor,
-              position: {
-                leftFrameCount: number;
-                topFrameCount: number;
-              }
-            ) => {
-              widgetManager.updateByWidget(draggedItem, "position", position);
-            },
+              position: FrameCountPosition
+            ) =>
+              widgetManager.updateByWidget(draggedItem, "position", position),
           },
-          onClick: (position: {
-            leftFrameCount: number;
-            topFrameCount: number;
-          }) => {
+          onClick: (position: FrameCountPosition) => {
             setCreateWidgetAtBottom(false);
             setCurrentFramePosition(position);
             setCreateWidgetDialogOpen(true);
@@ -397,16 +521,32 @@ const DashboardContainer = () => {
           <Draggable // a draggable wrapper to locate the widget base on the correct position
             key={index}
             style={{
-              left: widget.position.leftFrameCount * frameSize + frameGap,
-              top: widget.position.topFrameCount * frameSize + frameGap,
+              left: getPositionValue(
+                widget.position.leftFrameCount,
+                frameSize,
+                frameGap
+              ),
+              top: getPositionValue(
+                widget.position.topFrameCount,
+                frameSize,
+                frameGap
+              ),
               width:
                 index === currentResizedWidgetInfo.index
                   ? currentResizedWidgetInfo.width
-                  : widget.size.widthFrameCount * frameSize - frameGap,
+                  : getSizeValue(
+                      widget.size.widthFrameCount,
+                      frameSize,
+                      frameGap
+                    ),
               height:
                 index === currentResizedWidgetInfo.index
                   ? currentResizedWidgetInfo.height
-                  : widget.size.heightFrameCount * frameSize - frameGap,
+                  : getSizeValue(
+                      widget.size.heightFrameCount,
+                      frameSize,
+                      frameGap
+                    ),
               zIndex: DashboardElementZIndexes.widgets.draggable,
             }}
             className="absolute shadow rounded-lg bg-background/80"
@@ -419,7 +559,11 @@ const DashboardContainer = () => {
               width={
                 index === currentResizedWidgetInfo.index
                   ? currentResizedWidgetInfo.width
-                  : widget.size.widthFrameCount * frameSize - frameGap
+                  : getSizeValue(
+                      widget.size.widthFrameCount,
+                      frameSize,
+                      frameGap
+                    )
               }
               setWidth={(newWidth: number) =>
                 setCurrentResizedWidgetInfo(prev => ({
@@ -427,14 +571,34 @@ const DashboardContainer = () => {
                   width: newWidth,
                 }))
               }
-              minWidth={widget.minSize.widthFrameCount * frameSize - frameGap}
-              minHeight={widget.minSize.heightFrameCount * frameSize - frameGap}
-              maxWidth={widget.maxSize.widthFrameCount * frameSize - frameGap}
-              maxHeight={widget.maxSize.heightFrameCount * frameSize - frameGap}
+              minWidth={getSizeValue(
+                widget.minSize.widthFrameCount,
+                frameSize,
+                frameGap
+              )}
+              minHeight={getSizeValue(
+                widget.minSize.heightFrameCount,
+                frameSize,
+                frameGap
+              )}
+              maxWidth={getSizeValue(
+                widget.maxSize.widthFrameCount,
+                frameSize,
+                frameGap
+              )}
+              maxHeight={getSizeValue(
+                widget.maxSize.heightFrameCount,
+                frameSize,
+                frameGap
+              )}
               height={
                 index === currentResizedWidgetInfo.index
                   ? currentResizedWidgetInfo.height
-                  : widget.size.heightFrameCount * frameSize - frameGap
+                  : getSizeValue(
+                      widget.size.heightFrameCount,
+                      frameSize,
+                      frameGap
+                    )
               }
               setHeight={(newHeight: number) =>
                 setCurrentResizedWidgetInfo(prev => ({
@@ -444,8 +608,16 @@ const DashboardContainer = () => {
               }
               onBeforeResize={() =>
                 setCurrentResizedWidgetInfo({
-                  width: widget.size.widthFrameCount * frameSize - frameGap,
-                  height: widget.size.heightFrameCount * frameSize - frameGap,
+                  width: getSizeValue(
+                    widget.size.widthFrameCount,
+                    frameSize,
+                    frameGap
+                  ),
+                  height: getSizeValue(
+                    widget.size.heightFrameCount,
+                    frameSize,
+                    frameGap
+                  ),
                   index: index,
                 })
               }
@@ -461,7 +633,6 @@ const DashboardContainer = () => {
                   height,
                   widget
                 ).frameCount;
-                console.log("after: ", width, height, resizedFrameCount);
                 widgetManager.update(index, "size", resizedFrameCount);
                 setCurrentResizedWidgetInfo({ width: 0, height: 0, index: -1 });
               }}
@@ -476,7 +647,11 @@ const DashboardContainer = () => {
                 disabled={!isEditing}
                 optionMenuItems={
                   <>
-                    <DropdownMenuItem onClick={() => {}}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setEditingWidgetIndex(index)}
+                    >
+                      Edit
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => widgetManager.remove(index)}
                     >
@@ -488,10 +663,22 @@ const DashboardContainer = () => {
               >
                 <widget.component
                   style={{
-                    width: widget.size.widthFrameCount * frameSize - frameGap,
-                    height: widget.size.heightFrameCount * frameSize - frameGap,
+                    width: getSizeValue(
+                      widget.size.widthFrameCount,
+                      frameSize,
+                      frameGap
+                    ),
+                    height: getSizeValue(
+                      widget.size.heightFrameCount,
+                      frameSize,
+                      frameGap
+                    ),
                   }}
-                  className="bg-background/80 border-1 border-foreground/20 rounded-lg"
+                  className="bg-background/80 border-[1.5] border-foreground/25 rounded-lg"
+                  isWidgetEditing={isEditing && editingWidgetIndex === index}
+                  onIsWidgetEditingChange={(prevIsWidgetEditing: boolean) =>
+                    setEditingWidgetIndex(prevIsWidgetEditing ? index : -1)
+                  }
                 />
               </Extendable>
             </XYResizable>
@@ -501,7 +688,38 @@ const DashboardContainer = () => {
           className="fixed right-4 bottom-4 flex justify-center items-center gap-2"
           style={{ zIndex: DashboardElementZIndexes.editButtons }}
         >
-          {isEditing && (
+          {isEditing ? (
+            <>
+              <Button
+                variant="secondary"
+                className="
+                flex justify-center items-center
+                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
+                transition
+              "
+                onClick={() => {
+                  setCreateWidgetAtBottom(true);
+                  setCreateWidgetDialogOpen(true);
+                }}
+              >
+                <PlusIcon />
+              </Button>
+              <Button
+                variant="secondary"
+                className="
+                flex justify-center items-center
+                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
+                transition
+              "
+                onClick={() => {
+                  widgetManager.sync();
+                  setIsEditing(false);
+                }}
+              >
+                <CheckIcon size={18} />
+              </Button>
+            </>
+          ) : (
             <Button
               variant="secondary"
               className="
@@ -509,71 +727,18 @@ const DashboardContainer = () => {
                 border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
                 transition
               "
-              onClick={() => {
-                setCreateWidgetAtBottom(true);
-                setCreateWidgetDialogOpen(true);
-              }}
+              onClick={() => setIsEditing(true)}
             >
-              <PlusIcon />
+              <EditIcon size={18} />
             </Button>
           )}
-          <Button
-            variant="secondary"
-            className="
-                flex justify-center items-center
-                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
-                transition
-              "
-            onClick={() => {
-              if (isEditing) {
-                widgetManager.sync();
-              }
-              setIsEditing(prev => !prev);
-            }}
-          >
-            {isEditing ? <CheckIcon size={18} /> : <EditIcon size={18} />}
-          </Button>
         </div>
       </PlaceableBackground>
       <UploadImageDialog
         open={uploadImageDialogOpen}
         onOpenChange={setUploadImageDialogOpen}
         title="Upload Background Images"
-        onUpload={async (files: File[]) => {
-          const imageInfo: ImageInfo = (await IndexedDBManipulator.getItemByKey(
-            IndexedDBKey.backgroundImages
-          )) ?? {
-            header: { totalSize: 0 },
-            content: [],
-          };
-          const url = URL.createObjectURL(files[files.length - 1]);
-          const image = new Image();
-          image.src = url;
-          image.onload = () =>
-            setCropperAspectRatio(image.width / image.height);
-          setUploadHeaderBackgroundImageURL(url);
-          let lastId: UUID = generateUUID();
-          files.forEach(file => {
-            lastId = generateUUID();
-            imageInfo.header.totalSize += file.size;
-            imageInfo.content.push({
-              id: lastId,
-              contentType: file.type,
-              file: file,
-              timestamp: new Date(),
-            });
-          });
-          await IndexedDBManipulator.setItem(
-            IndexedDBKey.backgroundImages,
-            imageInfo
-          );
-          await IndexedDBManipulator.setItem(
-            IndexedDBKey.currentDashboardBackgroundImageId,
-            lastId
-          );
-          setUploadImageDialogOpen(false);
-          setImageCropperDialogOpen(true);
-        }}
+        onUpload={handleBackgroundImagesOnUpload}
         onCancel={() => setUploadImageDialogOpen(false)}
       />
       {uploadHeaderBackgroundImageURL !== null && (
