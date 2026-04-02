@@ -1,5 +1,3 @@
-import ClockWidget from "@/components/widgets/ClockWidget/ClockWidget";
-import TodoWidget from "@/components/widgets/TodoWidget/TodoWidget";
 import {
   FrameCountPosition,
   FrameCountSize,
@@ -8,13 +6,24 @@ import {
 } from "@shared/types/cord";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
-import CalendarWidget from "./CalendarWidget/CalendarWidget";
+import { CSSProperties } from "react";
+
+export interface WidgetProps {
+  className?: string;
+  style?: CSSProperties;
+  isWidgetEditing: boolean;
+  onIsWidgetEditingChange: (isEditing: boolean) => void;
+  setting: Record<string, any>;
+  setSetting: (newSetting: Record<string, any>) => void;
+  data: Record<string, any>;
+  setData: (newData: Record<string, any>) => void;
+}
 
 export type Widget = {
   id: UUID;
   name: string;
   description: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<WidgetProps>;
   position: FrameCountPosition;
   size: FrameCountSize;
   minSize: FrameCountSize;
@@ -23,6 +32,8 @@ export type Widget = {
   // (related to the distance of { widthFrameCount: 0, heightFrameCount: 0 })
   // in ascending order by default
   availableSizes: FrameCountSize[];
+  setting: Record<string, any>;
+  data: Record<string, any>;
 };
 
 export type PreviewWidget = {
@@ -33,6 +44,8 @@ export type PreviewWidget = {
   minSize: FrameCountSize;
   maxSize: FrameCountSize;
   availableSizes: FrameCountSize[];
+  defaultSetting: Record<string, any>;
+  defaultData: Record<string, any>;
 };
 
 export const toWidget = (
@@ -44,6 +57,8 @@ export const toWidget = (
     ...previewWidget,
     id: id,
     position: position,
+    setting: previewWidget.defaultSetting,
+    data: previewWidget.defaultData,
   } as Widget;
 };
 
@@ -83,77 +98,6 @@ export const getSizeValues = (
     width: getSizeValue(size.widthFrameCount, frameSize, frameGap),
     height: getSizeValue(size.heightFrameCount, frameSize, frameGap),
   };
-};
-
-export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
-  clock: {
-    name: "clock",
-    description: "A simple clock",
-    component: ClockWidget,
-    size: {
-      widthFrameCount: 1,
-      heightFrameCount: 1,
-    },
-    minSize: {
-      widthFrameCount: 1,
-      heightFrameCount: 1,
-    },
-    maxSize: {
-      widthFrameCount: 2,
-      heightFrameCount: 2,
-    },
-    availableSizes: [
-      { widthFrameCount: 1, heightFrameCount: 1 },
-      { widthFrameCount: 2, heightFrameCount: 2 },
-    ],
-  },
-  todo: {
-    name: "todo",
-    description: "A simple todo list",
-    component: TodoWidget,
-    size: {
-      widthFrameCount: 2,
-      heightFrameCount: 3,
-    },
-    minSize: {
-      widthFrameCount: 2,
-      heightFrameCount: 3,
-    },
-    maxSize: {
-      widthFrameCount: 4,
-      heightFrameCount: 6,
-    },
-    availableSizes: [
-      { widthFrameCount: 2, heightFrameCount: 3 },
-      { widthFrameCount: 2, heightFrameCount: 4 },
-      { widthFrameCount: 2, heightFrameCount: 5 },
-      { widthFrameCount: 3, heightFrameCount: 4 },
-      { widthFrameCount: 3, heightFrameCount: 5 },
-      { widthFrameCount: 4, heightFrameCount: 5 },
-      { widthFrameCount: 4, heightFrameCount: 6 },
-    ],
-  },
-  calendar: {
-    name: "calendar",
-    description: "A simple calendar support marking selected days",
-    component: CalendarWidget,
-    size: {
-      widthFrameCount: 2,
-      heightFrameCount: 3,
-    },
-    minSize: {
-      widthFrameCount: 2,
-      heightFrameCount: 3,
-    },
-    maxSize: {
-      widthFrameCount: 3,
-      heightFrameCount: 4,
-    },
-    availableSizes: [
-      { widthFrameCount: 2, heightFrameCount: 3 },
-      { widthFrameCount: 3, heightFrameCount: 4 },
-    ],
-  },
 };
 
 export const AccountPreviewWidgets: Record<string, PreviewWidget> = {};

@@ -1,8 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import {
-  BasicPreviewWidgets,
-  PreviewWidget,
-} from "@/components/widgets/widget";
+import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
+import { PreviewWidget } from "@/components/widgets/widget";
 
 interface CreateWidgetDialogProps {
   open: boolean;

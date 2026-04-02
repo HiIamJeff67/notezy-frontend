@@ -12,6 +12,7 @@ import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHo
 import CheckIcon from "@/components/icons/CheckIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import PlusIcon from "@/components/icons/PlusIcon";
+import WrenchIcon from "@/components/icons/WrenchIcon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -134,6 +135,16 @@ const DashboardContainer = () => {
         frameGap: frameGap,
       };
     }, [screenManager.breakpoint, widgetManager.widgets]);
+
+  const hasSomeWidgetsOutOfBoundary = useMemo(
+    () =>
+      widgetsRef.current.some(
+        widget =>
+          widget.position.leftFrameCount + widget.size.widthFrameCount >
+          widthTotalFrameCount
+      ),
+    [widthTotalFrameCount]
+  );
 
   useEffect(() => {
     const initializeBackgroundImageURL = async () => {
@@ -274,62 +285,38 @@ const DashboardContainer = () => {
           !widgetsRef.current.some(
             potentialConflictableWidget =>
               potentialConflictableWidget.id != resizedWidget.id &&
-              // if the right border of the current resized widget is between the left border and the right border of some other widgets
-              getPositionValue(
-                resizedWidget.position.leftFrameCount,
-                frameSize,
-                frameGap
-              ) +
-                width >=
-                getPositionValue(
-                  potentialConflictableWidget.position.leftFrameCount,
-                  frameSize,
-                  frameGap
-                ) &&
-              getPositionValue(
-                resizedWidget.position.leftFrameCount,
-                frameSize,
-                frameGap
-              ) +
-                width <=
-                getPositionValue(
-                  potentialConflictableWidget.position.leftFrameCount,
-                  frameSize,
-                  frameGap
-                ) +
-                  getSizeValue(
-                    potentialConflictableWidget.size.widthFrameCount,
-                    frameSize,
-                    frameGap
-                  ) &&
-              // if the bottom border of the current resized widget is between the left border and the right border of some other widgets
-              getPositionValue(
-                resizedWidget.position.topFrameCount,
-                frameSize,
-                frameGap
-              ) +
-                height >=
-                getPositionValue(
-                  potentialConflictableWidget.position.topFrameCount,
-                  frameSize,
-                  frameGap
-                ) &&
-              getPositionValue(
-                resizedWidget.position.topFrameCount,
-                frameSize,
-                frameGap
-              ) +
-                height <=
-                getPositionValue(
-                  potentialConflictableWidget.position.topFrameCount,
-                  frameSize,
-                  frameGap
-                ) +
-                  getSizeValue(
-                    potentialConflictableWidget.size.heightFrameCount,
-                    frameSize,
-                    frameGap
-                  )
+              // (prettier-ignore) check if the right bottom point of the resized widget with available size is inside some of the widgets
+              // (prettier-ignore) if the right border of the current resized widget is between the left border and the right border of some other widgets
+              ((resizedWidget.position.leftFrameCount +
+                availableSize.widthFrameCount >
+                potentialConflictableWidget.position.leftFrameCount &&
+                resizedWidget.position.leftFrameCount +
+                  availableSize.widthFrameCount <=
+                  potentialConflictableWidget.position.leftFrameCount +
+                    potentialConflictableWidget.size.widthFrameCount &&
+                // (prettier-ignore) if the bottom border of the current resized widget is between the left border and the right border of some other widgets
+                resizedWidget.position.topFrameCount +
+                  availableSize.heightFrameCount >
+                  potentialConflictableWidget.position.topFrameCount &&
+                resizedWidget.position.topFrameCount +
+                  availableSize.heightFrameCount <=
+                  potentialConflictableWidget.position.topFrameCount +
+                    potentialConflictableWidget.size.heightFrameCount) ||
+                // (prettier-ignore) check if there's any potential conflictable widgets inside the resized widget with available size
+                // (prettier-ignore) if the right bottom point of the resized widget is greater than some other widgets
+                (resizedWidget.position.leftFrameCount +
+                  availableSize.widthFrameCount >=
+                  potentialConflictableWidget.position.leftFrameCount +
+                    potentialConflictableWidget.size.widthFrameCount &&
+                  resizedWidget.position.topFrameCount +
+                    availableSize.heightFrameCount >=
+                    potentialConflictableWidget.position.topFrameCount +
+                      potentialConflictableWidget.size.heightFrameCount &&
+                  // (prettier-ignore) if the right bottom point of some widgets is less than the resized widget
+                  resizedWidget.position.leftFrameCount <=
+                    potentialConflictableWidget.position.leftFrameCount &&
+                  resizedWidget.position.topFrameCount <=
+                    potentialConflictableWidget.position.topFrameCount))
           )
         ) {
           // we check the right and the bottom border to handle the resize of the expansion on the right and the bottom border
@@ -407,6 +394,78 @@ const DashboardContainer = () => {
     },
     [frameSize, frameGap]
   );
+
+  const handleReorderWidgetsToFitInBoundary = useCallback(() => {
+    const sortedWidgets = [...widgetsRef.current].sort(
+      (a: Widget, b: Widget) =>
+        a.position.topFrameCount === b.position.topFrameCount
+          ? a.position.leftFrameCount - b.position.leftFrameCount
+          : a.position.topFrameCount - b.position.topFrameCount
+    );
+    let currentLeftFrameCount = 0,
+      currentTopFrameCount = 0;
+    const isOccupied: (UUID | undefined)[][] = Array.from(
+      { length: heightTotalFrameCount },
+      () => Array(widthTotalFrameCount).fill(undefined)
+    );
+    const placedWidgets = new Map<UUID, Widget>();
+    const orderedWidgets: Widget[] = [];
+
+    sortedWidgets.forEach(widget => {
+      if (
+        currentLeftFrameCount + widget.size.widthFrameCount >
+          widthTotalFrameCount ||
+        isOccupied[currentTopFrameCount]?.[currentLeftFrameCount] !== undefined
+      ) {
+        let reservedTopFrameCount = currentTopFrameCount + 1;
+        for (let j = 0; j < widget.size.widthFrameCount; j++) {
+          const occupyingId = isOccupied[currentTopFrameCount]?.[j];
+          if (occupyingId === undefined) continue;
+
+          const placedWidget = placedWidgets.get(occupyingId as UUID);
+          if (placedWidget === undefined) continue;
+
+          reservedTopFrameCount = Math.max(
+            reservedTopFrameCount,
+            placedWidget.position.topFrameCount +
+              placedWidget.size.heightFrameCount
+          );
+        }
+        currentTopFrameCount = reservedTopFrameCount;
+        currentLeftFrameCount = 0;
+      }
+      const orderedWidget: Widget = {
+        ...widget,
+        position: {
+          leftFrameCount: currentLeftFrameCount,
+          topFrameCount: currentTopFrameCount,
+        },
+      };
+
+      for (
+        let i = currentTopFrameCount;
+        i < currentTopFrameCount + widget.size.heightFrameCount;
+        i++
+      ) {
+        if (!isOccupied[i]) {
+          isOccupied[i] = Array(widthTotalFrameCount).fill(undefined);
+        }
+        for (
+          let j = currentLeftFrameCount;
+          j < currentLeftFrameCount + widget.size.widthFrameCount;
+          j++
+        ) {
+          isOccupied[i][j] = widget.id;
+        }
+      }
+
+      currentLeftFrameCount += widget.size.widthFrameCount;
+      placedWidgets.set(widget.id, orderedWidget);
+      orderedWidgets.push(orderedWidget);
+    });
+
+    widgetManager.sync(orderedWidgets);
+  }, [widgetManager, widthTotalFrameCount, heightTotalFrameCount]);
 
   return (
     <div
@@ -679,6 +738,14 @@ const DashboardContainer = () => {
                   onIsWidgetEditingChange={(prevIsWidgetEditing: boolean) =>
                     setEditingWidgetIndex(prevIsWidgetEditing ? index : -1)
                   }
+                  setting={widget.setting}
+                  setSetting={(newSetting: any) =>
+                    widgetManager.update(index, "setting", newSetting)
+                  }
+                  data={widget.data}
+                  setData={(newData: any) =>
+                    widgetManager.update(index, "data", newData)
+                  }
                 />
               </Extendable>
             </XYResizable>
@@ -688,15 +755,28 @@ const DashboardContainer = () => {
           className="fixed right-4 bottom-4 flex justify-center items-center gap-2"
           style={{ zIndex: DashboardElementZIndexes.editButtons }}
         >
+          {hasSomeWidgetsOutOfBoundary && (
+            <Button
+              variant="secondary"
+              className="
+                flex justify-center items-center
+                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
+                transition
+              "
+              onClick={handleReorderWidgetsToFitInBoundary}
+            >
+              <WrenchIcon />
+            </Button>
+          )}
           {isEditing ? (
             <>
               <Button
                 variant="secondary"
                 className="
-                flex justify-center items-center
-                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
-                transition
-              "
+                  flex justify-center items-center
+                  border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
+                  transition
+                "
                 onClick={() => {
                   setCreateWidgetAtBottom(true);
                   setCreateWidgetDialogOpen(true);
@@ -707,10 +787,10 @@ const DashboardContainer = () => {
               <Button
                 variant="secondary"
                 className="
-                flex justify-center items-center
-                border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
-                transition
-              "
+                  flex justify-center items-center
+                  border-1 border-foreground/30 rounded-full shadow-lg w-10 h-10 
+                  transition
+                "
                 onClick={() => {
                   widgetManager.sync();
                   setIsEditing(false);

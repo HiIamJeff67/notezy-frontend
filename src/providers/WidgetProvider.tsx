@@ -1,4 +1,5 @@
-import { BasicPreviewWidgets, Widget } from "@/components/widgets/widget";
+import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
+import { Widget } from "@/components/widgets/widget";
 import { useLanguage, useUser } from "@/hooks";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -21,8 +22,8 @@ interface WidgetContextType {
     newValue: Widget[keyof Widget]
   ) => void;
   remove: (index: number) => void;
-  reset: () => void;
-  sync: () => void;
+  reset: (newWidgets: Widget[]) => void;
+  sync: (syncWidgets?: Widget[]) => void;
 }
 
 export const WidgetContext = createContext<WidgetContextType | undefined>(
@@ -105,26 +106,36 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
     hasChangedRef.current = true;
   }, []);
 
-  const reset = useCallback(() => {
-    setWidgets([]);
+  const reset = useCallback((newWidgets: Widget[]) => {
+    setWidgets(newWidgets);
     hasChangedRef.current = true;
   }, []);
 
-  const sync = useCallback(() => {
-    const sortedWidgets = widgets.sort((a: Widget, b: Widget) =>
-      a.position.topFrameCount === b.position.topFrameCount
-        ? a.position.leftFrameCount - b.position.leftFrameCount
-        : a.position.topFrameCount - b.position.topFrameCount
-    );
-    setWidgets(sortedWidgets);
-    LocalStorageManipulator.setItem(
-      LocalStorageKey.dashboardWidgets,
-      JSON.stringify(sortedWidgets),
-      userManager.userData?.publicId
-    );
-    if (hasChangedRef.current) toast.success("Successfully save the widgets");
-    hasChangedRef.current = false;
-  }, [widgets]);
+  const sync = useCallback(
+    (syncWidgets?: Widget[]) => {
+      const sortedWidgets =
+        syncWidgets === undefined
+          ? widgets.sort((a: Widget, b: Widget) =>
+              a.position.topFrameCount === b.position.topFrameCount
+                ? a.position.leftFrameCount - b.position.leftFrameCount
+                : a.position.topFrameCount - b.position.topFrameCount
+            )
+          : syncWidgets.sort((a: Widget, b: Widget) =>
+              a.position.topFrameCount === b.position.topFrameCount
+                ? a.position.leftFrameCount - b.position.leftFrameCount
+                : a.position.topFrameCount - b.position.topFrameCount
+            );
+      setWidgets(sortedWidgets);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.dashboardWidgets,
+        JSON.stringify(sortedWidgets),
+        userManager.userData?.publicId
+      );
+      if (hasChangedRef.current) toast.success("Successfully save the widgets");
+      hasChangedRef.current = false;
+    },
+    [widgets]
+  );
 
   return (
     <WidgetContext.Provider

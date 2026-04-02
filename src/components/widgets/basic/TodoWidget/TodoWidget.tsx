@@ -1,11 +1,7 @@
-import { CSSProperties, useState } from "react";
+import { useState } from "react";
+import { WidgetProps } from "../../widget";
 
-export interface TodoWidgetProps {
-  className?: string;
-  style?: CSSProperties;
-}
-
-const TodoWidget = ({ className, style }: TodoWidgetProps) => {
+const TodoWidget = ({ className, style }: WidgetProps) => {
   const [todos, setTodos] = useState<string[]>([]);
   const [input, setInput] = useState("");
 

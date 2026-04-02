@@ -1,54 +1,38 @@
-import {
-  CSSProperties,
-  Suspense,
-  lazy,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import EditClockWidgetDialogSkeleton from "./EditClockWidgetDialogSkeleton";
-import { ClockStyles } from "./data/clockStyles";
-import { Setting } from "./data/settings";
+import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import { useEffect, useMemo, useState } from "react";
+import { WidgetProps } from "../../widget";
+import { BasicPreviewWidgets } from "../basic";
+import { ClockSetting } from "./data/clockSettings";
 import { TimeZones } from "./data/timeZones";
-
-const EditClockWidgetDialog = lazy(() => import("./EditClockWidgetDialog"));
-
-export interface ClockWidgetProps {
-  className?: string;
-  style?: CSSProperties;
-  isWidgetEditing: boolean;
-  onIsWidgetEditingChange: (isEditing: boolean) => void;
-}
+import EditClockWidgetDialog from "./EditClockWidgetDialog";
 
 const ClockWidget = ({
   className,
   style,
   isWidgetEditing,
   onIsWidgetEditingChange,
-}: ClockWidgetProps) => {
+  setting: rawSetting,
+  setSetting: setRawSetting,
+}: WidgetProps) => {
   const [time, setTime] = useState(() => new Date());
-  const [setting, setSetting] = useState<Setting>({
-    selectedTimeZone: TimeZones[0],
-    selectedClockStyle: ClockStyles[0],
-    enableTimer: true,
-    enableLocale: true,
-    localeFontSize: 10,
-    timerFontSize: 10,
-  });
+  const [setting, setSetting] = useAnyTypeState<ClockSetting>(
+    [rawSetting, setRawSetting],
+    BasicPreviewWidgets.clock.defaultSetting as ClockSetting
+  );
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(new Date()), setting.timerInterval);
     return () => clearInterval(timer);
   }, []);
 
   const targetTime = useMemo(() => {
-    const tzInfo = TimeZones.find(
+    const timeZone = TimeZones.find(
       tz => tz.locale === setting.selectedTimeZone.locale
     );
-    if (!tzInfo) return time;
+    if (!timeZone) return time;
 
     const utcTime = time.getTime() + time.getTimezoneOffset() * 60000;
-    return new Date(utcTime + tzInfo.offset * 3600000);
+    return new Date(utcTime + timeZone.offset * 3600000);
   }, [time, setting]);
 
   return (
@@ -56,16 +40,12 @@ const ClockWidget = ({
       className={`relative flex flex-col items-center justify-center p-2 h-full w-full ${className}`}
       style={style}
     >
-      {isWidgetEditing && (
-        <Suspense fallback={<EditClockWidgetDialogSkeleton open={true} />}>
-          <EditClockWidgetDialog
-            open={isWidgetEditing}
-            onOpenChange={onIsWidgetEditingChange}
-            setting={setting}
-            setSetting={setSetting}
-          />
-        </Suspense>
-      )}
+      <EditClockWidgetDialog
+        open={isWidgetEditing}
+        onOpenChange={onIsWidgetEditingChange}
+        setting={setting}
+        setSetting={setSetting}
+      />
       <div className="flex-1 w-full flex items-center justify-center min-h-0 min-w-0">
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm">
           <circle

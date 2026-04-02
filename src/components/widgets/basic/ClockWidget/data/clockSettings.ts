@@ -1,11 +1,12 @@
 import { ClockStyle } from "./clockStyles";
 import { TimeZone } from "./timeZones";
 
-export type Setting = {
+export type ClockSetting = {
   selectedTimeZone: TimeZone;
   selectedClockStyle: ClockStyle;
   enableTimer: boolean;
-  enableLocale: boolean;
   timerFontSize: number;
+  timerInterval: number;
+  enableLocale: boolean;
   localeFontSize: number;
 };
