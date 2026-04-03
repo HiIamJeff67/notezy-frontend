@@ -17,6 +17,7 @@ export interface WidgetProps {
   setSetting: (newSetting: Record<string, any>) => void;
   data: Record<string, any>;
   setData: (newData: Record<string, any>) => void;
+  sync: (syncWidgets?: Widget[]) => void;
 }
 
 export type Widget = {

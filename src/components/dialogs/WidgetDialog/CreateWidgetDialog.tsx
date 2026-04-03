@@ -20,11 +20,10 @@ const CreateWidgetDialog = ({
         <div className="w-full font-bold mb-2">Basic</div>
         <div className="w-full flex flex-col gap-2 overflow-y-auto max-h-96">
           {Object.values(BasicPreviewWidgets).map((previewWidget, index) => (
-            <button
+            <div
               key={index}
               className="w-full flex justify-between items-start rounded-lg border border-border bg-muted hover:bg-accent transition p-3 cursor-pointer"
               onClick={() => onCreate(previewWidget)}
-              type="button"
             >
               <div className="w-[180px] text-left">
                 <div className="font-bold">{previewWidget.name}</div>
@@ -37,7 +36,7 @@ const CreateWidgetDialog = ({
               >
                 <previewWidget.component />
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </DialogContent>

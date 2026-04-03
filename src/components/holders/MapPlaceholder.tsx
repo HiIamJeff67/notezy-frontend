@@ -1,8 +1,8 @@
-interface MapPlaceholder {
+interface MapPlaceholderProps {
   consumingProps?: any;
 }
 
-const MapPlaceholder = ({}: MapPlaceholder) => {
+const MapPlaceholder = ({}: MapPlaceholderProps) => {
   return <></>;
 };
 

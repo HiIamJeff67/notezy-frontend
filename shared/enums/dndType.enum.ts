@@ -1,5 +1,7 @@
 // frontend only
 
+import { generateUUID } from "@shared/types/uuidv4.type";
+
 export enum DNDType {
   DraggableSubShelf = "DRAGGABLE_SUB_SHELF",
   DraggableMaterial = "DRAGGABLE_MATERIAL",
@@ -7,3 +9,7 @@ export enum DNDType {
 }
 
 export const AllDNDTypes: DNDType[] = Object.values(DNDType);
+
+export const generateDynamicDNDType = (purpose: string): string => {
+  return `DRAGGABLE_${generateUUID().toString()}_${purpose.toUpperCase()}`;
+};

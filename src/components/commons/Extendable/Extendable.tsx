@@ -37,7 +37,7 @@ const Extendable = ({
             <DropdownMenuTrigger asChild>
               <button
                 className={`
-                absolute top-1 left-1 w-3 h-3
+                absolute top-1 right-1 w-3 h-3
                 flex justify-center items-center
                 rounded-full bg-white transition
                 ${className}
@@ -73,7 +73,7 @@ const Extendable = ({
           <DropdownMenuTrigger asChild>
             <button
               className={`
-                absolute top-1 left-1 w-3 h-3
+                absolute top-1 right-1 w-3 h-3
                 flex justify-center items-center
                 rounded-full bg-white transition
                 ${className}

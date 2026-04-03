@@ -537,6 +537,7 @@ const DashboardContainer = () => {
               if (!monitor.canDrop())
                 return { widthFrameCount: 0, heightFrameCount: 0 };
               return (
+                // make sure we return the size of the current widget from widgetsRef.current
                 widgetsRef.current.find(widget => widget.id === draggedItem.id)
                   ?.size ?? draggedItem.size
               );
@@ -546,28 +547,41 @@ const DashboardContainer = () => {
               _: DropTargetMonitor,
               position: FrameCountPosition
             ) => {
+              // make sure we get the current widget from widgetsRef.current
+              const draggedWidget = widgetsRef.current.find(
+                widget => widget.id === draggedItem.id
+              );
+              if (draggedWidget === undefined) return false;
               return !widgetsRef.current.some(
                 potentialConflictableWidget =>
-                  potentialConflictableWidget.id != draggedItem.id &&
+                  potentialConflictableWidget.id != draggedWidget.id &&
                   potentialConflictableWidget.position.leftFrameCount >=
                     position.leftFrameCount &&
                   potentialConflictableWidget.position.leftFrameCount +
                     potentialConflictableWidget.size.widthFrameCount <=
                     position.leftFrameCount +
-                      draggedItem.size.widthFrameCount &&
+                      draggedWidget.size.widthFrameCount &&
                   potentialConflictableWidget.position.topFrameCount >=
                     position.topFrameCount &&
                   potentialConflictableWidget.position.topFrameCount +
                     potentialConflictableWidget.size.heightFrameCount <=
-                    position.topFrameCount + draggedItem.size.heightFrameCount
+                    position.topFrameCount + draggedWidget.size.heightFrameCount
               );
             },
             drop: (
               draggedItem: Widget,
               _: DropTargetMonitor,
               position: FrameCountPosition
-            ) =>
-              widgetManager.updateByWidget(draggedItem, "position", position),
+            ) => {
+              widgetManager.updateByWidget(draggedItem, "position", position);
+              // make sure we also update the current widget from widgetsRef.current
+              for (let i = 0; i < widgetsRef.current.length; i++) {
+                if (widgetsRef.current[i].id === draggedItem.id) {
+                  widgetsRef.current[i].position = position;
+                  break;
+                }
+              }
+            },
           },
           onClick: (position: FrameCountPosition) => {
             setCreateWidgetAtBottom(false);
@@ -683,14 +697,27 @@ const DashboardContainer = () => {
               onResize={(
                 width: number,
                 height: number
-              ): { availableWidth: number; availableHeight: number } =>
-                handleWidgetOnResize(width, height, widget).size
-              }
+              ): { availableWidth: number; availableHeight: number } => {
+                const resizedWidget = widgetsRef.current.find(
+                  currentWidget => currentWidget.id === widget.id
+                ); // make sure we get the current widget from the widgetsRef.current
+                if (resizedWidget === undefined) {
+                  return {
+                    availableWidth: 0,
+                    availableHeight: 0,
+                  };
+                }
+                return handleWidgetOnResize(width, height, resizedWidget).size;
+              }}
               onAfterResize={(width: number, height: number) => {
+                const resizedWidget = widgetsRef.current.find(
+                  currentWidget => currentWidget.id === widget.id
+                ); // make sure we get the current widget from the widgetsRef.current
+                if (resizedWidget === undefined) return;
                 const resizedFrameCount = handleWidgetOnResize(
                   width,
                   height,
-                  widget
+                  resizedWidget
                 ).frameCount;
                 widgetManager.update(index, "size", resizedFrameCount);
                 setCurrentResizedWidgetInfo({ width: 0, height: 0, index: -1 });
@@ -700,7 +727,7 @@ const DashboardContainer = () => {
               hasParent
             >
               <Extendable
-                className="!top-1 !left-1 w-4 h-4 !bg-transparent"
+                className="w-4 h-4 !top-2 !right-2 !bg-transparent"
                 style={{ zIndex: DashboardElementZIndexes.widgets.extendable }}
                 size={24}
                 disabled={!isEditing}
@@ -746,6 +773,7 @@ const DashboardContainer = () => {
                   setData={(newData: any) =>
                     widgetManager.update(index, "data", newData)
                   }
+                  sync={widgetManager.sync}
                 />
               </Extendable>
             </XYResizable>

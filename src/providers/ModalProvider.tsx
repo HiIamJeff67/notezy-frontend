@@ -7,18 +7,21 @@ import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPa
 import React, { createContext, useState } from "react";
 
 export type ModalPropsMap = {
+  // make sure don't place the default dialog props here, ex. isOpen, onClose
   AccountSettingsPanel: undefined;
   PreferencesPanel: undefined;
   CreateShelfItemDialog: {
     dialogHeader: React.ReactNode;
     disableInput?: boolean;
     inputPlaceholder?: string;
-    onCreate: (value: string) => Promise<void>;
+    onCreate: (value: string) => void | Promise<void>;
     onCancel: () => void;
   };
   DeleteShelfItemDialog: {
     dialogHeader: React.ReactNode;
-    onDelete: () => Promise<void>;
+    confirmKeyword?: string;
+    inputPlaceholder?: string;
+    onDelete: () => void | Promise<void>;
     onCancel: () => void;
   };
 };

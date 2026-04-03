@@ -179,6 +179,8 @@ const RootShelfMenuItem = ({
                 modalManager.open("DeleteShelfItemDialog", {
                   dialogHeader:
                     "Are you sure you want to delete this root shelf ?",
+                  confirmKeyword: "DELETE",
+                  inputPlaceholder: `To delete this root shelf, please type the keyword of "DELETE"`,
                   onDelete: async () =>
                     await loadingManager.startAsyncTransactionLoading(
                       async () => {

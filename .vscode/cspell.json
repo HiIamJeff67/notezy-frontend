@@ -42,7 +42,8 @@
     "baseholder",
     "baseholders",
     "conflictable",
-    "kolkata"
+    "kolkata",
+    "dndable"
   ],
   "ignorePaths": [
     "node_modules/**",

@@ -299,21 +299,23 @@ const AuthPanel = ({
                   <button
                     type="button"
                     onClick={switchButton.onClick}
-                    className="relative inline-block px-3 py-1 ml-1 mt-2
-                    font-mono text-xs font-bold tracking-wider uppercase
-                    text-green-400 cursor-pointer
-                    border border-green-400/30 rounded
-                    bg-gradient-to-r from-gray-900/50 to-gray-800/50
-                    transition-all duration-300 ease-out
-                    hover:border-green-400/60 hover:text-green-300
-                    hover:shadow-[0_0_10px_rgba(0,255,136,0.2)]
-                    hover:bg-gradient-to-r hover:from-green-900/20 hover:to-green-800/20
-                    focus:outline-none focus:ring-1 focus:ring-green-400/50
-                    active:scale-95
-                    before:absolute before:inset-0 
-                    before:bg-gradient-to-r before:from-transparent before:via-green-400/5 before:to-transparent
-                    before:opacity-0 before:transition-opacity before:duration-300
-                    hover:before:opacity-100"
+                    className="
+                      relative inline-block px-3 py-1 ml-1 mt-2
+                      font-mono text-xs font-bold tracking-wider uppercase
+                      text-green-400 cursor-pointer
+                      border border-green-400/30 rounded
+                      bg-gradient-to-r from-gray-900/50 to-gray-800/50
+                      transition-all duration-300 ease-out
+                      hover:border-green-400/60 hover:text-green-300
+                      hover:shadow-[0_0_10px_rgba(0,255,136,0.2)]
+                      hover:bg-gradient-to-r hover:from-green-900/20 hover:to-green-800/20
+                      focus:outline-none focus:ring-1 focus:ring-green-400/50
+                      active:scale-95
+                      before:absolute before:inset-0 
+                      before:bg-gradient-to-r before:from-transparent before:via-green-400/5 before:to-transparent
+                      before:opacity-0 before:transition-opacity before:duration-300
+                      hover:before:opacity-100
+                    "
                     style={{
                       textShadow: "0 0 5px rgba(0, 255, 136, 0.2)",
                     }}

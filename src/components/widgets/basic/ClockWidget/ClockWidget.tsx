@@ -1,10 +1,12 @@
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import {
+  ClockSetting,
+  getDefaultClockSetting,
+} from "@widgets/basic/ClockWidget/data/clockSettings";
+import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
+import EditClockWidgetDialog from "@widgets/basic/ClockWidget/EditClockWidgetDialog";
+import { WidgetProps } from "@widgets/widget";
 import { useEffect, useMemo, useState } from "react";
-import { WidgetProps } from "../../widget";
-import { BasicPreviewWidgets } from "../basic";
-import { ClockSetting } from "./data/clockSettings";
-import { TimeZones } from "./data/timeZones";
-import EditClockWidgetDialog from "./EditClockWidgetDialog";
 
 const ClockWidget = ({
   className,
@@ -17,7 +19,7 @@ const ClockWidget = ({
   const [time, setTime] = useState(() => new Date());
   const [setting, setSetting] = useAnyTypeState<ClockSetting>(
     [rawSetting, setRawSetting],
-    BasicPreviewWidgets.clock.defaultSetting as ClockSetting
+    getDefaultClockSetting()
   );
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const ClockWidget = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-center p-2 h-full w-full ${className}`}
+      className={`relative flex flex-col items-center justify-center p-2 h-full w-full bg-card ${className}`}
       style={style}
     >
       <EditClockWidgetDialog

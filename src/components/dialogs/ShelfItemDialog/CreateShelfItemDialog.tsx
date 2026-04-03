@@ -17,7 +17,7 @@ interface CreateShelfItemDialogProps {
   dialogHeader: React.ReactNode;
   disableInput?: boolean;
   inputPlaceholder?: string;
-  onCreate: (value: string) => Promise<void>;
+  onCreate: (value: string) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -35,9 +35,10 @@ const CreateShelfItemDialog = ({
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogTitle />
-        <DialogContent className="w-4/5">
-          <DialogHeader className="w-full">{dialogHeader}</DialogHeader>
+        <DialogContent className="bg-muted w-4/5">
+          <DialogHeader className="w-full">
+            <DialogTitle>{dialogHeader}</DialogTitle>
+          </DialogHeader>
           {!disableInput && (
             <Input
               placeholder={inputPlaceholder}

@@ -8,13 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import React, { Suspense } from "react";
+import { Input } from "@/components/ui/input";
+import React, { Suspense, useState } from "react";
 
 interface DeleteShelfItemDialogProps {
   isOpen: boolean;
   onClose: () => void;
   dialogHeader: React.ReactNode;
-  onDelete: () => Promise<void>;
+  confirmKeyword?: string;
+  inputPlaceholder?: string;
+  onDelete: () => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -22,24 +25,48 @@ const DeleteShelfItemDialog = ({
   isOpen,
   onClose,
   dialogHeader,
+  confirmKeyword,
+  inputPlaceholder,
   onDelete,
   onCancel,
 }: DeleteShelfItemDialogProps) => {
+  const [value, setValue] = useState<string>("");
+
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogTitle />
-        <DialogHeader>{dialogHeader}</DialogHeader>
-        <DialogContent>
-          <Button type="submit" onClick={onDelete} className="w-3/10">
-            Delete
-          </Button>
-          <Button
-            className="w-3/10 bg-destructive hover:bg-destructive/90"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
+        <DialogContent className="bg-muted">
+          <DialogHeader>
+            <DialogTitle>{dialogHeader}</DialogTitle>
+          </DialogHeader>
+          {confirmKeyword !== undefined && (
+            <Input
+              placeholder={inputPlaceholder}
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              className={`w-full ${value === confirmKeyword ? "" : "border-2 border-destructive/50"}`}
+            />
+          )}
+
+          <div className="w-full flex flex-row justify-center gap-4">
+            <Button
+              type="submit"
+              onClick={async () => {
+                if (value !== confirmKeyword) return;
+                await onDelete();
+                setValue("");
+              }}
+              className="w-3/10"
+            >
+              Delete
+            </Button>
+            <Button
+              className="w-3/10 bg-destructive hover:bg-destructive/90"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </Suspense>
