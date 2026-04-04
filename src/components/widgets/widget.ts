@@ -35,6 +35,7 @@ export type Widget = {
   availableSizes: FrameCountSize[];
   setting: Record<string, any>;
   data: Record<string, any>;
+  isEditable: boolean;
 };
 
 export type PreviewWidget = {
@@ -47,6 +48,7 @@ export type PreviewWidget = {
   availableSizes: FrameCountSize[];
   defaultSetting: Record<string, any>;
   defaultData: Record<string, any>;
+  isEditable: boolean;
 };
 
 export const toWidget = (

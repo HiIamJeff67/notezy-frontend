@@ -12,7 +12,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import ScreenProvider from "./ScreenProvider";
+import { BackgroundImagesProvider } from "./BackgroundImagesProvider";
+import { ScreenProvider } from "./ScreenProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
@@ -26,9 +27,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <LanguageProvider>
                 <ThemeProvider>
                   <UserProvider>
-                    <DndProvider backend={HTML5Backend}>
-                      <ModalProvider>{children}</ModalProvider>
-                    </DndProvider>
+                    <BackgroundImagesProvider>
+                      <DndProvider backend={HTML5Backend}>
+                        <ModalProvider>{children}</ModalProvider>
+                      </DndProvider>
+                    </BackgroundImagesProvider>
                   </UserProvider>
                 </ThemeProvider>
               </LanguageProvider>

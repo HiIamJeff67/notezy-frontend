@@ -26,7 +26,7 @@ interface ScreenProviderProps {
   children: React.ReactNode;
 }
 
-const ScreenProvider = ({ children }: ScreenProviderProps) => {
+export const ScreenProvider = ({ children }: ScreenProviderProps) => {
   const [width, setWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 0
   );
@@ -72,5 +72,3 @@ const ScreenProvider = ({ children }: ScreenProviderProps) => {
     </ScreenContext.Provider>
   );
 };
-
-export default ScreenProvider;

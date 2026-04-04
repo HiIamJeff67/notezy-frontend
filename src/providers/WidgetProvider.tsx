@@ -1,14 +1,16 @@
 import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
 import { Widget } from "@/components/widgets/widget";
 import { useLanguage, useUser } from "@/hooks";
+import { MaxTriggerValue } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 interface WidgetContextType {
-  widgets: Widget[];
   hasChanged: boolean;
+  getWidgets: () => Widget[];
+  getWidgetsLength: () => number;
   append: (widget: Widget) => void;
   replace: (index: number, widget: Widget) => void;
   update: (
@@ -34,13 +36,17 @@ interface WidgetProviderProps {
   children: React.ReactNode;
 }
 
-const WidgetProvider = ({ children }: WidgetProviderProps) => {
+export const WidgetProvider = ({ children }: WidgetProviderProps) => {
   const languageManager = useLanguage();
   const userManager = useUser();
 
-  const [widgets, setWidgets] = useState<Widget[]>([]);
-
+  const [_, setUpdateTrigger] = useState(0);
+  const widgetsRef = useRef<Widget[]>([]);
   const hasChangedRef = useRef<boolean>(false);
+
+  const forceUpdate = useCallback(() => {
+    setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
+  }, []);
 
   useEffect(() => {
     const initializeWidgets = async () => {
@@ -50,14 +56,13 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
       if (widgetsEncoded !== null) {
         try {
-          setWidgets(
-            (
-              JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
-                ...widgetEncoded,
-                component: BasicPreviewWidgets[widgetEncoded.name]?.component,
-              })) as Partial<Widget>[]
-            ).filter(widget => widget.component !== undefined) as Widget[]
-          );
+          widgetsRef.current = (
+            JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
+              ...widgetEncoded,
+              component: BasicPreviewWidgets[widgetEncoded.name]?.component,
+            })) as Partial<Widget>[]
+          ).filter(widget => widget.component !== undefined) as Widget[];
+          forceUpdate();
         } catch (error) {
           toast.error(languageManager.tError(error));
         }
@@ -65,95 +70,123 @@ const WidgetProvider = ({ children }: WidgetProviderProps) => {
     };
 
     initializeWidgets();
-  }, [userManager.userData]);
+  }, [userManager.userData, languageManager, forceUpdate]);
 
-  const append = useCallback((widget: Widget) => {
-    setWidgets(prev => [...prev, widget]);
-    hasChangedRef.current = true;
-  }, []);
+  const getWidgets = useCallback(() => widgetsRef.current, []);
 
-  const replace = useCallback((index: number, widget: Widget) => {
-    setWidgets(prev =>
-      prev.map((prevWidget, i) => (i === index ? widget : prevWidget))
-    );
-    hasChangedRef.current = true;
-  }, []);
+  const getWidgetsLength = useCallback(() => widgetsRef.current.length, []);
+
+  const append = useCallback(
+    (widget: Widget) => {
+      widgetsRef.current.push(widget);
+      hasChangedRef.current = true;
+      forceUpdate();
+    },
+    [forceUpdate]
+  );
+
+  const replace = useCallback(
+    (index: number, widget: Widget) => {
+      if (index < 0 || index >= widgetsRef.current.length) return;
+      widgetsRef.current[index] = widget;
+      hasChangedRef.current = true;
+      forceUpdate();
+    },
+    [forceUpdate]
+  );
 
   const update = useCallback(
     (index: number, field: keyof Widget, newValue: Widget[keyof Widget]) => {
-      setWidgets(prev =>
-        prev.map((widget, i) =>
-          i === index ? { ...widget, [field]: newValue } : widget
-        )
-      );
+      if (index < 0 || index >= widgetsRef.current.length) return;
+      widgetsRef.current[index] = {
+        ...widgetsRef.current[index],
+        [field]: newValue,
+      };
       hasChangedRef.current = true;
+      forceUpdate();
     },
-    []
+    [forceUpdate]
   );
 
   const updateByWidget = useCallback(
     (widget: Widget, field: keyof Widget, newValue: Widget[keyof Widget]) => {
-      setWidgets(prev =>
-        prev.map(w => (w.id === widget.id ? { ...w, [field]: newValue } : w))
-      );
-      hasChangedRef.current = true;
+      const targetIndex = widgetsRef.current.findIndex(w => w.id === widget.id);
+
+      if (targetIndex !== -1) {
+        widgetsRef.current[targetIndex] = {
+          ...widgetsRef.current[targetIndex],
+          [field]: newValue,
+        };
+        hasChangedRef.current = true;
+        forceUpdate();
+      }
     },
-    []
+    [forceUpdate]
   );
 
-  const remove = useCallback((index: number) => {
-    setWidgets(prev => prev.filter((_, i) => i !== index));
-    hasChangedRef.current = true;
-  }, []);
+  const remove = useCallback(
+    (index: number) => {
+      widgetsRef.current = widgetsRef.current.filter((_, i) => i !== index);
+      hasChangedRef.current = true;
+      forceUpdate();
+    },
+    [forceUpdate]
+  );
 
-  const reset = useCallback((newWidgets: Widget[]) => {
-    setWidgets(newWidgets);
-    hasChangedRef.current = true;
-  }, []);
+  const reset = useCallback(
+    (newWidgets: Widget[]) => {
+      widgetsRef.current = newWidgets;
+      hasChangedRef.current = true;
+      forceUpdate();
+    },
+    [forceUpdate]
+  );
 
   const sync = useCallback(
     (syncWidgets?: Widget[]) => {
-      const sortedWidgets =
-        syncWidgets === undefined
-          ? widgets.sort((a: Widget, b: Widget) =>
-              a.position.topFrameCount === b.position.topFrameCount
-                ? a.position.leftFrameCount - b.position.leftFrameCount
-                : a.position.topFrameCount - b.position.topFrameCount
-            )
-          : syncWidgets.sort((a: Widget, b: Widget) =>
-              a.position.topFrameCount === b.position.topFrameCount
-                ? a.position.leftFrameCount - b.position.leftFrameCount
-                : a.position.topFrameCount - b.position.topFrameCount
-            );
-      setWidgets(sortedWidgets);
+      const targetWidgets =
+        syncWidgets !== undefined ? syncWidgets : widgetsRef.current;
+
+      const sortedWidgets = targetWidgets.sort((a: Widget, b: Widget) =>
+        a.position.topFrameCount === b.position.topFrameCount
+          ? a.position.leftFrameCount - b.position.leftFrameCount
+          : a.position.topFrameCount - b.position.topFrameCount
+      );
+
+      widgetsRef.current = sortedWidgets;
+
       LocalStorageManipulator.setItem(
         LocalStorageKey.dashboardWidgets,
         JSON.stringify(sortedWidgets),
         userManager.userData?.publicId
       );
-      if (hasChangedRef.current) toast.success("Successfully save the widgets");
+
+      if (hasChangedRef.current) {
+        toast.success("Successfully save the widgets");
+      }
+
       hasChangedRef.current = false;
+      forceUpdate();
     },
-    [widgets]
+    [userManager.userData, forceUpdate]
   );
 
   return (
     <WidgetContext.Provider
       value={{
-        widgets: widgets,
         hasChanged: hasChangedRef.current,
-        append: append,
-        replace: replace,
-        update: update,
-        updateByWidget: updateByWidget,
-        remove: remove,
-        reset: reset,
-        sync: sync,
+        getWidgets,
+        getWidgetsLength,
+        append,
+        replace,
+        update,
+        updateByWidget,
+        remove,
+        reset,
+        sync,
       }}
     >
       {children}
     </WidgetContext.Provider>
   );
 };
-
-export default WidgetProvider;

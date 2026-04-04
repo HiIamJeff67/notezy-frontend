@@ -3,6 +3,8 @@ import ClockWidget from "@widgets/basic/ClockWidget/ClockWidget";
 import { getDefaultClockSetting } from "@widgets/basic/ClockWidget/data/clockSettings";
 import TodoWidget from "@widgets/basic/TodoWidget/TodoWidget";
 import { PreviewWidget } from "@widgets/widget";
+import { getDefaultToDoData } from "./TodoWidget/data/todoData";
+import { getDefaultTodoSetting } from "./TodoWidget/data/todoSettings";
 
 export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   clock: {
@@ -27,6 +29,7 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
     ],
     defaultSetting: getDefaultClockSetting(),
     defaultData: {},
+    isEditable: true,
   },
   todo: {
     name: "todo",
@@ -53,8 +56,9 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
       { widthFrameCount: 4, heightFrameCount: 5 },
       { widthFrameCount: 4, heightFrameCount: 6 },
     ],
-    defaultSetting: {},
-    defaultData: {},
+    defaultSetting: getDefaultTodoSetting(),
+    defaultData: getDefaultToDoData(),
+    isEditable: true,
   },
   calendar: {
     name: "calendar",
@@ -62,23 +66,23 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
     component: CalendarWidget,
     size: {
       widthFrameCount: 2,
-      heightFrameCount: 2,
+      heightFrameCount: 3,
     },
     minSize: {
       widthFrameCount: 2,
-      heightFrameCount: 2,
+      heightFrameCount: 3,
     },
     maxSize: {
       widthFrameCount: 3,
       heightFrameCount: 4,
     },
     availableSizes: [
-      { widthFrameCount: 2, heightFrameCount: 2 },
       { widthFrameCount: 2, heightFrameCount: 3 },
       { widthFrameCount: 3, heightFrameCount: 3 },
       { widthFrameCount: 3, heightFrameCount: 4 },
     ],
     defaultSetting: {},
     defaultData: {},
+    isEditable: false,
   },
 };

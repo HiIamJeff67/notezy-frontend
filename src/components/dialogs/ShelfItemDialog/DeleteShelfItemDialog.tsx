@@ -9,11 +9,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ModalProps } from "@/providers/ModalProvider";
 import React, { Suspense, useState } from "react";
 
-interface DeleteShelfItemDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface DeleteShelfItemDialogProps extends ModalProps {
   dialogHeader: React.ReactNode;
   confirmKeyword?: string;
   inputPlaceholder?: string;

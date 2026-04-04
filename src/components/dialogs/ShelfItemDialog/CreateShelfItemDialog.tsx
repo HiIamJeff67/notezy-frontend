@@ -9,11 +9,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ModalProps } from "@/providers/ModalProvider";
 import { Suspense, useState } from "react";
 
-interface CreateShelfItemDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CreateShelfItemDialogProps extends ModalProps {
   dialogHeader: React.ReactNode;
   disableInput?: boolean;
   inputPlaceholder?: string;

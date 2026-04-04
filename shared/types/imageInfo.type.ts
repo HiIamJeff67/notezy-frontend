@@ -13,5 +13,17 @@ export interface ImageContent {
 
 export interface ImageInfo {
   header: ImageHeader;
-  content: ImageContent[];
+  contents: ImageContent[];
+}
+
+export interface ImageThumbnailContent {
+  id: UUID;
+  contentType: string;
+  thumbnailURL: string;
+  timestamp: Date;
+}
+
+export interface ImageThumbnailInfo {
+  header: ImageHeader;
+  contents: ImageThumbnailContent[];
 }

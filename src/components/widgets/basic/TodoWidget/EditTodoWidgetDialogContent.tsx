@@ -49,6 +49,22 @@ const EditTodoWidgetDialogContent = ({
           }
         />
       </EditWidgetDialogOption>
+      <EditWidgetDialogSeparator />
+      <EditWidgetDialogOption
+        title="項目高度"
+        alignment="vertical"
+        currentValue={setting.itemHeight.toString()}
+      >
+        <Slider
+          max={36}
+          min={26}
+          step={0.1}
+          defaultValue={[setting.itemHeight]}
+          onValueChange={value =>
+            setSetting(prev => ({ ...prev, itemHeight: value[0] }))
+          }
+        />
+      </EditWidgetDialogOption>
     </EditWidgetDialogContent>
   );
 };

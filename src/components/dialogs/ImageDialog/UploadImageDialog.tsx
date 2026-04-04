@@ -3,7 +3,12 @@
 import Closeable from "@/components/commons/Closeable/Closeable";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useState } from "react";
 
 interface UploadImageDialogProps {
@@ -26,7 +31,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
   const [uploadedImages, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>("");
 
-  const handleDrop = (files: File[]) => {
+  const handleOnDrop = (files: File[]) => {
     if (files.length > maxCount) {
       setError(
         `You can only upload max to ${maxCount} images at the same time`
@@ -37,7 +42,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
     setError("");
   };
 
-  const handleUpload = () => {
+  const handleOnUpload = () => {
     if (uploadedImages.length === 0) {
       setError("Please select at least one image");
       return;
@@ -51,7 +56,9 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-card shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
-        <DialogTitle>{title}</DialogTitle>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
         <DropFileZone
           accept={{ "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"] }}
           multiple={maxCount > 1}
@@ -59,7 +66,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
           width="100%"
           height="140px"
           className="mb-2"
-          onDrop={handleDrop}
+          onDrop={handleOnDrop}
         >
           <div className="flex-col justify-center items-center">
             <p className="text-sm text-muted-foreground">
@@ -100,7 +107,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
           </Button>
           <Button
             variant="default"
-            onClick={handleUpload}
+            onClick={handleOnUpload}
             disabled={uploadedImages.length === 0}
           >
             Upload

@@ -1,4 +1,5 @@
 import { VerticalDNDable } from "@/components/commons/DNDable/VerticalDNDable";
+import DebouncedInput from "@/components/inputs/DebouncedInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -105,7 +106,7 @@ const TodoWidget = ({
   return (
     <div
       style={style}
-      className={`flex flex-col bg-card text-foreground border border-border/50 shadow-md rounded-xl p-4 overflow-hidden ${className}`}
+      className={`flex flex-col w-full h-full p-4 overflow-hidden ${className}`}
     >
       <EditTodoWidgetDialog
         open={isWidgetEditing}
@@ -116,13 +117,13 @@ const TodoWidget = ({
       <div className="relative flex justify-center items-center mb-3 shrink-0">
         {showTitleInput ? (
           <>
-            <Input
-              className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/50 focus-visible:ring-1 px-1 h-auto py-1"
+            <DebouncedInput
+              className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/50 focus-visible:ring-1 px-2 h-auto py-1"
               style={{ fontSize: `${setting.titleFontSize}px` }}
+              placeholder="Enter a Todo Title"
               value={data.title}
-              placeholder="Todo Title..."
-              onChange={e => {
-                setData(prev => ({ ...prev, title: e.target.value }));
+              onValueChange={newTitle => {
+                setData(prev => ({ ...prev, title: newTitle }));
                 setHasTitleChanged(true);
               }}
               autoFocus
@@ -141,15 +142,14 @@ const TodoWidget = ({
           </>
         ) : (
           <h3
-            className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/30 p-1 rounded transition cursor-text select-text"
+            className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/30 px-2 rounded transition cursor-text select-text"
             onClick={() => setShowTitleInput(true)}
           >
             {data.title}
           </h3>
         )}
       </div>
-
-      <div className="flex flex-col gap-1 overflow-y-auto flex-1 pr-1 custom-scrollbar">
+      <div className="flex flex-1 flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {data.items.map((todo, index) => (
           <VerticalDNDable
             key={todo.id}
@@ -173,7 +173,6 @@ const TodoWidget = ({
                 >
                   <GripVertical size={16} />
                 </div>
-
                 <Checkbox
                   checked={todo.completed}
                   onCheckedChange={checked =>
@@ -181,16 +180,19 @@ const TodoWidget = ({
                   }
                   className="mt-0.5 shrink-0"
                 />
-                <Input
-                  value={todo.text}
-                  onChange={e => update(todo.id, "text", e.target.value)}
-                  placeholder="Task description..."
-                  className={`flex-1 border-none shadow-none focus-visible:ring-1 bg-transparent px-1 transition ${
+                <DebouncedInput
+                  className={`flex-1 border-none shadow-none focus-visible:ring-1 bg-transparent px-2 transition ${
                     todo.completed
                       ? "line-through text-muted-foreground opacity-50"
                       : ""
                   }`}
-                  style={{ fontSize: `${setting.itemFontSize}px` }}
+                  style={{
+                    fontSize: `${setting.itemFontSize}px`,
+                    height: `${setting.itemHeight}px`,
+                  }}
+                  placeholder="Task description..."
+                  value={todo.text}
+                  onValueChange={newText => update(todo.id, "text", newText)}
                 />
 
                 <Popover>
@@ -198,11 +200,15 @@ const TodoWidget = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`h-7 w-7 shrink-0 ${
+                      className={`shrink-0 ${
                         todo.link
                           ? "text-blue-500"
                           : "text-muted-foreground hidden hover:text-foreground group-hover:flex data-[state=open]:flex"
                       }`}
+                      style={{
+                        height: `${setting.itemHeight}px`,
+                        width: `${setting.itemHeight}px`,
+                      }}
                     >
                       <LinkIcon />
                     </Button>
@@ -234,9 +240,13 @@ const TodoWidget = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => remove(todo.id)}
-                  className="hidden h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive group-hover:flex"
+                  className={`hidden shrink-0 text-muted-foreground hover:text-destructive group-hover:flex`}
+                  style={{
+                    height: `${setting.itemHeight}px`,
+                    width: `${setting.itemHeight}px`,
+                  }}
                 >
-                  <Trash2 />
+                  <Trash2 size={setting.itemHeight} />
                 </Button>
               </div>
             )}

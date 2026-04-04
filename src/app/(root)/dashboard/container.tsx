@@ -2,11 +2,11 @@
 
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/PlaceableBackground";
+import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackgroud/ProgressiveBackground";
 import Draggable from "@/components/commons/Draggable/Draggable";
 import Extendable from "@/components/commons/Extendable/Extendable";
 import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import XYResizable from "@/components/commons/Resizable/XYResizable";
-import UploadImageDialog from "@/components/dialogs/UploadImageDialog/UploadImageDialog";
 import CreateWidgetDialog from "@/components/dialogs/WidgetDialog/CreateWidgetDialog";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import CheckIcon from "@/components/icons/CheckIcon";
@@ -29,6 +29,8 @@ import {
   Widget,
 } from "@/components/widgets/widget";
 import { useLanguage, useTheme } from "@/hooks";
+import { useBackgroundImages } from "@/hooks/useBackgroundImages";
+import { useModal } from "@/hooks/useModal";
 import { useScreen } from "@/hooks/useScreen";
 import { useWidget } from "@/hooks/useWidget";
 import { DNDType } from "@shared/enums";
@@ -36,16 +38,8 @@ import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
 import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
-import { generateUUID } from "@shared/types/uuidv4.type";
 import { UUID } from "crypto";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 const DashboardElementZIndexes = {
@@ -66,12 +60,11 @@ const DashboardContainer = () => {
   const themeManager = useTheme();
   const languageManager = useLanguage();
   const widgetManager = useWidget();
+  const modalManager = useModal();
+  const backgroundImagesManager = useBackgroundImages();
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingWidgetIndex, setEditingWidgetIndex] = useState<number>(-1);
-  const [headerBackgroundImageURL, setHeaderBackgroundImageURL] = useState<
-    string | null
-  >(null);
   const [uploadHeaderBackgroundImageURL, setUploadHeaderBackgroundImageURL] =
     useState<string | null>(null);
   const [cropperAspectRatio, setCropperAspectRatio] = useState<number>(16 / 9);
@@ -85,9 +78,7 @@ const DashboardContainer = () => {
     height: number;
     index: number;
   }>({ width: 0, height: 0, index: -1 });
-  const [uploadImageDialogOpen, setUploadImageDialogOpen] =
-    useState<boolean>(false);
-  const [imageCropperDialogOpen, setImageCropperDialogOpen] =
+  const [cropImageDialogOpen, setCropImageDialogOpen] =
     useState<boolean>(false);
   const [createWidgetDialogOpen, setCreateWidgetDialogOpen] =
     useState<boolean>(false);
@@ -95,7 +86,6 @@ const DashboardContainer = () => {
     useState<boolean>(false);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
-  const widgetsRef = useRef<Widget[]>(widgetManager.widgets);
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
     useMemo(() => {
@@ -123,7 +113,7 @@ const DashboardContainer = () => {
       }
 
       let heightTotalFrameCount = 0;
-      widgetManager.widgets.forEach(widget => {
+      widgetManager.getWidgets().forEach(widget => {
         heightTotalFrameCount = Math.max(
           heightTotalFrameCount,
           widget.position.topFrameCount + widget.size.heightFrameCount
@@ -134,46 +124,19 @@ const DashboardContainer = () => {
         heightTotalFrameCount: heightTotalFrameCount,
         frameGap: frameGap,
       };
-    }, [screenManager.breakpoint, widgetManager.widgets]);
+    }, [screenManager.breakpoint, widgetManager]);
 
   const hasSomeWidgetsOutOfBoundary = useMemo(
     () =>
-      widgetsRef.current.some(
-        widget =>
-          widget.position.leftFrameCount + widget.size.widthFrameCount >
-          widthTotalFrameCount
-      ),
+      widgetManager
+        .getWidgets()
+        .some(
+          widget =>
+            widget.position.leftFrameCount + widget.size.widthFrameCount >
+            widthTotalFrameCount
+        ),
     [widthTotalFrameCount]
   );
-
-  useEffect(() => {
-    const initializeBackgroundImageURL = async () => {
-      const imageId = await IndexedDBManipulator.getItemByKey(
-        IndexedDBKey.currentDashboardBackgroundImageId
-      );
-      if (imageId === null) return;
-
-      const imageInfo = await IndexedDBManipulator.getItemByKey(
-        IndexedDBKey.backgroundImages
-      );
-      if (imageInfo === null || imageInfo.content.length === 0) return;
-
-      const target = imageInfo.content.find(image => image.id === imageId);
-      if (target !== undefined && target.file) {
-        const url = URL.createObjectURL(target.file);
-        setHeaderBackgroundImageURL(url);
-        const image = new Image();
-        image.src = url;
-        image.onload = () => setCropperAspectRatio(image.width / image.height);
-      }
-    };
-
-    initializeBackgroundImageURL();
-  }, []);
-
-  useEffect(() => {
-    widgetsRef.current = widgetManager.widgets;
-  }, [widgetManager.widgets]);
 
   useLayoutEffect(() => {
     if (headerBackgroundImageRef.current !== null) {
@@ -181,48 +144,13 @@ const DashboardContainer = () => {
         headerBackgroundImageRef.current.getBoundingClientRect();
       if (width && height) setCropperAspectRatio(width / height);
     }
-  }, [headerBackgroundImageURL]);
-
-  const handleBackgroundImagesOnUpload = useCallback(async (files: File[]) => {
-    const imageInfo: ImageInfo = (await IndexedDBManipulator.getItemByKey(
-      IndexedDBKey.backgroundImages
-    )) ?? {
-      header: { totalSize: 0 },
-      content: [],
-    };
-    const url = URL.createObjectURL(files[files.length - 1]);
-    const image = new Image();
-    image.src = url;
-    image.onload = () => setCropperAspectRatio(image.width / image.height);
-    setUploadHeaderBackgroundImageURL(url);
-    let lastId: UUID = generateUUID();
-    files.forEach(file => {
-      lastId = generateUUID();
-      imageInfo.header.totalSize += file.size;
-      imageInfo.content.push({
-        id: lastId,
-        contentType: file.type,
-        file: file,
-        timestamp: new Date(),
-      });
-    });
-    await IndexedDBManipulator.setItem(
-      IndexedDBKey.backgroundImages,
-      imageInfo
-    );
-    await IndexedDBManipulator.setItem(
-      IndexedDBKey.currentDashboardBackgroundImageId,
-      lastId
-    );
-    setUploadImageDialogOpen(false);
-    setImageCropperDialogOpen(true);
-  }, []);
+  }, [backgroundImagesManager.currentBackgroundImageId]);
 
   const handleCreateWidgetOnClick = useCallback(
     (previewWidget: PreviewWidget) => {
       if (createWidgetAtBottom) {
         let availableTopFrameCount = 0;
-        widgetManager.widgets.forEach(widget => {
+        widgetManager.getWidgets().forEach(widget => {
           if (
             widget.position.leftFrameCount < previewWidget.size.widthFrameCount
           ) {
@@ -247,7 +175,7 @@ const DashboardContainer = () => {
         ) {
           createdFramePosition.leftFrameCount = 0;
           let availableTopFrameCount = 0;
-          widgetManager.widgets.forEach(widget => {
+          widgetManager.getWidgets().forEach(widget => {
             if (
               widget.position.leftFrameCount <
               previewWidget.size.widthFrameCount
@@ -268,6 +196,84 @@ const DashboardContainer = () => {
     [widgetManager, currentFramePosition, createWidgetAtBottom]
   );
 
+  const isWidgetConflicted = useCallback(
+    (
+      widget: Widget,
+      widthFrameCount?: number,
+      heightFrameCount?: number
+    ): boolean => {
+      const widgetWidthFrameCount =
+        widthFrameCount === undefined
+          ? widget.size.widthFrameCount
+          : widthFrameCount;
+      const widgetHeightFrameCount =
+        heightFrameCount === undefined
+          ? widget.size.heightFrameCount
+          : heightFrameCount;
+
+      return widgetManager.getWidgets().some(potentialConflictableWidget => {
+        if (potentialConflictableWidget.id === widget.id) return false;
+
+        if (
+          (potentialConflictableWidget.position.leftFrameCount >=
+            widget.position.leftFrameCount &&
+            potentialConflictableWidget.position.leftFrameCount <
+              widget.position.leftFrameCount + widgetWidthFrameCount) ||
+          (potentialConflictableWidget.position.leftFrameCount +
+            potentialConflictableWidget.size.widthFrameCount >
+            widget.position.leftFrameCount &&
+            potentialConflictableWidget.position.leftFrameCount +
+              potentialConflictableWidget.size.widthFrameCount <=
+              widget.position.leftFrameCount + widgetWidthFrameCount)
+        ) {
+          if (
+            (widget.position.topFrameCount >=
+              potentialConflictableWidget.position.topFrameCount &&
+              widget.position.topFrameCount <
+                potentialConflictableWidget.position.topFrameCount +
+                  potentialConflictableWidget.size.heightFrameCount) ||
+            (widget.position.topFrameCount + widgetHeightFrameCount >
+              potentialConflictableWidget.position.topFrameCount &&
+              widget.position.topFrameCount + widgetHeightFrameCount <=
+                potentialConflictableWidget.position.topFrameCount +
+                  potentialConflictableWidget.size.heightFrameCount)
+          ) {
+            return true;
+          }
+        }
+
+        return (
+          // (prettier-ignore) check if some of the potential conflictable widgets containing the widget
+          // (prettier-ignore) if the right bottom point of the widget is less than some of the other widgets
+          (widget.position.leftFrameCount + widgetWidthFrameCount >=
+            potentialConflictableWidget.position.leftFrameCount +
+              potentialConflictableWidget.size.widthFrameCount &&
+            widget.position.topFrameCount + widgetHeightFrameCount >=
+              potentialConflictableWidget.position.topFrameCount +
+                potentialConflictableWidget.size.heightFrameCount &&
+            // (prettier-ignore) and if the left top point of the widget is greater than some other widgets
+            widget.position.leftFrameCount <=
+              potentialConflictableWidget.position.leftFrameCount &&
+            widget.position.topFrameCount <=
+              potentialConflictableWidget.position.topFrameCount) || // (prettier-ignore) check if the widget is containing in some of the potential conflictable widgets
+          // (prettier-ignore) if the right bottom points of some other widgets are less than the widget
+          (potentialConflictableWidget.position.leftFrameCount +
+            potentialConflictableWidget.size.widthFrameCount >=
+            widget.position.leftFrameCount + widgetWidthFrameCount &&
+            potentialConflictableWidget.position.topFrameCount +
+              potentialConflictableWidget.size.heightFrameCount >=
+              // (prettier-ignore) and if the left top points of some other widgets are greater than the widget
+              widget.position.topFrameCount + widgetHeightFrameCount &&
+            potentialConflictableWidget.position.leftFrameCount <=
+              widget.position.leftFrameCount &&
+            potentialConflictableWidget.position.topFrameCount <=
+              widget.position.topFrameCount)
+        );
+      });
+    },
+    [widgetManager]
+  );
+
   const handleWidgetOnResize = useCallback(
     (
       width: number,
@@ -282,41 +288,10 @@ const DashboardContainer = () => {
       // Pass 1: Eliminate the available sizes which may cause a conflict to other widgets
       resizedWidget.availableSizes.forEach(availableSize => {
         if (
-          !widgetsRef.current.some(
-            potentialConflictableWidget =>
-              potentialConflictableWidget.id != resizedWidget.id &&
-              // (prettier-ignore) check if the right bottom point of the resized widget with available size is inside some of the widgets
-              // (prettier-ignore) if the right border of the current resized widget is between the left border and the right border of some other widgets
-              ((resizedWidget.position.leftFrameCount +
-                availableSize.widthFrameCount >
-                potentialConflictableWidget.position.leftFrameCount &&
-                resizedWidget.position.leftFrameCount +
-                  availableSize.widthFrameCount <=
-                  potentialConflictableWidget.position.leftFrameCount +
-                    potentialConflictableWidget.size.widthFrameCount &&
-                // (prettier-ignore) if the bottom border of the current resized widget is between the left border and the right border of some other widgets
-                resizedWidget.position.topFrameCount +
-                  availableSize.heightFrameCount >
-                  potentialConflictableWidget.position.topFrameCount &&
-                resizedWidget.position.topFrameCount +
-                  availableSize.heightFrameCount <=
-                  potentialConflictableWidget.position.topFrameCount +
-                    potentialConflictableWidget.size.heightFrameCount) ||
-                // (prettier-ignore) check if there's any potential conflictable widgets inside the resized widget with available size
-                // (prettier-ignore) if the right bottom point of the resized widget is greater than some other widgets
-                (resizedWidget.position.leftFrameCount +
-                  availableSize.widthFrameCount >=
-                  potentialConflictableWidget.position.leftFrameCount +
-                    potentialConflictableWidget.size.widthFrameCount &&
-                  resizedWidget.position.topFrameCount +
-                    availableSize.heightFrameCount >=
-                    potentialConflictableWidget.position.topFrameCount +
-                      potentialConflictableWidget.size.heightFrameCount &&
-                  // (prettier-ignore) if the right bottom point of some widgets is less than the resized widget
-                  resizedWidget.position.leftFrameCount <=
-                    potentialConflictableWidget.position.leftFrameCount &&
-                  resizedWidget.position.topFrameCount <=
-                    potentialConflictableWidget.position.topFrameCount))
+          !isWidgetConflicted(
+            resizedWidget,
+            availableSize.widthFrameCount,
+            availableSize.heightFrameCount
           )
         ) {
           // we check the right and the bottom border to handle the resize of the expansion on the right and the bottom border
@@ -392,16 +367,17 @@ const DashboardContainer = () => {
 
       return result;
     },
-    [frameSize, frameGap]
+    [widgetManager, frameSize, frameGap]
   );
 
   const handleReorderWidgetsToFitInBoundary = useCallback(() => {
-    const sortedWidgets = [...widgetsRef.current].sort(
-      (a: Widget, b: Widget) =>
+    const sortedWidgets = widgetManager
+      .getWidgets()
+      .sort((a: Widget, b: Widget) =>
         a.position.topFrameCount === b.position.topFrameCount
           ? a.position.leftFrameCount - b.position.leftFrameCount
           : a.position.topFrameCount - b.position.topFrameCount
-    );
+      );
     let currentLeftFrameCount = 0,
       currentTopFrameCount = 0;
     const isOccupied: (UUID | undefined)[][] = Array.from(
@@ -474,7 +450,12 @@ const DashboardContainer = () => {
         flex-col justify-center items-center
       "
     >
-      {headerBackgroundImageURL === null ? (
+      <CreateWidgetDialog
+        open={createWidgetDialogOpen}
+        onOpenChange={setCreateWidgetDialogOpen}
+        onCreate={handleCreateWidgetOnClick}
+      />
+      {backgroundImagesManager.currentBackgroundImageId === null ? (
         <GridBackground
           className={`!w-full !min-h-[240] !max-h-[300] relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
@@ -483,38 +464,36 @@ const DashboardContainer = () => {
               className="absolute"
               imageSrc=""
               imageAlt="Dashboard background image"
-              onClick={() => setUploadImageDialogOpen(true)}
+              onClick={() =>
+                modalManager.open("SelectBackgroundImageDialog", {
+                  cropperAspectRatio: cropperAspectRatio,
+                })
+              }
               hoverText="點擊以變更背景圖片"
             />
           )}
         </GridBackground>
       ) : (
-        <div
+        <ProgressiveBackground
           ref={headerBackgroundImageRef}
           className={`w-full min-h-[240] max-h-[300] border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
-          style={
-            headerBackgroundImageURL === null
-              ? {}
-              : {
-                  backgroundImage: `url(${headerBackgroundImageURL})`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
-          }
         >
           {isEditing && (
             <ModifyImageHover
               className="absolute inset-0"
               imageAlt="Dashboard background image"
-              onClick={() => setUploadImageDialogOpen(true)}
+              onClick={() =>
+                modalManager.open("SelectBackgroundImageDialog", {
+                  cropperAspectRatio: cropperAspectRatio,
+                })
+              }
               hoverText="點擊以變更背景圖片"
             />
           )}
-        </div>
+        </ProgressiveBackground>
       )}
       <PlaceableBackground
-        className="overflow-x-hidden overflow-y-auto relative bg-background"
+        className="overflow-x-hidden overflow-y-auto relative bg-background top-[-12] border-1 border-foreground/30 rounded-t-lg"
         style={{ height: (heightTotalFrameCount + 1) * frameSize }}
         zIndex={DashboardElementZIndexes.placeableBackground}
         frameSizeSource="horizontal"
@@ -537,9 +516,11 @@ const DashboardContainer = () => {
               if (!monitor.canDrop())
                 return { widthFrameCount: 0, heightFrameCount: 0 };
               return (
-                // make sure we return the size of the current widget from widgetsRef.current
-                widgetsRef.current.find(widget => widget.id === draggedItem.id)
-                  ?.size ?? draggedItem.size
+                // make sure we return the size of the current widget from widgetManager.widgets
+                widgetManager
+                  .getWidgets()
+                  .find(widget => widget.id === draggedItem.id)?.size ??
+                draggedItem.size
               );
             },
             canDrop: (
@@ -547,41 +528,20 @@ const DashboardContainer = () => {
               _: DropTargetMonitor,
               position: FrameCountPosition
             ) => {
-              // make sure we get the current widget from widgetsRef.current
-              const draggedWidget = widgetsRef.current.find(
-                widget => widget.id === draggedItem.id
-              );
+              // make sure we get the current widget from widgetManager.widgets
+              const draggedWidget = widgetManager
+                .getWidgets()
+                .find(widget => widget.id === draggedItem.id);
               if (draggedWidget === undefined) return false;
-              return !widgetsRef.current.some(
-                potentialConflictableWidget =>
-                  potentialConflictableWidget.id != draggedWidget.id &&
-                  potentialConflictableWidget.position.leftFrameCount >=
-                    position.leftFrameCount &&
-                  potentialConflictableWidget.position.leftFrameCount +
-                    potentialConflictableWidget.size.widthFrameCount <=
-                    position.leftFrameCount +
-                      draggedWidget.size.widthFrameCount &&
-                  potentialConflictableWidget.position.topFrameCount >=
-                    position.topFrameCount &&
-                  potentialConflictableWidget.position.topFrameCount +
-                    potentialConflictableWidget.size.heightFrameCount <=
-                    position.topFrameCount + draggedWidget.size.heightFrameCount
-              );
+              draggedWidget.position = position;
+              return !isWidgetConflicted(draggedWidget);
             },
             drop: (
               draggedItem: Widget,
               _: DropTargetMonitor,
               position: FrameCountPosition
-            ) => {
-              widgetManager.updateByWidget(draggedItem, "position", position);
-              // make sure we also update the current widget from widgetsRef.current
-              for (let i = 0; i < widgetsRef.current.length; i++) {
-                if (widgetsRef.current[i].id === draggedItem.id) {
-                  widgetsRef.current[i].position = position;
-                  break;
-                }
-              }
-            },
+            ) =>
+              widgetManager.updateByWidget(draggedItem, "position", position),
           },
           onClick: (position: FrameCountPosition) => {
             setCreateWidgetAtBottom(false);
@@ -590,7 +550,7 @@ const DashboardContainer = () => {
           },
         }}
       >
-        {widgetManager.widgets.map((widget, index) => (
+        {widgetManager.getWidgets().map((widget, index) => (
           <Draggable // a draggable wrapper to locate the widget base on the correct position
             key={index}
             style={{
@@ -622,7 +582,7 @@ const DashboardContainer = () => {
                     ),
               zIndex: DashboardElementZIndexes.widgets.draggable,
             }}
-            className="absolute shadow rounded-lg bg-background/80"
+            className="absolute shadow rounded-lg bg-transparent"
             type={DNDType.DraggableWidget}
             item={widget}
             canDrag={isEditing}
@@ -698,9 +658,9 @@ const DashboardContainer = () => {
                 width: number,
                 height: number
               ): { availableWidth: number; availableHeight: number } => {
-                const resizedWidget = widgetsRef.current.find(
-                  currentWidget => currentWidget.id === widget.id
-                ); // make sure we get the current widget from the widgetsRef.current
+                const resizedWidget = widgetManager
+                  .getWidgets()
+                  .find(currentWidget => currentWidget.id === widget.id); // make sure we get the current widget from the widgetManager.widgets
                 if (resizedWidget === undefined) {
                   return {
                     availableWidth: 0,
@@ -710,9 +670,9 @@ const DashboardContainer = () => {
                 return handleWidgetOnResize(width, height, resizedWidget).size;
               }}
               onAfterResize={(width: number, height: number) => {
-                const resizedWidget = widgetsRef.current.find(
-                  currentWidget => currentWidget.id === widget.id
-                ); // make sure we get the current widget from the widgetsRef.current
+                const resizedWidget = widgetManager
+                  .getWidgets()
+                  .find(currentWidget => currentWidget.id === widget.id); // make sure we get the current widget from the widgetManager.widgets
                 if (resizedWidget === undefined) return;
                 const resizedFrameCount = handleWidgetOnResize(
                   width,
@@ -730,7 +690,7 @@ const DashboardContainer = () => {
                 className="w-4 h-4 !top-2 !right-2 !bg-transparent"
                 style={{ zIndex: DashboardElementZIndexes.widgets.extendable }}
                 size={24}
-                disabled={!isEditing}
+                disabled={!isEditing || !widget.isEditable}
                 optionMenuItems={
                   <>
                     <DropdownMenuItem
@@ -760,7 +720,7 @@ const DashboardContainer = () => {
                       frameGap
                     ),
                   }}
-                  className="bg-background/80 border-[1.5] border-foreground/25 rounded-lg"
+                  className="w-full h-full bg-card border-[1.5] border-foreground/25 rounded-lg"
                   isWidgetEditing={isEditing && editingWidgetIndex === index}
                   onIsWidgetEditingChange={(prevIsWidgetEditing: boolean) =>
                     setEditingWidgetIndex(prevIsWidgetEditing ? index : -1)
@@ -842,17 +802,10 @@ const DashboardContainer = () => {
           )}
         </div>
       </PlaceableBackground>
-      <UploadImageDialog
-        open={uploadImageDialogOpen}
-        onOpenChange={setUploadImageDialogOpen}
-        title="Upload Background Images"
-        onUpload={handleBackgroundImagesOnUpload}
-        onCancel={() => setUploadImageDialogOpen(false)}
-      />
       {uploadHeaderBackgroundImageURL !== null && (
         <Dialog
-          open={imageCropperDialogOpen}
-          onOpenChange={setImageCropperDialogOpen}
+          open={cropImageDialogOpen}
+          onOpenChange={setCropImageDialogOpen}
         >
           <DialogContent className="max-w-md shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
             <DialogHeader>
@@ -865,12 +818,11 @@ const DashboardContainer = () => {
                 const imageInfo: ImageInfo =
                   (await IndexedDBManipulator.getItemByKey(
                     IndexedDBKey.backgroundImages
-                  )) ?? { header: { totalSize: 0 }, content: [] };
+                  )) ?? { header: { totalSize: 0 }, contents: [] };
 
                 const lastImage =
-                  imageInfo.content[imageInfo.content.length - 1];
+                  imageInfo.contents[imageInfo.contents.length - 1];
                 const url = URL.createObjectURL(lastImage.file);
-                setHeaderBackgroundImageURL(url);
                 if (lastImage) {
                   const croppedFile = new File(
                     [croppedBlob],
@@ -881,7 +833,7 @@ const DashboardContainer = () => {
                   lastImage.contentType = croppedFile.type;
                   lastImage.timestamp = new Date();
                 }
-                imageInfo.header.totalSize = imageInfo.content.reduce(
+                imageInfo.header.totalSize = imageInfo.contents.reduce(
                   (sum, img) => sum + (img.file?.size ?? 0),
                   0
                 );
@@ -889,18 +841,13 @@ const DashboardContainer = () => {
                   IndexedDBKey.backgroundImages,
                   imageInfo
                 );
-                setImageCropperDialogOpen(false);
+                setCropImageDialogOpen(false);
               }}
-              onCancel={() => setImageCropperDialogOpen(false)}
+              onCancel={() => setCropImageDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
       )}
-      <CreateWidgetDialog
-        open={createWidgetDialogOpen}
-        onOpenChange={setCreateWidgetDialogOpen}
-        onCreate={handleCreateWidgetOnClick}
-      />
     </div>
   );
 };

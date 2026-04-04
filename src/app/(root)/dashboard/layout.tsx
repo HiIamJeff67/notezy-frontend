@@ -2,7 +2,7 @@
 
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import WidgetProvider from "@/providers/WidgetProvider";
+import { WidgetProvider } from "@/providers/WidgetProvider";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import React, { Suspense } from "react";
 

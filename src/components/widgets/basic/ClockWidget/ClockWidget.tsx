@@ -39,7 +39,7 @@ const ClockWidget = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-center p-2 h-full w-full bg-card ${className}`}
+      className={`relative flex flex-col items-center justify-center w-full h-full p-2 ${className}`}
       style={style}
     >
       <EditClockWidgetDialog

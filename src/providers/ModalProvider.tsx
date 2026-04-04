@@ -1,13 +1,19 @@
 "use client";
 
+import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
 import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
 import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
 import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
 import React, { createContext, useState } from "react";
 
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 export type ModalPropsMap = {
-  // make sure don't place the default dialog props here, ex. isOpen, onClose
+  // make sure don't place the default modal props here, ex. isOpen, onClose
   AccountSettingsPanel: undefined;
   PreferencesPanel: undefined;
   CreateShelfItemDialog: {
@@ -23,6 +29,9 @@ export type ModalPropsMap = {
     inputPlaceholder?: string;
     onDelete: () => void | Promise<void>;
     onCancel: () => void;
+  };
+  SelectBackgroundImageDialog: {
+    cropperAspectRatio: number;
   };
 };
 
@@ -91,6 +100,11 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
         isOpen={isOpen("DeleteShelfItemDialog")}
         onClose={close}
         {...getModalProps("DeleteShelfItemDialog")}
+      />
+      <SelectBackgroundImageDialog
+        isOpen={isOpen("SelectBackgroundImageDialog")}
+        onClose={close}
+        {...getModalProps("SelectBackgroundImageDialog")}
       />
     </ModalContext.Provider>
   );

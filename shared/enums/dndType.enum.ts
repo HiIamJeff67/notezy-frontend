@@ -1,6 +1,6 @@
 // frontend only
 
-import { generateUUID } from "@shared/types/uuidv4.type";
+import { generateUUID } from "../types/uuidv4.type";
 
 export enum DNDType {
   DraggableSubShelf = "DRAGGABLE_SUB_SHELF",
