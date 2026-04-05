@@ -3,36 +3,36 @@ import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { TodoSetting } from "@widgets/basic/TodoWidget/data/todoSettings";
 import { Dispatch, lazy, SetStateAction } from "react";
+import { ScratchPadSetting } from "./data/scratchPadSettings";
 
-const EditTodoWidgetDialogContent = lazy(
-  () => import("./EditTodoWidgetDialogContent")
+const EditScratchPadWidgetDialogContent = lazy(
+  () => import("./EditScratchPadWidgetDialogContent")
 );
 
-interface EditTodoWidgetDialogProps {
+interface EditScratchPadWidgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  setting: TodoSetting;
-  setSetting: Dispatch<SetStateAction<TodoSetting>>;
+  setting: ScratchPadSetting;
+  setSetting: Dispatch<SetStateAction<ScratchPadSetting>>;
 }
 
-const EditTodoWidgetDialog = ({
+const EditScratchPadWidgetDialog = ({
   open,
   onOpenChange,
   setting,
   setSetting,
-}: EditTodoWidgetDialogProps) => {
+}: EditScratchPadWidgetDialogProps) => {
   return (
     <EditWidgetDialog open={open} onOpenChange={onOpenChange}>
       <DeferredSuspense
         trigger={open}
         fallback={
-          <EditWidgetDialogContentSkeleton title="編輯時鐘" count={3} />
+          <EditWidgetDialogContentSkeleton title="編輯草稿本" count={1} />
         }
         fallbackDelayMs={100}
       >
-        <EditTodoWidgetDialogContent
+        <EditScratchPadWidgetDialogContent
           setting={setting}
           setSetting={setSetting}
         />
@@ -41,4 +41,4 @@ const EditTodoWidgetDialog = ({
   );
 };
 
-export default EditTodoWidgetDialog;
+export default EditScratchPadWidgetDialog;

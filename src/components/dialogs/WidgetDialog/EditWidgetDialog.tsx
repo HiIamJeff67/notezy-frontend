@@ -44,7 +44,7 @@ export const EditWidgetDialogOption = ({
   title,
   description,
   currentValue,
-  alignment,
+  alignment = "horizontal",
   children,
 }: EditWidgetDialogOptionProps) => {
   return (

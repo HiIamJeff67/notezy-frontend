@@ -2,7 +2,7 @@
 
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/PlaceableBackground";
-import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackgroud/ProgressiveBackground";
+import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
 import Draggable from "@/components/commons/Draggable/Draggable";
 import Extendable from "@/components/commons/Extendable/Extendable";
 import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
@@ -28,7 +28,7 @@ import {
   toWidget,
   Widget,
 } from "@/components/widgets/widget";
-import { useLanguage, useTheme } from "@/hooks";
+import { useDebounceValue, useLanguage, useTheme } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { useModal } from "@/hooks/useModal";
 import { useScreen } from "@/hooks/useScreen";
@@ -88,43 +88,46 @@ const DashboardContainer = () => {
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
-    useMemo(() => {
-      let widthTotalFrameCount = 4;
-      let frameGap = 4;
-      switch (screenManager.breakpoint) {
-        case "base":
-        case "sm":
-          widthTotalFrameCount = 4;
-          break;
-        case "md":
-        case "lg":
-          widthTotalFrameCount = 6;
-          break;
-        case "xl":
-          widthTotalFrameCount = 8;
-          frameGap = 6;
-          break;
-        case "2xl":
-          widthTotalFrameCount = 12;
-          break;
-        case "3xl":
-          widthTotalFrameCount = 16;
-          break;
-      }
+    useDebounceValue(
+      useMemo(() => {
+        let widthTotalFrameCount = 4;
+        let frameGap = 4;
+        switch (screenManager.breakpoint) {
+          case "base":
+          case "sm":
+            widthTotalFrameCount = 4;
+            break;
+          case "md":
+          case "lg":
+            widthTotalFrameCount = 6;
+            break;
+          case "xl":
+            widthTotalFrameCount = 8;
+            frameGap = 6;
+            break;
+          case "2xl":
+            widthTotalFrameCount = 12;
+            break;
+          case "3xl":
+            widthTotalFrameCount = 16;
+            break;
+        }
 
-      let heightTotalFrameCount = 0;
-      widgetManager.getWidgets().forEach(widget => {
-        heightTotalFrameCount = Math.max(
-          heightTotalFrameCount,
-          widget.position.topFrameCount + widget.size.heightFrameCount
-        );
-      });
-      return {
-        widthTotalFrameCount: widthTotalFrameCount,
-        heightTotalFrameCount: heightTotalFrameCount,
-        frameGap: frameGap,
-      };
-    }, [screenManager.breakpoint, widgetManager]);
+        let heightTotalFrameCount = 0;
+        widgetManager.getWidgets().forEach(widget => {
+          heightTotalFrameCount = Math.max(
+            heightTotalFrameCount,
+            widget.position.topFrameCount + widget.size.heightFrameCount
+          );
+        });
+        return {
+          widthTotalFrameCount: widthTotalFrameCount,
+          heightTotalFrameCount: heightTotalFrameCount,
+          frameGap: frameGap,
+        };
+      }, [screenManager.breakpoint, widgetManager]),
+      500
+    );
 
   const hasSomeWidgetsOutOfBoundary = useMemo(
     () =>
@@ -494,7 +497,8 @@ const DashboardContainer = () => {
       )}
       <PlaceableBackground
         className="overflow-x-hidden overflow-y-auto relative bg-background top-[-12] border-1 border-foreground/30 rounded-t-lg"
-        style={{ height: (heightTotalFrameCount + 1) * frameSize }}
+        // height: (heightTotalFrameCount + 「 2 」) * frameSize => remain 2 for extra spaces at the bottom area
+        style={{ height: (heightTotalFrameCount + 2) * frameSize }}
         zIndex={DashboardElementZIndexes.placeableBackground}
         frameSizeSource="horizontal"
         frameSize={frameSize}
@@ -690,14 +694,16 @@ const DashboardContainer = () => {
                 className="w-4 h-4 !top-2 !right-2 !bg-transparent"
                 style={{ zIndex: DashboardElementZIndexes.widgets.extendable }}
                 size={24}
-                disabled={!isEditing || !widget.isEditable}
+                disabled={!isEditing}
                 optionMenuItems={
                   <>
-                    <DropdownMenuItem
-                      onClick={() => setEditingWidgetIndex(index)}
-                    >
-                      Edit
-                    </DropdownMenuItem>
+                    {widget.isEditable && (
+                      <DropdownMenuItem
+                        onClick={() => setEditingWidgetIndex(index)}
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => widgetManager.remove(index)}
                     >
@@ -720,7 +726,11 @@ const DashboardContainer = () => {
                       frameGap
                     ),
                   }}
-                  className="w-full h-full bg-card border-[1.5] border-foreground/25 rounded-lg"
+                  className="
+                    w-full h-full 
+                    bg-card border-[1.5] border-foreground/25 rounded-lg
+                    transition-all duration-200 ease-in-out
+                  "
                   isWidgetEditing={isEditing && editingWidgetIndex === index}
                   onIsWidgetEditingChange={(prevIsWidgetEditing: boolean) =>
                     setEditingWidgetIndex(prevIsWidgetEditing ? index : -1)

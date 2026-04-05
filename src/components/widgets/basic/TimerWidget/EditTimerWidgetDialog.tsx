@@ -3,36 +3,36 @@ import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { TodoSetting } from "@widgets/basic/TodoWidget/data/todoSettings";
 import { Dispatch, lazy, SetStateAction } from "react";
+import { TimerSetting } from "./data/timerSettings";
 
-const EditTodoWidgetDialogContent = lazy(
-  () => import("./EditTodoWidgetDialogContent")
+const EditTimerWidgetDialogContent = lazy(
+  () => import("./EditTimerWidgetDialogContent")
 );
 
-interface EditTodoWidgetDialogProps {
+interface EditTimerWidgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  setting: TodoSetting;
-  setSetting: Dispatch<SetStateAction<TodoSetting>>;
+  setting: TimerSetting;
+  setSetting: Dispatch<SetStateAction<TimerSetting>>;
 }
 
-const EditTodoWidgetDialog = ({
+const EditTimerWidgetDialog = ({
   open,
   onOpenChange,
   setting,
   setSetting,
-}: EditTodoWidgetDialogProps) => {
+}: EditTimerWidgetDialogProps) => {
   return (
     <EditWidgetDialog open={open} onOpenChange={onOpenChange}>
       <DeferredSuspense
         trigger={open}
         fallback={
-          <EditWidgetDialogContentSkeleton title="編輯時鐘" count={3} />
+          <EditWidgetDialogContentSkeleton title="編輯計時器" count={2} />
         }
         fallbackDelayMs={100}
       >
-        <EditTodoWidgetDialogContent
+        <EditTimerWidgetDialogContent
           setting={setting}
           setSetting={setSetting}
         />
@@ -41,4 +41,4 @@ const EditTodoWidgetDialog = ({
   );
 };
 
-export default EditTodoWidgetDialog;
+export default EditTimerWidgetDialog;

@@ -76,6 +76,9 @@ const PlaceableBackground = ({
     const target = backgroundRef.current;
     if (target === null) return;
 
+    let timeout: NodeJS.Timeout;
+    let hasRendered = false;
+
     const handleResize = () => {
       const width = backgroundRef.current
         ? backgroundRef.current.offsetWidth
@@ -115,11 +118,23 @@ const PlaceableBackground = ({
       setFrames(frames);
     };
 
-    const resizeObserver = new ResizeObserver(handleResize);
+    const resizeObserver = new ResizeObserver(() => {
+      if (!hasRendered) {
+        hasRendered = true;
+        return;
+      }
+
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        handleResize();
+      }, 200);
+    });
     resizeObserver.observe(target);
     handleResize();
+
     return () => {
       resizeObserver.disconnect();
+      clearTimeout(timeout);
     };
   }, [
     // except for listening the changed of backgroundRef to avoid UI zooming while user adding new widgets
@@ -168,7 +183,7 @@ const PlaceableBackground = ({
       {frames.map(([x, y]) => (
         <PlaceableFrame
           key={`${x}-${y}`}
-          className={`absolute z-${frameProps.zIndex ?? zIndex} ${frameProps.className}`}
+          className={`absolute transition-all duration-200 ease-in-out z-${frameProps.zIndex ?? zIndex} ${frameProps.className}`}
           disabled={frameProps.disabled}
           frameSize={frameSize}
           position={{ leftFrameCount: x, topFrameCount: y }}

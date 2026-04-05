@@ -59,7 +59,12 @@ const CreateWidgetDialog = ({
                     transform: "scale(0.48)",
                   }}
                 >
-                  <previewWidget.component className="w-full h-full" />
+                  <previewWidget.component
+                    className="
+                      w-full h-full 
+                      bg-card rounded-lg
+                    "
+                  />
                 </div>
               </div>
             </div>

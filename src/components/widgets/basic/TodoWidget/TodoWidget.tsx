@@ -12,7 +12,7 @@ import { useAnyTypeState } from "@/hooks/useAnyTypeState";
 import { generateDynamicDNDType } from "@shared/enums/dndType.enum";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import {
-  getDefaultToDoData,
+  getDefaultTodoData,
   TodoData,
   TodoItem,
 } from "@widgets/basic/TodoWidget/data/todoData";
@@ -43,7 +43,7 @@ const TodoWidget = ({
   );
   const [data, setData] = useAnyTypeState<TodoData>(
     [rawData, setRawData],
-    getDefaultToDoData()
+    getDefaultTodoData()
   );
 
   const [dndType, _] = useState(() => generateDynamicDNDType("BasicTodoItem"));
@@ -61,6 +61,8 @@ const TodoWidget = ({
           id: generateUUID(),
           text: "",
           completed: false,
+          updatedAt: new Date(),
+          createdAt: new Date(),
         },
       ],
     }));
@@ -105,8 +107,8 @@ const TodoWidget = ({
 
   return (
     <div
-      style={style}
       className={`flex flex-col w-full h-full p-4 overflow-hidden ${className}`}
+      style={style}
     >
       <EditTodoWidgetDialog
         open={isWidgetEditing}

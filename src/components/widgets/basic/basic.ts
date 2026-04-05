@@ -3,7 +3,13 @@ import ClockWidget from "@widgets/basic/ClockWidget/ClockWidget";
 import { getDefaultClockSetting } from "@widgets/basic/ClockWidget/data/clockSettings";
 import TodoWidget from "@widgets/basic/TodoWidget/TodoWidget";
 import { PreviewWidget } from "@widgets/widget";
-import { getDefaultToDoData } from "./TodoWidget/data/todoData";
+import { getDefaultScratchPadData } from "./ScratchPadWidget/data/scratchPadData";
+import { getDefaultScratchPadSetting } from "./ScratchPadWidget/data/scratchPadSettings";
+import ScratchPadWidget from "./ScratchPadWidget/ScratchPadWidget";
+import { getDefaultTimerData } from "./TimerWidget/data/timerData";
+import { getDefaultTimerSetting } from "./TimerWidget/data/timerSettings";
+import TimerWidget from "./TimerWidget/TimerWidget";
+import { getDefaultTodoData } from "./TodoWidget/data/todoData";
 import { getDefaultTodoSetting } from "./TodoWidget/data/todoSettings";
 
 export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
@@ -29,6 +35,37 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
     ],
     defaultSetting: getDefaultClockSetting(),
     defaultData: {},
+    isEditable: true,
+  },
+  timer: {
+    name: "timer",
+    description: "A simple pomodoro timer",
+    component: TimerWidget,
+    size: {
+      widthFrameCount: 2,
+      heightFrameCount: 1,
+    },
+    minSize: {
+      widthFrameCount: 2,
+      heightFrameCount: 1,
+    },
+    maxSize: {
+      widthFrameCount: 4,
+      heightFrameCount: 4,
+    },
+    availableSizes: [
+      { widthFrameCount: 2, heightFrameCount: 1 },
+      { widthFrameCount: 2, heightFrameCount: 2 },
+      { widthFrameCount: 2, heightFrameCount: 3 },
+      { widthFrameCount: 3, heightFrameCount: 2 },
+      { widthFrameCount: 3, heightFrameCount: 3 },
+      { widthFrameCount: 3, heightFrameCount: 4 },
+      { widthFrameCount: 4, heightFrameCount: 4 },
+      { widthFrameCount: 4, heightFrameCount: 5 },
+      { widthFrameCount: 4, heightFrameCount: 6 },
+    ],
+    defaultSetting: getDefaultTimerSetting(),
+    defaultData: getDefaultTimerData(),
     isEditable: true,
   },
   todo: {
@@ -57,7 +94,7 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
       { widthFrameCount: 4, heightFrameCount: 6 },
     ],
     defaultSetting: getDefaultTodoSetting(),
-    defaultData: getDefaultToDoData(),
+    defaultData: getDefaultTodoData(),
     isEditable: true,
   },
   calendar: {
@@ -84,5 +121,39 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
     defaultSetting: {},
     defaultData: {},
     isEditable: false,
+  },
+  scratchPad: {
+    name: "scratchPad",
+    description: "A simple place to write any text using markdown",
+    component: ScratchPadWidget,
+    size: {
+      widthFrameCount: 2,
+      heightFrameCount: 2,
+    },
+    minSize: {
+      widthFrameCount: 2,
+      heightFrameCount: 2,
+    },
+    maxSize: {
+      widthFrameCount: 4,
+      heightFrameCount: 6,
+    },
+    availableSizes: [
+      { widthFrameCount: 2, heightFrameCount: 2 },
+      { widthFrameCount: 2, heightFrameCount: 3 },
+      { widthFrameCount: 2, heightFrameCount: 4 },
+      { widthFrameCount: 2, heightFrameCount: 5 },
+      { widthFrameCount: 2, heightFrameCount: 6 },
+      { widthFrameCount: 3, heightFrameCount: 3 },
+      { widthFrameCount: 3, heightFrameCount: 4 },
+      { widthFrameCount: 3, heightFrameCount: 5 },
+      { widthFrameCount: 3, heightFrameCount: 6 },
+      { widthFrameCount: 4, heightFrameCount: 4 },
+      { widthFrameCount: 4, heightFrameCount: 5 },
+      { widthFrameCount: 4, heightFrameCount: 6 },
+    ],
+    defaultSetting: getDefaultScratchPadSetting(),
+    defaultData: getDefaultScratchPadData(),
+    isEditable: true,
   },
 };
