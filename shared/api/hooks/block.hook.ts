@@ -47,10 +47,6 @@ import {
 } from "@shared/api/interfaces/block.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   DeleteMyBlockById,
   DeleteMyBlocksByIds,
   InsertBlock,
@@ -61,6 +57,10 @@ import {
   UpdateMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

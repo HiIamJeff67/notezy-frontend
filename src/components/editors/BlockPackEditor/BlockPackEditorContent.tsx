@@ -3,7 +3,6 @@
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +36,7 @@ import { BlockNoteView } from "@blocknote/shadcn";
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
 import { ContentType } from "@shared/enums/blockPackContentType.enum";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
+import { ChevronDownIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 

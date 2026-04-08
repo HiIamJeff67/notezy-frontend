@@ -1,4 +1,4 @@
-import PenLineIcon from "@/components/icons/PenLineIcon";
+import { PenLineIcon } from "lucide-react";
 import { CSSProperties } from "react";
 
 interface EditableProps {

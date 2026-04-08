@@ -1,6 +1,4 @@
-import CheckIcon from "@/components/icons/CheckIcon";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
-import ModifyDotIcon from "@/components/icons/ModifyDotIcon";
 import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
 import SubShelfMenu from "@/components/menus/SubShelfMenu/SubShelfMenu";
@@ -29,6 +27,7 @@ import { useModal } from "@/hooks/useModal";
 import { DNDType } from "@shared/enums/dndType.enum";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { CheckIcon, SquareDotIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import toast from "react-hot-toast";
@@ -149,8 +148,8 @@ const RootShelfMenuItem = ({
             </ContextMenuTrigger>
           )}
           {!shelfItemManager.isNewRootShelfNodeName() && summary.hasChanged && (
-            <SidebarMenuAction className="hover:bg-primary/60 p-0.5">
-              <ModifyDotIcon className="max-w-3.5 max-h-3.5" />
+            <SidebarMenuAction className="bg-transparent hover:bg-transparent p-0.5 flex justify-center items-center">
+              <SquareDotIcon className="max-w-4 max-h-4" />
             </SidebarMenuAction>
           )}
           <ContextMenuContent>

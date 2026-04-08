@@ -1,9 +1,5 @@
 import { queryFnGetMyAccount } from "@shared/api/functions/userAccount.function";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   BindGoogleAccountRequest,
   BindGoogleAccountRequestSchema,
   BindGoogleAccountResponse,
@@ -17,6 +13,10 @@ import {
   UpdateMyAccountResponse,
 } from "@shared/api/interfaces/userAccount.interface";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

@@ -16,16 +16,10 @@ const ExceptionBaseCode_Auth: ExceptionCode =
 const ExceptionPrefix_Auth: ExceptionPrefix = "Auth";
 
 export class AuthExceptions extends DatabaseException {
-  BaseCode: ExceptionCode;
-  Prefix: ExceptionPrefix;
+  static BaseCode: ExceptionCode = ExceptionBaseCode_Auth;
+  static Prefix: ExceptionPrefix = ExceptionPrefix_Auth;
 
-  constructor() {
-    super(AuthExceptionSubDomainCode, ExceptionPrefix_Auth);
-    this.BaseCode = ExceptionBaseCode_Auth;
-    this.Prefix = ExceptionPrefix_Auth;
-  }
-
-  WrongPassword = (): NotezyException => {
+  static WrongPassword = (): NotezyException => {
     return new NotezyException({
       code: this.BaseCode + 1,
       prefix: this.Prefix,
@@ -35,7 +29,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  WrongAuthCode = (): NotezyException => {
+  static WrongAuthCode = (): NotezyException => {
     return new NotezyException({
       code: this.BaseCode + 5,
       prefix: this.Prefix,
@@ -45,7 +39,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  LoginBlockedDueToTryingTooManyTimes = (
+  static LoginBlockedDueToTryingTooManyTimes = (
     blockUntil: Date = new Date()
   ): NotezyException => {
     return new NotezyException({
@@ -58,7 +52,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  AuthCodeBlockedDueToTryingTooManyTimes = (
+  static AuthCodeBlockedDueToTryingTooManyTimes = (
     blockUntil: Date = new Date()
   ): NotezyException => {
     return new NotezyException({
@@ -71,7 +65,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  PermissionDeniedDueToUserRole = (
+  static PermissionDeniedDueToUserRole = (
     userRole: any = "FAKE_USER_ROLE"
   ): NotezyException => {
     return new NotezyException({
@@ -83,7 +77,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  PermissionDeniedDueToUserPlan = (
+  static PermissionDeniedDueToUserPlan = (
     userPlan: any = "FAKE_USER_PLAN"
   ): NotezyException => {
     return new NotezyException({
@@ -95,7 +89,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  PermissionDeniedDueToInvalidRequestOriginDomain = (
+  static PermissionDeniedDueToInvalidRequestOriginDomain = (
     origin: any = "FAKE_ORIGIN"
   ): NotezyException => {
     return new NotezyException({
@@ -109,7 +103,7 @@ export class AuthExceptions extends DatabaseException {
     });
   };
 
-  PermissionDeniedDueToTooManyRequests = (): NotezyException => {
+  static PermissionDeniedDueToTooManyRequests = (): NotezyException => {
     return new NotezyException({
       code: this.BaseCode + 104,
       prefix: this.Prefix,

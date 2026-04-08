@@ -43,10 +43,6 @@ import {
   UpdateMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   CreateNotebookMaterial,
   CreateTextbookMaterial,
   DeleteMyMaterialById,
@@ -58,6 +54,10 @@ import {
   UpdateMyMaterialById,
 } from "@shared/api/invokers/material.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

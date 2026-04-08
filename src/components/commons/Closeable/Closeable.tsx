@@ -1,4 +1,4 @@
-import XIcon from "@/components/icons/XIcon";
+import { XIcon } from "lucide-react";
 import React, { CSSProperties } from "react";
 
 interface CloseableProps {

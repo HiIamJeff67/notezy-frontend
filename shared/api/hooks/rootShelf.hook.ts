@@ -2,10 +2,6 @@ import { useApolloClient } from "@apollo/client/react";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { queryFnGetMyRootShelfById } from "@shared/api/functions/rootShelf.function";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   CreateRootShelfRequest,
   CreateRootShelfRequestSchema,
   CreateRootShelfResponse,
@@ -36,6 +32,10 @@ import {
   UpdateMyRootShelfById,
 } from "@shared/api/invokers/rootShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

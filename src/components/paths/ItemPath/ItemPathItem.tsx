@@ -1,5 +1,4 @@
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
-import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import {
   BreadcrumbItem,
   BreadcrumbSeparator,
@@ -15,6 +14,7 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { MaterialType } from "@shared/enums";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
+import { ChevronRightIcon } from "lucide-react";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 

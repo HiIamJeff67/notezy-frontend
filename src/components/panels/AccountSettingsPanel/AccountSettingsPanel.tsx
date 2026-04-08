@@ -16,12 +16,12 @@ import toast from "react-hot-toast";
 import AccountModificationTab from "./AccountModificationTab";
 import AccountTab from "./AccountTab";
 import BindingTab from "./BindingTab";
+import OfflineTab from "./OfflineTab";
 import ProfileTabSkeleton from "./ProfileTabSkeleton";
 import SecurityTab from "./SecurityTab";
 import Sidebar from "./Sidebar";
 import UpgradeTab from "./UpgradeTab";
 
-// lazy loading the profile tab
 const ProfileTab = lazy(() => import("./ProfileTab"));
 
 export type AccountSettingsPage =
@@ -145,41 +145,47 @@ const AccountSettingsPanel = ({
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
           <div className="flex-1 h-[520px]">
-            {currentPage === "profile" &&
-              (!showProfileContent ? (
-                <ProfileTabSkeleton />
-              ) : (
-                <Suspense fallback={<ProfileTabSkeleton />}>
-                  <ProfileTab />
-                </Suspense>
-              ))}
-            {currentPage === "account" && <AccountTab />}
-            {currentPage === "upgrade" && <UpgradeTab />}
-            {currentPage === "security" && (
-              <SecurityTab
-                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
-                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
-                isSendAuthCodePending={isSendAuthCodePending}
-                handleSendAuthCode={handleSendAuthCode}
-              />
-            )}
-            {currentPage === "binding" && (
-              <BindingTab
-                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
-                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
-                isSendAuthCodePending={isSendAuthCodePending}
-                handleSendAuthCode={handleSendAuthCode}
-                onPanelClose={onClose}
-              />
-            )}
-            {currentPage === "accountModification" && (
-              <AccountModificationTab
-                sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
-                setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
-                isSendAuthCodePending={isSendAuthCodePending}
-                handleSendAuthCode={handleSendAuthCode}
-                onPanelClose={onClose}
-              />
+            {!userManager.isOnline ? (
+              <OfflineTab />
+            ) : (
+              <>
+                {currentPage === "profile" &&
+                  (!showProfileContent ? (
+                    <ProfileTabSkeleton />
+                  ) : (
+                    <Suspense fallback={<ProfileTabSkeleton />}>
+                      <ProfileTab />
+                    </Suspense>
+                  ))}
+                {currentPage === "account" && <AccountTab />}
+                {currentPage === "upgrade" && <UpgradeTab />}
+                {currentPage === "security" && (
+                  <SecurityTab
+                    sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                    setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                    isSendAuthCodePending={isSendAuthCodePending}
+                    handleSendAuthCode={handleSendAuthCode}
+                  />
+                )}
+                {currentPage === "binding" && (
+                  <BindingTab
+                    sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                    setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                    isSendAuthCodePending={isSendAuthCodePending}
+                    handleSendAuthCode={handleSendAuthCode}
+                    onPanelClose={onClose}
+                  />
+                )}
+                {currentPage === "accountModification" && (
+                  <AccountModificationTab
+                    sendAuthCodeTimeCounter={sendAuthCodeTimeCounter}
+                    setSendAuthCodeTimeCounter={setSendAuthCodeTimeCounter}
+                    isSendAuthCodePending={isSendAuthCodePending}
+                    handleSendAuthCode={handleSendAuthCode}
+                    onPanelClose={onClose}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>

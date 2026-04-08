@@ -61,10 +61,6 @@ import {
   RestoreMyBlockGroupsByIdsResponse,
 } from "../interfaces/blockGroup.interface";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "../interfaces/queryHookOptions";
-import {
   DeleteMyBlockGroupById,
   DeleteMyBlockGroupsByIds,
   InsertBlockGroupAndItsBlocksByBlockPackId,
@@ -76,6 +72,10 @@ import {
   RestoreMyBlockGroupsByIds,
 } from "../invokers/blockGroup.invoker";
 import { getQueryClient } from "../queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "../queryHookOptions";
 import { queryKeys } from "../queryKeys";
 
 export const useGetMyBlockGroupById = (

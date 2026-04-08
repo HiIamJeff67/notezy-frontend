@@ -6,7 +6,7 @@ export const makeQueryClient = (): QueryClient => {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30 * 60 * 1000, // 30 minutes
+        staleTime: 6 * 60 * 60 * 1000, // 6 hours
         retry: 1,
         refetchOnWindowFocus: false,
       },

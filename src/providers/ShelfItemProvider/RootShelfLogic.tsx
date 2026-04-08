@@ -401,10 +401,10 @@ export const useRootShelfLogic = ({
   );
 
   return {
-    searchRootShelvesInput: searchInput,
-    setSearchRootShelvesInput: setSearchInput,
     rootShelfEdges:
       (data?.searchRootShelves?.searchEdges as SearchRootShelfEdge[]) || [],
+    searchRootShelvesInput: searchInput,
+    setSearchRootShelvesInput: setSearchInput,
     searchRootShelves: searchRootShelves,
     loadMoreRootShelves: loadMoreRootShelves,
     isFetching: loading,

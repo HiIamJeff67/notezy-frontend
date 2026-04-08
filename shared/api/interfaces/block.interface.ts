@@ -3,6 +3,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
+import { AllBlockTypes } from "@shared/enums/blockType.enum";
 import { z } from "zod";
 
 /* ============================== GetMyBlockById ============================== */
@@ -281,6 +282,7 @@ export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
       .object({
         parentBlockId: z.uuidv4().nullable(),
         blockGroupId: z.uuidv4(),
+        type: z.enum(AllBlockTypes).nullable(),
         props: z.json(),
         content: z.any(),
       })
@@ -322,6 +324,7 @@ export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
           .object({
             parentBlockId: z.uuidv4().nullable(),
             blockGroupId: z.uuidv4(),
+            type: z.enum(AllBlockTypes).nullable(),
             props: z.json(),
             content: z.any(),
           })

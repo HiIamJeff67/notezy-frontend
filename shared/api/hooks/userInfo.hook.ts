@@ -1,10 +1,6 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   GetMyInfoRequest,
   GetMyInfoResponse,
   UpdateMyInfoRequest,
@@ -13,6 +9,10 @@ import {
 } from "@shared/api/interfaces/userInfo.interface";
 import { UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

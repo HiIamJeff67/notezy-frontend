@@ -40,10 +40,6 @@ import {
   UpdateMyBlockPackByIdResponse,
 } from "@shared/api/interfaces/blockPack.interface";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   CreateBlockPack,
   DeleteMyBlockPackById,
   DeleteMyBlockPacksByIds,
@@ -54,6 +50,10 @@ import {
   UpdateMyBlockPackById,
 } from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

@@ -2,9 +2,7 @@
 
 import GridBlackBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import CheckIcon from "@/components/icons/CheckIcon";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
-import DocumentIcon from "@/components/icons/DocumentIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";
 import NoteIcon from "@/components/icons/NoteIcon";
 import { Button } from "@/components/ui/button";
@@ -21,6 +19,7 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { BookTextIcon, CheckIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
@@ -200,7 +199,7 @@ const HomePage = () => {
                   router.push(WebURLPathDictionary.root.documents._);
                 }}
               >
-                <DocumentIcon size={18} />
+                <BookTextIcon size={18} />
                 {languageManager.t(tKey.homePage.viewDocs)}
               </Button>
               <Button

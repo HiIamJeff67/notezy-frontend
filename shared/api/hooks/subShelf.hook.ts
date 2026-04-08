@@ -6,10 +6,6 @@ import {
   queryFnGetMySubShelvesByPrevSubShelfId,
 } from "@shared/api/functions/subShelf.function";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdRequestSchema,
   CreateSubShelfByRootShelfIdResponse,
@@ -54,6 +50,10 @@ import {
   UpdateMySubShelfById,
 } from "@shared/api/invokers/subShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

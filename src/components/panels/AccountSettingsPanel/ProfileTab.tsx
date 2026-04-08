@@ -174,7 +174,7 @@ const ProfileTab = memo(() => {
       >
         <div
           className="
-          flex flex-col bg-secondary gap-6 w-full h-full
+          flex flex-col bg-muted gap-6 w-full h-full
           overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
         >
           <div className="relative w-full group" style={backgroundStyle}>
@@ -203,7 +203,7 @@ const ProfileTab = memo(() => {
             <div style={{ height: 120 }} />
           </div>
 
-          <div className="px-8 pt-12 pb-8 bg-secondary flex flex-col gap-6 h-full">
+          <div className="px-8 pt-12 pb-8 bg-muted flex flex-col gap-6 h-full">
             <FormField
               control={userInfoForm.control}
               name="header"

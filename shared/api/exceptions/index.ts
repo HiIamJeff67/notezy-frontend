@@ -12,7 +12,7 @@ export const NotezyExceptionSchema = z.object({
   message: z.string(),
   status: z.number().int().positive(),
   details: z.any().optional(),
-  error: z.string().optional(),
+  origin: z.string().optional(),
 });
 
 export type NotezyExceptionFields = z.infer<typeof NotezyExceptionSchema>;
@@ -24,7 +24,7 @@ export class NotezyException {
   public message: string;
   public status: number;
   public details?: any;
-  public error?: string;
+  public origin?: string;
 
   constructor(obj: any) {
     const validated = NotezyExceptionSchema.parse(obj);
@@ -34,7 +34,7 @@ export class NotezyException {
     this.message = validated.message;
     this.status = validated.status;
     this.details = validated.details;
-    this.error = validated.error;
+    this.origin = validated.origin;
   }
 
   static nullable(value: any): value is null | undefined {
@@ -58,8 +58,8 @@ export class NotezyException {
   }
 
   toString(): string {
-    if (this.error) {
-      return `[${this.code}]${this.reason}: ${this.error}`;
+    if (this.origin) {
+      return `[${this.code}]${this.reason}: ${this.origin}`;
     }
     return `[${this.code}]${this.reason}: ${this.message}`;
   }
@@ -68,13 +68,13 @@ export class NotezyException {
     if (errorMode) {
       console.error(
         `[${this.code}]${this.reason}: ${this.message}${
-          this.error && `(${this.error})`
+          this.origin && `(${this.origin})`
         }`
       );
     } else {
       console.log(
         `[${this.code}]${this.reason}: ${this.message}${
-          this.error && `(${this.error})`
+          this.origin && `(${this.origin})`
         }`
       );
     }
@@ -95,7 +95,7 @@ export class NotezyException {
       (!withMessage || this.message === other.message) &&
       this.status === other.status &&
       (!withDetails || this.details === other.details) &&
-      (!withError || this.error === other.error)
+      (!withError || this.origin === other.origin)
     );
   }
 }
@@ -138,6 +138,9 @@ export const TypeExceptionReasons = {
 export const CommonExceptionReasons = {};
 
 export const ExceptionReasonDictionary = {
+  client: {
+    networkRequired: "networkRequired",
+  },
   auth: {
     ...APIExceptionReasons,
     ...TypeExceptionReasons,

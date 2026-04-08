@@ -14,8 +14,8 @@ import {
   GetMyBlockGroupsAndTheirBlocksByIdsRequest,
   GetMyBlockGroupsByPrevBlockGroupIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
-import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
 import { getQueryClient } from "@shared/api/queryClient";
+import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
 import { UUID } from "crypto";

@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import { clamp } from "@/util/math";
 import EditTimerWidgetDialog from "@widgets/basic/TimerWidget/EditTimerWidgetDialog";
 import {
   getDefaultTimerSetting,
@@ -38,6 +39,7 @@ const TimerWidget = ({
   setSetting: setRawSetting,
   data: rawData,
   setData: setRawData,
+  sync,
 }: WidgetProps) => {
   const [setting, setSetting] = useAnyTypeState<TimerSetting>(
     [rawSetting, setRawSetting],
@@ -65,6 +67,7 @@ const TimerWidget = ({
     }));
     setRemainingMs(getDurationMs(editDuration));
     setIsEditingDuration(false);
+    sync();
   };
 
   const start = (duration: TimerRecord["duration"]) => {
@@ -169,11 +172,11 @@ const TimerWidget = ({
             min={0}
             max={99}
             placeholder="0"
-            value={editDuration.hours.toString() || ""}
+            value={clamp(editDuration.hours, 0, 99).toString() || ""}
             onChange={e =>
               setEditDuration({
                 ...editDuration,
-                hours: Number(e.target.value),
+                hours: clamp(Number(e.target.value), 0, 99),
               })
             }
             className="w-16 p-1 text-center bg-muted rounded-md border border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -184,11 +187,11 @@ const TimerWidget = ({
             min={0}
             max={59}
             placeholder="0"
-            value={editDuration.minutes.toString() || ""}
+            value={clamp(editDuration.minutes, 0, 59).toString() || ""}
             onChange={e =>
               setEditDuration({
                 ...editDuration,
-                minutes: Number(e.target.value),
+                minutes: clamp(Number(e.target.value), 0, 59),
               })
             }
             className="w-16 p-1 text-center bg-muted rounded-md border border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -199,11 +202,11 @@ const TimerWidget = ({
             min={0}
             max={59}
             placeholder="0"
-            value={editDuration.seconds.toString() || ""}
+            value={clamp(editDuration.seconds, 0, 59).toString() || ""}
             onChange={e =>
               setEditDuration({
                 ...editDuration,
-                seconds: Number(e.target.value),
+                seconds: clamp(Number(e.target.value), 0, 59),
               })
             }
             className="w-16 p-1 text-center bg-muted rounded-md border border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary"

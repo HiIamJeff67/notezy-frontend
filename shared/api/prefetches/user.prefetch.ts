@@ -2,12 +2,12 @@ import {
   queryFnGetMe,
   queryFnGetUserData,
 } from "@shared/api/functions/user.function";
-import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
 import {
   GetMeRequest,
   GetUserDataRequest,
 } from "@shared/api/interfaces/user.interface";
 import { getQueryClient } from "@shared/api/queryClient";
+import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
 

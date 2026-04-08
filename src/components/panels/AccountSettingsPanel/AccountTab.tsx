@@ -37,19 +37,19 @@ const AccountTab = memo(() => {
   const userManager = useUser();
 
   const user: User = useMemo(() => {
-    if (!userManager.user) return FakeUser;
+    if (!userManager.userData) return FakeUser;
     return {
-      publicId: userManager.user.publicId,
-      name: userManager.user.name,
-      displayName: userManager.user.displayName,
-      email: userManager.user.email,
-      role: userManager.user.role,
-      plan: userManager.user.plan,
-      status: userManager.user.status,
-      updatedAt: userManager.user.updatedAt,
-      createdAt: userManager.user.createdAt,
+      publicId: userManager.userData.publicId,
+      name: userManager.userData.name,
+      displayName: userManager.userData.displayName,
+      email: userManager.userData.email,
+      role: userManager.userData.role,
+      plan: userManager.userData.plan,
+      status: userManager.userData.status,
+      updatedAt: userManager.userData.updatedAt,
+      createdAt: userManager.userData.createdAt,
     };
-  }, [userManager.user]);
+  }, [userManager.userData]);
 
   const userForm: UseFormReturn<User> = useForm({
     resolver: zodResolver(UserSchema),
@@ -118,7 +118,7 @@ const AccountTab = memo(() => {
       >
         <div
           className="
-          flex flex-col px-8 pt-12 pb-8 bg-secondary gap-6 min-h-full
+          flex flex-col px-8 pt-12 pb-8 bg-muted gap-6 min-h-full
           overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
         >
           <FormField

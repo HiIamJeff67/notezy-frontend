@@ -4,10 +4,6 @@ import {
   queryFnGetUserData,
 } from "@shared/api/functions/user.function";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/interfaces/queryHookOptions";
-import {
   GetMeRequest,
   GetMeResponse,
   GetUserDataRequest,
@@ -18,6 +14,10 @@ import {
 } from "@shared/api/interfaces/user.interface";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import {
+  QueryAsyncDefaultOptions,
+  UseQueryDefaultOptions,
+} from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";

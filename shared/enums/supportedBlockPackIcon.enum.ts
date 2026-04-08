@@ -16,5 +16,5 @@ export enum SupportedBlockPackIcon {
   Clock = "⏰",
 }
 
-export const AllSupportedBlockPackIcon: SupportedBlockPackIcon[] =
+export const AllSupportedBlockPackIcons: SupportedBlockPackIcon[] =
   Object.values(SupportedBlockPackIcon);

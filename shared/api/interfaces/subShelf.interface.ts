@@ -3,7 +3,7 @@ import {
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
 import { AllMaterialTypes } from "@shared/enums";
-import { AllSupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
+import { AllSupportedBlockPackIcons } from "@shared/enums/supportedBlockPackIcon.enum";
 import { z } from "zod";
 
 /* ============================== GetMySubShelfById ============================== */
@@ -166,7 +166,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           id: z.uuidv4(),
           parentSubShelfId: z.uuidv4(),
           name: z.string(),
-          icon: z.enum(AllSupportedBlockPackIcon).nullable(),
+          icon: z.enum(AllSupportedBlockPackIcons).nullable(),
           headerBackgroundURL: z.url().nullable(),
           blockCount: z.int32(),
           deletedAt: z.coerce.date().nullable(),

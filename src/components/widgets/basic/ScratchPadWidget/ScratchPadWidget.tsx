@@ -75,7 +75,7 @@ const ScratchPadWidget = ({
       ref={containerRef}
       className={`
         w-full h-full p-4 overflow-y-auto cursor-text
-        bg-background border border-foreground/10 rounded-lg group
+        bg-background border border-foreground/10 rounded-lg
         relative
         ${className}
       `}
@@ -97,7 +97,7 @@ const ScratchPadWidget = ({
           className="
             absolute 
             text-muted-foreground font-mono leading-relaxed 
-            opacity-0 group-hover:opacity-100 transition-opacity
+            transition-opacity
           "
           style={{ fontSize: setting.fontSize }}
         >
@@ -107,7 +107,7 @@ const ScratchPadWidget = ({
 
       {isEditing ? (
         <div className="w-full h-full flex flex-col text-muted-foreground rounded-md">
-          <textarea
+          <textarea // use textarea instead of the Textarea component from ShadCN to avoid rendering the border
             ref={textareaRef}
             value={data.content ?? ""}
             onChange={e => {

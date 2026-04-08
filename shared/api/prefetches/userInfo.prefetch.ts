@@ -1,7 +1,7 @@
 import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
-import { PrefetchQueryDefaultOptions } from "@shared/api/interfaces/queryHookOptions";
 import { GetMyInfoRequest } from "@shared/api/interfaces/userInfo.interface";
 import { getQueryClient } from "@shared/api/queryClient";
+import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
 

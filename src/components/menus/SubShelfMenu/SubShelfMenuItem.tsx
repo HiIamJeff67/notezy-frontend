@@ -1,6 +1,3 @@
-import CheckIcon from "@/components/icons/CheckIcon";
-import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
-import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
 import MaterialMenu from "@/components/menus/MaterialMenu/MaterialMenu";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -32,6 +29,7 @@ import { DNDType } from "@shared/enums/dndType.enum";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import toast from "react-hot-toast";

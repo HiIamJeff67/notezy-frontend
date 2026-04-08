@@ -9,10 +9,7 @@ import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import XYResizable from "@/components/commons/Resizable/XYResizable";
 import CreateWidgetDialog from "@/components/dialogs/WidgetDialog/CreateWidgetDialog";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
-import CheckIcon from "@/components/icons/CheckIcon";
 import EditIcon from "@/components/icons/EditIcon";
-import PlusIcon from "@/components/icons/PlusIcon";
-import WrenchIcon from "@/components/icons/WrenchIcon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,6 +36,7 @@ import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { ImageInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
 import { UUID } from "crypto";
+import { CheckIcon, PlusIcon, WrenchIcon } from "lucide-react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
 

@@ -3,8 +3,6 @@
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import ChevronDownIcon from "@/components/icons/ChevronDownIcon";
-import XIcon from "@/components/icons/XIcon";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +52,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import { UUID } from "crypto";
+import { ChevronDownIcon, XIcon } from "lucide-react";
 import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 

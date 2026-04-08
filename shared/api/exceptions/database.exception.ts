@@ -25,15 +25,10 @@ export function IsExceptionCode(exceptionCode: ExceptionCode): boolean {
 
 /* ============================== General Exceptions Definitions ============================== */
 export class DatabaseException {
-  protected BaseCode: ExceptionCode;
-  protected Prefix: ExceptionPrefix;
+  static BaseCode: ExceptionCode;
+  static Prefix: ExceptionPrefix;
 
-  constructor(baseCode: ExceptionCode, prefix: ExceptionPrefix) {
-    this.BaseCode = baseCode;
-    this.Prefix = prefix;
-  }
-
-  NotFound(): NotezyException {
+  static NotFound(): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 1,
       prefix: this.Prefix,
@@ -43,7 +38,7 @@ export class DatabaseException {
     });
   }
 
-  FailedToCreate(): NotezyException {
+  static FailedToCreate(): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 2,
       prefix: this.Prefix,
@@ -53,7 +48,7 @@ export class DatabaseException {
     });
   }
 
-  FailedToUpdate(): NotezyException {
+  static FailedToUpdate(): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 3,
       prefix: this.Prefix,
@@ -63,7 +58,7 @@ export class DatabaseException {
     });
   }
 
-  FailedToDelete(): NotezyException {
+  static FailedToDelete(): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 4,
       prefix: this.Prefix,
@@ -75,15 +70,10 @@ export class DatabaseException {
 }
 
 export class APIException {
-  protected BaseCode: ExceptionCode;
-  protected Prefix: ExceptionPrefix;
+  static BaseCode: ExceptionCode;
+  static Prefix: ExceptionPrefix;
 
-  constructor(baseCode: ExceptionCode, prefix: ExceptionPrefix) {
-    this.BaseCode = baseCode;
-    this.Prefix = prefix;
-  }
-
-  Timeout(time: number = 0): NotezyException {
+  static Timeout(time: number = 0): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 12,
       prefix: this.Prefix,
@@ -95,35 +85,20 @@ export class APIException {
 }
 
 export class GraphQLException {
-  protected BaseCode: ExceptionCode;
-  protected Prefix: ExceptionPrefix;
-
-  constructor(baseCode: ExceptionCode, prefix: ExceptionPrefix) {
-    this.BaseCode = baseCode;
-    this.Prefix = prefix;
-  }
+  static BaseCode: ExceptionCode;
+  static Prefix: ExceptionPrefix;
 }
 
 export class TypeException {
-  protected BaseCode: ExceptionCode;
-  protected Prefix: ExceptionPrefix;
-
-  constructor(baseCode: ExceptionCode, prefix: ExceptionPrefix) {
-    this.BaseCode = baseCode;
-    this.Prefix = prefix;
-  }
+  static BaseCode: ExceptionCode;
+  static Prefix: ExceptionPrefix;
 }
 
 export class CommonException {
-  protected BaseCode: ExceptionCode;
-  protected Prefix: ExceptionPrefix;
+  static BaseCode: ExceptionCode;
+  static Prefix: ExceptionPrefix;
 
-  constructor(baseCode: ExceptionCode, prefix: ExceptionPrefix) {
-    this.BaseCode = baseCode;
-    this.Prefix = prefix;
-  }
-
-  InvalidDto(): NotezyException {
+  static InvalidDto(): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 32,
       prefix: this.Prefix,

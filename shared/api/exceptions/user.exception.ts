@@ -16,16 +16,10 @@ const ExceptionBaseCode_User: ExceptionCode =
 const ExceptionPrefix_User: ExceptionPrefix = "User";
 
 export class UserExceptions extends DatabaseException {
-  BaseCode: ExceptionCode;
-  Prefix: ExceptionPrefix;
+  static BaseCode: ExceptionCode = ExceptionBaseCode_User;
+  static Prefix: ExceptionPrefix = ExceptionPrefix_User;
 
-  constructor() {
-    super(UserExceptionSubDomainCode, ExceptionPrefix_User);
-    this.BaseCode = ExceptionBaseCode_User;
-    this.Prefix = ExceptionPrefix_User;
-  }
-
-  DuplicateName(name: string = "FAKE_NAME"): NotezyException {
+  static DuplicateName(name: string = "FAKE_NAME"): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 1,
       prefix: this.Prefix,
@@ -35,7 +29,7 @@ export class UserExceptions extends DatabaseException {
     });
   }
 
-  DuplicateEmail(email: string = "FAKE_EMAIL"): NotezyException {
+  static DuplicateEmail(email: string = "FAKE_EMAIL"): NotezyException {
     return new NotezyException({
       code: this.BaseCode + 2,
       prefix: this.Prefix,

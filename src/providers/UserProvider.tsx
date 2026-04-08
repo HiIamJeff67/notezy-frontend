@@ -2,6 +2,8 @@
 
 import { useAppRouter, useLanguage, useLoading } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { ClientCommonExceptions } from "@shared/api/exceptions/clientCommon.exception";
 import { useLogout } from "@shared/api/hooks/auth.hook";
 import { useGetMe, useGetUserData } from "@shared/api/hooks/user.hook";
 import { useGetMyAccount } from "@shared/api/hooks/userAccount.hook";
@@ -15,8 +17,10 @@ import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 interface UserContextType {
+  isOnline: boolean;
   enableAutoFetching: boolean;
   setEnableAutoFetching: (state: boolean) => void;
+
   userData: UserData | null;
   setUserData: (userData: UserData | null) => void;
   updateUserData: (fields: Partial<UserData>) => boolean;
@@ -55,6 +59,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const getUserAccountQuerier = useGetMyAccount();
   const logoutMutator = useLogout();
 
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -70,12 +75,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("fetching user automatically...");
       fetchUserData(accessToken);
     }
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, [enableAutoFetching]);
 
   const fetchUserData = useCallback(
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
+          if (!isOnline)
+            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
           if (accessToken === null) throw new Error(); // throw empty error to enter catch scope
 
           const userAgent = navigator.userAgent;
@@ -94,17 +110,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           setUserData(response.data);
-        } catch {
+        } catch (error) {
           if (
-            !router.isSamePath(
-              router.getCurrentPath(),
-              WebURLPathDictionary.home
-            )
+            !(error instanceof NotezyAPIError) ||
+            error.unWrap.reason !==
+              ClientCommonExceptions.NetworkRequired().reason
           ) {
-            toast.error(
-              "Your account has been logged out, please try to log in again."
-            );
-            router.push(WebURLPathDictionary.auth.login);
+            if (
+              !router.isSamePath(
+                router.getCurrentPath(),
+                WebURLPathDictionary.home
+              )
+            ) {
+              toast.error(
+                "Your account has been logged out, please try to log in again."
+              );
+              router.push(WebURLPathDictionary.auth.login);
+            }
           }
         }
       }),
@@ -119,6 +141,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
    * in this case it will just return false to indicate the update operation is failed.
    */
   const updateUserData = (fields: Partial<UserData>): boolean => {
+    if (!isOnline) return false;
     if (userData === null) return false;
     setUserData(prev => (prev ? { ...prev, ...fields } : null));
     return userData !== null;
@@ -128,6 +151,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
+          if (!isOnline)
+            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
           if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
@@ -145,17 +170,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           setUser(response.data);
-        } catch {
+        } catch (error) {
           if (
-            !router.isSamePath(
-              router.getCurrentPath(),
-              WebURLPathDictionary.home
-            )
+            !(error instanceof NotezyAPIError) ||
+            error.unWrap.reason !==
+              ClientCommonExceptions.NetworkRequired().reason
           ) {
-            toast.error(
-              "Your account has been logged out, please try to log in again."
-            );
-            router.push(WebURLPathDictionary.auth.login);
+            if (
+              !router.isSamePath(
+                router.getCurrentPath(),
+                WebURLPathDictionary.home
+              )
+            ) {
+              toast.error(
+                "Your account has been logged out, please try to log in again."
+              );
+              router.push(WebURLPathDictionary.auth.login);
+            }
           }
         }
       }),
@@ -163,6 +194,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const updateUser = (fields: Partial<User>): boolean => {
+    if (!isOnline) return false;
     if (user === null) return false;
     setUser(prev => (prev ? { ...prev, ...fields } : null));
     return user !== null;
@@ -172,6 +204,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
+          if (!isOnline)
+            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
           if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
@@ -189,17 +223,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           setUserInfo(response.data);
-        } catch {
+        } catch (error) {
           if (
-            !router.isSamePath(
-              router.getCurrentPath(),
-              WebURLPathDictionary.home
-            )
+            !(error instanceof NotezyAPIError) ||
+            error.unWrap.reason !==
+              ClientCommonExceptions.NetworkRequired().reason
           ) {
-            toast.error(
-              "Your account has been logged out, please try to log in again."
-            );
-            router.push(WebURLPathDictionary.auth.login);
+            if (
+              !router.isSamePath(
+                router.getCurrentPath(),
+                WebURLPathDictionary.home
+              )
+            ) {
+              toast.error(
+                "Your account has been logged out, please try to log in again."
+              );
+              router.push(WebURLPathDictionary.auth.login);
+            }
           }
         }
       }),
@@ -207,6 +247,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const updateUserInfo = (fields: Partial<UserInfo>): boolean => {
+    if (!isOnline) return false;
     if (userInfo === null) return false;
     setUserInfo(prev => (prev ? { ...prev, ...fields } : null));
     return userInfo !== null;
@@ -216,6 +257,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
+          if (!isOnline)
+            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
           if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
@@ -233,17 +276,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           setUserAccount(response.data);
-        } catch {
+        } catch (error) {
           if (
-            !router.isSamePath(
-              router.getCurrentPath(),
-              WebURLPathDictionary.home
-            )
+            !(error instanceof NotezyAPIError) ||
+            error.unWrap.reason !==
+              ClientCommonExceptions.NetworkRequired().reason
           ) {
-            toast.error(
-              "Your account has been logged out, please try to log in again."
-            );
-            router.push(WebURLPathDictionary.auth.login);
+            if (
+              !router.isSamePath(
+                router.getCurrentPath(),
+                WebURLPathDictionary.home
+              )
+            ) {
+              toast.error(
+                "Your account has been logged out, please try to log in again."
+              );
+              router.push(WebURLPathDictionary.auth.login);
+            }
           }
         }
       }),
@@ -251,6 +300,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const updateUserAccount = (fields: Partial<UserAccount>): boolean => {
+    if (!isOnline) return false;
     if (userAccount === null) return false;
     setUserAccount(prev => (prev ? { ...prev, ...fields } : null));
     return userAccount !== null;
@@ -263,14 +313,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setUserAccount(null);
     const userAgent = navigator.userAgent;
     // logout without showing error if there is one
-    await logoutMutator.mutateAsync({
-      header: { userAgent: userAgent },
-    });
+    if (isOnline) {
+      await logoutMutator.mutateAsync({
+        header: { userAgent: userAgent },
+      });
+    }
   }, []);
 
   const contextValue: UserContextType = {
+    isOnline: isOnline,
     enableAutoFetching: enableAutoFetching,
     setEnableAutoFetching: setEnableAutoFetching,
+
     userData: userData,
     setUserData: setUserData,
     updateUserData: updateUserData,

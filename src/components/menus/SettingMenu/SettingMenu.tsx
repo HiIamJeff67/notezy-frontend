@@ -18,7 +18,7 @@ const SettingMenu = ({
       className={`w-full h-full overflow-y-auto ![scrollbar-color:var(--muted-foreground)_var(--secondary)] ${menuClassName}`}
     >
       <div
-        className={`px-8 pt-12 pb-8 bg-secondary flex flex-col gap-6 min-h-full ${menuItemsClassName}`}
+        className={`px-8 pt-12 pb-8 bg-muted flex flex-col gap-6 min-h-full ${menuItemsClassName}`}
       >
         {children}
       </div>

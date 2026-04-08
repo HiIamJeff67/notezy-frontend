@@ -22,6 +22,7 @@ import {
   MinRequestEvents,
 } from "@shared/constants/blockEventLimitations.constant";
 import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
+import { BlockType } from "@shared/enums/blockType.enum";
 import { HybridDisjointSet } from "@shared/lib/disjointSet";
 import { LinkedList, LinkedListNode } from "@shared/lib/linkedList";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -401,6 +402,7 @@ export const BlockEditorProvider = ({
             updateBlocksRequest.body.updatedBlocks.push({
               blockId: blockId,
               values: {
+                type: event.payload.block.type as BlockType,
                 props: event.payload.block.props,
                 content: event.payload.block.content as any,
                 parentBlockId:
