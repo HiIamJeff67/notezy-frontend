@@ -31,6 +31,7 @@ import {
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
 import { PartialBlock } from "@blocknote/core";
+// @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";

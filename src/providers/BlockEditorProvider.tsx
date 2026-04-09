@@ -174,6 +174,7 @@ export const BlockEditorProvider = ({
       const id = events[i].payload.block.id as UUID;
 
       let mergedEvent = mergedEventMap.get(id) as BlockEvent | undefined;
+      // the first events for each event with the same id can be placed into the merged events directly
       if (mergedEvent === undefined) {
         mergedEventMap.set(id, events[i]);
         continue;
@@ -273,42 +274,41 @@ export const BlockEditorProvider = ({
     const needsNewBlockGroupBlockIds: Set<UUID> = new Set<UUID>();
 
     for (const event of events) {
-      if (event.type === "delete") {
-        continue;
-      }
+      if (event.type === "delete") continue;
+
       const blockId = event.payload.block.id as UUID;
       dsuRef.current.add(blockId);
       const parentBlock = editor.getParentBlock(blockId);
       if (parentBlock !== undefined) {
         dsuRef.current.add(parentBlock.id as UUID);
         dsuRef.current.union(blockId, parentBlock.id as UUID);
-      } else {
-        if (!dsuRef.current.hasPayload(blockId)) {
-          const newBlockGroupId = generateUUID();
-          const prevBlock = editor.getPrevBlock(blockId);
-          const prevBlockGroupId =
-            prevBlock === undefined ||
-            dsuRef.current.getPayload(prevBlock.id as UUID) === undefined
-              ? null
-              : dsuRef.current.getPayload(prevBlock.id as UUID)!.id;
-          const prevBlockGroupNode =
-            prevBlockGroupId === null ||
-            blockGroupsLinkedListRef.current.get(prevBlockGroupId) === undefined
-              ? null
-              : (blockGroupsLinkedListRef.current.get(
-                  prevBlockGroupId
-                ) as LinkedListNode<UUID, number>);
+      } else if (!dsuRef.current.hasPayload(blockId)) {
+        const newBlockGroupId = generateUUID();
+        const prevBlock = editor.getPrevBlock(blockId);
+        const prevBlockGroupId =
+          prevBlock === undefined ||
+          dsuRef.current.getPayload(prevBlock.id as UUID) === undefined
+            ? null
+            : dsuRef.current.getPayload(prevBlock.id as UUID)!.id;
+        const prevBlockGroupNode =
+          prevBlockGroupId === null ||
+          blockGroupsLinkedListRef.current.get(prevBlockGroupId) === undefined
+            ? null
+            : (blockGroupsLinkedListRef.current.get(
+                prevBlockGroupId
+              ) as LinkedListNode<UUID, number>);
 
-          const newBlockGroupMeta = getDefaultBlockGroupMeta(
-            newBlockGroupId,
-            blockPackMeta.id,
-            prevBlockGroupId,
-            null
-          );
+        const newBlockGroupMeta = getDefaultBlockGroupMeta(
+          newBlockGroupId,
+          blockPackMeta.id,
+          prevBlockGroupId,
+          null
+        );
 
-          dsuRef.current.add(newBlockGroupId, Infinity);
-          dsuRef.current.union(blockId, newBlockGroupId);
-          dsuRef.current.setPayload(blockId, newBlockGroupMeta);
+        dsuRef.current.add(newBlockGroupId, Infinity);
+        dsuRef.current.union(blockId, newBlockGroupId);
+        dsuRef.current.setPayload(blockId, newBlockGroupMeta);
+        const currentBlockGroupNode =
           blockGroupsLinkedListRef.current.insertAfter(
             prevBlockGroupNode === null
               ? blockGroupsLinkedListRef.current.getHead()
@@ -316,11 +316,55 @@ export const BlockEditorProvider = ({
             newBlockGroupId,
             1
           );
-          needsNewBlockGroupBlockIds.add(blockId);
 
-          if (prevBlock !== undefined && prevBlockGroupId === null) {
-            needsRelinkBlockIds.push(blockId);
-          }
+        // check if the current block has next block, and the next block's block group is NOT pointing to the current block's block group
+        // then we should update the next block's block group to point to the current block's block group for avoiding the inserting block before current block issues
+        const nextBlock = editor.getNextBlock(blockId);
+        const nextBlockGroupId =
+          nextBlock === undefined ||
+          dsuRef.current.getPayload(nextBlock.id as UUID) === undefined
+            ? null
+            : dsuRef.current.getPayload(nextBlock.id as UUID)!.id;
+        const nextBlockGroupNode =
+          nextBlockGroupId === null ||
+          blockGroupsLinkedListRef.current.get(nextBlockGroupId) === undefined
+            ? null
+            : (blockGroupsLinkedListRef.current.get(
+                nextBlockGroupId
+              ) as LinkedListNode<UUID, number>);
+        if (
+          nextBlockGroupNode !== null &&
+          nextBlockGroupNode.prev !== currentBlockGroupNode
+        ) {
+          // console.log(
+          //   "incorrect: ",
+          //   nextBlockGroupNode.key,
+          //   " with prev block group of ",
+          //   nextBlockGroupNode.prev?.key,
+          //   ", but actual is :",
+          //   currentBlockGroupNode.key
+          // );
+          nextBlockGroupNode.prev = currentBlockGroupNode;
+
+          const updatedBlockGroupNode =
+            nextBlockGroupId === null ||
+            blockGroupsLinkedListRef.current.get(nextBlockGroupId) === undefined
+              ? null
+              : (blockGroupsLinkedListRef.current.get(
+                  nextBlockGroupId
+                ) as LinkedListNode<UUID, number>);
+          // console.log(
+          //   "restore: ",
+          //   updatedBlockGroupNode?.key,
+          //   " to point to ",
+          //   updatedBlockGroupNode?.prev?.key
+          // );
+        }
+
+        needsNewBlockGroupBlockIds.add(blockId);
+
+        if (prevBlock !== undefined && prevBlockGroupId === null) {
+          needsRelinkBlockIds.push(blockId);
         }
       }
     }
@@ -443,6 +487,7 @@ export const BlockEditorProvider = ({
       // merge events into one insert many request and one update many request and one delete many request.
       // send the above at most four requests to the backend.
       // reset the eventQueueRef.current.
+      // Note: Make sure before the merge() MUST be called before toRequest()
       const {
         insertBlocksRequest,
         insertBlockGroupsAndBlocksRequest,
@@ -529,6 +574,7 @@ export const BlockEditorProvider = ({
         // console.log("type: ", change.type);
         // console.log("block: ", change.block);
         // console.log("prev block: ", editor.getPrevBlock(change.block.id));
+        // console.log("next block: ", editor.getNextBlock(change.block.id));
         // console.log(
         //   "block group: ",
         //   dsuRef.current.find(change.block.id as UUID)

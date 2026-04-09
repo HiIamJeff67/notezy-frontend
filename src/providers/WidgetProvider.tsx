@@ -50,21 +50,23 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
 
   useEffect(() => {
     const initializeWidgets = async () => {
-      const widgetsEncoded = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.dashboardWidgets,
-        userManager.userData?.publicId
-      );
-      if (widgetsEncoded !== null) {
-        try {
-          widgetsRef.current = (
-            JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
-              ...widgetEncoded,
-              component: BasicPreviewWidgets[widgetEncoded.name]?.component,
-            })) as Partial<Widget>[]
-          ).filter(widget => widget.component !== undefined) as Widget[];
-          forceUpdate();
-        } catch (error) {
-          toast.error(languageManager.tError(error));
+      if (userManager.userData !== null) {
+        const widgetsEncoded = LocalStorageManipulator.getItemByKey(
+          LocalStorageKey.dashboardWidgets,
+          userManager.userData?.publicId
+        );
+        if (widgetsEncoded !== null) {
+          try {
+            widgetsRef.current = (
+              JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
+                ...widgetEncoded,
+                component: BasicPreviewWidgets[widgetEncoded.name]?.component,
+              })) as Partial<Widget>[]
+            ).filter(widget => widget.component !== undefined) as Widget[];
+            forceUpdate();
+          } catch (error) {
+            toast.error(languageManager.tError(error));
+          }
         }
       }
     };
@@ -154,6 +156,7 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
 
       widgetsRef.current = sortedWidgets;
+      console.log("userData", userManager.userData?.publicId);
 
       LocalStorageManipulator.setItem(
         LocalStorageKey.dashboardWidgets,

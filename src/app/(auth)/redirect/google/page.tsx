@@ -1,5 +1,6 @@
 "use client";
 
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 import { getAuthorization } from "@/util/getAuthorization";
 import {
@@ -13,7 +14,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RedirectState } from "@shared/types/redirectState.type";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 function GoogleRedirectPageContent() {
@@ -31,12 +32,10 @@ function GoogleRedirectPageContent() {
 
   const hasRendered = useRef(false);
 
-  useEffect(() => {
+  const handleOAuthOnRedirect = useCallback(async () => {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const state = searchParams.get("state");
-
-    if (hasRendered.current) return;
 
     if (code === null || error !== null) {
       toast.error(`Google Auth Error: ${error}`);
@@ -49,100 +48,93 @@ function GoogleRedirectPageContent() {
       return;
     }
 
+    try {
+      let action: "register" | "login" | "binding" = "login";
+
+      if (state) {
+        const decoded = state.startsWith("{") ? state : atob(state);
+        const parsedState = JSON.parse(decoded) as RedirectState;
+        if (parsedState.action) {
+          action = parsedState.action;
+        }
+      }
+
+      let accessToken: string | null = null;
+      const userAgent = navigator.userAgent;
+
+      switch (action) {
+        case "register":
+          const responseOfRegistering =
+            await registerViaGoogleMutator.mutateAsync({
+              header: { userAgent },
+              body: { authorizationCode: code },
+            });
+          accessToken = responseOfRegistering.data.accessToken;
+          break;
+        case "login":
+          const responseOfLogin = await loginViaGoogleMutator.mutateAsync({
+            header: { userAgent },
+            body: { authorizationCode: code },
+          });
+          accessToken = responseOfLogin.data.accessToken;
+          break;
+        case "binding":
+          accessToken = LocalStorageManipulator.getItemByKey(
+            LocalStorageKey.accessToken
+          );
+          await bindGoogleAccountMutator.mutateAsync({
+            header: {
+              userAgent,
+              authorization: getAuthorization(accessToken),
+            },
+            body: { authorizationCode: code },
+          });
+          break;
+      }
+
+      const responseOfGettingUserData = await userDataQuerier.queryAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+      });
+
+      userManager.setUserData(responseOfGettingUserData.data);
+      router.push(WebURLPathDictionary.root.dashboard._);
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+      router.push(
+        WebURLPathDictionary.auth.redirect.error(
+          "Redirect to backend error",
+          languageManager.tError(error)
+        )
+      );
+    }
+  }, [
+    searchParams,
+    router,
+    languageManager,
+    registerViaGoogleMutator,
+    loginViaGoogleMutator,
+    bindGoogleAccountMutator,
+    userDataQuerier,
+    userManager,
+  ]);
+
+  useEffect(() => {
+    if (hasRendered.current) return;
     hasRendered.current = true;
 
-    const handleOAuthOnRedirect = async () => {
-      try {
-        let action: "register" | "login" | "binding" = "login";
-
-        if (state) {
-          const decoded = state.startsWith("{") ? state : atob(state);
-          const parsedState = JSON.parse(decoded) as RedirectState;
-          if (parsedState.action) {
-            action = parsedState.action;
-          }
-        }
-
-        let accessToken: string | null = null;
-        const userAgent = navigator.userAgent;
-        switch (action) {
-          case "register":
-            const responseOfRegistering =
-              await registerViaGoogleMutator.mutateAsync({
-                header: {
-                  userAgent: userAgent,
-                },
-                body: {
-                  authorizationCode: code,
-                },
-              });
-            accessToken = responseOfRegistering.data.accessToken;
-            break;
-          case "login":
-            const responseOfLogin = await loginViaGoogleMutator.mutateAsync({
-              header: {
-                userAgent: userAgent,
-              },
-              body: {
-                authorizationCode: code,
-              },
-            });
-            accessToken = responseOfLogin.data.accessToken;
-            break;
-          case "binding":
-            accessToken = LocalStorageManipulator.getItemByKey(
-              LocalStorageKey.accessToken
-            );
-            await bindGoogleAccountMutator.mutateAsync({
-              header: {
-                userAgent: userAgent,
-                authorization: getAuthorization(accessToken),
-              },
-              body: {
-                authorizationCode: code,
-              },
-            });
-            break;
-          default:
-            throw new Error("Undefined action type");
-        }
-
-        const responseOfGettingUserData = await userDataQuerier.queryAsync({
-          header: {
-            userAgent: navigator.userAgent,
-            authorization: getAuthorization(accessToken),
-          },
-        });
-
-        userManager.setUserData(responseOfGettingUserData.data);
-        router.push(WebURLPathDictionary.root.dashboard._);
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-        router.push(
-          WebURLPathDictionary.auth.redirect.error(
-            "Redirect to backend error",
-            languageManager.tError(error)
-          )
-        );
-      }
-    };
-
     handleOAuthOnRedirect();
-  }, [searchParams, router]); // do not add other dependencies here
+  }, [handleOAuthOnRedirect]);
 
   return (
-    <div className="flex h-screen w-full items-center justify-center">
-      <p>Validating Google Authentication...</p>
-    </div>
-  );
-}
-
-function GoogleRedirectPage() {
-  return (
-    <Suspense fallback={<div>Loading authn data...</div>}>
-      <GoogleRedirectPageContent />
+    <Suspense fallback={<StrictLoadingCover />}>
+      <div className="flex h-screen w-full items-center justify-center">
+        <p>Validating Google Authentication...</p>
+      </div>
     </Suspense>
   );
 }
 
-export default GoogleRedirectPage;
+export default GoogleRedirectPageContent;

@@ -6,7 +6,7 @@ export interface LinkedListNode<K, V> {
 }
 
 export class LinkedList<K, V> {
-  private map: Map<K, LinkedListNode<K, V>>;
+  private map: Map<K, LinkedListNode<K, V>>; // since LinkedListNode is interface, the map will return a reference of each linked list node
   private head: LinkedListNode<K, V>; // the dummy head
   private tail: LinkedListNode<K, V>; // the dummy tail
 

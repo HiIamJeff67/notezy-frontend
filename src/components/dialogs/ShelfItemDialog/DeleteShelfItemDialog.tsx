@@ -51,9 +51,11 @@ const DeleteShelfItemDialog = ({
             <Button
               type="submit"
               onClick={async () => {
-                if (value !== confirmKeyword) return;
+                if (confirmKeyword !== undefined && value !== confirmKeyword)
+                  return;
                 await onDelete();
                 setValue("");
+                onClose();
               }}
               className="w-3/10"
             >
@@ -61,7 +63,10 @@ const DeleteShelfItemDialog = ({
             </Button>
             <Button
               className="w-3/10 bg-destructive hover:bg-destructive/90"
-              onClick={onCancel}
+              onClick={() => {
+                onCancel();
+                onClose();
+              }}
             >
               Cancel
             </Button>

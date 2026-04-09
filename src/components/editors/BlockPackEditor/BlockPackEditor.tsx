@@ -5,6 +5,7 @@ import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { BlockEditorProvider } from "@/providers/BlockEditorProvider";
 import { blockPackMetaReducer } from "@/reducers/blockPackMeta.reducer";
 import { getAuthorization } from "@/util/getAuthorization";
+// @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
 import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
@@ -91,6 +92,11 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
           blockPackId: blockPackId,
         },
       });
+
+    console.log(
+      "initialized blocks: ",
+      responseOfGettingBlockGroupsAndTheirBlocks.data
+    );
 
     return {
       id: defaultBlockPackMeta.id,

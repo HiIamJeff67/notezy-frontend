@@ -50,14 +50,21 @@ const CreateShelfItemDialog = ({
           <div className="w-full flex flex-row justify-center gap-4">
             <Button
               type="submit"
-              onClick={async () => await onCreate(value)}
+              onClick={async () => {
+                await onCreate(value);
+                setValue("");
+                onClose();
+              }}
               className="w-3/10"
             >
               Create
             </Button>
             <Button
               className="w-3/10 bg-destructive hover:bg-destructive/90"
-              onClick={onCancel}
+              onClick={() => {
+                onCancel();
+                onClose();
+              }}
             >
               Cancel
             </Button>
