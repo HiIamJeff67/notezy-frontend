@@ -44,7 +44,6 @@ const ItemPath = ({
       return parentSubShelfNode ? [parentSubShelfNode] : [];
     }
     const subShelfNodes: SubShelfNode[] = [];
-
     let cur = summary.root.children[path[0]];
     if (!cur) return [];
     subShelfNodes.push(cur);

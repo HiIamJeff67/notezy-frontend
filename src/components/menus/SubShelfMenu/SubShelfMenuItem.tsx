@@ -182,7 +182,7 @@ const SubShelfMenuItem = ({
   );
 
   return (
-    <Collapsible>
+    <Collapsible open={current.isOpen}>
       <SidebarMenuItem
         ref={node => {
           drag(node);

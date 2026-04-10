@@ -93,11 +93,6 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
         },
       });
 
-    console.log(
-      "initialized blocks: ",
-      responseOfGettingBlockGroupsAndTheirBlocks.data
-    );
-
     return {
       id: defaultBlockPackMeta.id,
       parentId: defaultBlockPackMeta.parentId,

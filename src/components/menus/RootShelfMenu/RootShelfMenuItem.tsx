@@ -87,7 +87,7 @@ const RootShelfMenuItem = ({
   );
 
   return (
-    <Collapsible>
+    <Collapsible open={summary.root.isOpen}>
       <SidebarMenuItem>
         <ContextMenu>
           {shelfItemManager.isRootShelfNodeEditing(summary.root.id) ? (
@@ -134,7 +134,11 @@ const RootShelfMenuItem = ({
                         whitespace-nowrap text-ellipsis overflow-hidden"
                   onClick={async () => {
                     shelfItemManager.toggleRootShelf(summary.root);
-                    await shelfItemManager.expandRootShelf(rootShelfEdge.node);
+                    if (!summary.root.isExpanded) {
+                      await shelfItemManager.expandRootShelf(
+                        rootShelfEdge.node
+                      );
+                    }
                   }}
                 >
                   {summary.root.isOpen ? (
