@@ -44,7 +44,9 @@
     "conflictable",
     "kolkata",
     "dndable",
-    "pomodoro"
+    "pomodoro",
+    "sqlocal",
+    "localdb"
   ],
   "ignorePaths": [
     "node_modules/**",

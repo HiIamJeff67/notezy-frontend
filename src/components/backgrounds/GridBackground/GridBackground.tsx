@@ -1,4 +1,4 @@
-import { useTheme } from "@/hooks";
+import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 
 interface GridBackgroundProps {
