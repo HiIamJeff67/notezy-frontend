@@ -1,6 +1,8 @@
 import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
+  BatchMoveMyBlockGroupsByIdsRequest,
+  BatchMoveMyBlockGroupsByIdsResponse,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdResponse,
   DeleteMyBlockGroupsByIdsRequest,
@@ -25,6 +27,8 @@ import {
   InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  MoveMyBlockGroupByIdRequest,
+  MoveMyBlockGroupByIdResponse,
   MoveMyBlockGroupsByIdsRequest,
   MoveMyBlockGroupsByIdsResponse,
   RestoreMyBlockGroupByIdRequest,
@@ -373,6 +377,38 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
     return formattedResponse;
   };
 
+export async function MoveMyBlockGroupById(
+  request: MoveMyBlockGroupByIdRequest
+): Promise<MoveMyBlockGroupByIdResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupById}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as MoveMyBlockGroupByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
 export async function MoveMyBlockGroupsByIds(
   request: MoveMyBlockGroupsByIdsRequest
 ): Promise<MoveMyBlockGroupsByIdsResponse> {
@@ -398,6 +434,38 @@ export async function MoveMyBlockGroupsByIds(
 
   const formattedResponse =
     (await response.json()) as MoveMyBlockGroupsByIdsResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function BatchMoveMyBlockGroupsByIds(
+  request: BatchMoveMyBlockGroupsByIdsRequest
+): Promise<BatchMoveMyBlockGroupsByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as BatchMoveMyBlockGroupsByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

@@ -1,16 +1,4 @@
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
-import {
-  QueryKey,
-  useMutation,
-  useQuery,
-  UseQueryOptions,
-} from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { ZodError } from "zod";
-import { NotezyAPIError } from "../exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
   queryFnGetAllMyBlockGroupsByBlockPackId,
   queryFnGetMyBlockGroupAndItsBlocksById,
@@ -18,8 +6,11 @@ import {
   queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId,
   queryFnGetMyBlockGroupsAndTheirBlocksByIds,
   queryFnGetMyBlockGroupsByPrevBlockGroupId,
-} from "../functions/blockGroup.function";
+} from "@shared/api/functions/blockGroup.function";
 import {
+  BatchMoveMyBlockGroupsByIdsRequest,
+  BatchMoveMyBlockGroupsByIdsRequestSchema,
+  BatchMoveMyBlockGroupsByIdsResponse,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdRequestSchema,
   DeleteMyBlockGroupByIdResponse,
@@ -50,6 +41,9 @@ import {
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  MoveMyBlockGroupByIdRequest,
+  MoveMyBlockGroupByIdRequestSchema,
+  MoveMyBlockGroupByIdResponse,
   MoveMyBlockGroupsByIdsRequest,
   MoveMyBlockGroupsByIdsRequestSchema,
   MoveMyBlockGroupsByIdsResponse,
@@ -59,24 +53,38 @@ import {
   RestoreMyBlockGroupsByIdsRequest,
   RestoreMyBlockGroupsByIdsRequestSchema,
   RestoreMyBlockGroupsByIdsResponse,
-} from "../interfaces/blockGroup.interface";
+} from "@shared/api/interfaces/blockGroup.interface";
 import {
+  BatchMoveMyBlockGroupsByIds,
   DeleteMyBlockGroupById,
   DeleteMyBlockGroupsByIds,
   InsertBlockGroupAndItsBlocksByBlockPackId,
   InsertBlockGroupByBlockPackId,
   InsertBlockGroupsAndTheirBlocksByBlockPackId,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
+  MoveMyBlockGroupById,
   MoveMyBlockGroupsByIds,
   RestoreMyBlockGroupById,
   RestoreMyBlockGroupsByIds,
-} from "../invokers/blockGroup.invoker";
-import { getQueryClient } from "../queryClient";
+} from "@shared/api/invokers/blockGroup.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
-} from "../queryHookOptions";
-import { queryKeys } from "../queryKeys";
+} from "@shared/api/queryHookOptions";
+import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import { UUID } from "crypto";
+import { ZodError } from "zod";
 
 export const useGetMyBlockGroupById = (
   hookRequest?: GetMyBlockGroupByIdRequest,
@@ -154,7 +162,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
   };
 };
 
-export const GetMyBlockGroupsAndTheirBlocksByIds = (
+export const useGetMyBlockGroupsAndTheirBlocksByIds = (
   hookRequest?: GetMyBlockGroupsAndTheirBlocksByIdsRequest,
   options?: Partial<UseQueryOptions>
 ) => {
@@ -640,6 +648,78 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
   };
 };
 
+export const useMoveMyBlockGroupById = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: MoveMyBlockGroupByIdRequest
+    ): Promise<MoveMyBlockGroupByIdResponse> => {
+      const validatedRequest = MoveMyBlockGroupByIdRequestSchema.parse(request);
+      return await MoveMyBlockGroupById(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const movableBlockGroupId = variables.body.movableBlockGroupId as UUID;
+      const movablePrevBlockGroupId = variables.body
+        .movablePrevBlockGroupId as UUID | null;
+      const blockPackId = variables.body.blockPackId as UUID;
+      const destinationBlockGroupId = variables.body
+        .destinationBlockGroupId as UUID | null;
+      const targetKeys: QueryKey[] = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.oneById(movableBlockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(movableBlockGroupId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(movablePrevBlockGroupId),
+        queryKeys.blockGroup.manyByPrevBlockGroupId(destinationBlockGroupId),
+        queryKeys.blockGroupWithBlock.oneById(
+          destinationBlockGroupId ?? undefined
+        ),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "MOVE_MY_BLOCK_GROUP_BY_ID_HOOK" as const,
+  };
+};
+
 export const useMoveMyBlockGroupsByIds = () => {
   const queryClient = getQueryClient();
 
@@ -715,7 +795,97 @@ export const useMoveMyBlockGroupsByIds = () => {
 
   return {
     ...mutation,
-    name: "MOVE_MY_BLOCK_GROUPS_BY_ID_HOOK" as const,
+    name: "MOVE_MY_BLOCK_GROUPS_BY_IDS_HOOK" as const,
+  };
+};
+
+export const useBatchMoveMyBlockGroupsByIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: BatchMoveMyBlockGroupsByIdsRequest
+    ): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
+      const validatedRequest =
+        BatchMoveMyBlockGroupsByIdsRequestSchema.parse(request);
+      return await BatchMoveMyBlockGroupsByIds(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const movableBlockGroupIds = [] as UUID[];
+      const movablePrevBlockGroupIds = [] as (UUID | null)[];
+      const blockPackIds = [] as UUID[];
+      const destinationBlockGroupIds = [] as (UUID | null)[];
+      for (const movedBlockGroup of variables.body.movedBlockGroups) {
+        movableBlockGroupIds.push(movedBlockGroup.movableBlockGroupId as UUID);
+        movablePrevBlockGroupIds.push(
+          movedBlockGroup.movablePrevBlockGroupId as UUID
+        );
+        blockPackIds.push(movedBlockGroup.blockPackId as UUID);
+        destinationBlockGroupIds.push(
+          movedBlockGroup.destinationBlockGroupId as UUID
+        );
+      }
+      const targetKeys: QueryKey[] = [
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ]),
+        ...movableBlockGroupIds.flatMap(movableBlockGroupId => [
+          queryKeys.blockGroup.oneById(movableBlockGroupId),
+          queryKeys.blockGroupWithBlock.oneById(movableBlockGroupId),
+        ]),
+        ...movablePrevBlockGroupIds.map(movablePrevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(movablePrevBlockGroupId)
+        ),
+        ...destinationBlockGroupIds.flatMap(destinationBlockGroupId => [
+          queryKeys.blockGroup.manyByPrevBlockGroupId(destinationBlockGroupId),
+          queryKeys.blockGroupWithBlock.oneById(
+            destinationBlockGroupId ?? undefined
+          ),
+        ]),
+        queryKeys.blockGroupWithBlock.manyByIds(movableBlockGroupIds),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "BATCH_MOVE_MY_BLOCK_GROUPS_BY_IDS_HOOK" as const,
   };
 };
 

@@ -92,7 +92,6 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
           blockPackId: blockPackId,
         },
       });
-
     return {
       id: defaultBlockPackMeta.id,
       parentId: defaultBlockPackMeta.parentId,
@@ -101,7 +100,8 @@ const BlockPackEditor = ({ defaultBlockPackMeta }: BlockPackEditorProps) => {
       icon: responseOfGettingBlockPack.data.icon,
       headerBackgroundURL: responseOfGettingBlockPack.data.headerBackgroundURL,
       blockCount: BigInt(responseOfGettingBlockPack.data.blockCount),
-      path: responseOfGettingBlockPack.data.parentSubShelfPath as UUID[],
+      path: (responseOfGettingBlockPack.data.parentSubShelfPath ||
+        []) as UUID[],
       deletedAt: responseOfGettingBlockPack.data.deletedAt
         ? new Date(responseOfGettingBlockPack.data.deletedAt)
         : null,

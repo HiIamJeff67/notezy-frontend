@@ -9,13 +9,19 @@ import {
   useInsertBlocks,
   useUpdateMyBlocksByIds,
 } from "@shared/api/hooks/block.hook";
-import { useInsertBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
+import {
+  useBatchMoveMyBlockGroupsByIds,
+  useInsertBlockGroupsAndTheirBlocksByBlockPackId,
+} from "@shared/api/hooks/blockGroup.hook";
 import {
   DeleteMyBlocksByIdsRequest,
   InsertBlocksRequest,
   UpdateMyBlocksByIdsRequest,
 } from "@shared/api/interfaces/block.interface";
-import { InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest } from "@shared/api/interfaces/blockGroup.interface";
+import {
+  BatchMoveMyBlockGroupsByIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+} from "@shared/api/interfaces/blockGroup.interface";
 import {
   MergingDebounceTimeout,
   MinForcedMergedEvents,
@@ -72,6 +78,7 @@ export const BlockEditorProvider = ({
     useInsertBlockGroupsAndTheirBlocksByBlockPackId();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
   const deleteBlocksMutator = useDeleteMyBlocksByIds();
+  const batchMoveBlockGroupsMutator = useBatchMoveMyBlockGroupsByIds();
 
   const dsuRef = useRef<HybridDisjointSet<UUID, BlockGroupMeta>>(
     new HybridDisjointSet<UUID, BlockGroupMeta>()
@@ -142,15 +149,32 @@ export const BlockEditorProvider = ({
 
       const isNewBlockPack =
         isBlockPackMetaInitialized && initialContent.length === 0;
-      if (initialContent.length === 0) {
-        initialContent = [choiceRandom(AllDefaultBlockPackInitialContents)];
+      const randomInitialBlock = choiceRandom(
+        AllDefaultBlockPackInitialContents
+      );
+      if (isNewBlockPack) {
+        randomInitialBlock.id = generateUUID();
+        initialContent = [randomInitialBlock];
       }
 
+      const editor = BlockNoteEditor.create({
+        initialContent: initialContent,
+        trailingBlock: false,
+      });
+
+      if (isNewBlockPack) {
+        // insert a empty trailing block if currently on a new block pack to synchronize the current blocks automatically
+        editor.insertBlocks(
+          [{ type: "paragraph", content: "" }],
+          randomInitialBlock.id!,
+          "after"
+        );
+      }
+
+      setState("idle");
+
       return {
-        editor: BlockNoteEditor.create({
-          initialContent: initialContent,
-          trailingBlock: false,
-        }),
+        editor: editor,
         initialContent: initialContent,
         isNewBlockPack: isNewBlockPack,
       };
@@ -162,10 +186,6 @@ export const BlockEditorProvider = ({
     () => initialize(blockPackMeta),
     []
   );
-
-  editor.onCreate(() => {
-    setState("idle");
-  });
 
   const merge = (events: BlockEvent[]): BlockEvent[] => {
     const mergedEventMap = new Map<UUID, BlockEvent | undefined>();
@@ -189,11 +209,13 @@ export const BlockEditorProvider = ({
           );
         case "update":
           mergedEvent.payload.block = events[i].payload.block;
+          mergedEvent.payload.previous.block = events[i].payload.previous.block; // only overwrite the previous status of the block
           mergedEvent.timestamp = events[i].timestamp;
           break;
         case "move":
-          mergedEvent.payload.prevParent = events[i].payload.prevParent;
-          mergedEvent.payload.currentParent = events[i].payload.currentParent;
+          mergedEvent.payload.block = events[i].payload.block; // the current status of the movable block
+          mergedEvent.payload.previous = events[i].payload.previous; // overwrite the previous status of the block and the prev block(closest top neighbor block) of the previous status
+          mergedEvent.timestamp = events[i].timestamp;
           break;
         case "delete":
           mergedEvent = undefined;
@@ -214,9 +236,10 @@ export const BlockEditorProvider = ({
     insertBlocksRequest: InsertBlocksRequest;
     insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest;
     updateBlocksRequest: UpdateMyBlocksByIdsRequest;
+    moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest;
     deleteBlocksRequest: DeleteMyBlocksByIdsRequest;
   } => {
-    // at most four requests are sent in this function
+    // Step 1: Prepare all possible requests (at most four requests are sent in this function)
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKey.accessToken
@@ -256,6 +279,15 @@ export const BlockEditorProvider = ({
         blockPackIds: [blockPackMeta.id],
       },
     };
+    const moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest = {
+      header: {
+        userAgent: userAgent,
+        authorization: getAuthorization(accessToken),
+      },
+      body: {
+        movedBlockGroups: [],
+      },
+    };
     const deleteBlocksRequest: DeleteMyBlocksByIdsRequest = {
       header: {
         userAgent: userAgent,
@@ -270,9 +302,9 @@ export const BlockEditorProvider = ({
       },
     };
 
+    // Step 2: Prepare the disjoint set for getting the block group of any given blocks, relink blocks, and the blocks required new block groups
     const needsRelinkBlockIds: UUID[] = [];
     const needsNewBlockGroupBlockIds: Set<UUID> = new Set<UUID>();
-
     for (const event of events) {
       if (event.type === "delete") continue;
 
@@ -336,29 +368,7 @@ export const BlockEditorProvider = ({
           nextBlockGroupNode !== null &&
           nextBlockGroupNode.prev !== currentBlockGroupNode
         ) {
-          // console.log(
-          //   "incorrect: ",
-          //   nextBlockGroupNode.key,
-          //   " with prev block group of ",
-          //   nextBlockGroupNode.prev?.key,
-          //   ", but actual is :",
-          //   currentBlockGroupNode.key
-          // );
           nextBlockGroupNode.prev = currentBlockGroupNode;
-
-          const updatedBlockGroupNode =
-            nextBlockGroupId === null ||
-            blockGroupsLinkedListRef.current.get(nextBlockGroupId) === undefined
-              ? null
-              : (blockGroupsLinkedListRef.current.get(
-                  nextBlockGroupId
-                ) as LinkedListNode<UUID, number>);
-          // console.log(
-          //   "restore: ",
-          //   updatedBlockGroupNode?.key,
-          //   " to point to ",
-          //   updatedBlockGroupNode?.prev?.key
-          // );
         }
 
         needsNewBlockGroupBlockIds.add(blockId);
@@ -369,6 +379,9 @@ export const BlockEditorProvider = ({
       }
     }
 
+    // Step 3: Relink the blocks which may cause broken linked list
+    //  (This is mostly happened when the user insert a new block before the current block,
+    //    ex. Hit enter while the text cursor is on the head of some blocks)
     for (const blockId of needsRelinkBlockIds) {
       const blockGroupMeta = dsuRef.current.getPayload(blockId);
       if (!blockGroupMeta) continue;
@@ -401,6 +414,7 @@ export const BlockEditorProvider = ({
       return node.prev.key;
     };
 
+    // Step 4: Iterate through the events to combine them into the requests
     for (const event of events) {
       const blockId = event.payload.block.id as UUID;
       const blockGroupMeta = dsuRef.current.getPayload(blockId);
@@ -432,8 +446,7 @@ export const BlockEditorProvider = ({
           }
           break;
         }
-        case "update":
-        case "move": {
+        case "update": {
           if (needsNewBlockGroupBlockIds.has(blockId)) {
             const prevBlockGroupId = getSafePrevBlockGroupId(blockGroupId!);
             insertBlockGroupsAndBlocksRequest.body.blockGroupContents.push({
@@ -460,9 +473,38 @@ export const BlockEditorProvider = ({
           }
           break;
         }
+        case "move": {
+          const movableBlockGroup = dsuRef.current.getPayload(blockId);
+          if (!movableBlockGroup) {
+            console.error(
+              "Movable block group Id not found for block",
+              event.payload.block.id
+            );
+            continue;
+          }
+          const movablePrevBlockGroup = event.payload.previous.prev
+            ? (dsuRef.current.getPayload(
+                event.payload.previous.prev.id as UUID
+              ) ?? null)
+            : null;
+          const currentPrevBlock = editor.getPrevBlock(
+            event.payload.block.id as UUID
+          );
+          const destinationBlockGroup = currentPrevBlock
+            ? (dsuRef.current.getPayload(currentPrevBlock.id as UUID) ?? null)
+            : null;
+          moveBlockGroupsRequest.body.movedBlockGroups.push({
+            blockPackId: blockPackMeta.id,
+            movableBlockGroupId: movableBlockGroup.id,
+            movablePrevBlockGroupId:
+              movablePrevBlockGroup !== null ? movablePrevBlockGroup.id : null,
+            destinationBlockGroupId:
+              destinationBlockGroup !== null ? destinationBlockGroup.id : null,
+          });
+          break;
+        }
         case "delete":
           deleteBlocksRequest.body.blockIds.push(blockId);
-
           break;
       }
     }
@@ -471,6 +513,7 @@ export const BlockEditorProvider = ({
       insertBlocksRequest: insertBlocksRequest,
       insertBlockGroupsAndBlocksRequest: insertBlockGroupsAndBlocksRequest,
       updateBlocksRequest: updateBlocksRequest,
+      moveBlockGroupsRequest: moveBlockGroupsRequest,
       deleteBlocksRequest: deleteBlocksRequest,
     };
   };
@@ -492,6 +535,7 @@ export const BlockEditorProvider = ({
         insertBlocksRequest,
         insertBlockGroupsAndBlocksRequest,
         updateBlocksRequest,
+        moveBlockGroupsRequest,
         deleteBlocksRequest,
       } = toRequest(mergedEvents);
       // console.log(
@@ -499,6 +543,7 @@ export const BlockEditorProvider = ({
       //   insertBlocksRequest,
       //   insertBlockGroupsAndBlocksRequest,
       //   updateBlocksRequest,
+      //   moveBlockGroupsRequest,
       //   deleteBlocksRequest
       // );
       setState("syncing");
@@ -511,6 +556,8 @@ export const BlockEditorProvider = ({
           ),
         updateBlocksRequest.body.updatedBlocks.length > 0 &&
           updateBlocksMutator.mutateAsync(updateBlocksRequest),
+        moveBlockGroupsRequest.body.movedBlockGroups.length > 0 &&
+          batchMoveBlockGroupsMutator.mutateAsync(moveBlockGroupsRequest),
         deleteBlocksRequest.body.blockIds.length > 0 &&
           deleteBlocksMutator.mutateAsync(deleteBlocksRequest),
       ]).catch(error => toast.error(languageManager.tError(error)));
@@ -567,7 +614,30 @@ export const BlockEditorProvider = ({
       syncNewBlockPack();
     }
 
-    const unSubscribe = editor.onChange(async (_, { getChanges }) => {
+    const unSubscribeOnBeforeChange = editor.onBeforeChange(
+      (_, { getChanges }) => {
+        const changes = getChanges();
+        for (const change of changes) {
+          if (change.type !== "move") continue; // handling other operations in onChange event listener
+          const blockId = change.block.id as UUID;
+          const movedPrevBlock = editor.getPrevBlock(blockId);
+          eventQueueRef.current.push({
+            type: change.type,
+            payload: {
+              block: change.block,
+              source: change.source,
+              previous: {
+                block: change.prevBlock,
+                prev: movedPrevBlock,
+              },
+            },
+            timestamp: new Date(),
+          });
+        }
+      }
+    );
+
+    const unSubscribeOnChange = editor.onChange(async (_, { getChanges }) => {
       const changes = getChanges();
       // console.log("=========== Detected changed ===========");
       for (const change of changes) {
@@ -575,23 +645,20 @@ export const BlockEditorProvider = ({
         // console.log("block: ", change.block);
         // console.log("prev block: ", editor.getPrevBlock(change.block.id));
         // console.log("next block: ", editor.getNextBlock(change.block.id));
+        // console.log("previous status: ", change.prevBlock);
         // console.log(
         //   "block group: ",
         //   dsuRef.current.find(change.block.id as UUID)
         // );
+        if (change.type === "move") continue; // handling move operations in onBeforeChange event listener
         eventQueueRef.current.push({
           type: change.type,
           payload: {
             block: change.block,
             source: change.source,
-            prevBlock: change.prevBlock,
-            ...(change.type === "move"
-              ? {
-                  prevBlock: change.prevBlock,
-                  prevParent: change.prevParent,
-                  currentParent: change.currentParent,
-                }
-              : {}),
+            previous: {
+              block: change.prevBlock,
+            },
           },
           timestamp: new Date(),
         });
@@ -609,7 +676,8 @@ export const BlockEditorProvider = ({
     });
 
     return () => {
-      unSubscribe();
+      unSubscribeOnBeforeChange();
+      unSubscribeOnChange();
       if (mergeTimeoutRef.current !== null) {
         clearTimeout(mergeTimeoutRef.current);
         mergeTimeoutRef.current = null;

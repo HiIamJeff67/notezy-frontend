@@ -3,6 +3,8 @@ import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   CreateRootShelfRequest,
   CreateRootShelfResponse,
+  CreateRootShelvesRequest,
+  CreateRootShelvesResponse,
   DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdResponse,
   DeleteMyRootShelvesByIdsRequest,
@@ -17,6 +19,8 @@ import {
   SearchRecentRootShelvesResponse,
   UpdateMyRootShelfByIdRequest,
   UpdateMyRootShelfByIdResponse,
+  UpdateMyRootShelvesByIdsRequest,
+  UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -119,6 +123,36 @@ export async function CreateRootShelf(
   return formattedResponse;
 }
 
+export async function CreateRootShelves(
+  request: CreateRootShelvesRequest
+): Promise<CreateRootShelvesResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelves}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const formattedResponse =
+    (await response.json()) as CreateRootShelvesResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
 export async function UpdateMyRootShelfById(
   request: UpdateMyRootShelfByIdRequest
 ): Promise<UpdateMyRootShelfByIdResponse> {
@@ -143,6 +177,36 @@ export async function UpdateMyRootShelfById(
   }
   const formattedResponse =
     (await response.json()) as UpdateMyRootShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
+export async function UpdateMyRootShelvesByIds(
+  request: UpdateMyRootShelvesByIdsRequest
+): Promise<UpdateMyRootShelvesByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelvesByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const formattedResponse =
+    (await response.json()) as UpdateMyRootShelvesByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

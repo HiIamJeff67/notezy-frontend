@@ -5,6 +5,9 @@ import {
   CreateRootShelfRequest,
   CreateRootShelfRequestSchema,
   CreateRootShelfResponse,
+  CreateRootShelvesRequest,
+  CreateRootShelvesRequestSchema,
+  CreateRootShelvesResponse,
   DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdRequestSchema,
   DeleteMyRootShelfByIdResponse,
@@ -22,14 +25,19 @@ import {
   UpdateMyRootShelfByIdRequest,
   UpdateMyRootShelfByIdRequestSchema,
   UpdateMyRootShelfByIdResponse,
+  UpdateMyRootShelvesByIdsRequest,
+  UpdateMyRootShelvesByIdsRequestSchema,
+  UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import {
   CreateRootShelf,
+  CreateRootShelves,
   DeleteMyRootShelfById,
   DeleteMyRootShelvesByIds,
   RestoreMyRootShelfById,
   RestoreMyRootShelvesByIds,
   UpdateMyRootShelfById,
+  UpdateMyRootShelvesByIds,
 } from "@shared/api/invokers/rootShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
@@ -166,6 +174,96 @@ export const useCreateRootShelf = () => {
   };
 };
 
+export const useCreateRootShelves = () => {
+  const apolloClient = useApolloClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: CreateRootShelvesRequest
+    ): Promise<CreateRootShelvesResponse> => {
+      const validatedRequest = CreateRootShelvesRequestSchema.parse(request);
+      return await CreateRootShelves(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existingSearchRootShelves, { readField }) {
+            if (!existingSearchRootShelves) return existingSearchRootShelves;
+
+            const newEdges = [];
+            // since the response and the variables(request body) are aligned in the backend,
+            // we can just try to iterate through them
+            for (
+              let i = 0;
+              i < response.data.ids.length &&
+              i < variables.body.createdRootShelves.length;
+              i++
+            ) {
+              const newEdge = {
+                __typename: "SearchRootShelfEdge",
+                node: {
+                  __typename: "PrivateRootShelf",
+                  id: response.data.ids[i],
+                  name: variables.body.createdRootShelves[i].name,
+                  subShelfCount: 0,
+                  itemCount: 0,
+                  lastAnalyzedAt: response.data.lastAnalyzedAt,
+                  updatedAt: response.data.createdAt,
+                  createdAt: response.data.createdAt,
+                },
+              };
+              newEdges.push(newEdge);
+            }
+
+            const updatedEdges = [
+              ...newEdges,
+              ...existingSearchRootShelves.searchEdges,
+            ];
+
+            return {
+              ...existingSearchRootShelves,
+              searchEdges: updatedEdges,
+            };
+          },
+        },
+      });
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "CREATE_ROOT_SHELVES_HOOK" as const,
+  };
+};
+
 export const useUpdateMyRootShelfById = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
@@ -229,6 +327,60 @@ export const useUpdateMyRootShelfById = () => {
   return {
     ...mutation,
     name: "UPDATE_MY_ROOT_SHELF_BY_ID_HOOK" as const,
+  };
+};
+
+export const useUpdateMyRootShelvesByIds = () => {
+  const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: UpdateMyRootShelvesByIdsRequest
+    ): Promise<UpdateMyRootShelvesByIdsResponse> => {
+      const validatedRequest =
+        UpdateMyRootShelvesByIdsRequestSchema.parse(request);
+      return await UpdateMyRootShelvesByIds(validatedRequest);
+    },
+    onSuccess: (_, variables) => {
+      for (const updatedRootShelf of variables.body.updatedRootShelves) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.rootShelf.oneById(
+            updatedRootShelf.rootShelfId as UUID
+          ),
+        });
+        apolloClient.cache.modify({
+          id: apolloClient.cache.identify({
+            __typename: "PrivateRootShelf",
+            id: updatedRootShelf.rootShelfId,
+          }),
+          fields: {
+            ...(updatedRootShelf.values.name && {
+              name: () => updatedRootShelf.values.name,
+            }),
+          },
+        });
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "UPDATE_MY_ROOT_SHELVES_BY_IDS_HOOK" as const,
   };
 };
 

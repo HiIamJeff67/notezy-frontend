@@ -6,9 +6,15 @@ import {
   queryFnGetMySubShelvesByPrevSubShelfId,
 } from "@shared/api/functions/subShelf.function";
 import {
+  BatchMoveMySubShelvesRequest,
+  BatchMoveMySubShelvesRequestSchema,
+  BatchMoveMySubShelvesResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdRequestSchema,
   CreateSubShelfByRootShelfIdResponse,
+  CreateSubShelvesByRootShelfIdsRequest,
+  CreateSubShelvesByRootShelfIdsRequestSchema,
+  CreateSubShelvesByRootShelfIdsResponse,
   DeleteMySubShelfByIdRequest,
   DeleteMySubShelfByIdRequestSchema,
   DeleteMySubShelfByIdResponse,
@@ -38,9 +44,14 @@ import {
   UpdateMySubShelfByIdRequest,
   UpdateMySubShelfByIdRequestSchema,
   UpdateMySubShelfByIdResponse,
+  UpdateMySubShelvesByIdsRequest,
+  UpdateMySubShelvesByIdsRequestSchema,
+  UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import {
+  BatchMoveMySubShelves,
   CreateSubShelfByRootShelfId,
+  CreateSubShelvesByRootShelfIds,
   DeleteMySubShelfById,
   DeleteMySubShelvesByIds,
   MoveMySubShelf,
@@ -48,6 +59,7 @@ import {
   RestoreMySubShelfById,
   RestoreMySubShelvesByIds,
   UpdateMySubShelfById,
+  UpdateMySubShelvesByIds,
 } from "@shared/api/invokers/subShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
@@ -285,6 +297,72 @@ export const useCreateSubShelfByRootShelfId = () => {
   };
 };
 
+export const useCreateSubShelvesByRootShelfIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: CreateSubShelvesByRootShelfIdsRequest
+    ): Promise<CreateSubShelvesByRootShelfIdsResponse> => {
+      const validatedRequest =
+        CreateSubShelvesByRootShelfIdsRequestSchema.parse(request);
+      return await CreateSubShelvesByRootShelfIds(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const prevSubShelfIds = variables.affected
+        .prevSubShelfIds as (UUID | null)[];
+      const rootShelfIds = variables.affected.rootShelfIds as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+        ]),
+        ...prevSubShelfIds.map(prevSubShelfId =>
+          queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "CREATE_SUB_SHELVES_BY_ROOT_SHELF_IDS_HOOK" as const,
+  };
+};
+
 export const useUpdateMySubShelfById = () => {
   const queryClient = getQueryClient();
 
@@ -342,6 +420,72 @@ export const useUpdateMySubShelfById = () => {
   return {
     ...mutation,
     name: "UPDATE_MY_SUB_SHELF_BY_ID_HOOK" as const,
+  };
+};
+
+export const useUpdateMySubShelvesByIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: UpdateMySubShelvesByIdsRequest
+    ): Promise<UpdateMySubShelvesByIdsResponse> => {
+      const validatedRequest =
+        UpdateMySubShelvesByIdsRequestSchema.parse(request);
+      return await UpdateMySubShelvesByIds(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const prevSubShelfIds = variables.affected
+        .prevSubShelfIds as (UUID | null)[];
+      const rootShelfIds = variables.affected.rootShelfIds as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+        ]),
+        ...prevSubShelfIds.map(prevSubShelfId =>
+          queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "UPDATE_MY_SUB_SHELVES_BY_IDS_HOOK" as const,
   };
 };
 
@@ -488,6 +632,89 @@ export const useMoveMySubShelves = () => {
   return {
     ...mutation,
     name: "MOVE_MY_SUB_SHELVES_HOOK" as const,
+  };
+};
+
+export const useBatchMoveMySubShelves = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: BatchMoveMySubShelvesRequest
+    ): Promise<BatchMoveMySubShelvesResponse> => {
+      const validatedRequest =
+        BatchMoveMySubShelvesRequestSchema.parse(request);
+      return await BatchMoveMySubShelves(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const sourceSubShelfIds = [] as UUID[];
+      const destinationSubShelfIds = [] as UUID[];
+      for (const movedSubShelf of variables.body.movedSubShelves) {
+        sourceSubShelfIds.push(...(movedSubShelf.sourceSubShelfIds as UUID[]));
+        destinationSubShelfIds.push(
+          movedSubShelf.destinationSubShelfId as UUID
+        );
+      }
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const childSubShelfIds = (
+        variables.affected.childSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.subShelf.manyByRootShelfId(rootShelfId),
+        ]),
+        ...sourceSubShelfIds.map(sourceSubShelfId =>
+          queryKeys.subShelf.oneById(sourceSubShelfId)
+        ),
+        ...destinationSubShelfIds.map(destinationSubShelfId =>
+          queryKeys.subShelf.manyByPrevSubShelfId(destinationSubShelfId)
+        ),
+        ...childSubShelfIds.map(childSubShelfId =>
+          queryKeys.subShelf.oneById(childSubShelfId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "BATCH_MOVE_MY_SUB_SHELVES_HOOK" as const,
   };
 };
 

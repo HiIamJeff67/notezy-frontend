@@ -1,8 +1,12 @@
 import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
+  BatchMoveMySubShelvesRequest,
+  BatchMoveMySubShelvesResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdResponse,
+  CreateSubShelvesByRootShelfIdsRequest,
+  CreateSubShelvesByRootShelfIdsResponse,
   DeleteMySubShelfByIdRequest,
   DeleteMySubShelfByIdResponse,
   DeleteMySubShelvesByIdsRequest,
@@ -25,6 +29,8 @@ import {
   RestoreMySubShelvesByIdsResponse,
   UpdateMySubShelfByIdRequest,
   UpdateMySubShelfByIdResponse,
+  UpdateMySubShelvesByIdsRequest,
+  UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -191,6 +197,36 @@ export async function CreateSubShelfByRootShelfId(
   return formattedResponse;
 }
 
+export async function CreateSubShelvesByRootShelfIds(
+  request: CreateSubShelvesByRootShelfIdsRequest
+): Promise<CreateSubShelvesByRootShelfIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelvesByRootShelfIds}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const formattedResponse =
+    (await response.json()) as CreateSubShelvesByRootShelfIdsResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
 export async function UpdateMySubShelfById(
   request: UpdateMySubShelfByIdRequest
 ): Promise<UpdateMySubShelfByIdResponse> {
@@ -215,6 +251,36 @@ export async function UpdateMySubShelfById(
   }
   const formattedResponse =
     (await response.json()) as UpdateMySubShelfByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
+export async function UpdateMySubShelvesByIds(
+  request: UpdateMySubShelvesByIdsRequest
+): Promise<UpdateMySubShelvesByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelvesByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const formattedResponse =
+    (await response.json()) as UpdateMySubShelvesByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
@@ -273,6 +339,36 @@ export async function MoveMySubShelves(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const formattedResponse = (await response.json()) as MoveMySubShelvesResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+  return formattedResponse;
+}
+
+export async function BatchMoveMySubShelves(
+  request: BatchMoveMySubShelvesRequest
+): Promise<BatchMoveMySubShelvesResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+  const formattedResponse =
+    (await response.json()) as BatchMoveMySubShelvesResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

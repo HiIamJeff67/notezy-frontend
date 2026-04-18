@@ -299,7 +299,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema =
       blockPackId: z.uuidv4(),
       blockGroupContents: z.array(
         z.object({
-          blockGroupId: z.uuidv4(),
+          blockGroupId: z.uuidv4().nullable(),
           prevBlockGroupId: z.uuidv4().nullable(),
           arborizedEditableBlock: z.custom<PartialBlock>(),
         })
@@ -372,6 +372,35 @@ export type InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse =
     typeof InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema
   >;
 
+/* ============================== MoveMyBlockGroupById ============================== */
+
+export const MoveMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    blockPackId: z.uuidv4(),
+    movableBlockGroupId: z.uuidv4(),
+    movablePrevBlockGroupId: z.uuidv4().nullable(),
+    destinationBlockGroupId: z.uuidv4().nullable(),
+  }),
+});
+
+export type MoveMyBlockGroupByIdRequest = z.infer<
+  typeof MoveMyBlockGroupByIdRequestSchema
+>;
+
+export const MoveMyBlockGroupByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type MoveMyBlockGroupByIdResponse = z.infer<
+  typeof MoveMyBlockGroupByIdResponseSchema
+>;
+
 /* ============================== MoveMyBlockGroupsByIds ============================== */
 
 export const MoveMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend({
@@ -401,6 +430,41 @@ export const MoveMyBlockGroupsByIdsResponseSchema = NotezyResponseSchema.extend(
 
 export type MoveMyBlockGroupsByIdsResponse = z.infer<
   typeof MoveMyBlockGroupsByIdsResponseSchema
+>;
+
+/* ============================== BatchMoveMyBlockGroupsByIds ============================== */
+
+export const BatchMoveMyBlockGroupsByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      movedBlockGroups: z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          movableBlockGroupId: z.uuidv4(),
+          movablePrevBlockGroupId: z.uuidv4().nullable(),
+          destinationBlockGroupId: z.uuidv4().nullable(),
+        })
+      ),
+    }),
+  });
+
+export type BatchMoveMyBlockGroupsByIdsRequest = z.infer<
+  typeof BatchMoveMyBlockGroupsByIdsRequestSchema
+>;
+
+export const BatchMoveMyBlockGroupsByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type BatchMoveMyBlockGroupsByIdsResponse = z.infer<
+  typeof BatchMoveMyBlockGroupsByIdsResponseSchema
 >;
 
 /* ============================== RestoreMyBlockGroupById ============================== */

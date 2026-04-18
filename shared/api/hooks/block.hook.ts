@@ -45,6 +45,7 @@ import {
   UpdateMyBlocksByIdsRequestSchema,
   UpdateMyBlocksByIdsResponse,
 } from "@shared/api/interfaces/block.interface";
+import { GetMyBlockPackByIdResponse } from "@shared/api/interfaces/blockPack.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
 import {
   DeleteMyBlockById,
@@ -75,7 +76,6 @@ import {
 } from "@tanstack/react-query";
 import { UUID } from "crypto";
 import { ZodError } from "zod";
-import { GetMyBlockPackByIdResponse } from "../interfaces/blockPack.interface";
 
 export const useGetMyBlockById = (
   hookRequest?: GetMyBlockByIdRequest,

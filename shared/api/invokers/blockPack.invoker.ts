@@ -1,8 +1,12 @@
 import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
+  BatchMoveMyBlockPacksByIdsRequest,
+  BatchMoveMyBlockPacksByIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
+  CreateBlockPacksRequest,
+  CreateBlockPacksResponse,
   DeleteMyBlockPackByIdRequest,
   DeleteMyBlockPackByIdResponse,
   DeleteMyBlockPacksByIdsRequest,
@@ -25,6 +29,8 @@ import {
   RestoreMyBlockPacksByIdsResponse,
   UpdateMyBlockPackByIdRequest,
   UpdateMyBlockPackByIdResponse,
+  UpdateMyBlockPacksByIdsRequest,
+  UpdateMyBlockPacksByIdsResponse,
 } from "@shared/api/interfaces/blockPack.interface";
 import {
   APIURLPathDictionary,
@@ -195,6 +201,37 @@ export async function CreateBlockPack(
   return formattedResponse;
 }
 
+export async function CreateBlockPacks(
+  request: CreateBlockPacksRequest
+): Promise<CreateBlockPacksResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.createBlockPacks}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse = (await response.json()) as CreateBlockPacksResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
 export async function UpdateMyBlockPackById(
   request: UpdateMyBlockPackByIdRequest
 ): Promise<UpdateMyBlockPackByIdResponse> {
@@ -220,6 +257,38 @@ export async function UpdateMyBlockPackById(
 
   const formattedResponse =
     (await response.json()) as UpdateMyBlockPackByIdResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function UpdateMyBlockPacksByIds(
+  request: UpdateMyBlockPacksByIdsRequest
+): Promise<UpdateMyBlockPacksByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.updateMyBlockPacksByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as UpdateMyBlockPacksByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
@@ -284,6 +353,38 @@ export async function MoveMyBlockPacksByIds(
 
   const formattedResponse =
     (await response.json()) as MoveMyBlockPacksByIdsResponse;
+  if (formattedResponse.exception) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function BatchMoveMyBlockPacksByIds(
+  request: BatchMoveMyBlockPacksByIdsRequest
+): Promise<BatchMoveMyBlockPacksByIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.batchMoveMyBlockPacksByIds}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as BatchMoveMyBlockPacksByIdsResponse;
   if (formattedResponse.exception) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

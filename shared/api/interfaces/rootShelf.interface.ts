@@ -100,6 +100,38 @@ export type CreateRootShelfResponse = z.infer<
   typeof CreateRootShelfResponseSchema
 >;
 
+/* ============================== CreateRootShelvesRequest ============================== */
+
+export const CreateRootShelvesRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    createdRootShelves: z.array(
+      z.object({
+        name: z.string().min(1).max(128),
+      })
+    ),
+  }),
+});
+
+export type CreateRootShelvesRequest = z.infer<
+  typeof CreateRootShelvesRequestSchema
+>;
+
+export const CreateRootShelvesResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    ids: z.array(z.uuid()),
+    lastAnalyzedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
+  }),
+});
+
+export type CreateRootShelvesResponse = z.infer<
+  typeof CreateRootShelvesResponseSchema
+>;
+
 /* ============================== UpdateMyRootShelfById ============================== */
 
 export const UpdateMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
@@ -130,6 +162,45 @@ export const UpdateMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
 
 export type UpdateMyRootShelfByIdResponse = z.infer<
   typeof UpdateMyRootShelfByIdResponseSchema
+>;
+
+/* ============================== UpdateMyRootShelvesByIds ============================== */
+
+export const UpdateMyRootShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
+  {
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      updatedRootShelves: z.array(
+        z.object({
+          rootShelfId: z.uuidv4(),
+          values: z
+            .object({
+              name: z.string().min(1).max(128),
+            })
+            .partial(),
+          setNull: z.record(z.string(), z.boolean()).optional(),
+        })
+      ),
+    }),
+  }
+);
+
+export type UpdateMyRootShelvesByIdsRequest = z.infer<
+  typeof UpdateMyRootShelvesByIdsRequestSchema
+>;
+
+export const UpdateMyRootShelvesByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type UpdateMyRootShelvesByIdsResponse = z.infer<
+  typeof UpdateMyRootShelvesByIdsResponseSchema
 >;
 
 /* ============================== RestoreMyRootShelfById ============================== */

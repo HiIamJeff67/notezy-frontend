@@ -216,6 +216,45 @@ export type CreateSubShelfByRootShelfIdResponse = z.infer<
   typeof CreateSubShelfByRootShelfIdResponseSchema
 >;
 
+/* ============================== CreateSubShelvesByRootShelfIds ============================== */
+
+export const CreateSubShelvesByRootShelfIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      createdSubShelves: z.array(
+        z.object({
+          rootShelfId: z.uuidv4(),
+          prevSubShelfId: z.uuidv4().nullable(),
+          name: z.string().min(1).max(128),
+        })
+      ),
+    }),
+    affected: z.object({
+      rootShelfIds: z.array(z.uuidv4()),
+      prevSubShelfIds: z.array(z.uuidv4().nullable()),
+    }),
+  });
+
+export type CreateSubShelvesByRootShelfIdsRequest = z.infer<
+  typeof CreateSubShelvesByRootShelfIdsRequestSchema
+>;
+
+export const CreateSubShelvesByRootShelfIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      ids: z.array(z.uuidv4()),
+      createdAt: z.coerce.date(),
+    }),
+  });
+
+export type CreateSubShelvesByRootShelfIdsResponse = z.infer<
+  typeof CreateSubShelvesByRootShelfIdsResponseSchema
+>;
+
 /* ============================== UpdateMySubShelfById ============================== */
 
 export const UpdateMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
@@ -250,6 +289,47 @@ export const UpdateMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
 
 export type UpdateMySubShelfByIdResponse = z.infer<
   typeof UpdateMySubShelfByIdResponseSchema
+>;
+
+/* ============================== UpdateMySubShelvesByIds ============================== */
+
+export const UpdateMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    updatedSubShelves: z.array(
+      z.object({
+        subShelfId: z.uuidv4(),
+        values: z
+          .object({
+            name: z.string().min(1).max(128),
+          })
+          .partial(),
+        setNull: z.record(z.string(), z.boolean()).optional(),
+      })
+    ),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    prevSubShelfIds: z.array(z.uuidv4().nullable()),
+  }),
+});
+
+export type UpdateMySubShelvesByIdsRequest = z.infer<
+  typeof UpdateMySubShelvesByIdsRequestSchema
+>;
+
+export const UpdateMySubShelvesByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type UpdateMySubShelvesByIdsResponse = z.infer<
+  typeof UpdateMySubShelvesByIdsResponseSchema
 >;
 
 /* ============================== MoveMySubShelf ============================== */
@@ -314,6 +394,43 @@ export const MoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
 
 export type MoveMySubShelvesResponse = z.infer<
   typeof MoveMySubShelvesResponseSchema
+>;
+
+/* ============================== BatchMoveMySubShelves ============================== */
+
+export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    movedSubShelves: z.array(
+      z.object({
+        sourceRootShelfId: z.uuidv4(),
+        sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
+        destinationRootShelfId: z.uuidv4(),
+        destinationSubShelfId: z.uuidv4(),
+      })
+    ),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    childSubShelfIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type BatchMoveMySubShelvesRequest = z.infer<
+  typeof BatchMoveMySubShelvesRequestSchema
+>;
+
+export const BatchMoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+});
+
+export type BatchMoveMySubShelvesResponse = z.infer<
+  typeof BatchMoveMySubShelvesResponseSchema
 >;
 
 /* ============================== RestoreMySubShelfById ============================== */

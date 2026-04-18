@@ -4,6 +4,7 @@ import {
 } from "@shared/api/interfaces/context.interface";
 import { AllSupportedBlockPackIcons } from "@shared/enums/supportedBlockPackIcon.enum";
 import { z } from "zod";
+import { BatchMoveMySubShelvesResponseSchema } from "./subShelf.interface";
 
 /* ============================== GetMyBlockPackById ============================== */
 
@@ -192,6 +193,44 @@ export type CreateBlockPackResponse = z.infer<
   typeof CreateBlockPackResponseSchema
 >;
 
+/* ============================== CreateBlockPacks ============================== */
+
+export const CreateBlockPacksRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    createdBlockPacks: z.array(
+      z.object({
+        parentSubShelfId: z.uuidv4(),
+        name: z.string().min(1).max(128),
+        icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+        headerBackgroundURL: z.url().nullable(),
+      })
+    ),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4().optional()),
+    parentSubShelfIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type CreateBlockPacksRequest = z.infer<
+  typeof CreateBlockPacksRequestSchema
+>;
+
+export const CreateBlockPacksResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    ids: z.array(z.uuidv4()),
+    createdAt: z.coerce.date(),
+  }),
+});
+
+export type CreateBlockPacksResponse = z.infer<
+  typeof CreateBlockPacksResponseSchema
+>;
+
 /* ============================== UpdateMyBlockPackById ============================== */
 
 export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
@@ -228,6 +267,49 @@ export const UpdateMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
 
 export type UpdateMyBlockPackByIdResponse = z.infer<
   typeof UpdateMyBlockPackByIdResponseSchema
+>;
+
+/* ============================== UpdateMyBlockPacksByIds ============================== */
+
+export const UpdateMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z.object({
+    userAgent: z.string().min(1),
+    authorization: z.string().optional(),
+  }),
+  body: z.object({
+    updatedBlockPacks: z.array(
+      z.object({
+        blockPackId: z.uuidv4(),
+        values: z
+          .object({
+            name: z.string().min(1).max(128),
+            icon: z.enum(AllSupportedBlockPackIcons),
+            headerBackgroundURL: z.url(),
+          })
+          .partial(),
+        setNull: z.record(z.string(), z.boolean()).optional(),
+      })
+    ),
+  }),
+  affected: z.object({
+    rootShelfIds: z.array(z.uuidv4()),
+    parentSubShelfIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type UpdateMyBlockPacksByIdsRequest = z.infer<
+  typeof UpdateMyBlockPacksByIdsRequestSchema
+>;
+
+export const UpdateMyBlockPacksByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type UpdateMyBlockPacksByIdsResponse = z.infer<
+  typeof UpdateMyBlockPacksByIdsResponseSchema
 >;
 
 /* ============================== MoveMyBlockPackById ============================== */
@@ -290,6 +372,43 @@ export const MoveMyBlockPacksByIdsResponseSchema = NotezyResponseSchema.extend({
 
 export type MoveMyBlockPacksByIdsResponse = z.infer<
   typeof MoveMyBlockPacksByIdsResponseSchema
+>;
+
+/* ============================== BatchMoveMyBlockPacksByIds ============================== */
+
+export const BatchMoveMyBlockPacksByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      movedBlockPacks: z.array(
+        z.object({
+          blockPackIds: z.array(z.uuidv4()),
+          destinationParentSubShelfId: z.uuidv4(),
+        })
+      ),
+    }),
+    affected: z.object({
+      rootShelfIds: z.array(z.uuidv4()),
+      sourceParentSubShelfIds: z.array(z.uuidv4()),
+    }),
+  });
+
+export type BatchMoveMyBlockPacksByIdsRequest = z.infer<
+  typeof BatchMoveMyBlockPacksByIdsRequestSchema
+>;
+
+export const BatchMoveMyBlockPacksByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+  });
+
+export type BatchMoveMyBlockPacksByIdsResponse = z.infer<
+  typeof BatchMoveMySubShelvesResponseSchema
 >;
 
 /* ============================== RestoreMyBlockPackById ============================== */

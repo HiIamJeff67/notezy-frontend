@@ -6,9 +6,15 @@ import {
   queryFnGetMyBlockPacksByParentSubShelfId,
 } from "@shared/api/functions/blockPack.function";
 import {
+  BatchMoveMyBlockPacksByIdsRequest,
+  BatchMoveMyBlockPacksByIdsRequestSchema,
+  BatchMoveMyBlockPacksByIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackRequestSchema,
   CreateBlockPackResponse,
+  CreateBlockPacksRequest,
+  CreateBlockPacksRequestSchema,
+  CreateBlockPacksResponse,
   DeleteMyBlockPackByIdRequest,
   DeleteMyBlockPackByIdRequestSchema,
   DeleteMyBlockPackByIdResponse,
@@ -38,9 +44,14 @@ import {
   UpdateMyBlockPackByIdRequest,
   UpdateMyBlockPackByIdRequestSchema,
   UpdateMyBlockPackByIdResponse,
+  UpdateMyBlockPacksByIdsRequest,
+  UpdateMyBlockPacksByIdsRequestSchema,
+  UpdateMyBlockPacksByIdsResponse,
 } from "@shared/api/interfaces/blockPack.interface";
 import {
+  BatchMoveMyBlockPacksByIds,
   CreateBlockPack,
+  CreateBlockPacks,
   DeleteMyBlockPackById,
   DeleteMyBlockPacksByIds,
   MoveMyBlockPackById,
@@ -48,6 +59,7 @@ import {
   RestoreMyBlockPackById,
   RestoreMyBlockPacksByIds,
   UpdateMyBlockPackById,
+  UpdateMyBlockPacksByIds,
 } from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
@@ -284,6 +296,75 @@ export const useCreateBlockPack = () => {
   };
 };
 
+export const useCreateBlockPacks = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: CreateBlockPacksRequest
+    ): Promise<CreateBlockPacksResponse> => {
+      const validatedRequest = CreateBlockPacksRequestSchema.parse(request);
+      return await CreateBlockPacks(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...parentSubShelfIds.flatMap(parentSubShelfId => [
+          queryKeys.subShelf.oneById(parentSubShelfId),
+          queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
+        ]),
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "CREATE_BLOCK_PACKS_HOOK" as const,
+  };
+};
+
 export const useUpdateMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
@@ -344,6 +425,81 @@ export const useUpdateMyBlockPackById = () => {
   return {
     ...mutation,
     name: "UPDATE_MY_BLOCK_PACK_BY_ID_HOOK" as const,
+  };
+};
+
+export const useUpdateMyBlockPacksByIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: UpdateMyBlockPacksByIdsRequest
+    ): Promise<UpdateMyBlockPacksByIdsResponse> => {
+      const validatedRequest =
+        UpdateMyBlockPacksByIdsRequestSchema.parse(request);
+      return await UpdateMyBlockPacksByIds(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const blockPackIds = variables.body.updatedBlockPacks
+        .map(updatedBlockPack => updatedBlockPack.blockPackId)
+        .filter(Boolean) as UUID[];
+      const parentSubShelfIds = (
+        variables.affected.parentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ]),
+        ...parentSubShelfIds.map(parentSubShelfId =>
+          queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId)
+        ),
+        ...rootShelfIds.map(rootShelfId =>
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "UPDATE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
   };
 };
 
@@ -488,6 +644,93 @@ export const useMoveMyBlockPacksByIds = () => {
   return {
     ...mutation,
     name: "MOVE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
+  };
+};
+
+export const useBatchMoveMyBlockPacksByIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (
+      request: BatchMoveMyBlockPacksByIdsRequest
+    ): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
+      const validatedRequest =
+        BatchMoveMyBlockPacksByIdsRequestSchema.parse(request);
+      return await BatchMoveMyBlockPacksByIds(validatedRequest);
+    },
+    onSuccess: (response, variables) => {
+      const blockPackIds = [] as UUID[];
+      const destinationParentSubShelfIds = [] as UUID[];
+      for (const movedBlockPack of variables.body.movedBlockPacks) {
+        blockPackIds.push(...(movedBlockPack.blockPackIds as UUID[]));
+        destinationParentSubShelfIds.push(
+          movedBlockPack.destinationParentSubShelfId as UUID
+        );
+      }
+      const sourceParentSubShelfIds = (
+        variables.affected.sourceParentSubShelfIds || []
+      ).filter(Boolean) as UUID[];
+      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
+      const targetKeys: QueryKey[] = [
+        ...sourceParentSubShelfIds.flatMap(sourceParentSubShelfId => [
+          queryKeys.subShelf.oneById(sourceParentSubShelfId),
+          queryKeys.blockPack.manyByParentSubShelfId(sourceParentSubShelfId),
+        ]),
+        ...destinationParentSubShelfIds.flatMap(destinationParentSubShelfId => [
+          queryKeys.subShelf.oneById(destinationParentSubShelfId),
+          ...blockPackIds.map(blockPackId =>
+            queryKeys.blockPack.oneById(blockPackId)
+          ),
+          queryKeys.blockPack.manyByParentSubShelfId(
+            destinationParentSubShelfId
+          ),
+        ]),
+        ...rootShelfIds.flatMap(rootShelfId => [
+          queryKeys.rootShelf.oneById(rootShelfId),
+          queryKeys.blockPack.manyByRootShelfId(rootShelfId),
+        ]),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+      if (response.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.newAccessToken
+        );
+      }
+      if (response.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.newCSRFToken
+        );
+      }
+    },
+    onError: error => {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "BATCH_MOVE_MY_BLOCK_PACKS_BY_IDS_HOOK" as const,
   };
 };
 

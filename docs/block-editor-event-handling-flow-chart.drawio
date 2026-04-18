@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="2419" dy="936" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2088" dy="893" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -59,8 +59,8 @@
         <mxCell id="nfp9kuKueZPyxR6_r1Yi-11" parent="WIyWlLk6GJQsqaUBKTNV-1" style="rhombus;whiteSpace=wrap;html=1;" value="size(eventQueue) &amp;gt; k&lt;div&gt;or&lt;/div&gt;&lt;div&gt;debounce timeout&lt;/div&gt;" vertex="1">
           <mxGeometry height="110" width="210" x="190" y="185" as="geometry" />
         </mxCell>
-        <mxCell id="nfp9kuKueZPyxR6_r1Yi-20" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;When to merge&lt;/h1&gt;&lt;div&gt;Declare a constant of `k`.&lt;/div&gt;&lt;div&gt;If the size of changedQueue is larger than `k`, remove all the events in the eventQueue to some temporay place.&lt;/div&gt;" vertex="1">
-          <mxGeometry height="120" width="180" x="210" y="50" as="geometry" />
+        <mxCell id="nfp9kuKueZPyxR6_r1Yi-20" parent="WIyWlLk6GJQsqaUBKTNV-1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;When to merge&lt;/h1&gt;&lt;div&gt;Declare a constant of `k`.&lt;/div&gt;&lt;div&gt;If the size of changedQueue is larger than `k`, remove all the events in the eventQueue to some temporary place and start merging.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="180" x="205" y="45" as="geometry" />
         </mxCell>
         <mxCell id="nfp9kuKueZPyxR6_r1Yi-27" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="nfp9kuKueZPyxR6_r1Yi-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="nfp9kuKueZPyxR6_r1Yi-24">
           <mxGeometry relative="1" as="geometry" />
