@@ -89,6 +89,7 @@
     "zod": "^4.0.15"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.12",
     "@eslint/eslintrc": "^3",
     "@graphql-codegen/cli": "^5.0.7",
     "@graphql-codegen/client-preset": "^4.8.3",

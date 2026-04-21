@@ -1,11 +1,11 @@
 "use client";
 
+import React, { createContext, useState } from "react";
 import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
 import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
 import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
 import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
-import React, { createContext, useState } from "react";
 
 export interface ModalProps {
   isOpen: boolean;

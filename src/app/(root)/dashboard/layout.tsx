@@ -1,10 +1,10 @@
 "use client";
 
+import { useGetUserData } from "@shared/api/hooks/user.hook";
+import React, { Suspense } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { WidgetProvider } from "@/providers/WidgetProvider";
-import { useGetUserData } from "@shared/api/hooks/user.hook";
-import React, { Suspense } from "react";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const sidebarManager = useSidebar();

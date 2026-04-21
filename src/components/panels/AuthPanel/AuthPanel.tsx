@@ -7,7 +7,7 @@ import {
   OAuthMetaIcon,
 } from "@/components/icons/OAuthIcon";
 import "@/global/styles/panel.css";
-import { useTheme } from "@/hooks";
+import { useTheme } from "@/hooks/useTheme";
 import { toCamelCase } from "@/util/stringCaseConversions";
 
 const OAuthIcons = {

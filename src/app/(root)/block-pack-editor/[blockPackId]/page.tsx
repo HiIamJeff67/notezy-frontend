@@ -1,6 +1,3 @@
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import BlockPackEditor from "@/components/editors/BlockPackEditor/BlockPackEditor";
-import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/prefetches/blockGroup.prefetch";
 import { prefetchGetMyBlockPackAndItsParentById } from "@shared/api/prefetches/blockPack.prefetch";
 import { getDefaultBlockPackMeta } from "@shared/types/blockPackMeta.type";
@@ -10,6 +7,9 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import BlockPackEditor from "@/components/editors/BlockPackEditor/BlockPackEditor";
+import { getAuthorization } from "@/util/getAuthorization";
 
 interface BlockPackEditorPageProps {
   params: Promise<{

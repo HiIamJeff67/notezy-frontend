@@ -1,5 +1,3 @@
-import { useTheme } from "@/hooks";
-import { clamp } from "@/util/math";
 import {
   CSSProperties,
   MouseEvent as ReactMouseEvent,
@@ -8,6 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTheme } from "@/hooks/useTheme";
+import { clamp } from "@/util/math";
 
 interface XYResizableProps {
   children?: React.ReactNode;

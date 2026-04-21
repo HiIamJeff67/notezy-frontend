@@ -1,26 +1,22 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
+import type { UUID } from "node:crypto";
 import {
+  mutationFnBatchMoveMySubShelves,
+  mutationFnCreateSubShelfByRootShelfId,
+  mutationFnCreateSubShelvesByRootShelfIds,
+  mutationFnDeleteMySubShelfById,
+  mutationFnDeleteMySubShelvesByIds,
+  mutationFnMoveMySubShelf,
+  mutationFnMoveMySubShelves,
+  mutationFnRestoreMySubShelfById,
+  mutationFnRestoreMySubShelvesByIds,
+  mutationFnUpdateMySubShelfById,
+  mutationFnUpdateMySubShelvesByIds,
   queryFnGetAllMySubShelvesByRootShelfId,
   queryFnGetMySubShelfById,
   queryFnGetMySubShelvesAndItemsByPrevSubShelfId,
   queryFnGetMySubShelvesByPrevSubShelfId,
 } from "@shared/api/functions/subShelf.function";
-import {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesRequestSchema,
-  BatchMoveMySubShelvesResponse,
-  CreateSubShelfByRootShelfIdRequest,
-  CreateSubShelfByRootShelfIdRequestSchema,
-  CreateSubShelfByRootShelfIdResponse,
-  CreateSubShelvesByRootShelfIdsRequest,
-  CreateSubShelvesByRootShelfIdsRequestSchema,
-  CreateSubShelvesByRootShelfIdsResponse,
-  DeleteMySubShelfByIdRequest,
-  DeleteMySubShelfByIdRequestSchema,
-  DeleteMySubShelfByIdResponse,
-  DeleteMySubShelvesByIdsRequest,
-  DeleteMySubShelvesByIdsRequestSchema,
-  DeleteMySubShelvesByIdsResponse,
+import type {
   GetAllMySubShelvesByRootShelfIdRequest,
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
@@ -29,57 +25,20 @@ import {
   GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdResponse,
-  MoveMySubShelfRequest,
-  MoveMySubShelfRequestSchema,
-  MoveMySubShelfResponse,
-  MoveMySubShelvesRequest,
-  MoveMySubShelvesRequestSchema,
-  MoveMySubShelvesResponse,
-  RestoreMySubShelfByIdRequest,
-  RestoreMySubShelfByIdRequestSchema,
-  RestoreMySubShelfByIdResponse,
-  RestoreMySubShelvesByIdsRequest,
-  RestoreMySubShelvesByIdsRequestSchema,
-  RestoreMySubShelvesByIdsResponse,
-  UpdateMySubShelfByIdRequest,
-  UpdateMySubShelfByIdRequestSchema,
-  UpdateMySubShelfByIdResponse,
-  UpdateMySubShelvesByIdsRequest,
-  UpdateMySubShelvesByIdsRequestSchema,
-  UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
-import {
-  BatchMoveMySubShelves,
-  CreateSubShelfByRootShelfId,
-  CreateSubShelvesByRootShelfIds,
-  DeleteMySubShelfById,
-  DeleteMySubShelvesByIds,
-  MoveMySubShelf,
-  MoveMySubShelves,
-  RestoreMySubShelfById,
-  RestoreMySubShelvesByIds,
-  UpdateMySubShelfById,
-  UpdateMySubShelvesByIds,
-} from "@shared/api/invokers/subShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  QueryKey,
+  type QueryKey,
+  type UseQueryOptions,
   useMutation,
   useQuery,
   useQueryClient,
-  UseQueryOptions,
 } from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { ZodError } from "zod";
 
 export const useGetMySubShelfById = (
   hookRequest?: GetMySubShelfByIdRequest,
@@ -240,14 +199,8 @@ export const useCreateSubShelfByRootShelfId = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateSubShelfByRootShelfIdRequest
-    ): Promise<CreateSubShelfByRootShelfIdResponse> => {
-      const validatedRequest =
-        CreateSubShelfByRootShelfIdRequestSchema.parse(request);
-      return await CreateSubShelfByRootShelfId(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateSubShelfByRootShelfId,
+    onSuccess: (_, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -260,33 +213,8 @@ export const useCreateSubShelfByRootShelfId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -301,14 +229,8 @@ export const useCreateSubShelvesByRootShelfIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateSubShelvesByRootShelfIdsRequest
-    ): Promise<CreateSubShelvesByRootShelfIdsResponse> => {
-      const validatedRequest =
-        CreateSubShelvesByRootShelfIdsRequestSchema.parse(request);
-      return await CreateSubShelvesByRootShelfIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateSubShelvesByRootShelfIds,
+    onSuccess: (_, variables) => {
       const prevSubShelfIds = variables.affected
         .prevSubShelfIds as (UUID | null)[];
       const rootShelfIds = variables.affected.rootShelfIds as UUID[];
@@ -326,33 +248,8 @@ export const useCreateSubShelvesByRootShelfIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -367,13 +264,8 @@ export const useUpdateMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMySubShelfByIdRequest
-    ): Promise<UpdateMySubShelfByIdResponse> => {
-      const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
-      return await UpdateMySubShelfById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnUpdateMySubShelfById,
+    onSuccess: (_, variables) => {
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -386,33 +278,8 @@ export const useUpdateMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -422,19 +289,12 @@ export const useUpdateMySubShelfById = () => {
     name: "UPDATE_MY_SUB_SHELF_BY_ID_HOOK" as const,
   };
 };
-
 export const useUpdateMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMySubShelvesByIdsRequest
-    ): Promise<UpdateMySubShelvesByIdsResponse> => {
-      const validatedRequest =
-        UpdateMySubShelvesByIdsRequestSchema.parse(request);
-      return await UpdateMySubShelvesByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnUpdateMySubShelvesByIds,
+    onSuccess: (_, variables) => {
       const prevSubShelfIds = variables.affected
         .prevSubShelfIds as (UUID | null)[];
       const rootShelfIds = variables.affected.rootShelfIds as UUID[];
@@ -452,33 +312,8 @@ export const useUpdateMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -491,15 +326,9 @@ export const useUpdateMySubShelvesByIds = () => {
 
 export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
-
   const mutation = useMutation({
-    mutationFn: async (
-      request: MoveMySubShelfRequest
-    ): Promise<MoveMySubShelfResponse> => {
-      const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
-      return await MoveMySubShelf(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnMoveMySubShelf,
+    onSuccess: (_, variables) => {
       const sourceSubShelfId = variables.body.sourceSubShelfId as UUID;
       const destinationSubShelfId = variables.body
         .destinationSubShelfId as UUID | null;
@@ -521,33 +350,8 @@ export const useMoveMySubShelf = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -562,13 +366,8 @@ export const useMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: MoveMySubShelvesRequest
-    ): Promise<MoveMySubShelvesResponse> => {
-      const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
-      return await MoveMySubShelves(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnMoveMySubShelves,
+    onSuccess: (_, variables) => {
       const sourceSubShelfIds = (variables.body.sourceSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
@@ -598,33 +397,8 @@ export const useMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -639,14 +413,8 @@ export const useBatchMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: BatchMoveMySubShelvesRequest
-    ): Promise<BatchMoveMySubShelvesResponse> => {
-      const validatedRequest =
-        BatchMoveMySubShelvesRequestSchema.parse(request);
-      return await BatchMoveMySubShelves(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnBatchMoveMySubShelves,
+    onSuccess: (_, variables) => {
       const sourceSubShelfIds = [] as UUID[];
       const destinationSubShelfIds = [] as UUID[];
       for (const movedSubShelf of variables.body.movedSubShelves) {
@@ -681,33 +449,8 @@ export const useBatchMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -722,14 +465,8 @@ export const useRestoreMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMySubShelfByIdRequest
-    ): Promise<RestoreMySubShelfByIdResponse> => {
-      const validatedRequest =
-        RestoreMySubShelfByIdRequestSchema.parse(request);
-      return await RestoreMySubShelfById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMySubShelfById,
+    onSuccess: (_, variables) => {
       const subShelfId = variables.body.subShelfId as UUID;
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -745,33 +482,8 @@ export const useRestoreMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -781,19 +493,12 @@ export const useRestoreMySubShelfById = () => {
     name: "RESTORE_MY_SUB_SHELF_BY_ID_HOOK" as const,
   };
 };
-
 export const useRestoreMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMySubShelvesByIdsRequest
-    ): Promise<RestoreMySubShelvesByIdsResponse> => {
-      const validatedRequest =
-        RestoreMySubShelvesByIdsRequestSchema.parse(request);
-      return await RestoreMySubShelvesByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMySubShelvesByIds,
+    onSuccess: (_, variables) => {
       const subShelfIds = (variables.body.subShelfIds || []).filter(
         Boolean
       ) as UUID[];
@@ -821,33 +526,8 @@ export const useRestoreMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -862,13 +542,8 @@ export const useDeleteMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMySubShelfByIdRequest
-    ): Promise<DeleteMySubShelfByIdResponse> => {
-      const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
-      return await DeleteMySubShelfById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMySubShelfById,
+    onSuccess: (_, variables) => {
       const subShelfId = variables.body.subShelfId as UUID;
       const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -884,33 +559,8 @@ export const useDeleteMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -925,14 +575,8 @@ export const useDeleteMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMySubShelvesByIdsRequest
-    ): Promise<DeleteMySubShelvesByIdsResponse> => {
-      const validatedRequest =
-        DeleteMySubShelvesByIdsRequestSchema.parse(request);
-      return await DeleteMySubShelvesByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMySubShelvesByIds,
+    onSuccess: (_, variables) => {
       const subShelfIds = (variables.body.subShelfIds || []).filter(
         Boolean
       ) as UUID[];
@@ -960,33 +604,8 @@ export const useDeleteMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

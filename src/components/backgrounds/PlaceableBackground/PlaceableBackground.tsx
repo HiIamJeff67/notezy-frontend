@@ -1,10 +1,4 @@
 import {
-  getPositionValue,
-  getSizeValue,
-  Widget,
-} from "@/components/widgets/widget";
-import { useTheme } from "@/hooks";
-import {
   DefaultHeightTotalFrameCount,
   DefaultWidthTotalFrameCount,
 } from "@shared/constants/widgetLayout.constant";
@@ -12,6 +6,12 @@ import { DNDType } from "@shared/enums";
 import { Cord, FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
+import {
+  getPositionValue,
+  getSizeValue,
+  Widget,
+} from "@/components/widgets/widget";
+import { useTheme } from "@/hooks/useTheme";
 import PlaceableFrame from "./PlaceableFrame";
 
 interface PlaceableBackgroundProps {

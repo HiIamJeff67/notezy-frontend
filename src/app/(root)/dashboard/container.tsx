@@ -1,5 +1,14 @@
 "use client";
 
+import { DNDType } from "@shared/enums";
+import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
+import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
+import { ImageInfo } from "@shared/types/imageInfo.type";
+import { IndexedDBKey } from "@shared/types/indexedDB.type";
+import { UUID } from "crypto";
+import { CheckIcon, PlusIcon, WrenchIcon } from "lucide-react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { DropTargetMonitor } from "react-dnd";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/PlaceableBackground";
 import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
@@ -25,20 +34,13 @@ import {
   toWidget,
   Widget,
 } from "@/components/widgets/widget";
-import { useDebounceValue, useLanguage, useTheme } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
+import { useDebounceValue } from "@/hooks/useDebounce";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useModal } from "@/hooks/useModal";
 import { useScreen } from "@/hooks/useScreen";
+import { useTheme } from "@/hooks/useTheme";
 import { useWidget } from "@/hooks/useWidget";
-import { DNDType } from "@shared/enums";
-import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
-import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
-import { ImageInfo } from "@shared/types/imageInfo.type";
-import { IndexedDBKey } from "@shared/types/indexedDB.type";
-import { UUID } from "crypto";
-import { CheckIcon, PlusIcon, WrenchIcon } from "lucide-react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { DropTargetMonitor } from "react-dnd";
 
 const DashboardElementZIndexes = {
   headerBackgroundImage: 50,

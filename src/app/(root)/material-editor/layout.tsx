@@ -1,5 +1,5 @@
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Suspense } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 
 /*
  * Make sure this file is placing as one of the children files of 'material-editor/'

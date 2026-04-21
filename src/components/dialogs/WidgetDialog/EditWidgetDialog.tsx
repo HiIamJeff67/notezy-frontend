@@ -1,3 +1,4 @@
+import React, { CSSProperties } from "react";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import {
   Dialog,
@@ -6,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import React, { CSSProperties } from "react";
 
 interface EditWidgetDialogProps {
   open: boolean;

@@ -1,6 +1,7 @@
 // src/components/commons/DeferredSuspense/DeferredSuspense.tsx
-import { useDeferredMount } from "@/hooks/useDeferredMount";
+
 import { ReactNode, Suspense } from "react";
+import { useDeferredMount } from "@/hooks/useDeferredMount";
 
 interface DeferredSuspenseProps {
   trigger: boolean;

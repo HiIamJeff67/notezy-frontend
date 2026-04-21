@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   BatchMoveMySubShelvesRequest,
@@ -34,6 +33,7 @@ import {
 } from "@shared/api/interfaces/subShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@/util/isJsonContext";
 
 export async function GetMySubShelfById(
   request: GetMySubShelfByIdRequest

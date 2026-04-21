@@ -1,25 +1,57 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetAllMyBlocksRequest,
+  type DeleteMyBlockByIdRequest,
+  DeleteMyBlockByIdRequestSchema,
+  type DeleteMyBlockByIdResponse,
+  type DeleteMyBlocksByIdsRequest,
+  DeleteMyBlocksByIdsRequestSchema,
+  type DeleteMyBlocksByIdsResponse,
+  type GetAllMyBlocksRequest,
   GetAllMyBlocksRequestSchema,
-  GetMyBlockByIdRequest,
+  type GetMyBlockByIdRequest,
   GetMyBlockByIdRequestSchema,
-  GetMyBlocksByBlockGroupIdRequest,
+  type GetMyBlocksByBlockGroupIdRequest,
   GetMyBlocksByBlockGroupIdRequestSchema,
-  GetMyBlocksByBlockGroupIdsRequest,
+  type GetMyBlocksByBlockGroupIdsRequest,
   GetMyBlocksByBlockGroupIdsRequestSchema,
-  GetMyBlocksByBlockPackIdRequest,
+  type GetMyBlocksByBlockPackIdRequest,
   GetMyBlocksByBlockPackIdRequestSchema,
-  GetMyBlocksByIdsRequest,
+  type GetMyBlocksByIdsRequest,
   GetMyBlocksByIdsRequestSchema,
+  type InsertBlockRequest,
+  InsertBlockRequestSchema,
+  type InsertBlockResponse,
+  type InsertBlocksRequest,
+  InsertBlocksRequestSchema,
+  type InsertBlocksResponse,
+  type RestoreMyBlockByIdRequest,
+  RestoreMyBlockByIdRequestSchema,
+  type RestoreMyBlockByIdResponse,
+  type RestoreMyBlocksByIdsRequest,
+  RestoreMyBlocksByIdsRequestSchema,
+  type RestoreMyBlocksByIdsResponse,
+  type UpdateMyBlockByIdRequest,
+  UpdateMyBlockByIdRequestSchema,
+  type UpdateMyBlockByIdResponse,
+  type UpdateMyBlocksByIdsRequest,
+  UpdateMyBlocksByIdsRequestSchema,
+  type UpdateMyBlocksByIdsResponse,
 } from "@shared/api/interfaces/block.interface";
 import {
+  DeleteMyBlockById,
+  DeleteMyBlocksByIds,
   GetAllMyBlocks,
   GetMyBlockById,
   GetMyBlocksByBlockGroupId,
   GetMyBlocksByBlockGroupIds,
   GetMyBlocksByBlockPackId,
   GetMyBlocksByIds,
+  InsertBlock,
+  InsertBlocks,
+  RestoreMyBlockById,
+  RestoreMyBlocksByIds,
+  UpdateMyBlockById,
+  UpdateMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
@@ -255,6 +287,286 @@ export const queryFnGetAllMyBlocks = async (
       throw new Error(`validation failed : ${errorMessage}`);
     }
     if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlock = async (
+  request: InsertBlockRequest
+): Promise<InsertBlockResponse> => {
+  try {
+    const validatedRequest = InsertBlockRequestSchema.parse(request);
+    const response = await InsertBlock(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlocks = async (
+  request: InsertBlocksRequest
+): Promise<InsertBlocksResponse> => {
+  try {
+    const validatedRequest = InsertBlocksRequestSchema.parse(request);
+    const response = await InsertBlocks(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyBlockById = async (
+  request: UpdateMyBlockByIdRequest
+): Promise<UpdateMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyBlockByIdRequestSchema.parse(request);
+    const response = await UpdateMyBlockById(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyBlocksByIds = async (
+  request: UpdateMyBlocksByIdsRequest
+): Promise<UpdateMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = UpdateMyBlocksByIdsRequestSchema.parse(request);
+    const response = await UpdateMyBlocksByIds(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnRestoreMyBlockById = async (
+  request: RestoreMyBlockByIdRequest
+): Promise<RestoreMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyBlockByIdRequestSchema.parse(request);
+    const response = await RestoreMyBlockById(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnRestoreMyBlocksByIds = async (
+  request: RestoreMyBlocksByIdsRequest
+): Promise<RestoreMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = RestoreMyBlocksByIdsRequestSchema.parse(request);
+    const response = await RestoreMyBlocksByIds(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnDeleteMyBlockById = async (
+  request: DeleteMyBlockByIdRequest
+): Promise<DeleteMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlockByIdRequestSchema.parse(request);
+    const response = await DeleteMyBlockById(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnDeleteMyBlocksByIds = async (
+  request: DeleteMyBlocksByIdsRequest
+): Promise<DeleteMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlocksByIdsRequestSchema.parse(request);
+    const response = await DeleteMyBlocksByIds(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
           throw new Error(error.unWrap.message);

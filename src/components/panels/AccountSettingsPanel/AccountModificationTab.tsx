@@ -1,19 +1,5 @@
 "use client";
 
-import SettingMenu from "@/components/menus/SettingMenu/SettingMenu";
-import SettingMenuButton from "@/components/menus/SettingMenu/SettingMenuButton";
-import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 import {
   useDeleteMe,
   useForgetPassword,
@@ -28,6 +14,20 @@ import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
+import SettingMenu from "@/components/menus/SettingMenu/SettingMenu";
+import SettingMenuButton from "@/components/menus/SettingMenu/SettingMenuButton";
+import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 
 interface AccountModificationTabProps {
   sendAuthCodeTimeCounter: number;

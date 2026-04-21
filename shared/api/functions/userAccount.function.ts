@@ -1,14 +1,28 @@
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetMyAccountRequest,
+  type BindGoogleAccountRequest,
+  BindGoogleAccountRequestSchema,
+  type BindGoogleAccountResponse,
+  type GetMyAccountRequest,
   GetMyAccountRequestSchema,
+  type UnbindGoogleAccountRequest,
+  UnbindGoogleAccountRequestSchema,
+  type UnbindGoogleAccountResponse,
+  type UpdateMyAccountRequest,
+  UpdateMyAccountRequestSchema,
+  type UpdateMyAccountResponse,
 } from "@shared/api/interfaces/userAccount.interface";
-import { GetMyAccount } from "@shared/api/invokers/userAccount.invoker";
+import {
+  BindGoogleAccount,
+  GetMyAccount,
+  UnbindGoogleAccount,
+  UpdateMyAccount,
+} from "@shared/api/invokers/userAccount.invoker";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { ZodError } from "zod";
-import { NotezyAPIError } from "../exceptions";
 
 export const queryFnGetMyAccount = async (
   request?: GetMyAccountRequest,
@@ -40,6 +54,111 @@ export const queryFnGetMyAccount = async (
       throw new Error(`validation failed : ${errorMessage}`);
     }
     if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyAccount = async (
+  request: UpdateMyAccountRequest
+): Promise<UpdateMyAccountResponse> => {
+  try {
+    const validatedRequest = UpdateMyAccountRequestSchema.parse(request);
+    const response = await UpdateMyAccount(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnBindGoogleAccount = async (
+  request: BindGoogleAccountRequest
+): Promise<BindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = BindGoogleAccountRequestSchema.parse(request);
+    const response = await BindGoogleAccount(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUnbindGoogleAccount = async (
+  request: UnbindGoogleAccountRequest
+): Promise<UnbindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = UnbindGoogleAccountRequestSchema.parse(request);
+    const response = await UnbindGoogleAccount(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
           throw new Error(error.unWrap.message);

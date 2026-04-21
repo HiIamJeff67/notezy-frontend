@@ -1,23 +1,20 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
+import type { UUID } from "node:crypto";
 import {
+  mutationFnCreateNotebookMaterial,
+  mutationFnCreateTextbookMaterial,
+  mutationFnDeleteMyMaterialById,
+  mutationFnDeleteMyMaterialsByIds,
+  mutationFnMoveMyMaterialById,
+  mutationFnRestoreMyMaterialById,
+  mutationFnRestoreMyMaterialsByIds,
+  mutationFnSaveMyNotebookMaterialById,
+  mutationFnUpdateMyMaterialById,
   queryFnGetAllMyMaterialsByRootShelfId,
   queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
   queryFnGetMyMaterialsByParentSubShelfId,
 } from "@shared/api/functions/material.function";
-import {
-  CreateNotebookMaterialRequest,
-  CreateNotebookMaterialRequestSchema,
-  CreateNotebookMaterialResponse,
-  CreateTextbookMaterialRequest,
-  CreateTextbookMaterialRequestSchema,
-  CreateTextbookMaterialResponse,
-  DeleteMyMaterialByIdRequest,
-  DeleteMyMaterialByIdRequestSchema,
-  DeleteMyMaterialByIdResponse,
-  DeleteMyMaterialsByIdsRequest,
-  DeleteMyMaterialsByIdsRequestSchema,
-  DeleteMyMaterialsByIdsResponse,
+import type {
   GetAllMyMaterialsByRootShelfIdRequest,
   GetAllMyMaterialsByRootShelfIdResponse,
   GetMyMaterialAndItsParentByIdRequest,
@@ -26,51 +23,19 @@ import {
   GetMyMaterialByIdResponse,
   GetMyMaterialsByParentSubShelfIdRequest,
   GetMyMaterialsByParentSubShelfIdResponse,
-  MoveMyMaterialByIdRequest,
-  MoveMyMaterialByIdRequestSchema,
-  MoveMyMaterialByIdResponse,
-  RestoreMyMaterialByIdRequest,
-  RestoreMyMaterialByIdRequestSchema,
-  RestoreMyMaterialByIdResponse,
-  RestoreMyMaterialsByIdsRequest,
-  RestoreMyMaterialsByIdsRequestSchema,
-  RestoreMyMaterialsByIdsResponse,
-  SaveMyNotebookMaterialByIdRequest,
-  SaveMyNotebookMaterialByIdRequestSchema,
-  SaveMyNotebookMaterialByIdResponse,
-  UpdateMyMaterialByIdRequest,
-  UpdateMyMaterialByIdRequestSchema,
-  UpdateMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
-import {
-  CreateNotebookMaterial,
-  CreateTextbookMaterial,
-  DeleteMyMaterialById,
-  DeleteMyMaterialsByIds,
-  MoveMyMaterialById,
-  RestoreMyMaterialById,
-  RestoreMyMaterialsByIds,
-  SaveMyNotebookMaterialById,
-  UpdateMyMaterialById,
-} from "@shared/api/invokers/material.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  QueryKey,
+  type QueryKey,
+  type UseQueryOptions,
   useMutation,
   useQuery,
-  UseQueryOptions,
 } from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { ZodError } from "zod";
 
 export const useGetMyMaterialById = (
   hookRequest?: GetMyMaterialByIdRequest,
@@ -231,14 +196,8 @@ export const useCreateTextbookMaterial = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateTextbookMaterialRequest
-    ): Promise<CreateTextbookMaterialResponse> => {
-      const validatedRequest =
-        CreateTextbookMaterialRequestSchema.parse(request);
-      return await CreateTextbookMaterial(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateTextbookMaterial,
+    onSuccess: (_, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -251,33 +210,8 @@ export const useCreateTextbookMaterial = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -292,14 +226,8 @@ export const useCreateNotebookMaterial = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateNotebookMaterialRequest
-    ): Promise<CreateNotebookMaterialResponse> => {
-      const validatedRequest =
-        CreateNotebookMaterialRequestSchema.parse(request);
-      return await CreateNotebookMaterial(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateNotebookMaterial,
+    onSuccess: (_, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -312,33 +240,8 @@ export const useCreateNotebookMaterial = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -353,13 +256,8 @@ export const useUpdateMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyMaterialByIdRequest
-    ): Promise<UpdateMyMaterialByIdResponse> => {
-      const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
-      return await UpdateMyMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnUpdateMyMaterialById,
+    onSuccess: (_, variables) => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -373,33 +271,8 @@ export const useUpdateMyMaterialById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -414,14 +287,8 @@ export const useSaveMyNotebookMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: SaveMyNotebookMaterialByIdRequest
-    ): Promise<SaveMyNotebookMaterialByIdResponse> => {
-      const validatedRequest =
-        SaveMyNotebookMaterialByIdRequestSchema.parse(request);
-      return await SaveMyNotebookMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnSaveMyNotebookMaterialById,
+    onSuccess: (_, variables) => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -433,33 +300,8 @@ export const useSaveMyNotebookMaterialById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -474,13 +316,8 @@ export const useMoveMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: MoveMyMaterialByIdRequest
-    ): Promise<MoveMyMaterialByIdResponse> => {
-      const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
-      return await MoveMyMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnMoveMyMaterialById,
+    onSuccess: (_, variables) => {
       const materialId = variables.body.materialId as UUID;
       const destinationParentSubShelfId = variables.body
         .destinationParentSubShelfId as UUID;
@@ -500,33 +337,8 @@ export const useMoveMyMaterialById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -536,19 +348,12 @@ export const useMoveMyMaterialById = () => {
     name: "MOVE_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
-
 export const useRestoreMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyMaterialByIdRequest
-    ): Promise<RestoreMyMaterialByIdResponse> => {
-      const validatedRequest =
-        RestoreMyMaterialByIdRequestSchema.parse(request);
-      return await RestoreMyMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMyMaterialById,
+    onSuccess: (_, variables) => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -563,33 +368,8 @@ export const useRestoreMyMaterialById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -604,14 +384,8 @@ export const useRestoreMyMaterialsByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyMaterialsByIdsRequest
-    ): Promise<RestoreMyMaterialsByIdsResponse> => {
-      const validatedRequest =
-        RestoreMyMaterialsByIdsRequestSchema.parse(request);
-      return await RestoreMyMaterialsByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMyMaterialsByIds,
+    onSuccess: (_, variables) => {
       const materialIds = (variables.body.materialIds || []).filter(
         Boolean
       ) as UUID[];
@@ -638,33 +412,8 @@ export const useRestoreMyMaterialsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -679,13 +428,8 @@ export const useDeleteMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyMaterialByIdRequest
-    ): Promise<DeleteMyMaterialByIdResponse> => {
-      const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
-      return await DeleteMyMaterialById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyMaterialById,
+    onSuccess: (_, variables) => {
       const materialId = variables.body.materialId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -700,33 +444,8 @@ export const useDeleteMyMaterialById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -741,14 +460,8 @@ export const useDeleteMyMaterialsByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyMaterialsByIdsRequest
-    ): Promise<DeleteMyMaterialsByIdsResponse> => {
-      const validatedRequest =
-        DeleteMyMaterialsByIdsRequestSchema.parse(request);
-      return await DeleteMyMaterialsByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyMaterialsByIds,
+    onSuccess: (_, variables) => {
       const materialIds = (variables.body.materialIds || []).filter(
         Boolean
       ) as UUID[];
@@ -775,33 +488,8 @@ export const useDeleteMyMaterialsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

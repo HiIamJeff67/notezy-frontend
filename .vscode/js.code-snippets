@@ -1,0 +1,7 @@
+{
+  "Generate a Try Catch Scope with Error Instance Initialized": {
+    "prefix": ["trycatcherror", "tce"],
+    "body": "try {} catch (error) {}",
+    "description": "Generate a Simple Try Catch Scope with Error Instance Initialized"
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useAppRouter, useLoading, useTheme } from "@/hooks";
 import { useEffect } from "react";
+import { useAppRouter, useLoading, useTheme } from "@/hooks";
 
 const LoadingCover = () => {
   const { isStrictLoading } = useLoading();

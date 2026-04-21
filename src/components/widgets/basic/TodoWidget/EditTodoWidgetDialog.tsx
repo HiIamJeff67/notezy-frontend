@@ -1,10 +1,10 @@
+import { TodoSetting } from "@widgets/basic/TodoWidget/setting/todoSetting";
+import { Dispatch, lazy, SetStateAction } from "react";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { TodoSetting } from "@widgets/basic/TodoWidget/data/todoSettings";
-import { Dispatch, lazy, SetStateAction } from "react";
 
 const EditTodoWidgetDialogContent = lazy(
   () => import("./EditTodoWidgetDialogContent")

@@ -1,10 +1,10 @@
+import { ScratchPadSetting } from "@widgets/basic/ScratchPadWidget/setting/scratchPadSetting";
+import { Dispatch, SetStateAction } from "react";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
 import { Slider } from "@/components/ui/slider";
-import { Dispatch, SetStateAction } from "react";
-import { ScratchPadSetting } from "./data/scratchPadSettings";
 
 interface EditScratchPadWidgetDialogContentProps {
   setting: ScratchPadSetting;

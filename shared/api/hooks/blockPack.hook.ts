@@ -1,26 +1,22 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
+import type { UUID } from "node:crypto";
 import {
+  mutationFnBatchMoveMyBlockPacksByIds,
+  mutationFnCreateBlockPack,
+  mutationFnCreateBlockPacks,
+  mutationFnDeleteMyBlockPackById,
+  mutationFnDeleteMyBlockPacksByIds,
+  mutationFnMoveMyBlockPackById,
+  mutationFnMoveMyBlockPacksByIds,
+  mutationFnRestoreMyBlockPackById,
+  mutationFnRestoreMyBlockPacksByIds,
+  mutationFnUpdateMyBlockPackById,
+  mutationFnUpdateMyBlockPacksByIds,
   queryFnGetAllMyBlockPacksByRootShelfId,
   queryFnGetMyBlockPackAndItsParentById,
   queryFnGetMyBlockPackById,
   queryFnGetMyBlockPacksByParentSubShelfId,
 } from "@shared/api/functions/blockPack.function";
-import {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsRequestSchema,
-  BatchMoveMyBlockPacksByIdsResponse,
-  CreateBlockPackRequest,
-  CreateBlockPackRequestSchema,
-  CreateBlockPackResponse,
-  CreateBlockPacksRequest,
-  CreateBlockPacksRequestSchema,
-  CreateBlockPacksResponse,
-  DeleteMyBlockPackByIdRequest,
-  DeleteMyBlockPackByIdRequestSchema,
-  DeleteMyBlockPackByIdResponse,
-  DeleteMyBlockPacksByIdsRequest,
-  DeleteMyBlockPacksByIdsRequestSchema,
-  DeleteMyBlockPacksByIdsResponse,
+import type {
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetAllMyBlockPacksByRootShelfIdResponse,
   GetMyBlockPackAndItsParentByIdRequest,
@@ -29,56 +25,19 @@ import {
   GetMyBlockPackByIdResponse,
   GetMyBlockPacksByParentSubShelfIdRequest,
   GetMyBlockPacksByParentSubShelfIdResponse,
-  MoveMyBlockPackByIdRequest,
-  MoveMyBlockPackByIdRequestSchema,
-  MoveMyBlockPackByIdResponse,
-  MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsRequestSchema,
-  MoveMyBlockPacksByIdsResponse,
-  RestoreMyBlockPackByIdRequest,
-  RestoreMyBlockPackByIdRequestSchema,
-  RestoreMyBlockPackByIdResponse,
-  RestoreMyBlockPacksByIdsRequest,
-  RestoreMyBlockPacksByIdsRequestSchema,
-  RestoreMyBlockPacksByIdsResponse,
-  UpdateMyBlockPackByIdRequest,
-  UpdateMyBlockPackByIdRequestSchema,
-  UpdateMyBlockPackByIdResponse,
-  UpdateMyBlockPacksByIdsRequest,
-  UpdateMyBlockPacksByIdsRequestSchema,
-  UpdateMyBlockPacksByIdsResponse,
 } from "@shared/api/interfaces/blockPack.interface";
-import {
-  BatchMoveMyBlockPacksByIds,
-  CreateBlockPack,
-  CreateBlockPacks,
-  DeleteMyBlockPackById,
-  DeleteMyBlockPacksByIds,
-  MoveMyBlockPackById,
-  MoveMyBlockPacksByIds,
-  RestoreMyBlockPackById,
-  RestoreMyBlockPacksByIds,
-  UpdateMyBlockPackById,
-  UpdateMyBlockPacksByIds,
-} from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  QueryKey,
+  type QueryKey,
+  type UseQueryOptions,
   useMutation,
   useQuery,
-  UseQueryOptions,
 } from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { ZodError } from "zod";
 
 export const useGetMyBlockPackById = (
   hookRequest?: GetMyBlockPackByIdRequest,
@@ -239,13 +198,8 @@ export const useCreateBlockPack = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateBlockPackRequest
-    ): Promise<CreateBlockPackResponse> => {
-      const validatedRequest = CreateBlockPackRequestSchema.parse(request);
-      return await CreateBlockPack(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateBlockPack,
+    onSuccess: (_, variables) => {
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -259,33 +213,8 @@ export const useCreateBlockPack = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -300,13 +229,8 @@ export const useCreateBlockPacks = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateBlockPacksRequest
-    ): Promise<CreateBlockPacksResponse> => {
-      const validatedRequest = CreateBlockPacksRequestSchema.parse(request);
-      return await CreateBlockPacks(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnCreateBlockPacks,
+    onSuccess: (_, variables) => {
       const parentSubShelfIds = (
         variables.affected.parentSubShelfIds || []
       ).filter(Boolean) as UUID[];
@@ -328,33 +252,8 @@ export const useCreateBlockPacks = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -369,14 +268,8 @@ export const useUpdateMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyBlockPackByIdRequest
-    ): Promise<UpdateMyBlockPackByIdResponse> => {
-      const validatedRequest =
-        UpdateMyBlockPackByIdRequestSchema.parse(request);
-      return await UpdateMyBlockPackById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnUpdateMyBlockPackById,
+    onSuccess: (_, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -391,33 +284,8 @@ export const useUpdateMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -432,14 +300,8 @@ export const useUpdateMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyBlockPacksByIdsRequest
-    ): Promise<UpdateMyBlockPacksByIdsResponse> => {
-      const validatedRequest =
-        UpdateMyBlockPacksByIdsRequestSchema.parse(request);
-      return await UpdateMyBlockPacksByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnUpdateMyBlockPacksByIds,
+    onSuccess: (_, variables) => {
       const blockPackIds = variables.body.updatedBlockPacks
         .map(updatedBlockPack => updatedBlockPack.blockPackId)
         .filter(Boolean) as UUID[];
@@ -466,33 +328,8 @@ export const useUpdateMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -507,13 +344,8 @@ export const useMoveMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: MoveMyBlockPackByIdRequest
-    ): Promise<MoveMyBlockPackByIdResponse> => {
-      const validatedRequest = MoveMyBlockPackByIdRequestSchema.parse(request);
-      return await MoveMyBlockPackById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnMoveMyBlockPackById,
+    onSuccess: (_, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const destinationParentSubShelfId = variables.body
         .destinationParentSubShelfId as UUID;
@@ -534,33 +366,8 @@ export const useMoveMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -575,14 +382,8 @@ export const useMoveMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: MoveMyBlockPacksByIdsRequest
-    ): Promise<MoveMyBlockPacksByIdsResponse> => {
-      const validatedRequest =
-        MoveMyBlockPacksByIdsRequestSchema.parse(request);
-      return await MoveMyBlockPacksByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnMoveMyBlockPacksByIds,
+    onSuccess: (_, variables) => {
       const blockPackIds = (variables.body.blockPackIds || []).filter(
         Boolean
       ) as UUID[];
@@ -610,33 +411,8 @@ export const useMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -651,14 +427,8 @@ export const useBatchMoveMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: BatchMoveMyBlockPacksByIdsRequest
-    ): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
-      const validatedRequest =
-        BatchMoveMyBlockPacksByIdsRequestSchema.parse(request);
-      return await BatchMoveMyBlockPacksByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnBatchMoveMyBlockPacksByIds,
+    onSuccess: (_, variables) => {
       const blockPackIds = [] as UUID[];
       const destinationParentSubShelfIds = [] as UUID[];
       for (const movedBlockPack of variables.body.movedBlockPacks) {
@@ -697,33 +467,8 @@ export const useBatchMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -738,14 +483,8 @@ export const useRestoreMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyBlockPackByIdRequest
-    ): Promise<RestoreMyBlockPackByIdResponse> => {
-      const validatedRequest =
-        RestoreMyBlockPackByIdRequestSchema.parse(request);
-      return await RestoreMyBlockPackById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMyBlockPackById,
+    onSuccess: (_, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -763,33 +502,8 @@ export const useRestoreMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -804,14 +518,8 @@ export const useRestoreMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyBlockPacksByIdsRequest
-    ): Promise<RestoreMyBlockPacksByIdsResponse> => {
-      const validatedRequest =
-        RestoreMyBlockPacksByIdsRequestSchema.parse(request);
-      return await RestoreMyBlockPacksByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnRestoreMyBlockPacksByIds,
+    onSuccess: (_, variables) => {
       const blockPackIds = (variables.body.blockPackIds || []).filter(
         Boolean
       ) as UUID[];
@@ -841,33 +549,8 @@ export const useRestoreMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -882,14 +565,8 @@ export const useDeleteMyBlockPackById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyBlockPackByIdRequest
-    ): Promise<DeleteMyBlockPackByIdResponse> => {
-      const validatedRequest =
-        DeleteMyBlockPackByIdRequestSchema.parse(request);
-      return await DeleteMyBlockPackById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyBlockPackById,
+    onSuccess: (_, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
       const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
       const rootShelfId = variables.affected.rootShelfId as UUID;
@@ -907,33 +584,8 @@ export const useDeleteMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -948,14 +600,8 @@ export const useDeleteMyBlockPacksByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyBlockPacksByIdsRequest
-    ): Promise<DeleteMyBlockPacksByIdsResponse> => {
-      const validatedRequest =
-        DeleteMyBlockPacksByIdsRequestSchema.parse(request);
-      return await DeleteMyBlockPacksByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyBlockPacksByIds,
+    onSuccess: (_, variables) => {
       const blockPackIds = (variables.body.blockPackIds || []).filter(
         Boolean
       ) as UUID[];
@@ -985,33 +631,8 @@ export const useDeleteMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

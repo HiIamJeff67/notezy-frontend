@@ -1,11 +1,12 @@
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useDebounceCallback } from "@/hooks/useDebounce";
-import React, { useEffect, useState } from "react";
 
-interface DebouncedInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "value" | "onChange"
-> {
+interface DebouncedInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "value" | "onChange"
+  > {
   value: string;
   onValueChange: (value: string) => void;
   debounceDelay?: number;

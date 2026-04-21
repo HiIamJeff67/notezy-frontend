@@ -1,12 +1,4 @@
 import {
-  PrivateRootShelf,
-  SearchRootShelfEdge,
-  SearchRootShelfSortBy,
-  SearchSortOrder,
-} from "@/graphql/generated/graphql";
-import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
-import { getAuthorization } from "@/util/getAuthorization";
-import {
   useCreateRootShelf,
   useDeleteMyRootShelfById,
   useUpdateMyRootShelfById,
@@ -15,8 +7,8 @@ import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.h
 import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LRUCache } from "@shared/lib/LRUCache";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -25,6 +17,14 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import { RefObject, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  PrivateRootShelf,
+  SearchRootShelfEdge,
+  SearchRootShelfSortBy,
+  SearchSortOrder,
+} from "@/graphql/generated/graphql";
+import { useSearchRootShelvesLazyQuery } from "@/graphql/hooks/useGraphQLShelves";
+import { getAuthorization } from "@/util/getAuthorization";
 
 interface UseRootShelfLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;

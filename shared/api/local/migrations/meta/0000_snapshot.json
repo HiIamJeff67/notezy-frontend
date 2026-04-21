@@ -148,10 +148,7 @@
       "indexes": {
         "block_group_unique_idx_block_pack_id_prev_block_group_id": {
           "name": "block_group_unique_idx_block_pack_id_prev_block_group_id",
-          "columns": [
-            "block_pack_id",
-            "prev_block_group_id"
-          ],
+          "columns": ["block_pack_id", "prev_block_group_id"],
           "isUnique": true
         }
       },
@@ -234,10 +231,7 @@
       "indexes": {
         "block_pack_unique_idx_parent_sub_shelf_id_name": {
           "name": "block_pack_unique_idx_parent_sub_shelf_id_name",
-          "columns": [
-            "parent_sub_shelf_id",
-            "name"
-          ],
+          "columns": ["parent_sub_shelf_id", "name"],
           "isUnique": true
         }
       },
@@ -316,9 +310,7 @@
       "indexes": {
         "root_shelf_unique_idx_owner_id_name": {
           "name": "root_shelf_unique_idx_owner_id_name",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -394,11 +386,7 @@
       "indexes": {
         "sub_shelf_unique_idx_name_root_shelf_id_path": {
           "name": "sub_shelf_unique_idx_name_root_shelf_id_path",
-          "columns": [
-            "name",
-            "root_shelf_id",
-            "path"
-          ],
+          "columns": ["name", "root_shelf_id", "path"],
           "isUnique": true
         }
       },
@@ -472,11 +460,7 @@
       "indexes": {
         "transaction_unique_idx_entity_id_entity_type_action_type": {
           "name": "transaction_unique_idx_entity_id_entity_type_action_type",
-          "columns": [
-            "entity_id",
-            "entity_type",
-            "action_type"
-          ],
+          "columns": ["entity_id", "entity_type", "action_type"],
           "isUnique": true
         }
       },

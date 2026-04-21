@@ -1,8 +1,8 @@
-import Droppable from "@/components/commons/Droppable/Droppable";
-import { getPositionValue, getSizeValue } from "@/components/widgets/widget";
 import { DNDType } from "@shared/enums";
 import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import { DropTargetMonitor } from "react-dnd";
+import Droppable from "@/components/commons/Droppable/Droppable";
+import { getPositionValue, getSizeValue } from "@/components/widgets/widget";
 
 interface PlaceableFrameProps {
   className?: string;

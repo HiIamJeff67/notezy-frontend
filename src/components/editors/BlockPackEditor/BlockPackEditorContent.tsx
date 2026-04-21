@@ -1,5 +1,6 @@
 "use client";
 
+import { PartialBlock } from "@blocknote/core";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
@@ -30,7 +31,6 @@ import {
   convertBlocksToPDF,
   convertBlocksToPlainText,
 } from "@/util/convertBlocksToFiles";
-import { PartialBlock } from "@blocknote/core";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";

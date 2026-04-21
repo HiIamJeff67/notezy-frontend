@@ -1,8 +1,5 @@
 "use client";
 
-import { useLanguage } from "@/hooks";
-import { getAuthorization } from "@/util/getAuthorization";
-import { choiceRandom } from "@/util/random";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import {
   useDeleteMyBlocksByIds,
@@ -50,6 +47,9 @@ import {
   useState,
 } from "react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/hooks/useLanguage";
+import { getAuthorization } from "@/util/getAuthorization";
+import { choiceRandom } from "@/util/random";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor;

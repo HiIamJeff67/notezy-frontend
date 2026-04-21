@@ -1,3 +1,18 @@
+import { generateDynamicDNDType } from "@shared/enums/dndType.enum";
+import { generateUUID } from "@shared/types/uuidv4.type";
+import {
+  getDefaultTodoData,
+  TodoData,
+  TodoItem,
+} from "@widgets/basic/TodoWidget/data/todoData";
+import {
+  getDefaultTodoSetting,
+  TodoSetting,
+} from "@widgets/basic/TodoWidget/setting/todoSetting";
+import { WidgetProps } from "@widgets/widget";
+import { UUID } from "crypto";
+import { CheckIcon, GripVertical, LinkIcon, Plus, Trash2 } from "lucide-react";
+import { useCallback, useState } from "react";
 import { VerticalDNDable } from "@/components/commons/DNDable/VerticalDNDable";
 import DebouncedInput from "@/components/inputs/DebouncedInput";
 import { Button } from "@/components/ui/button";
@@ -9,22 +24,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
-import { generateDynamicDNDType } from "@shared/enums/dndType.enum";
-import { generateUUID } from "@shared/types/uuidv4.type";
-import {
-  getDefaultTodoData,
-  TodoData,
-  TodoItem,
-} from "@widgets/basic/TodoWidget/data/todoData";
-import {
-  getDefaultTodoSetting,
-  TodoSetting,
-} from "@widgets/basic/TodoWidget/data/todoSettings";
-import EditTodoWidgetDialog from "@widgets/basic/TodoWidget/EditTodoWidgetDialog";
-import { WidgetProps } from "@widgets/widget";
-import { UUID } from "crypto";
-import { CheckIcon, GripVertical, LinkIcon, Plus, Trash2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import EditTodoWidgetDialog from "./EditTodoWidgetDialog";
 
 const TodoWidget = ({
   className,

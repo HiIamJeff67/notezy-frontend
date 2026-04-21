@@ -1,10 +1,10 @@
+import { TimerSetting } from "@widgets/basic/TimerWidget/setting/timerSetting";
+import { Dispatch, lazy, SetStateAction } from "react";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { Dispatch, lazy, SetStateAction } from "react";
-import { TimerSetting } from "./data/timerSettings";
 
 const EditTimerWidgetDialogContent = lazy(
   () => import("./EditTimerWidgetDialogContent")

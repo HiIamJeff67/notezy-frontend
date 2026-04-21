@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   DeleteMeRequest,
@@ -26,6 +25,7 @@ import {
 } from "@shared/api/interfaces/auth.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@/util/isJsonContext";
 
 export async function Register(
   request: RegisterRequest

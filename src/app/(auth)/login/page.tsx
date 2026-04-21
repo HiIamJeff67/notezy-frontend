@@ -1,9 +1,5 @@
 "use client";
 
-import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
-import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useLogin } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { WebURLPathDictionary } from "@shared/constants";
@@ -12,6 +8,10 @@ import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 
 const LoginPage = () => {
   const router = useAppRouter();

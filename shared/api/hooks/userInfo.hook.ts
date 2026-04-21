@@ -1,25 +1,22 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
-import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
 import {
+  mutationFnUpdateMyInfo,
+  queryFnGetMyInfo,
+} from "@shared/api/functions/userInfo.function";
+import type {
   GetMyInfoRequest,
   GetMyInfoResponse,
-  UpdateMyInfoRequest,
-  UpdateMyInfoRequestSchema,
-  UpdateMyInfoResponse,
 } from "@shared/api/interfaces/userInfo.interface";
-import { UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { ZodError } from "zod";
+import {
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useGetMyInfo = (
   hookRequest?: GetMyInfoRequest,
@@ -58,41 +55,11 @@ export const useUpdateMyInfo = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyInfoRequest
-    ): Promise<UpdateMyInfoResponse> => {
-      const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
-      return await UpdateMyInfo(validatedRequest);
-    },
-    onSuccess: (response, _) => {
+    mutationFn: mutationFnUpdateMyInfo,
+    onSuccess: (_, __) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

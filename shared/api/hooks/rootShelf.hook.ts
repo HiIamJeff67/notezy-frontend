@@ -1,62 +1,32 @@
+import type { UUID } from "node:crypto";
 import { useApolloClient } from "@apollo/client/react";
-import { NotezyAPIError } from "@shared/api/exceptions";
-import { queryFnGetMyRootShelfById } from "@shared/api/functions/rootShelf.function";
 import {
-  CreateRootShelfRequest,
-  CreateRootShelfRequestSchema,
-  CreateRootShelfResponse,
-  CreateRootShelvesRequest,
-  CreateRootShelvesRequestSchema,
-  CreateRootShelvesResponse,
-  DeleteMyRootShelfByIdRequest,
-  DeleteMyRootShelfByIdRequestSchema,
-  DeleteMyRootShelfByIdResponse,
-  DeleteMyRootShelvesByIdsRequest,
-  DeleteMyRootShelvesByIdsRequestSchema,
-  DeleteMyRootShelvesByIdsResponse,
+  mutationFnCreateRootShelf,
+  mutationFnCreateRootShelves,
+  mutationFnDeleteMyRootShelfById,
+  mutationFnDeleteMyRootShelvesByIds,
+  mutationFnRestoreMyRootShelfById,
+  mutationFnRestoreMyRootShelvesByIds,
+  mutationFnUpdateMyRootShelfById,
+  mutationFnUpdateMyRootShelvesByIds,
+  queryFnGetMyRootShelfById,
+} from "@shared/api/functions/rootShelf.function";
+import type {
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
-  RestoreMyRootShelfByIdRequest,
-  RestoreMyRootShelfByIdRequestSchema,
-  RestoreMyRootShelfByIdResponse,
-  RestoreMyRootShelvesByIdsRequest,
-  RestoreMyRootShelvesByIdsRequestSchema,
-  RestoreMyRootShelvesByIdsResponse,
-  UpdateMyRootShelfByIdRequest,
-  UpdateMyRootShelfByIdRequestSchema,
-  UpdateMyRootShelfByIdResponse,
-  UpdateMyRootShelvesByIdsRequest,
-  UpdateMyRootShelvesByIdsRequestSchema,
-  UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
-import {
-  CreateRootShelf,
-  CreateRootShelves,
-  DeleteMyRootShelfById,
-  DeleteMyRootShelvesByIds,
-  RestoreMyRootShelfById,
-  RestoreMyRootShelvesByIds,
-  UpdateMyRootShelfById,
-  UpdateMyRootShelvesByIds,
-} from "@shared/api/invokers/rootShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  QueryKey,
+  type QueryKey,
+  type UseQueryOptions,
   useMutation,
   useQuery,
-  UseQueryOptions,
 } from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { ZodError } from "zod";
 
 export const useGetMyRootShelfById = (
   hookRequest?: GetMyRootShelfByIdRequest,
@@ -99,12 +69,7 @@ export const useCreateRootShelf = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateRootShelfRequest
-    ): Promise<CreateRootShelfResponse> => {
-      const validatedRequest = CreateRootShelfRequestSchema.parse(request);
-      return await CreateRootShelf(validatedRequest);
-    },
+    mutationFn: mutationFnCreateRootShelf,
     onSuccess: (response, variables) => {
       apolloClient.cache.modify({
         fields: {
@@ -137,33 +102,8 @@ export const useCreateRootShelf = () => {
           },
         },
       });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -178,12 +118,7 @@ export const useCreateRootShelves = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: CreateRootShelvesRequest
-    ): Promise<CreateRootShelvesResponse> => {
-      const validatedRequest = CreateRootShelvesRequestSchema.parse(request);
-      return await CreateRootShelves(validatedRequest);
-    },
+    mutationFn: mutationFnCreateRootShelves,
     onSuccess: (response, variables) => {
       apolloClient.cache.modify({
         fields: {
@@ -227,33 +162,8 @@ export const useCreateRootShelves = () => {
           },
         },
       });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -269,13 +179,7 @@ export const useUpdateMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyRootShelfByIdRequest
-    ): Promise<UpdateMyRootShelfByIdResponse> => {
-      const validatedRequest =
-        UpdateMyRootShelfByIdRequestSchema.parse(request);
-      return await UpdateMyRootShelfById(validatedRequest);
-    },
+    mutationFn: mutationFnUpdateMyRootShelfById,
     onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId as UUID;
       queryClient.invalidateQueries({
@@ -292,34 +196,8 @@ export const useUpdateMyRootShelfById = () => {
           }),
         },
       });
-
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -329,19 +207,12 @@ export const useUpdateMyRootShelfById = () => {
     name: "UPDATE_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
-
 export const useUpdateMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyRootShelvesByIdsRequest
-    ): Promise<UpdateMyRootShelvesByIdsResponse> => {
-      const validatedRequest =
-        UpdateMyRootShelvesByIdsRequestSchema.parse(request);
-      return await UpdateMyRootShelvesByIds(validatedRequest);
-    },
+    mutationFn: mutationFnUpdateMyRootShelvesByIds,
     onSuccess: (_, variables) => {
       for (const updatedRootShelf of variables.body.updatedRootShelves) {
         queryClient.invalidateQueries({
@@ -363,17 +234,6 @@ export const useUpdateMyRootShelvesByIds = () => {
       }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -389,13 +249,7 @@ export const useRestoreMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyRootShelfByIdRequest
-    ): Promise<RestoreMyRootShelfByIdResponse> => {
-      const validatedRequest =
-        RestoreMyRootShelfByIdRequestSchema.parse(request);
-      return await RestoreMyRootShelfById(validatedRequest);
-    },
+    mutationFn: mutationFnRestoreMyRootShelfById,
     onSuccess: (response, variables) => {
       const rootShelfId = variables.body.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
@@ -447,33 +301,8 @@ export const useRestoreMyRootShelfById = () => {
           },
         },
       });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -489,13 +318,7 @@ export const useRestoreMyRootShelvesByIds = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: RestoreMyRootShelvesByIdsRequest
-    ): Promise<RestoreMyRootShelvesByIdsResponse> => {
-      const validatedRequest =
-        RestoreMyRootShelvesByIdsRequestSchema.parse(request);
-      return await RestoreMyRootShelvesByIds(validatedRequest);
-    },
+    mutationFn: mutationFnRestoreMyRootShelvesByIds,
     onSuccess: (response, variables) => {
       const rootShelfIds = (variables.body.rootShelfIds || []).filter(
         Boolean
@@ -552,33 +375,8 @@ export const useRestoreMyRootShelvesByIds = () => {
           },
         },
       });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -594,14 +392,8 @@ export const useDeleteMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyRootShelfByIdRequest
-    ): Promise<DeleteMyRootShelfByIdResponse> => {
-      const validatedRequest =
-        DeleteMyRootShelfByIdRequestSchema.parse(request);
-      return await DeleteMyRootShelfById(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyRootShelfById,
+    onSuccess: (_, variables) => {
       const rootShelfId = variables.body.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
@@ -630,33 +422,8 @@ export const useDeleteMyRootShelfById = () => {
           },
         },
       });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -671,14 +438,8 @@ export const useDeleteMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: DeleteMyRootShelvesByIdsRequest
-    ): Promise<DeleteMyRootShelvesByIdsResponse> => {
-      const validatedRequest =
-        DeleteMyRootShelvesByIdsRequestSchema.parse(request);
-      return await DeleteMyRootShelvesByIds(validatedRequest);
-    },
-    onSuccess: (response, variables) => {
+    mutationFn: mutationFnDeleteMyRootShelvesByIds,
+    onSuccess: (_, variables) => {
       const rootShelfIds = (variables.body.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
@@ -695,33 +456,8 @@ export const useDeleteMyRootShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

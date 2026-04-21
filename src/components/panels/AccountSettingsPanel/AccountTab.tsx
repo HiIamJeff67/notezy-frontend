@@ -1,5 +1,13 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UpdateMe } from "@shared/api/invokers/user.invoker";
+import { FakeUser } from "@shared/constants";
+import { AllUserStatus } from "@shared/enums";
+import { User, UserSchema } from "@shared/types/user.type";
+import { memo, useCallback, useEffect, useMemo } from "react";
+import { UseFormReturn, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,14 +30,6 @@ import {
 } from "@/components/ui/select";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUser } from "@/hooks/useUser";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateMe } from "@shared/api/invokers/user.invoker";
-import { FakeUser } from "@shared/constants";
-import { AllUserStatus } from "@shared/enums";
-import { User, UserSchema } from "@shared/types/user.type";
-import { memo, useCallback, useEffect, useMemo } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import toast from "react-hot-toast";
 
 const AccountTab = memo(() => {
   const loadingManager = useLoading();

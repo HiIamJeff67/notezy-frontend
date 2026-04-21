@@ -1,10 +1,10 @@
+import { ScratchPadSetting } from "@widgets/basic/ScratchPadWidget/setting/scratchPadSetting";
+import { Dispatch, lazy, SetStateAction } from "react";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { Dispatch, lazy, SetStateAction } from "react";
-import { ScratchPadSetting } from "./data/scratchPadSettings";
 
 const EditScratchPadWidgetDialogContent = lazy(
   () => import("./EditScratchPadWidgetDialogContent")

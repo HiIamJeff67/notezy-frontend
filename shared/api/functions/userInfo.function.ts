@@ -1,9 +1,12 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetMyInfoRequest,
+  type GetMyInfoRequest,
   GetMyInfoRequestSchema,
+  type UpdateMyInfoRequest,
+  UpdateMyInfoRequestSchema,
+  type UpdateMyInfoResponse,
 } from "@shared/api/interfaces/userInfo.interface";
-import { GetMyInfo } from "@shared/api/invokers/userInfo.invoker";
+import { GetMyInfo, UpdateMyInfo } from "@shared/api/invokers/userInfo.invoker";
 
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
@@ -41,6 +44,41 @@ export const queryFnGetMyInfo = async (
       throw new Error(`validation failed : ${errorMessage}`);
     }
     if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyInfo = async (
+  request: UpdateMyInfoRequest
+): Promise<UpdateMyInfoResponse> => {
+  try {
+    const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
+    const response = await UpdateMyInfo(validatedRequest);
+    if (response.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.newAccessToken
+      );
+    }
+    if (response.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
           throw new Error(error.unWrap.message);

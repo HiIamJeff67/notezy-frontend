@@ -1,7 +1,7 @@
 "use client";
 
-import ResizableSidebarInset from "@/components/sidebar/ResizableSidebar/ResizableSidebarInset";
 import React from "react";
+import ResizableSidebarInset from "@/components/sidebar/ResizableSidebar/ResizableSidebarInset";
 
 interface AppSidebarInsetProps {
   children: React.ReactNode;

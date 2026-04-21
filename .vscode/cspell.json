@@ -9,6 +9,8 @@
     }
   ],
   "words": [
+    "LICENSES",
+    "LICENCE",
     "Notezy",
     "notezy",
     "nextjs",
@@ -56,6 +58,7 @@
     ".git/**",
     "*.min.*",
     "package-lock.json",
-    "yarn.lock"
+    "yarn.lock",
+    "scripts/getThirdPartyLicenses.mjs"
   ]
 }

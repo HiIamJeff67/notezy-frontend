@@ -1,10 +1,10 @@
+import { EllipsisVerticalIcon } from "lucide-react";
+import { CSSProperties } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVerticalIcon } from "lucide-react";
-import { CSSProperties } from "react";
 
 interface ExtendableProps {
   children?: React.ReactNode;

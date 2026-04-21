@@ -1,8 +1,8 @@
+import { Suspense } from "react";
 import RootShelfMenuItem from "@/components/menus/RootShelfMenu/RootShelfMenuItem";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { useShelfItem } from "@/hooks";
-import { Suspense } from "react";
 
 const RootShelfMenu = () => {
   const shelfItemManager = useShelfItem();

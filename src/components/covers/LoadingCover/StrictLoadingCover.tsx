@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/hooks";
+import { useTheme } from "@/hooks/useTheme";
 
 interface StrictLoadingCoverProps {
   condition?: boolean;

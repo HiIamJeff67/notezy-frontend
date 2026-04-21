@@ -1,10 +1,10 @@
+import { Dispatch, lazy, SetStateAction } from "react";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
   EditWidgetDialogContentSkeleton,
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
-import { ClockSetting } from "@widgets/basic/ClockWidget/data/clockSettings";
-import { Dispatch, lazy, SetStateAction } from "react";
+import { ClockSetting } from "@/components/widgets/basic/ClockWidget/setting/clockSetting";
 
 const EditClockWidgetDialogContent = lazy(
   () => import("./EditClockWidgetDialogContent")

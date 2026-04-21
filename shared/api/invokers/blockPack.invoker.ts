@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   BatchMoveMyBlockPacksByIdsRequest,
@@ -37,6 +36,7 @@ import {
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@/util/isJsonContext";
 
 export async function GetMyBlockPackById(
   request: GetMyBlockPackByIdRequest

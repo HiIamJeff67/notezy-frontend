@@ -1,5 +1,11 @@
 "use client";
 
+import { ItemType } from "@shared/types/itemNodes.type";
+import { SubShelfNode } from "@shared/types/shelfNodes.type";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { UUID } from "crypto";
+import { ChevronRightIcon } from "lucide-react";
+import { useCallback } from "react";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import ItemPathItem from "@/components/paths/ItemPath/ItemPathItem";
 import {
@@ -14,12 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ItemType } from "@shared/types/itemNodes.type";
-import { SubShelfNode } from "@shared/types/shelfNodes.type";
-import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
-import { ChevronRightIcon } from "lucide-react";
-import { useCallback } from "react";
 
 interface ItemPathProps {
   parentSubShelfId: UUID;

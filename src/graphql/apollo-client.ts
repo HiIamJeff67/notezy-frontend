@@ -1,6 +1,6 @@
 import { ApolloLink, HttpLink } from "@apollo/client";
-import { ApolloClient, InMemoryCache } from "@apollo/client-integration-nextjs";
 import { ErrorLink } from "@apollo/client/link/error";
+import { ApolloClient, InMemoryCache } from "@apollo/client-integration-nextjs";
 import { CurrentAPIBaseURL } from "@shared/constants";
 
 export const makeClient = () => {

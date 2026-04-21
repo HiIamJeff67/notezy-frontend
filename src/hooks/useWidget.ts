@@ -1,5 +1,5 @@
-import { WidgetContext } from "@/providers/WidgetProvider";
 import { useContext } from "react";
+import { WidgetContext } from "@/providers/WidgetProvider";
 
 export const useWidget = () => {
   const context = useContext(WidgetContext);

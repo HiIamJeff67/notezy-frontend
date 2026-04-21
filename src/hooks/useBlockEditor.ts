@@ -1,5 +1,5 @@
-import { BlockEditorContext } from "@/providers/BlockEditorProvider";
 import { useContext } from "react";
+import { BlockEditorContext } from "@/providers/BlockEditorProvider";
 
 export const useBlockEditor = () => {
   const context = useContext(BlockEditorContext);

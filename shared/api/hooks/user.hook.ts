@@ -1,30 +1,25 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
 import {
+  mutationFnUpdateMe,
   queryFnGetMe,
   queryFnGetUserData,
 } from "@shared/api/functions/user.function";
-import {
+import type {
   GetMeRequest,
   GetMeResponse,
   GetUserDataRequest,
   GetUserDataResponse,
-  UpdateMeRequest,
-  UpdateMeRequestSchema,
-  UpdateMeResponse,
 } from "@shared/api/interfaces/user.interface";
-import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
   QueryAsyncDefaultOptions,
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { ZodError } from "zod";
+import {
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useGetUserData = (
   hookRequest?: GetUserDataRequest,
@@ -96,39 +91,11 @@ export const useUpdateMe = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (request: UpdateMeRequest): Promise<UpdateMeResponse> => {
-      const validatedRequest = UpdateMeRequestSchema.parse(request);
-      return await UpdateMe(validatedRequest);
-    },
-    onSuccess: (response, _) => {
+    mutationFn: mutationFnUpdateMe,
+    onSuccess: (_, __) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

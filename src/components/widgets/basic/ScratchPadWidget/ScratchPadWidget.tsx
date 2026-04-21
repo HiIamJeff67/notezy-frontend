@@ -1,13 +1,14 @@
 // src/components/widgets/basic/ScratchPadWidget/ScratchPadWidget.tsx
-import { Button } from "@/components/ui/button";
-import { WidgetProps } from "@/components/widgets/widget";
-import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+
+import { getDefaultScratchPadData } from "@widgets/basic/ScratchPadWidget/data/scratchPadData";
+import { getDefaultScratchPadSetting } from "@widgets/basic/ScratchPadWidget/setting/scratchPadSetting";
 import DOMPurify from "dompurify";
 import { CheckIcon } from "lucide-react";
 import { marked } from "marked";
 import { useEffect, useRef, useState } from "react";
-import { getDefaultScratchPadData } from "./data/scratchPadData";
-import { getDefaultScratchPadSetting } from "./data/scratchPadSettings";
+import { Button } from "@/components/ui/button";
+import { WidgetProps } from "@/components/widgets/widget";
+import { useAnyTypeState } from "@/hooks/useAnyTypeState";
 import EditScratchPadWidgetDialog from "./EditScratchPadWidgetDialog";
 
 const ScratchPadWidget = ({

@@ -1,9 +1,10 @@
 "use client";
 
-import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import React, { useEffect, useMemo, useState } from "react";
+import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 
-interface ProgressiveBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ProgressiveBackgroundProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   children?: React.ReactNode;
 }

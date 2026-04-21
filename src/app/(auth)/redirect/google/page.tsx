@@ -1,8 +1,5 @@
 "use client";
 
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
-import { getAuthorization } from "@/util/getAuthorization";
 import {
   useLoginViaGoogle,
   useRegisterViaGoogle,
@@ -16,6 +13,9 @@ import { RedirectState } from "@shared/types/redirectState.type";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
+import { getAuthorization } from "@/util/getAuthorization";
 
 function GoogleRedirectPageContent() {
   const searchParams = useSearchParams();

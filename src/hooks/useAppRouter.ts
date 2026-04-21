@@ -1,7 +1,7 @@
 "use client";
 
-import { AppRouterContext } from "@/providers/AppRouterProvider";
 import { useContext } from "react";
+import { AppRouterContext } from "@/providers/AppRouterProvider";
 
 export const useAppRouter = () => {
   const context = useContext(AppRouterContext);

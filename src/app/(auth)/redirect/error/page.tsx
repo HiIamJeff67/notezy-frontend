@@ -1,11 +1,11 @@
 "use client";
 
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import { Button } from "@/components/ui/button";
-import { useAppRouter } from "@/hooks";
 import { WebURLPathDictionary } from "@shared/constants";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import { Button } from "@/components/ui/button";
+import { useAppRouter } from "@/hooks";
 
 function RedirectErrorPage() {
   const searchParams = useSearchParams();

@@ -1,5 +1,17 @@
 "use client";
 
+import { WebURLPathDictionary } from "@shared/constants";
+import { tKey } from "@shared/translations";
+import {
+  BellIcon,
+  CalendarIcon,
+  LayoutDashboardIcon,
+  MessageSquareIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "lucide-react";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import ShelfCaseIcon from "@/components/icons/ShelfCaseIcon";
@@ -44,18 +56,6 @@ import {
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useUser } from "@/hooks/useUser";
-import { WebURLPathDictionary } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import {
-  BellIcon,
-  CalendarIcon,
-  LayoutDashboardIcon,
-  MessageSquareIcon,
-  PlusIcon,
-  SettingsIcon,
-} from "lucide-react";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
 
 interface AppSidebarProps {
   disabled?: boolean;

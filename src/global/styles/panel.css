@@ -41,7 +41,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       circle at 20% 30%,
       rgba(139, 69, 19, 0.1) 0%,
       transparent 50%

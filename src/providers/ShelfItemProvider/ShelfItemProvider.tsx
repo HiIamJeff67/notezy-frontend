@@ -1,8 +1,4 @@
 import {
-  PrivateRootShelf,
-  SearchRootShelfEdge,
-} from "@/graphql/generated/graphql";
-import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
   MaxTriggerValue,
@@ -14,6 +10,10 @@ import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { UUID } from "crypto";
 import { createContext, RefObject, useCallback, useRef, useState } from "react";
+import {
+  PrivateRootShelf,
+  SearchRootShelfEdge,
+} from "@/graphql/generated/graphql";
 import { useItemLogic } from "./ItemLogic";
 import { useRootShelfLogic } from "./RootShelfLogic";
 import { useSubShelfLogic } from "./SubShelfLogic";

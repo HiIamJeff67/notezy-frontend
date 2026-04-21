@@ -1,12 +1,12 @@
-import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
 import {
   ClockSetting,
   getDefaultClockSetting,
-} from "@widgets/basic/ClockWidget/data/clockSettings";
-import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
-import EditClockWidgetDialog from "@widgets/basic/ClockWidget/EditClockWidgetDialog";
+} from "@widgets/basic/ClockWidget/setting/clockSetting";
 import { WidgetProps } from "@widgets/widget";
 import { useEffect, useMemo, useState } from "react";
+import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import EditClockWidgetDialog from "./EditClockWidgetDialog";
 
 const ClockWidget = ({
   className,

@@ -1,3 +1,6 @@
+import { ClockStyles } from "@widgets/basic/ClockWidget/data/clockStyles";
+import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
+import { Dispatch, SetStateAction } from "react";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -12,10 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { ClockSetting } from "@widgets/basic/ClockWidget/data/clockSettings";
-import { ClockStyles } from "@widgets/basic/ClockWidget/data/clockStyles";
-import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
-import { Dispatch, SetStateAction } from "react";
+import { ClockSetting } from "@/components/widgets/basic/ClockWidget/setting/clockSetting";
 
 interface EditClockWidgetDialogContentProps {
   setting: ClockSetting;

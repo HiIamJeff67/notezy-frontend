@@ -1,3 +1,5 @@
+import { TimerSetting } from "@widgets/basic/TimerWidget/setting/timerSetting";
+import { Dispatch, SetStateAction } from "react";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -5,8 +7,6 @@ import {
 } from "@/components/dialogs/WidgetDialog/EditWidgetDialog";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Dispatch, SetStateAction } from "react";
-import { TimerSetting } from "./data/timerSettings";
 
 interface EditTimerWidgetDialogContentProps {
   setting: TimerSetting;

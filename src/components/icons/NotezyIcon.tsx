@@ -1,6 +1,6 @@
-import Notezy from "@/assets/logo/Notezy.png";
 import Image from "next/image";
 import React from "react";
+import Notezy from "@/assets/logo/Notezy.png";
 
 interface NotezyIconProps {
   size?: number;

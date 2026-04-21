@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   CreateNotebookMaterialRequest,
@@ -32,6 +31,7 @@ import {
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@/util/isJsonContext";
 
 export async function GetMyMaterialById(
   request: GetMyMaterialByIdRequest

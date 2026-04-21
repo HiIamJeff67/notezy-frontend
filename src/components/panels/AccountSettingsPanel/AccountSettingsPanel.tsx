@@ -1,7 +1,5 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import { useSendAuthCode } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
 import {
@@ -13,6 +11,8 @@ import {
   useTransition,
 } from "react";
 import toast from "react-hot-toast";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import AccountModificationTab from "./AccountModificationTab";
 import AccountTab from "./AccountTab";
 import BindingTab from "./BindingTab";

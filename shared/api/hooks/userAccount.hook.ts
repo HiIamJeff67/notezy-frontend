@@ -1,16 +1,12 @@
-import { queryFnGetMyAccount } from "@shared/api/functions/userAccount.function";
 import {
-  BindGoogleAccountRequest,
-  BindGoogleAccountRequestSchema,
-  BindGoogleAccountResponse,
+  mutationFnBindGoogleAccount,
+  mutationFnUnbindGoogleAccount,
+  mutationFnUpdateMyAccount,
+  queryFnGetMyAccount,
+} from "@shared/api/functions/userAccount.function";
+import type {
   GetMyAccountRequest,
   GetMyAccountResponse,
-  UnbindGoogleAccountRequest,
-  UnbindGoogleAccountRequestSchema,
-  UnbindGoogleAccountResponse,
-  UpdateMyAccountRequest,
-  UpdateMyAccountRequestSchema,
-  UpdateMyAccountResponse,
 } from "@shared/api/interfaces/userAccount.interface";
 import { getQueryClient } from "@shared/api/queryClient";
 import {
@@ -18,24 +14,12 @@ import {
   UseQueryDefaultOptions,
 } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { tKey } from "@shared/translations";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  FetchQueryOptions,
+  type FetchQueryOptions,
+  type UseQueryOptions,
   useMutation,
   useQuery,
-  UseQueryOptions,
 } from "@tanstack/react-query";
-import { ZodError } from "zod";
-import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
-import {
-  BindGoogleAccount,
-  UnbindGoogleAccount,
-  UpdateMyAccount,
-} from "../invokers/userAccount.invoker";
 
 export const useGetMyAccount = (
   hookRequest?: GetMyAccountRequest,
@@ -77,43 +61,11 @@ export const useUpdateMyAccount = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UpdateMyAccountRequest
-    ): Promise<UpdateMyAccountResponse> => {
-      const validatedRequest = UpdateMyAccountRequestSchema.parse(request);
-      return await UpdateMyAccount(validatedRequest);
-    },
-    onSuccess: (response, _) => {
+    mutationFn: mutationFnUpdateMyAccount,
+    onSuccess: (_, __) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          case ExceptionReasonDictionary.user.notFound:
-            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -128,43 +80,11 @@ export const useBindGoogleAccount = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: BindGoogleAccountRequest
-    ): Promise<BindGoogleAccountResponse> => {
-      const validatedRequest = BindGoogleAccountRequestSchema.parse(request);
-      return BindGoogleAccount(validatedRequest);
-    },
-    onSuccess: (response, _) => {
+    mutationFn: mutationFnBindGoogleAccount,
+    onSuccess: (_, __) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          case ExceptionReasonDictionary.user.notFound:
-            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });
@@ -179,43 +99,11 @@ export const useUnbindGoogleAccount = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (
-      request: UnbindGoogleAccountRequest
-    ): Promise<UnbindGoogleAccountResponse> => {
-      const validatedRequest = UnbindGoogleAccountRequestSchema.parse(request);
-      return UnbindGoogleAccount(validatedRequest);
-    },
-    onSuccess: (response, _) => {
+    mutationFn: mutationFnUnbindGoogleAccount,
+    onSuccess: (_, __) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
-      if (response.newAccessToken) {
-        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
-        LocalStorageManipulator.setItem(
-          LocalStorageKey.accessToken,
-          response.newAccessToken
-        );
-      }
-      if (response.newCSRFToken) {
-        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
-        SessionStorageManipulator.setItem(
-          SessionStorageKey.csrfToken,
-          response.newCSRFToken
-        );
-      }
     },
     onError: error => {
-      if (error instanceof ZodError) {
-        const errorMessage = error.issues
-          .map(issue => issue.message)
-          .join(", ");
-        throw new Error(`validation failed : ${errorMessage}`);
-      } else if (error instanceof NotezyAPIError) {
-        switch (error.unWrap.reason) {
-          case ExceptionReasonDictionary.user.notFound:
-            throw new Error(tKey.error.apiError.getUser.failedToGetUser);
-          default:
-            throw new Error(error.unWrap.message);
-        }
-      }
       throw error;
     },
   });

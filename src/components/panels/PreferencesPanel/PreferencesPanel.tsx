@@ -1,5 +1,7 @@
 "use client";
 
+import { Bell, Database, Info, Palette, Shield, Users } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,8 +20,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useLanguage, useTheme } from "@/hooks";
-import { Bell, Database, Info, Palette, Shield, Users } from "lucide-react";
-import { useState } from "react";
 
 type PreferencePage =
   | "appearance"

@@ -1,3 +1,12 @@
+import { useUpdateMyAccount } from "@shared/api/hooks/userAccount.hook";
+import { WebURLPathDictionary } from "@shared/constants";
+import { AllCountryCodes, CountryCode } from "@shared/enums";
+import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
+import { useCallback, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import SettingMenu from "@/components/menus/SettingMenu/SettingMenu";
 import SettingMenuButton from "@/components/menus/SettingMenu/SettingMenuButton";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
@@ -22,15 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
-import { useUpdateMyAccount } from "@shared/api/hooks/userAccount.hook";
-import { WebURLPathDictionary } from "@shared/constants";
-import { AllCountryCodes, CountryCode } from "@shared/enums";
-import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
-import { useCallback, useMemo, useState } from "react";
-import toast from "react-hot-toast";
 
 interface BindTabProps {
   sendAuthCodeTimeCounter: number;

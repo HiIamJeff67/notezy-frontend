@@ -1,8 +1,8 @@
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import TextbookEditor from "@/components/editors/TextbookEditor/TextbookEditor";
 import { isValidUUID } from "@shared/types/uuidv4.type";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import TextbookEditor from "@/components/editors/TextbookEditor/TextbookEditor";
 
 interface TextbookMaterialEditorPageProps {
   params: Promise<{

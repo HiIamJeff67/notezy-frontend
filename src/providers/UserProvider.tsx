@@ -1,7 +1,5 @@
 "use client";
 
-import { useAppRouter, useLanguage, useLoading } from "@/hooks";
-import { getAuthorization } from "@/util/getAuthorization";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { ClientCommonExceptions } from "@shared/api/exceptions/clientCommon.exception";
 import { useLogout } from "@shared/api/hooks/auth.hook";
@@ -15,6 +13,10 @@ import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useAppRouter } from "@/hooks/useAppRouter";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useLoading } from "@/hooks/useLoading";
+import { getAuthorization } from "@/util/getAuthorization";
 
 interface UserContextType {
   isOnline: boolean;

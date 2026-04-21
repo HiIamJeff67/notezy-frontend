@@ -1,16 +1,16 @@
 import CalendarWidget from "@widgets/basic/CalendarWidget/CalendarWidget";
 import ClockWidget from "@widgets/basic/ClockWidget/ClockWidget";
-import { getDefaultClockSetting } from "@widgets/basic/ClockWidget/data/clockSettings";
 import TodoWidget from "@widgets/basic/TodoWidget/TodoWidget";
 import { PreviewWidget } from "@widgets/widget";
+import { getDefaultClockSetting } from "@/components/widgets/basic/ClockWidget/setting/clockSetting";
 import { getDefaultScratchPadData } from "./ScratchPadWidget/data/scratchPadData";
-import { getDefaultScratchPadSetting } from "./ScratchPadWidget/data/scratchPadSettings";
 import ScratchPadWidget from "./ScratchPadWidget/ScratchPadWidget";
+import { getDefaultScratchPadSetting } from "./ScratchPadWidget/setting/scratchPadSetting";
 import { getDefaultTimerData } from "./TimerWidget/data/timerData";
-import { getDefaultTimerSetting } from "./TimerWidget/data/timerSettings";
+import { getDefaultTimerSetting } from "./TimerWidget/setting/timerSetting";
 import TimerWidget from "./TimerWidget/TimerWidget";
 import { getDefaultTodoData } from "./TodoWidget/data/todoData";
-import { getDefaultTodoSetting } from "./TodoWidget/data/todoSettings";
+import { getDefaultTodoSetting } from "./TodoWidget/setting/todoSetting";
 
 export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   clock: {

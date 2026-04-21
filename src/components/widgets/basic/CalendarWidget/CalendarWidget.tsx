@@ -1,5 +1,5 @@
-import { Calendar } from "@/components/ui/calendar";
 import { CSSProperties, useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
 
 export interface CalendarWidgetProps {
   className?: string;

@@ -49,11 +49,15 @@
 }
 
 .animate-char-write {
-  animation: char-write 2s steps(50, end) forwards, cursor-blink 1s infinite;
+  animation:
+    char-write 2s steps(50, end) forwards,
+    cursor-blink 1s infinite;
 }
 
 .animate-char-erase {
-  animation: char-erase 2s steps(30, end) forwards, cursor-blink 1s infinite;
+  animation:
+    char-erase 2s steps(30, end) forwards,
+    cursor-blink 1s infinite;
 }
 /* ============================== Main Title Animation ============================== */
 

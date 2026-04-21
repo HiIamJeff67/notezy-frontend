@@ -1,5 +1,6 @@
 "use client";
 
+import React, { Suspense, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ModalProps } from "@/providers/ModalProvider";
-import React, { Suspense, useState } from "react";
 
 interface DeleteShelfItemDialogProps extends ModalProps {
   dialogHeader: React.ReactNode;

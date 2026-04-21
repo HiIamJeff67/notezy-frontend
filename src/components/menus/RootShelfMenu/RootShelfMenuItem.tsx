@@ -1,3 +1,10 @@
+import { DNDType } from "@shared/enums/dndType.enum";
+import { SubShelfNode } from "@shared/types/shelfNodes.type";
+import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import { CheckIcon, SquareDotIcon } from "lucide-react";
+import { useCallback } from "react";
+import { useDrop } from "react-dnd";
+import toast from "react-hot-toast";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
@@ -24,13 +31,6 @@ import {
 import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
-import { DNDType } from "@shared/enums/dndType.enum";
-import { SubShelfNode } from "@shared/types/shelfNodes.type";
-import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { CheckIcon, SquareDotIcon } from "lucide-react";
-import { useCallback } from "react";
-import { useDrop } from "react-dnd";
-import toast from "react-hot-toast";
 
 interface RootShelfMenuItemProps {
   rootShelfEdge: SearchRootShelfEdge;

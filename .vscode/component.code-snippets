@@ -8,7 +8,7 @@
       "\t return (${2:SvgComponent});",
       "};",
       "",
-      "export default ${1:IconComponentName}Icon;",
-    ],
-  },
+      "export default ${1:IconComponentName}Icon;"
+    ]
+  }
 }

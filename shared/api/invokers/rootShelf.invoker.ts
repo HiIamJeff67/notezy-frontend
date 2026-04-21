@@ -1,4 +1,3 @@
-import { isJsonResponse } from "@/util/isJsonContext";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   CreateRootShelfRequest,
@@ -24,6 +23,7 @@ import {
 } from "@shared/api/interfaces/rootShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@/util/isJsonContext";
 
 export async function GetMyRootShelfById(
   request: GetMyRootShelfByIdRequest

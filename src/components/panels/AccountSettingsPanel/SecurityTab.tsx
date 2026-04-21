@@ -1,5 +1,12 @@
 "use client";
 
+import { Dialog } from "@radix-ui/react-dialog";
+import { useValidateEmail } from "@shared/api/hooks/auth.hook";
+import { UserRole } from "@shared/enums";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
+import { useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import SettingMenu from "@/components/menus/SettingMenu/SettingMenu";
 import SettingMenuButton from "@/components/menus/SettingMenu/SettingMenuButton";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
@@ -13,13 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
-import { Dialog } from "@radix-ui/react-dialog";
-import { useValidateEmail } from "@shared/api/hooks/auth.hook";
-import { UserRole } from "@shared/enums";
-import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import { SessionStorageKey } from "@shared/types/sessionStorage.type";
-import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
 
 interface SecurityTabProps {
   sendAuthCodeTimeCounter: number;

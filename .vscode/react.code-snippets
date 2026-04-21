@@ -12,9 +12,9 @@
       "",
       "export const ${1:ProviderName}Provider = ({ children }: ${1:ProviderName}ProviderProps) => {",
       "\treturn (<${1:ProviderName}Context.Provider value={{}}>{children}</${1:ProviderName}Context.Provider>);",
-      "};",
+      "};"
     ],
-    "description": "Create the basic part of a react provider",
+    "description": "Create the basic part of a react provider"
   },
   "Initialize a Context": {
     "prefix": ["ctx", "context"],
@@ -30,7 +30,7 @@
       "\t\t);",
       "\t}",
       "\treturn context;",
-      "}",
-    ],
-  },
+      "}"
+    ]
+  }
 }

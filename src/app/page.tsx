@@ -1,5 +1,11 @@
 "use client";
 
+import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { tKey } from "@shared/translations";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { BookTextIcon, CheckIcon } from "lucide-react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import GridBlackBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
@@ -15,12 +21,6 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { useAppRouter, useLanguage, useTheme, useUser } from "@/hooks";
-import { WebURLPathDictionary } from "@shared/constants";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { tKey } from "@shared/translations";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { BookTextIcon, CheckIcon } from "lucide-react";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const DisplayTitle = {
   mainTitle: "Notezy",

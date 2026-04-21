@@ -1,6 +1,3 @@
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import NotebookEditor from "@/components/editors/NotebookEditor/NotebookEditor";
-import { getAuthorization } from "@/util/getAuthorization";
 import { prefetchGetMyMaterialAndItsParentById } from "@shared/api/prefetches/material.prefetch";
 import { CookieStoreKeys } from "@shared/types/cookieStore.type";
 import { getDefaultNotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
@@ -9,6 +6,9 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import NotebookEditor from "@/components/editors/NotebookEditor/NotebookEditor";
+import { getAuthorization } from "@/util/getAuthorization";
 
 interface NotebookMaterialEditorPageProps {
   params: Promise<{

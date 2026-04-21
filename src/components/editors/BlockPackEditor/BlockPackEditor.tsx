@@ -1,7 +1,9 @@
 "use client";
 
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useLoading } from "@/hooks/useLoading";
+import { useShelfItem } from "@/hooks/useShelfItem";
 import { BlockEditorProvider } from "@/providers/BlockEditorProvider";
 import { blockPackMetaReducer } from "@/reducers/blockPackMeta.reducer";
 import { getAuthorization } from "@/util/getAuthorization";

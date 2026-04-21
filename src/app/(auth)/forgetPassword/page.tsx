@@ -1,9 +1,5 @@
 "use client";
 
-import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
-import { useAppRouter, useLanguage } from "@/hooks";
 import {
   useForgetPassword,
   useSendAuthCode,
@@ -18,6 +14,10 @@ import {
   useTransition,
 } from "react";
 import toast from "react-hot-toast";
+import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
+import { useAppRouter, useLanguage } from "@/hooks";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();

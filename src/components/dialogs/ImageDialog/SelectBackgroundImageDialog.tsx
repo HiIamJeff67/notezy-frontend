@@ -1,3 +1,6 @@
+import { UUID } from "crypto";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,9 +12,6 @@ import {
 import { useLanguage, useLoading } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { ModalProps } from "@/providers/ModalProvider";
-import { UUID } from "crypto";
-import { useState } from "react";
-import toast from "react-hot-toast";
 import CropImageDialog from "./CropImageDialog";
 import UploadImageDialog from "./UploadImageDialog";
 
