@@ -68,18 +68,18 @@ export const queryFnGetMyBlockById = async (
   try {
     const validatedRequest = GetMyBlockByIdRequestSchema.parse(request);
     const response = await GetMyBlockById(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -107,18 +107,18 @@ export const queryFnGetMyBlocksByIds = async (
   try {
     const validatedRequest = GetMyBlocksByIdsRequestSchema.parse(request);
     const response = await GetMyBlocksByIds(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -147,18 +147,18 @@ export const queryFnGetMyBlocksByBlockGroupId = async (
     const validatedRequest =
       GetMyBlocksByBlockGroupIdRequestSchema.parse(request);
     const response = await GetMyBlocksByBlockGroupId(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -187,18 +187,18 @@ export const queryFnGetMyBlocksByBlockGroupIds = async (
     const validatedRequest =
       GetMyBlocksByBlockGroupIdsRequestSchema.parse(request);
     const response = await GetMyBlocksByBlockGroupIds(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -227,18 +227,18 @@ export const queryFnGetMyBlocksByBlockPackId = async (
     const validatedRequest =
       GetMyBlocksByBlockPackIdRequestSchema.parse(request);
     const response = await GetMyBlocksByBlockPackId(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -266,18 +266,18 @@ export const queryFnGetAllMyBlocks = async (
   try {
     const validatedRequest = GetAllMyBlocksRequestSchema.parse(request);
     const response = await GetAllMyBlocks(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -302,18 +302,18 @@ export const mutationFnInsertBlock = async (
   try {
     const validatedRequest = InsertBlockRequestSchema.parse(request);
     const response = await InsertBlock(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -337,18 +337,18 @@ export const mutationFnInsertBlocks = async (
   try {
     const validatedRequest = InsertBlocksRequestSchema.parse(request);
     const response = await InsertBlocks(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -372,18 +372,18 @@ export const mutationFnUpdateMyBlockById = async (
   try {
     const validatedRequest = UpdateMyBlockByIdRequestSchema.parse(request);
     const response = await UpdateMyBlockById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -407,18 +407,18 @@ export const mutationFnUpdateMyBlocksByIds = async (
   try {
     const validatedRequest = UpdateMyBlocksByIdsRequestSchema.parse(request);
     const response = await UpdateMyBlocksByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -442,18 +442,18 @@ export const mutationFnRestoreMyBlockById = async (
   try {
     const validatedRequest = RestoreMyBlockByIdRequestSchema.parse(request);
     const response = await RestoreMyBlockById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -477,18 +477,18 @@ export const mutationFnRestoreMyBlocksByIds = async (
   try {
     const validatedRequest = RestoreMyBlocksByIdsRequestSchema.parse(request);
     const response = await RestoreMyBlocksByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -512,18 +512,18 @@ export const mutationFnDeleteMyBlockById = async (
   try {
     const validatedRequest = DeleteMyBlockByIdRequestSchema.parse(request);
     const response = await DeleteMyBlockById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -547,18 +547,18 @@ export const mutationFnDeleteMyBlocksByIds = async (
   try {
     const validatedRequest = DeleteMyBlocksByIdsRequestSchema.parse(request);
     const response = await DeleteMyBlocksByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;

@@ -76,7 +76,6 @@ export const UserDataSchema = z.object({
     .max(32)
     .regex(/^[a-zA-Z0-9]+/),
   email: z.email(),
-  accessToken: z.string(),
   role: z.enum(UserRole),
   plan: z.enum(UserPlan),
   status: z.enum(UserStatus),

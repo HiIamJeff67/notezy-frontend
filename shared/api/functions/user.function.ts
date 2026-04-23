@@ -33,18 +33,18 @@ export const queryFnGetUserData = async (
   try {
     const validatedRequest = GetUserDataRequestSchema.parse(request);
     const response = await GetUserData(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -74,18 +74,18 @@ export const queryFnGetMe = async (
   try {
     const validatedRequest = GetMeRequestSchema.parse(request);
     const response = await GetMe(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -110,18 +110,18 @@ export const mutationFnUpdateMe = async (
   try {
     const validatedRequest = UpdateMeRequestSchema.parse(request);
     const response = await UpdateMe(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;

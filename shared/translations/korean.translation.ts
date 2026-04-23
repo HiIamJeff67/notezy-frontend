@@ -105,6 +105,8 @@ export const KoreanTranslationWords: TranslationWords = {
           "사용자 정보 가져오기에 실패했습니다. 잠시 후 다시 시도하거나 문의해 주세요",
       },
     },
+    localDatabaseError:
+      "로컬 데이터베이스에 연결할 수 없습니다. 잠시 후 다시 시도하거나 저희에게 문의해 주세요",
   },
   settings: {
     accountSettings: "계정 설정",

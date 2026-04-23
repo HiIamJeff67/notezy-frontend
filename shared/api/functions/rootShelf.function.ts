@@ -53,18 +53,18 @@ export const queryFnGetMyRootShelfById = async (
   try {
     const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);
     const response = await GetMyRootShelfById(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -89,18 +89,18 @@ export const mutationFnCreateRootShelf = async (
   try {
     const validatedRequest = CreateRootShelfRequestSchema.parse(request);
     const response = await CreateRootShelf(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -124,18 +124,18 @@ export const mutationFnCreateRootShelves = async (
   try {
     const validatedRequest = CreateRootShelvesRequestSchema.parse(request);
     const response = await CreateRootShelves(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -159,18 +159,18 @@ export const mutationFnUpdateMyRootShelfById = async (
   try {
     const validatedRequest = UpdateMyRootShelfByIdRequestSchema.parse(request);
     const response = await UpdateMyRootShelfById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -195,18 +195,18 @@ export const mutationFnUpdateMyRootShelvesByIds = async (
     const validatedRequest =
       UpdateMyRootShelvesByIdsRequestSchema.parse(request);
     const response = await UpdateMyRootShelvesByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -230,18 +230,18 @@ export const mutationFnRestoreMyRootShelfById = async (
   try {
     const validatedRequest = RestoreMyRootShelfByIdRequestSchema.parse(request);
     const response = await RestoreMyRootShelfById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -266,18 +266,18 @@ export const mutationFnRestoreMyRootShelvesByIds = async (
     const validatedRequest =
       RestoreMyRootShelvesByIdsRequestSchema.parse(request);
     const response = await RestoreMyRootShelvesByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -301,18 +301,18 @@ export const mutationFnDeleteMyRootShelfById = async (
   try {
     const validatedRequest = DeleteMyRootShelfByIdRequestSchema.parse(request);
     const response = await DeleteMyRootShelfById(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -337,18 +337,18 @@ export const mutationFnDeleteMyRootShelvesByIds = async (
     const validatedRequest =
       DeleteMyRootShelvesByIdsRequestSchema.parse(request);
     const response = await DeleteMyRootShelvesByIds(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;

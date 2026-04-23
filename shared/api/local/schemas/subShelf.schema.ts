@@ -1,3 +1,4 @@
+import { user } from "@shared/api/local/schemas/user.schema";
 import {
   integer,
   sqliteTable,

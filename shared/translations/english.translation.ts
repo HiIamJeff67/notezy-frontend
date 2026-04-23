@@ -105,6 +105,8 @@ export const EnglishTranslationWords: TranslationWords = {
           "Failed to get user, please wait for a second or contact with us",
       },
     },
+    localDatabaseError:
+      "Unavailable to connect to local database, please wait and try again or contact wit us",
   },
   settings: {
     accountSettings: "Account Settings",

@@ -31,6 +31,10 @@ export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export const RegisterResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    publicId: z.string(),
+    name: z.string(),
+    displayName: z.string(),
+    email: z.email(),
     accessToken: z.string(),
     csrfToken: z.string(),
     createdAt: z.coerce.date(),
@@ -56,6 +60,10 @@ export type RegisterViaGoogleRequest = z.infer<
 
 export const RegisterViaGoogleResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    publicId: z.string(),
+    name: z.string(),
+    displayName: z.string(),
+    email: z.email(),
     accessToken: z.string(),
     csrfToken: z.string(),
     createdAt: z.coerce.date(),
@@ -88,9 +96,14 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
 export const LoginResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    publicId: z.string(),
+    name: z.string(),
+    displayName: z.string(),
+    email: z.email(),
     accessToken: z.string(),
     csrfToken: z.string(),
     updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
   }),
 });
 
@@ -111,9 +124,14 @@ export type LoginViaGoogleRequest = z.infer<typeof LoginViaGoogleRequestSchema>;
 
 export const LoginViaGoogleResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    publicId: z.string(),
+    name: z.string(),
+    displayName: z.string(),
+    email: z.email(),
     accessToken: z.string(),
     csrfToken: z.string(),
     updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
   }),
 });
 

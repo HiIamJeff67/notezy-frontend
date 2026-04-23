@@ -23,18 +23,18 @@ export const queryFnGetMyInfo = async (
   try {
     const validatedRequest = GetMyInfoRequestSchema.parse(request);
     const response = await GetMyInfo(validatedRequest);
-    if (!isCallerServerOnly && response.newAccessToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (!isCallerServerOnly && response.newCSRFToken) {
+    if (!isCallerServerOnly && response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -59,18 +59,18 @@ export const mutationFnUpdateMyInfo = async (
   try {
     const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
     const response = await UpdateMyInfo(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;

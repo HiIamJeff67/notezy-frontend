@@ -32,7 +32,7 @@ export async function GetMyInfo(
   }
 
   const formattedResponse = (await response.json()) as GetMyInfoResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -62,7 +62,7 @@ export async function UpdateMyInfo(
   }
 
   const formattedResponse = (await response.json()) as UpdateMyInfoResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;

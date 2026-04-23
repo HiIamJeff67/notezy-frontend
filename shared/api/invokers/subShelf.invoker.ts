@@ -61,7 +61,7 @@ export async function GetMySubShelfById(
   }
   const formattedResponse =
     (await response.json()) as GetMySubShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -93,7 +93,7 @@ export async function GetMySubShelvesByPrevSubShelfId(
   }
   const formattedResponse =
     (await response.json()) as GetMySubShelvesByPrevSubShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -126,7 +126,7 @@ export async function GetAllMySubShelvesByRootShelfId(
 
   const formattedResponse =
     (await response.json()) as GetAllMySubShelvesByRootShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -160,7 +160,7 @@ export async function GetMySubShelvesAndItemsByPrevSubShelfId(
 
   const formattedResponse =
     (await response.json()) as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -191,7 +191,7 @@ export async function CreateSubShelfByRootShelfId(
   }
   const formattedResponse =
     (await response.json()) as CreateSubShelfByRootShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -221,7 +221,7 @@ export async function CreateSubShelvesByRootShelfIds(
   }
   const formattedResponse =
     (await response.json()) as CreateSubShelvesByRootShelfIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -251,7 +251,7 @@ export async function UpdateMySubShelfById(
   }
   const formattedResponse =
     (await response.json()) as UpdateMySubShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -281,7 +281,7 @@ export async function UpdateMySubShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as UpdateMySubShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -310,7 +310,7 @@ export async function MoveMySubShelf(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const formattedResponse = (await response.json()) as MoveMySubShelfResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -339,7 +339,7 @@ export async function MoveMySubShelves(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const formattedResponse = (await response.json()) as MoveMySubShelvesResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -369,7 +369,7 @@ export async function BatchMoveMySubShelves(
   }
   const formattedResponse =
     (await response.json()) as BatchMoveMySubShelvesResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -399,7 +399,7 @@ export async function RestoreMySubShelfById(
   }
   const formattedResponse =
     (await response.json()) as RestoreMySubShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -429,7 +429,7 @@ export async function RestoreMySubShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as RestoreMySubShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -459,7 +459,7 @@ export async function DeleteMySubShelfById(
   }
   const formattedResponse =
     (await response.json()) as DeleteMySubShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -489,7 +489,7 @@ export async function DeleteMySubShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as DeleteMySubShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;

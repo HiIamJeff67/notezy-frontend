@@ -95,6 +95,7 @@ export interface TranslationWords {
         // notFound: string;
       };
     };
+    localDatabaseError: string;
   };
   settings: {
     accountSettings: string;

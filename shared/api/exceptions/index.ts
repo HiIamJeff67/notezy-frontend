@@ -138,8 +138,13 @@ export const TypeExceptionReasons = {
 export const CommonExceptionReasons = {};
 
 export const ExceptionReasonDictionary = {
-  client: {
-    networkRequired: "networkRequired",
+  localDatabase: {
+    localDatabaseUnavailable: "LocalDatabaseUnavailable",
+    failedInQueryFunction: "FailedInQueryFunction",
+    failedInMutationFunction: "FailedInMutationFunction",
+  },
+  clientCommon: {
+    networkRequired: "NetworkRequired",
   },
   auth: {
     ...APIExceptionReasons,

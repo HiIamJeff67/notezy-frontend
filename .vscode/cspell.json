@@ -48,7 +48,8 @@
     "dndable",
     "pomodoro",
     "sqlocal",
-    "localdb"
+    "localdb",
+    "refreshable"
   ],
   "ignorePaths": [
     "node_modules/**",

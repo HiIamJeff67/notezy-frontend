@@ -1,3 +1,4 @@
+import { user } from "@shared/api/local/schemas/user.schema";
 import {
   integer,
   sqliteTable,
@@ -10,6 +11,9 @@ export const rootShelf = sqliteTable(
   "RootShelfTable",
   {
     id: text("id").primaryKey(),
+    ownerPublicId: text("owner_public_id")
+      .notNull()
+      .references(() => user.publicId),
     name: text("name").notNull().default("undefined"),
     subShelfCount: integer("sub_shelf_count").notNull().default(0),
     itemCount: integer("item_count").notNull().default(0),

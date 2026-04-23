@@ -4,3 +4,7 @@ export * from "./blockPack.schema";
 export * from "./rootShelf.schema";
 export * from "./subShelf.schema";
 export * from "./transaction.schema";
+export * from "./user.schema";
+export * from "./userAccount.schema";
+export * from "./userData.schema";
+export * from "./userInfo.schema";

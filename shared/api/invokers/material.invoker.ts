@@ -60,7 +60,7 @@ export async function GetMyMaterialById(
 
   const formattedResponse =
     (await response.json()) as GetMyMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -94,7 +94,7 @@ export async function GetMyMaterialAndItsParentById(
 
   const formattedResponse =
     (await response.json()) as GetMyMaterialAndItsParentByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -130,7 +130,7 @@ export async function GetMyMaterialsByParentSubShelfId(
 
   const formattedResponse =
     (await response.json()) as GetMyMaterialsByParentSubShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -166,7 +166,7 @@ export async function GetAllMyMaterialsByRootShelfId(
 
   const formattedResponse =
     (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -198,7 +198,7 @@ export async function CreateTextbookMaterial(
 
   const formattedResponse =
     (await response.json()) as CreateNotebookMaterialResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -230,7 +230,7 @@ export async function CreateNotebookMaterial(
 
   const formattedResponse =
     (await response.json()) as CreateNotebookMaterialResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -262,7 +262,7 @@ export async function UpdateMyMaterialById(
 
   const formattedResponse =
     (await response.json()) as UpdateMyMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -300,7 +300,7 @@ export async function SaveMyNotebookMaterialById(
 
   const formattedResponse =
     (await response.json()) as SaveMyNotebookMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -332,7 +332,7 @@ export async function MoveMyMaterialById(
 
   const formattedResponse =
     (await response.json()) as MoveMyMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -364,7 +364,7 @@ export async function MoveMyMaterialsByIds(
 
   const formattedResponse =
     (await response.json()) as MoveMyMaterialsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -396,7 +396,7 @@ export async function RestoreMyMaterialById(
 
   const formattedResponse =
     (await response.json()) as RestoreMyMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -428,7 +428,7 @@ export async function RestoreMyMaterialsByIds(
 
   const formattedResponse =
     (await response.json()) as RestoreMyMaterialsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -460,7 +460,7 @@ export async function DeleteMyMaterialById(
 
   const formattedResponse =
     (await response.json()) as DeleteMyMaterialByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -492,7 +492,7 @@ export async function DeleteMyMaterialsByIds(
 
   const formattedResponse =
     (await response.json()) as DeleteMyMaterialsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 

@@ -67,7 +67,7 @@ export async function GetMyBlockGroupById(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -101,7 +101,7 @@ export async function GetMyBlockGroupAndItsBlocksById(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupAndItsBlocksByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -137,7 +137,7 @@ export async function GetMyBlockGroupsAndTheirBlocksByIds(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupsAndTheirBlocksByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -171,7 +171,7 @@ export async function GetMyBlockGroupsAndTheirBlocksByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -205,7 +205,7 @@ export async function GetMyBlockGroupsByPrevBlockGroupId(
 
   const formattedResponse =
     (await response.json()) as GetMyBlockGroupsByPrevBlockGroupIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -239,7 +239,7 @@ export async function GetAllMyBlockGroupsByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as GetAllMyBlockGroupsByBlockPackIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -271,7 +271,7 @@ export async function InsertBlockGroupByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as InsertBlockGroupByBlockPackIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -303,7 +303,7 @@ export async function InsertBlockGroupAndItsBlocksByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as InsertBlockGroupAndItsBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -335,7 +335,7 @@ export async function InsertBlockGroupsAndTheirBlocksByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -368,7 +368,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
 
     const formattedResponse =
       (await response.json()) as InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-    if (formattedResponse.exception) {
+    if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
@@ -402,7 +402,7 @@ export async function MoveMyBlockGroupById(
 
   const formattedResponse =
     (await response.json()) as MoveMyBlockGroupByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -434,7 +434,7 @@ export async function MoveMyBlockGroupsByIds(
 
   const formattedResponse =
     (await response.json()) as MoveMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -466,7 +466,7 @@ export async function BatchMoveMyBlockGroupsByIds(
 
   const formattedResponse =
     (await response.json()) as BatchMoveMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -498,7 +498,7 @@ export async function RestoreMyBlockGroupById(
 
   const formattedResponse =
     (await response.json()) as RestoreMyBlockGroupByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -530,7 +530,7 @@ export async function RestoreMyBlockGroupsByIds(
 
   const formattedResponse =
     (await response.json()) as RestoreMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -562,7 +562,7 @@ export async function DeleteMyBlockGroupById(
 
   const formattedResponse =
     (await response.json()) as DeleteMyBlockGroupByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 
@@ -594,7 +594,7 @@ export async function DeleteMyBlockGroupsByIds(
 
   const formattedResponse =
     (await response.json()) as DeleteMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
 

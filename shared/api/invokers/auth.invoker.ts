@@ -48,7 +48,7 @@ export async function Register(
   }
 
   const formattedResponse = (await response.json()) as RegisterResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -76,7 +76,7 @@ export async function RegisterViaGoogle(
 
   const formattedResponse =
     (await response.json()) as RegisterViaGoogleResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -101,7 +101,7 @@ export async function Login(request: LoginRequest): Promise<LoginResponse> {
   }
 
   const formattedResponse = (await response.json()) as LoginResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -128,7 +128,7 @@ export async function LoginViaGoogle(
   }
 
   const formattedResponse = (await response.json()) as LoginViaGoogleResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -155,7 +155,7 @@ export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   }
 
   const formattedResponse = (await response.json()) as LogoutResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -185,7 +185,7 @@ export async function SendAuthCode(
   }
 
   const formattedResponse = (await response.json()) as SendAuthCodeResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -216,7 +216,7 @@ export async function ValidateEmail(
   }
 
   const formattedResponse = (await response.json()) as ValidateEmailResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -247,7 +247,7 @@ export async function ResetEmail(
   }
 
   const formattedResponse = (await response.json()) as ResetEmailResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -277,7 +277,7 @@ export async function ForgetPassword(
   }
 
   const formattedResponse = (await response.json()) as ForgetPasswordResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -308,7 +308,7 @@ export async function ResetMe(
   }
 
   const formattedResponse = (await response.json()) as ResetMeResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -339,7 +339,7 @@ export async function DeleteMe(
   }
 
   const formattedResponse = (await response.json()) as DeleteMeResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;

@@ -96,6 +96,7 @@ export const SimpleChineseTranslationWords: TranslationWords = {
         failedToGetUser: "获取用户资料失败，请稍后再试或联系我们",
       },
     },
+    localDatabaseError: "无法连接到本地数据库，请稍后再试或与我们联系",
   },
   settings: {
     accountSettings: "账号设置",

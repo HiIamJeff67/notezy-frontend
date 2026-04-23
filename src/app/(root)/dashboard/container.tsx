@@ -34,13 +34,15 @@ import {
   toWidget,
   Widget,
 } from "@/components/widgets/widget";
-import { useBackgroundImages } from "@/hooks/useBackgroundImages";
-import { useDebounceValue } from "@/hooks/useDebounce";
-import { useLanguage } from "@/hooks/useLanguage";
-import { useModal } from "@/hooks/useModal";
-import { useScreen } from "@/hooks/useScreen";
-import { useTheme } from "@/hooks/useTheme";
-import { useWidget } from "@/hooks/useWidget";
+import {
+  useBackgroundImages,
+  useDebounceValue,
+  useLanguage,
+  useModal,
+  useScreen,
+  useTheme,
+  useWidget,
+} from "@/hooks";
 
 const DashboardElementZIndexes = {
   headerBackgroundImage: 50,

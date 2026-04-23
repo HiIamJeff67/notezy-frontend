@@ -99,6 +99,7 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
         failedToGetUser: "取得用戶資料失敗，請稍後再試或聯繫我們",
       },
     },
+    localDatabaseError: "無法連接到本地資料庫，請稍後再試或與我們聯繫",
   },
   settings: {
     accountSettings: "帳號設定",

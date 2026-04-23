@@ -1,3 +1,4 @@
+import { user } from "@shared/api/local/schemas/user.schema";
 import {
   integer,
   sqliteTable,
@@ -9,6 +10,9 @@ export const blockGroup = sqliteTable(
   "BlockGroupTable",
   {
     id: text("id").primaryKey(),
+    ownerPublicId: text("owner_public_id")
+      .notNull()
+      .references(() => user.publicId),
     blockPackId: text("block_pack_id").notNull(),
     prevBlockGroupId: text("prev_block_group_id"),
     syncBlockGroupId: text("sync_block_group_id"),

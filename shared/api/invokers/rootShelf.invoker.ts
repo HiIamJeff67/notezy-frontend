@@ -51,7 +51,7 @@ export async function GetMyRootShelfById(
   }
   const formattedResponse =
     (await response.json()) as GetMyRootShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -88,7 +88,7 @@ export async function SearchRecentRootShelves(
   }
   const formattedResponse =
     (await response.json()) as SearchRecentRootShelvesResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -117,7 +117,7 @@ export async function CreateRootShelf(
     throw new Error(tKey.error.encounterUnknownError);
   }
   const formattedResponse = (await response.json()) as CreateRootShelfResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -147,7 +147,7 @@ export async function CreateRootShelves(
   }
   const formattedResponse =
     (await response.json()) as CreateRootShelvesResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -177,7 +177,7 @@ export async function UpdateMyRootShelfById(
   }
   const formattedResponse =
     (await response.json()) as UpdateMyRootShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -207,7 +207,7 @@ export async function UpdateMyRootShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as UpdateMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -237,7 +237,7 @@ export async function RestoreMyRootShelfById(
   }
   const formattedResponse =
     (await response.json()) as RestoreMyRootShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -267,7 +267,7 @@ export async function RestoreMyRootShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as RestoreMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -297,7 +297,7 @@ export async function DeleteMyRootShelfById(
   }
   const formattedResponse =
     (await response.json()) as DeleteMyRootShelfByIdResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -327,7 +327,7 @@ export async function DeleteMyRootShelvesByIds(
   }
   const formattedResponse =
     (await response.json()) as DeleteMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;

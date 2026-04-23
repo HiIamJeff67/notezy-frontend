@@ -105,6 +105,8 @@ export const JapaneseTranslationWords: TranslationWords = {
           "ユーザー情報の取得に失敗しました。しばらく待ってからもう一度お試しいただくか、お問い合わせください",
       },
     },
+    localDatabaseError:
+      "ローカルデータベースに接続できません。しばらくしてからもう一度お試しいただくか、お問い合わせください",
   },
   settings: {
     accountSettings: "アカウント設定",

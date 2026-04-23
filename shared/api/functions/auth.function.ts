@@ -2,6 +2,7 @@ import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
+import { LocalDatabaseExceptions } from "@shared/api/exceptions/localDatabase.exception";
 import {
   type DeleteMeRequest,
   DeleteMeRequestSchema,
@@ -50,11 +51,17 @@ import {
   SendAuthCode,
   ValidateEmail,
 } from "@shared/api/invokers/auth.invoker";
+// import { localdb } from "@shared/api/local/db";
+import { userAccount, userData, userInfo } from "@shared/api/local/schemas";
+import { user } from "@shared/api/local/schemas/user.schema";
+import { userSetting } from "@shared/api/local/schemas/userSetting.schema";
+import { UserStatus } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { tKey } from "@shared/translations";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { SessionStorageKey } from "@shared/types/sessionStorage.type";
+import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
 
 export const mutationFnRegister = async (
@@ -63,6 +70,38 @@ export const mutationFnRegister = async (
   try {
     const validatedRequest = RegisterRequestSchema.parse(request);
     const response = await Register(validatedRequest);
+    // try {
+    //   await localdb.insert(user).values({
+    //     publicId: response.data.publicId,
+    //     name: request.body.name,
+    //     displayName: response.data.displayName,
+    //     email: request.body.email,
+    //     updatedAt: response.data.createdAt,
+    //     createdAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userInfo).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userAccount).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userSetting).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userData).values({
+    //     publicId: response.data.publicId,
+    //     name: request.body.name,
+    //     displayName: response.data.displayName,
+    //     email: request.body.email,
+    //     updatedAt: response.data.createdAt,
+    //     createdAt: response.data.createdAt,
+    //   });
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction("Register");
+    // }
     LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
     LocalStorageManipulator.setItem(
       LocalStorageKey.accessToken,
@@ -80,6 +119,8 @@ export const mutationFnRegister = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.duplicateName:
           throw new Error(tKey.error.apiError.register.duplicateName);
         case ExceptionReasonDictionary.user.duplicateEmail:
@@ -98,6 +139,40 @@ export const mutationFnRegisterViaGoogle = async (
   try {
     const validatedRequest = RegisterViaGoogleRequestSchema.parse(request);
     const response = await RegisterViaGoogle(validatedRequest);
+    // try {
+    //   await localdb.insert(user).values({
+    //     publicId: response.data.publicId,
+    //     name: response.data.name,
+    //     displayName: response.data.displayName,
+    //     email: response.data.email,
+    //     updatedAt: response.data.createdAt,
+    //     createdAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userInfo).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userAccount).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userSetting).values({
+    //     publicId: response.data.publicId,
+    //     updatedAt: response.data.createdAt,
+    //   });
+    //   await localdb.insert(userData).values({
+    //     publicId: response.data.publicId,
+    //     name: response.data.name,
+    //     displayName: response.data.displayName,
+    //     email: response.data.email,
+    //     updatedAt: response.data.createdAt,
+    //     createdAt: response.data.createdAt,
+    //   });
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction(
+    //     "Register Via Google"
+    //   );
+    // }
     LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
     LocalStorageManipulator.setItem(
       LocalStorageKey.accessToken,
@@ -115,6 +190,8 @@ export const mutationFnRegisterViaGoogle = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -131,6 +208,43 @@ export const mutationFnLogin = async (
   try {
     const validatedRequest = LoginRequestSchema.parse(request);
     const response = await Login(validatedRequest);
+    // try {
+    //   const existingUser = await localdb.query.user.findFirst({
+    //     where: eq(user.publicId, response.data.publicId),
+    //   });
+    //   if (!existingUser) {
+    //     await localdb.insert(user).values({
+    //       publicId: response.data.publicId,
+    //       name: response.data.name,
+    //       displayName: response.data.displayName,
+    //       email: response.data.email,
+    //       updatedAt: response.data.updatedAt,
+    //       createdAt: response.data.updatedAt,
+    //     });
+    //     await localdb.insert(userInfo).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userAccount).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userSetting).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userData).values({
+    //       publicId: response.data.publicId,
+    //       name: response.data.name,
+    //       displayName: response.data.displayName,
+    //       email: response.data.email,
+    //       updatedAt: response.data.createdAt,
+    //       createdAt: response.data.createdAt,
+    //     });
+    //   }
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction("Login");
+    // }
     LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
     LocalStorageManipulator.setItem(
       LocalStorageKey.accessToken,
@@ -148,6 +262,8 @@ export const mutationFnLogin = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -164,6 +280,45 @@ export const mutationFnLoginViaGoogle = async (
   try {
     const validatedRequest = LoginViaGoogleRequestSchema.parse(request);
     const response = await LoginViaGoogle(validatedRequest);
+    // try {
+    //   const existingUser = await localdb.query.user.findFirst({
+    //     where: eq(user.publicId, response.data.publicId),
+    //   });
+    //   if (!existingUser) {
+    //     await localdb.insert(user).values({
+    //       publicId: response.data.publicId,
+    //       name: response.data.name,
+    //       displayName: response.data.displayName,
+    //       email: response.data.email,
+    //       updatedAt: response.data.updatedAt,
+    //       createdAt: response.data.updatedAt,
+    //     });
+    //     await localdb.insert(userInfo).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userAccount).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userSetting).values({
+    //       publicId: response.data.publicId,
+    //       updatedAt: response.data.createdAt,
+    //     });
+    //     await localdb.insert(userData).values({
+    //       publicId: response.data.publicId,
+    //       name: response.data.name,
+    //       displayName: response.data.displayName,
+    //       email: response.data.email,
+    //       updatedAt: response.data.createdAt,
+    //       createdAt: response.data.createdAt,
+    //     });
+    //   }
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction(
+    //     "Login Via Google"
+    //   );
+    // }
     LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
     LocalStorageManipulator.setItem(
       LocalStorageKey.accessToken,
@@ -181,6 +336,8 @@ export const mutationFnLoginViaGoogle = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -197,6 +354,13 @@ export const mutationFnLogout = async (
   try {
     const validatedRequest = LogoutRequestSchema.parse(request);
     const response = await Logout(validatedRequest);
+    // try {
+    //   await localdb.update(user).set({
+    //     status: UserStatus.Offline,
+    //   });
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction("Logout");
+    // }
     LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
     SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
     return response;
@@ -206,6 +370,8 @@ export const mutationFnLogout = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         default:
           throw new Error(error.unWrap.message);
       }
@@ -220,18 +386,18 @@ export const mutationFnSendAuthCode = async (
   try {
     const validatedRequest = SendAuthCodeRequestSchema.parse(request);
     const response = await SendAuthCode(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -257,18 +423,23 @@ export const mutationFnValidateEmail = async (
   try {
     const validatedRequest = ValidateEmailRequestSchema.parse(request);
     const response = await ValidateEmail(validatedRequest);
-    if (response.newAccessToken) {
+    // try {
+    //   // const existingUser = await localdb.query.user.findFirst({where: eq()})
+    // } catch (error) {
+    //   throw LocalDatabaseExceptions.FailedInMutationFunction("Validate Email");
+    // }
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -278,6 +449,8 @@ export const mutationFnValidateEmail = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -294,18 +467,18 @@ export const mutationFnResetEmail = async (
   try {
     const validatedRequest = ResetEmailRequestSchema.parse(request);
     const response = await ResetEmail(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -315,6 +488,8 @@ export const mutationFnResetEmail = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -331,18 +506,18 @@ export const mutationFnForgetPassword = async (
   try {
     const validatedRequest = ForgetPasswordRequestSchema.parse(request);
     const response = await ForgetPassword(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -352,6 +527,8 @@ export const mutationFnForgetPassword = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:
@@ -368,18 +545,18 @@ export const mutationFnResetMe = async (
   try {
     const validatedRequest = ResetMeRequestSchema.parse(request);
     const response = await ResetMe(validatedRequest);
-    if (response.newAccessToken) {
+    if (response.refreshableTokens?.newAccessToken) {
       LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
       LocalStorageManipulator.setItem(
         LocalStorageKey.accessToken,
-        response.newAccessToken
+        response.refreshableTokens?.newAccessToken
       );
     }
-    if (response.newCSRFToken) {
+    if (response.refreshableTokens?.newCSRFToken) {
       SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
       SessionStorageManipulator.setItem(
         SessionStorageKey.csrfToken,
-        response.newCSRFToken
+        response.refreshableTokens?.newCSRFToken
       );
     }
     return response;
@@ -389,6 +566,8 @@ export const mutationFnResetMe = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         default:
           throw new Error(error.unWrap.message);
       }
@@ -410,6 +589,8 @@ export const mutationFnDeleteMe = async (
       throw new Error(`validation failed : ${errorMessage}`);
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.localDatabase.failedInMutationFunction:
+          throw new Error(tKey.error.localDatabaseError);
         case ExceptionReasonDictionary.user.notFound:
           throw new Error(tKey.error.apiError.getUser.failedToGetUser);
         default:

@@ -33,7 +33,7 @@ export async function GetMyAccount(
   }
 
   const formattedResponse = (await response.json()) as GetMyAccountResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -61,7 +61,7 @@ export async function UpdateMyAccount(
   }
 
   const formattedResponse = (await response.json()) as UpdateMyAccountResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -89,7 +89,7 @@ export async function BindGoogleAccount(
 
   const formattedResponse =
     (await response.json()) as BindGoogleAccountResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -117,7 +117,7 @@ export async function UnbindGoogleAccount(
 
   const formattedResponse =
     (await response.json()) as UnbindGoogleAccountResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;

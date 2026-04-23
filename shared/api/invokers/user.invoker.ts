@@ -34,7 +34,7 @@ export async function GetUserData(
   }
 
   const formattedResponse = (await response.json()) as GetUserDataResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -61,7 +61,7 @@ export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
   }
 
   const formattedResponse = (await response.json()) as GetMeResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
@@ -91,7 +91,7 @@ export async function UpdateMe(
   }
 
   const formattedResponse = (await response.json()) as UpdateMeResponse;
-  if (formattedResponse.exception) {
+  if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }
   return formattedResponse;
