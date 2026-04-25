@@ -21,6 +21,7 @@ export type BlockEvent = {
     previous: {
       // the previous status
       block?: Block; // the previous status of the block
+      parent?: Block;
       prev?: Block; // the prev block(closest top neighbor) of the block
       // next?: Block;
     };

@@ -452,7 +452,6 @@ const DashboardContainer = () => {
     <div
       className="
         relative w-full h-full min-h-[calc(100vh-4rem)] overflow-hidden
-        flex-col justify-center items-center
       "
     >
       <CreateWidgetDialog
@@ -462,7 +461,7 @@ const DashboardContainer = () => {
       />
       {backgroundImagesManager.currentBackgroundImageId === null ? (
         <GridBackground
-          className={`!w-full !min-h-[240] !max-h-[300] relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-[240px] relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -481,7 +480,7 @@ const DashboardContainer = () => {
       ) : (
         <ProgressiveBackground
           ref={headerBackgroundImageRef}
-          className={`w-full min-h-[240] max-h-[300] border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-[240px] border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -498,7 +497,7 @@ const DashboardContainer = () => {
         </ProgressiveBackground>
       )}
       <PlaceableBackground
-        className="overflow-x-hidden overflow-y-auto relative bg-background top-[-12] border-1 border-foreground/30 rounded-t-lg"
+        className="overflow-x-hidden overflow-y-auto relative bg-background top-[-12px] border-1 border-foreground/30 rounded-t-lg"
         // height: (heightTotalFrameCount + 「 2 」) * frameSize => remain 2 for extra spaces at the bottom area
         style={{ height: (heightTotalFrameCount + 2) * frameSize }}
         zIndex={DashboardElementZIndexes.placeableBackground}

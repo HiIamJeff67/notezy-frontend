@@ -8,6 +8,7 @@ import {
 } from "@shared/api/hooks/block.hook";
 import {
   useBatchMoveMyBlockGroupsByIds,
+  useDeleteMyBlockGroupsByIds,
   useInsertBlockGroupsAndTheirBlocksByBlockPackId,
 } from "@shared/api/hooks/blockGroup.hook";
 import {
@@ -17,6 +18,8 @@ import {
 } from "@shared/api/interfaces/block.interface";
 import {
   BatchMoveMyBlockGroupsByIdsRequest,
+  DeleteMyBlockGroupsByIdsRequest,
+  DeleteMyBlockGroupsByIdsRequestSchema,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
 import {
@@ -24,7 +27,6 @@ import {
   MinForcedMergedEvents,
   MinRequestEvents,
 } from "@shared/constants/blockEventLimitations.constant";
-import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
 import { BlockType } from "@shared/enums/blockType.enum";
 import { HybridDisjointSet } from "@shared/lib/disjointSet";
 import { LinkedList, LinkedListNode } from "@shared/lib/linkedList";
@@ -49,7 +51,6 @@ import {
 import toast from "react-hot-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getAuthorization } from "@/util/getAuthorization";
-import { choiceRandom } from "@/util/random";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor;
@@ -77,8 +78,9 @@ export const BlockEditorProvider = ({
   const insertBlockGroupsAndBlocksMutator =
     useInsertBlockGroupsAndTheirBlocksByBlockPackId();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
-  const deleteBlocksMutator = useDeleteMyBlocksByIds();
   const batchMoveBlockGroupsMutator = useBatchMoveMyBlockGroupsByIds();
+  const deleteBlocksMutator = useDeleteMyBlocksByIds();
+  const deleteBlockGroupsMutator = useDeleteMyBlockGroupsByIds();
 
   const dsuRef = useRef<HybridDisjointSet<UUID, BlockGroupMeta>>(
     new HybridDisjointSet<UUID, BlockGroupMeta>()
@@ -119,6 +121,7 @@ export const BlockEditorProvider = ({
       let initialContent: PartialBlock[] = [];
       let prevBlockGroup: LinkedListNode<UUID, number> =
         blockGroupsLinkedListRef.current.getHead();
+      console.log("initialBlockGroups: ", blockPackMeta.blockGroups);
       for (const blockGroup of blockPackMeta.blockGroups) {
         let totalBlockCount = 1;
         initialContent.push(blockGroup.rawArborizedEditableBlock);
@@ -149,27 +152,20 @@ export const BlockEditorProvider = ({
 
       const isNewBlockPack =
         isBlockPackMetaInitialized && initialContent.length === 0;
-      const randomInitialBlock = choiceRandom(
-        AllDefaultBlockPackInitialContents
-      );
       if (isNewBlockPack) {
-        randomInitialBlock.id = generateUUID();
-        initialContent = [randomInitialBlock];
+        initialContent = [
+          {
+            id: generateUUID(),
+            type: "paragraph",
+            content: [],
+          },
+        ];
       }
 
       const editor = BlockNoteEditor.create({
         initialContent: initialContent,
         trailingBlock: false,
       });
-
-      if (isNewBlockPack) {
-        // insert a empty trailing block if currently on a new block pack to synchronize the current blocks automatically
-        editor.insertBlocks(
-          [{ type: "paragraph", content: "" }],
-          randomInitialBlock.id!,
-          "after"
-        );
-      }
 
       setState("idle");
 
@@ -238,6 +234,7 @@ export const BlockEditorProvider = ({
     updateBlocksRequest: UpdateMyBlocksByIdsRequest;
     moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest;
     deleteBlocksRequest: DeleteMyBlocksByIdsRequest;
+    deleteBlockGroupsRequest: DeleteMyBlockGroupsByIdsRequest;
   } => {
     // Step 1: Prepare all possible requests (at most four requests are sent in this function)
     const userAgent = navigator.userAgent;
@@ -301,6 +298,19 @@ export const BlockEditorProvider = ({
         blockPackIds: [blockPackMeta.id],
       },
     };
+    const deleteBlockGroupsRequest: DeleteMyBlockGroupsByIdsRequest = {
+      header: {
+        userAgent: userAgent,
+        authorization: getAuthorization(accessToken),
+      },
+      body: {
+        blockGroupIds: [],
+      },
+      affected: {
+        prevBlockGroupIds: [],
+        blockPackIds: [blockPackMeta.id],
+      },
+    };
 
     // Step 2: Prepare the disjoint set for getting the block group of any given blocks, relink blocks, and the blocks required new block groups
     const needsRelinkBlockIds: UUID[] = [];
@@ -309,10 +319,27 @@ export const BlockEditorProvider = ({
       if (event.type === "delete") continue;
 
       const blockId = event.payload.block.id as UUID;
-      dsuRef.current.add(blockId);
       const parentBlock = editor.getParentBlock(blockId);
+      dsuRef.current.add(blockId);
+
       if (parentBlock !== undefined) {
         dsuRef.current.add(parentBlock.id as UUID);
+        if (event.type === "move") {
+          // check if it is a infantilized move operation
+          const currentBlockGroup = dsuRef.current.getPayload(blockId);
+          const parentBlockGroup = dsuRef.current.getPayload(
+            parentBlock.id as UUID
+          );
+          if (
+            currentBlockGroup !== undefined &&
+            parentBlockGroup !== undefined &&
+            currentBlockGroup.id !== parentBlockGroup.id
+          ) {
+            // skip the union on block and its parent here
+            // so that we can get the original block group if its parent in the pass 3
+            continue;
+          }
+        }
         dsuRef.current.union(blockId, parentBlock.id as UUID);
       } else if (!dsuRef.current.hasPayload(blockId)) {
         const newBlockGroupId = generateUUID();
@@ -474,37 +501,132 @@ export const BlockEditorProvider = ({
           break;
         }
         case "move": {
-          const movableBlockGroup = dsuRef.current.getPayload(blockId);
-          if (!movableBlockGroup) {
-            console.error(
-              "Movable block group Id not found for block",
-              event.payload.block.id
+          const destinationParentBlock = editor.getParentBlock(blockId);
+          if (destinationParentBlock === undefined) {
+            const movableBlockGroup = dsuRef.current.getPayload(blockId);
+            if (!movableBlockGroup) {
+              console.error(
+                "Movable block group id not found for block with id: ",
+                blockId
+              );
+              continue;
+            }
+            const movablePrevBlockGroup = event.payload.previous.prev
+              ? (dsuRef.current.getPayload(
+                  event.payload.previous.prev.id as UUID
+                ) ?? null)
+              : null;
+            const currentPrevBlock = editor.getPrevBlock(
+              event.payload.block.id as UUID
             );
-            continue;
+            const destinationBlockGroup = currentPrevBlock
+              ? (dsuRef.current.getPayload(currentPrevBlock.id as UUID) ?? null)
+              : null;
+
+            if (needsNewBlockGroupBlockIds.has(blockId)) {
+              // There should be no way to move block from some where to a place without parent block
+              // and the movement does NOT change the block group of the movable block
+              // except for the deletion of a tabbed block(not root block of some block group),
+              // which required a create operation for the new block group
+              // implementations...
+            }
+            moveBlockGroupsRequest.body.movedBlockGroups.push({
+              blockPackId: blockPackMeta.id,
+              movableBlockGroupId: movableBlockGroup.id,
+              movablePrevBlockGroupId:
+                movablePrevBlockGroup !== null
+                  ? movablePrevBlockGroup.id
+                  : null,
+              destinationBlockGroupId:
+                destinationBlockGroup !== null
+                  ? destinationBlockGroup.id
+                  : null,
+            });
+          } else {
+            const destinationParentBlockGroup = dsuRef.current.getPayload(
+              destinationParentBlock.id as UUID
+            );
+            const movableBlockGroup = dsuRef.current.getPayload(blockId);
+            if (!destinationParentBlockGroup) {
+              console.error(
+                "The block group id of the parent block of the movable block not found for block with id: ",
+                blockId
+              );
+              continue;
+            }
+            if (!movableBlockGroup) {
+              console.error(
+                "Movable block group id not found for block with id: ",
+                blockId
+              );
+              continue;
+            }
+
+            console.log(
+              "test: ",
+              destinationParentBlockGroup,
+              movableBlockGroup
+            );
+
+            // update the new block group when its parent block has different block group
+            if (destinationParentBlockGroup.id !== movableBlockGroup.id) {
+              updateBlocksRequest.body.updatedBlocks.push({
+                blockId: blockId,
+                values: {
+                  type: event.payload.block.type as BlockType,
+                  props: event.payload.block.props,
+                  content: event.payload.block.content as any,
+                  parentBlockId:
+                    destinationParentBlock === undefined
+                      ? null
+                      : destinationParentBlock.id,
+                  blockGroupId: destinationParentBlockGroup.id,
+                },
+                setNull: {
+                  parentBlockId: destinationParentBlock === undefined,
+                },
+              });
+            }
+
+            // clean useless block group if the movable block is the root of the block tree of some block group
+            if (event.payload.previous.parent === undefined) {
+              deleteBlockGroupsRequest.body.blockGroupIds.push(
+                movableBlockGroup.id
+              );
+              const prevBlockGroupId = getSafePrevBlockGroupId(
+                movableBlockGroup.id
+              );
+              if (prevBlockGroupId !== null) {
+                deleteBlockGroupsRequest.affected.prevBlockGroupIds.push(
+                  prevBlockGroupId
+                );
+              }
+              blockGroupsLinkedListRef.current.delete(movableBlockGroup.id);
+            }
           }
-          const movablePrevBlockGroup = event.payload.previous.prev
-            ? (dsuRef.current.getPayload(
-                event.payload.previous.prev.id as UUID
-              ) ?? null)
-            : null;
-          const currentPrevBlock = editor.getPrevBlock(
-            event.payload.block.id as UUID
-          );
-          const destinationBlockGroup = currentPrevBlock
-            ? (dsuRef.current.getPayload(currentPrevBlock.id as UUID) ?? null)
-            : null;
-          moveBlockGroupsRequest.body.movedBlockGroups.push({
-            blockPackId: blockPackMeta.id,
-            movableBlockGroupId: movableBlockGroup.id,
-            movablePrevBlockGroupId:
-              movablePrevBlockGroup !== null ? movablePrevBlockGroup.id : null,
-            destinationBlockGroupId:
-              destinationBlockGroup !== null ? destinationBlockGroup.id : null,
-          });
           break;
         }
         case "delete":
           deleteBlocksRequest.body.blockIds.push(blockId);
+          const involvedBlockGroup = dsuRef.current.getPayload(blockId);
+          if (
+            involvedBlockGroup !== undefined &&
+            involvedBlockGroup.rawArborizedEditableBlock !== undefined &&
+            involvedBlockGroup.rawArborizedEditableBlock.id === blockId
+          ) {
+            deleteBlockGroupsRequest.body.blockGroupIds.push(
+              involvedBlockGroup.id
+            );
+            const prevBlockGroupId = getSafePrevBlockGroupId(
+              involvedBlockGroup.id
+            );
+            if (prevBlockGroupId !== null) {
+              deleteBlockGroupsRequest.affected.blockPackIds.push(
+                prevBlockGroupId
+              );
+            }
+            blockGroupsLinkedListRef.current.delete(involvedBlockGroup.id);
+          }
           break;
       }
     }
@@ -515,6 +637,7 @@ export const BlockEditorProvider = ({
       updateBlocksRequest: updateBlocksRequest,
       moveBlockGroupsRequest: moveBlockGroupsRequest,
       deleteBlocksRequest: deleteBlocksRequest,
+      deleteBlockGroupsRequest: deleteBlockGroupsRequest,
     };
   };
 
@@ -537,15 +660,17 @@ export const BlockEditorProvider = ({
         updateBlocksRequest,
         moveBlockGroupsRequest,
         deleteBlocksRequest,
+        deleteBlockGroupsRequest,
       } = toRequest(mergedEvents);
-      // console.log(
-      //   "Prepared Requests: ",
-      //   insertBlocksRequest,
-      //   insertBlockGroupsAndBlocksRequest,
-      //   updateBlocksRequest,
-      //   moveBlockGroupsRequest,
-      //   deleteBlocksRequest
-      // );
+      console.log(
+        "Prepared Requests: ",
+        insertBlocksRequest,
+        insertBlockGroupsAndBlocksRequest,
+        updateBlocksRequest,
+        moveBlockGroupsRequest,
+        deleteBlocksRequest,
+        deleteBlockGroupsRequest
+      );
       setState("syncing");
       await Promise.all([
         insertBlocksRequest.body.insertedBlocks.length > 0 &&
@@ -560,6 +685,8 @@ export const BlockEditorProvider = ({
           batchMoveBlockGroupsMutator.mutateAsync(moveBlockGroupsRequest),
         deleteBlocksRequest.body.blockIds.length > 0 &&
           deleteBlocksMutator.mutateAsync(deleteBlocksRequest),
+        deleteBlockGroupsRequest.body.blockGroupIds.length > 0 &&
+          deleteBlockGroupsMutator.mutateAsync(deleteBlockGroupsRequest),
       ]).catch(error => toast.error(languageManager.tError(error)));
       eventQueueRef.current = [];
       setState("idle");
@@ -588,7 +715,7 @@ export const BlockEditorProvider = ({
       newBlockGroupId,
       1
     );
-    await insertBlockGroupsAndBlocksMutator.mutateAsync({
+    const request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest = {
       header: {
         userAgent: userAgent,
         authorization: getAuthorization(accessToken),
@@ -605,7 +732,9 @@ export const BlockEditorProvider = ({
           },
         ],
       },
-    });
+    };
+    console.log(request);
+    await insertBlockGroupsAndBlocksMutator.mutateAsync(request);
   }, [insertBlockGroupsAndBlocksMutator, initialContent]);
 
   useEffect(() => {
@@ -621,6 +750,7 @@ export const BlockEditorProvider = ({
           if (change.type !== "move") continue; // handling other operations in onChange event listener
           const blockId = change.block.id as UUID;
           const movedPrevBlock = editor.getPrevBlock(blockId);
+          const movedParentBlock = editor.getParentBlock(blockId);
           eventQueueRef.current.push({
             type: change.type,
             payload: {
@@ -628,6 +758,7 @@ export const BlockEditorProvider = ({
               source: change.source,
               previous: {
                 block: change.prevBlock,
+                parent: movedParentBlock,
                 prev: movedPrevBlock,
               },
             },

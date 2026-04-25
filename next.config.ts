@@ -1,4 +1,3 @@
-// next.config.ts
 import { CurrentWebBaseURL } from "@shared/constants/url.constant";
 import type { NextConfig } from "next";
 

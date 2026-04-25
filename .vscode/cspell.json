@@ -49,7 +49,9 @@
     "pomodoro",
     "sqlocal",
     "localdb",
-    "refreshable"
+    "refreshable",
+    "infantilize",
+    "infantilized"
   ],
   "ignorePaths": [
     "node_modules/**",
