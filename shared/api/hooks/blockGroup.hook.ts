@@ -1,11 +1,15 @@
 import type { UUID } from "node:crypto";
+import { ErrorLink } from "@apollo/client/link/error";
 import {
+  mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  mutationFnBatchInsertBlockGroupsByBlockPackIds,
   mutationFnBatchMoveMyBlockGroupsByIds,
   mutationFnDeleteMyBlockGroupById,
   mutationFnDeleteMyBlockGroupsByIds,
   mutationFnInsertBlockGroupAndItsBlocksByBlockPackId,
   mutationFnInsertBlockGroupByBlockPackId,
   mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId,
+  mutationFnInsertBlockGroupsByBlockPackId,
   mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
   mutationFnMoveMyBlockGroupById,
   mutationFnMoveMyBlockGroupsByIds,
@@ -376,6 +380,83 @@ export const useInsertBlockGroupByBlockPackId = () => {
   };
 };
 
+export const useInsertBlockGroupsByBlockPackId = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: mutationFnInsertBlockGroupsByBlockPackId,
+    onSuccess: (_, variables) => {
+      const blockPackId = variables.body.blockPackId as UUID;
+      const prevBlockGroupIds = variables.body
+        .prevBlockGroupIds as (UUID | null)[];
+      const targetKeys: QueryKey[] = [
+        queryKeys.blockPack.oneById(blockPackId),
+        queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ...prevBlockGroupIds.map(prevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+    },
+    onError: error => {
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "INSERT_BLOCK_GROUPS_BY_BLOCK_PACK_ID_HOOK" as const,
+  };
+};
+
+export const useBatchInsertBlockGroupsByBlockPackIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: mutationFnBatchInsertBlockGroupsByBlockPackIds,
+    onSuccess: (_, variables) => {
+      const blockPackIds: UUID[] = [];
+      const prevBlockGroupIds: (UUID | null)[] = [];
+      for (const blockPackContent of variables.body.blockPackContents) {
+        blockPackIds.push(blockPackContent.blockPackId as UUID);
+        prevBlockGroupIds.push(
+          blockPackContent.prevBlockGroupId as UUID | null
+        );
+      }
+      const targetKeys: QueryKey[] = [
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ]),
+        ...prevBlockGroupIds.map(prevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+    },
+    onError: error => {
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "BATCH_INSERT_BLOCK_GROUPS_BY_BLOCK_PACK_IDS_HOOK" as const,
+  };
+};
+
 export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
   const queryClient = getQueryClient();
 
@@ -440,6 +521,48 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
   return {
     ...mutation,
     name: "INSERT_BLOCK_GROUPS_AND_THEIR_BLOCKS_BY_BLOCK_PACK_ID_HOOK" as const,
+  };
+};
+
+export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
+  const queryClient = getQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+    onSuccess: (_, variables) => {
+      const blockPackIds: UUID[] = [];
+      const prevBlockGroupIds: (UUID | null)[] = [];
+      for (const blockGroupContent of variables.body.blockGroupContents) {
+        blockPackIds.push(blockGroupContent.blockPackId as UUID);
+        prevBlockGroupIds.push(
+          blockGroupContent.prevBlockGroupId as UUID | null
+        );
+      }
+      const targetKeys: QueryKey[] = [
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.blockPack.oneById(blockPackId),
+          queryKeys.blockGroup.manyByBlockPackId(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ]),
+        ...prevBlockGroupIds.map(prevBlockGroupId =>
+          queryKeys.blockGroup.manyByPrevBlockGroupId(prevBlockGroupId)
+        ),
+      ];
+      Promise.all(
+        targetKeys.map(targetKey =>
+          queryClient.invalidateQueries({ queryKey: targetKey })
+        )
+      );
+    },
+    onError: error => {
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    name: "BATCH_INSERT_BLOCK_GROUPS_AND_THEIR_BLOCKS_BY_BLOCK_PACK_IDS_HOOK" as const,
   };
 };
 

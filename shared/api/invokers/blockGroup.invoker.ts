@@ -1,5 +1,9 @@
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  BatchInsertBlockGroupsByBlockPackIdsRequest,
+  BatchInsertBlockGroupsByBlockPackIdsResponse,
   BatchMoveMyBlockGroupsByIdsRequest,
   BatchMoveMyBlockGroupsByIdsResponse,
   DeleteMyBlockGroupByIdRequest,
@@ -24,6 +28,8 @@ import {
   InsertBlockGroupByBlockPackIdResponse,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  InsertBlockGroupsByBlockPackIdRequest,
+  InsertBlockGroupsByBlockPackIdResponse,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
   MoveMyBlockGroupByIdRequest,
@@ -278,6 +284,70 @@ export async function InsertBlockGroupByBlockPackId(
   return formattedResponse;
 }
 
+export async function InsertBlockGroupsByBlockPackId(
+  request: InsertBlockGroupsByBlockPackIdRequest
+): Promise<InsertBlockGroupsByBlockPackIdResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as InsertBlockGroupsByBlockPackIdResponse;
+  if (formattedResponse.exception != null) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function BatchInsertBlockGroupsByBlockPackIds(
+  request: BatchInsertBlockGroupsByBlockPackIdsRequest
+): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as BatchInsertBlockGroupsByBlockPackIdsResponse;
+  if (formattedResponse.exception != null) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
 export async function InsertBlockGroupAndItsBlocksByBlockPackId(
   request: InsertBlockGroupAndItsBlocksByBlockPackIdRequest
 ): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> {
@@ -335,6 +405,38 @@ export async function InsertBlockGroupsAndTheirBlocksByBlockPackId(
 
   const formattedResponse =
     (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
+  if (formattedResponse.exception != null) {
+    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+  }
+
+  return formattedResponse;
+}
+
+export async function BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+  request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsAndTheirBlocksByBlockPackIds}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": request.header.userAgent,
+        ...(request.header.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    }
+  );
+
+  if (!isJsonResponse(response)) {
+    throw new Error(tKey.error.encounterUnknownError);
+  }
+
+  const formattedResponse =
+    (await response.json()) as BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse;
   if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

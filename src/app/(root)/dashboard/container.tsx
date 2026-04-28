@@ -247,27 +247,29 @@ const DashboardContainer = () => {
           }
         }
 
+        // biome-ignore format: make the comment of all conditions at the same line
         return (
-          // (prettier-ignore) check if some of the potential conflictable widgets containing the widget
-          // (prettier-ignore) if the right bottom point of the widget is less than some of the other widgets
-          (widget.position.leftFrameCount + widgetWidthFrameCount >=
+          // check if some of the potential conflictable widgets containing the widget
+          // if the right bottom point of the widget is less than some of the other widgets
+          (widget.position.leftFrameCount + widgetWidthFrameCount >= 
             potentialConflictableWidget.position.leftFrameCount +
-              potentialConflictableWidget.size.widthFrameCount &&
-            widget.position.topFrameCount + widgetHeightFrameCount >=
+              potentialConflictableWidget.size.widthFrameCount && 
+            widget.position.topFrameCount + widgetHeightFrameCount >= 
               potentialConflictableWidget.position.topFrameCount +
                 potentialConflictableWidget.size.heightFrameCount &&
-            // (prettier-ignore) and if the left top point of the widget is greater than some other widgets
+            // and if the left top point of the widget is greater than some other widgets
             widget.position.leftFrameCount <=
               potentialConflictableWidget.position.leftFrameCount &&
             widget.position.topFrameCount <=
-              potentialConflictableWidget.position.topFrameCount) || // (prettier-ignore) check if the widget is containing in some of the potential conflictable widgets
-          // (prettier-ignore) if the right bottom points of some other widgets are less than the widget
+              potentialConflictableWidget.position.topFrameCount) || 
+          // check if the widget is containing in some of the potential conflictable widgets
+          // if the right bottom points of some other widgets are less than the widget
           (potentialConflictableWidget.position.leftFrameCount +
             potentialConflictableWidget.size.widthFrameCount >=
             widget.position.leftFrameCount + widgetWidthFrameCount &&
             potentialConflictableWidget.position.topFrameCount +
               potentialConflictableWidget.size.heightFrameCount >=
-              // (prettier-ignore) and if the left top points of some other widgets are greater than the widget
+              // and if the left top points of some other widgets are greater than the widget
               widget.position.topFrameCount + widgetHeightFrameCount &&
             potentialConflictableWidget.position.leftFrameCount <=
               widget.position.leftFrameCount &&

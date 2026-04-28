@@ -140,10 +140,15 @@ export const APIURLPathDictionary = {
     getAllMyBlockGroupsByBlockPackId:
       "blockGroup/getAllMyBlockGroupsByBlockPackId",
     insertBlockGroupByBlockPackId: "blockGroup/insertBlockGroupByBlockPackId",
+    insertBlockGroupsByBlockPackId: "blockGroup/insertBlockGroupsByBlockPackId",
+    batchInsertBlockGroupsByBlockPackIds:
+      "blockGroup/batchInsertBlockGroupsByBlockPackIds",
     insertBlockGroupAndItsBlocksByBlockPackId:
       "blockGroup/insertBlockGroupAndItsBlocksByBlockPackId",
     insertBlockGroupsAndTheirBlocksByBlockPackId:
       "blockGroup/insertBlockGroupsAndTheirBlocksByBlockPackId",
+    batchInsertBlockGroupsAndTheirBlocksByBlockPackIds:
+      "blockGroup/batchInsertBlockGroupsAndTheirBlocksByBlockPackIds",
     insertSequentialBlockGroupsAndTheirBlocksByBlockPackId:
       "blockGroup/insertSequentialBlockGroupsAndTheirBlocksByBlockPackId",
     moveMyBlockGroupById: "blockGroup/moveMyBlockGroupById",

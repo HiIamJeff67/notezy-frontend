@@ -1,6 +1,6 @@
 "use client";
 
-import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import {
   useDeleteMyBlocksByIds,
   useInsertBlocks,
@@ -10,6 +10,7 @@ import {
   useBatchMoveMyBlockGroupsByIds,
   useDeleteMyBlockGroupsByIds,
   useInsertBlockGroupsAndTheirBlocksByBlockPackId,
+  useInsertBlockGroupsByBlockPackId,
 } from "@shared/api/hooks/blockGroup.hook";
 import {
   DeleteMyBlocksByIdsRequest,
@@ -19,8 +20,8 @@ import {
 import {
   BatchMoveMyBlockGroupsByIdsRequest,
   DeleteMyBlockGroupsByIdsRequest,
-  DeleteMyBlockGroupsByIdsRequestSchema,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  InsertBlockGroupsByBlockPackIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
 import {
   MergingDebounceTimeout,
@@ -77,6 +78,7 @@ export const BlockEditorProvider = ({
   const insertBlocksMutator = useInsertBlocks();
   const insertBlockGroupsAndBlocksMutator =
     useInsertBlockGroupsAndTheirBlocksByBlockPackId();
+  const insertBlockGroupsMutator = useInsertBlockGroupsByBlockPackId();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
   const batchMoveBlockGroupsMutator = useBatchMoveMyBlockGroupsByIds();
   const deleteBlocksMutator = useDeleteMyBlocksByIds();
@@ -87,6 +89,9 @@ export const BlockEditorProvider = ({
   );
   const blockGroupsLinkedListRef = useRef<LinkedList<UUID, number>>(
     new LinkedList<UUID, number>()
+  );
+  const beforeChangeEventMapRef = useRef<Map<string, BlockEvent>>(
+    new Map<UUID, BlockEvent>()
   );
   const eventQueueRef = useRef<BlockEvent[]>([]);
   const mergeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -127,12 +132,13 @@ export const BlockEditorProvider = ({
         initialContent.push(blockGroup.rawArborizedEditableBlock);
         dsuRef.current.add(blockGroup.id, Infinity);
         dsuRef.current.setPayload(blockGroup.id, blockGroup);
-        if (blockGroup.rawArborizedEditableBlock.id !== undefined) {
-          dsuRef.current.union(
-            blockGroup.rawArborizedEditableBlock.id as UUID,
-            blockGroup.id
-          );
+        if (blockGroup.rawArborizedEditableBlock.id === undefined) {
+          throw new Error("Invalid blocks with undefined id");
         }
+        dsuRef.current.union(
+          blockGroup.rawArborizedEditableBlock.id as UUID,
+          blockGroup.id
+        );
         if (
           blockGroup.rawArborizedEditableBlock.children &&
           blockGroup.rawArborizedEditableBlock.children.length > 0
@@ -214,7 +220,8 @@ export const BlockEditorProvider = ({
           mergedEvent.timestamp = events[i].timestamp;
           break;
         case "delete":
-          mergedEvent = undefined;
+          if (mergedEvent.type === "insert") mergedEvent = undefined;
+          else mergedEvent.type = "delete"; // modify the type so that it will be handled when it is assembled to the requests
           break;
       }
 
@@ -231,6 +238,7 @@ export const BlockEditorProvider = ({
   ): {
     insertBlocksRequest: InsertBlocksRequest;
     insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest;
+    insertBlockGroupsRequest: InsertBlockGroupsByBlockPackIdRequest;
     updateBlocksRequest: UpdateMyBlocksByIdsRequest;
     moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest;
     deleteBlocksRequest: DeleteMyBlocksByIdsRequest;
@@ -241,6 +249,18 @@ export const BlockEditorProvider = ({
     const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKey.accessToken
     );
+    const insertBlocksRequest: InsertBlocksRequest = {
+      header: {
+        userAgent: userAgent,
+        authorization: getAuthorization(accessToken),
+      },
+      body: {
+        insertedBlocks: [],
+      },
+      affected: {
+        blockPackId: blockPackMeta.id,
+      },
+    };
     const insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest =
       {
         header: {
@@ -252,16 +272,14 @@ export const BlockEditorProvider = ({
           blockGroupContents: [],
         },
       };
-    const insertBlocksRequest: InsertBlocksRequest = {
+    const insertBlockGroupsRequest: InsertBlockGroupsByBlockPackIdRequest = {
       header: {
         userAgent: userAgent,
         authorization: getAuthorization(accessToken),
       },
       body: {
-        insertedBlocks: [],
-      },
-      affected: {
         blockPackId: blockPackMeta.id,
+        blockPackContents: [],
       },
     };
     const updateBlocksRequest: UpdateMyBlocksByIdsRequest = {
@@ -312,6 +330,8 @@ export const BlockEditorProvider = ({
       },
     };
 
+    console.log("receiving events", events);
+
     // Step 2: Prepare the disjoint set for getting the block group of any given blocks, relink blocks, and the blocks required new block groups
     const needsRelinkBlockIds: UUID[] = [];
     const needsNewBlockGroupBlockIds: Set<UUID> = new Set<UUID>();
@@ -321,6 +341,13 @@ export const BlockEditorProvider = ({
       const blockId = event.payload.block.id as UUID;
       const parentBlock = editor.getParentBlock(blockId);
       dsuRef.current.add(blockId);
+
+      console.log(
+        "parentBlock: ",
+        parentBlock,
+        ", block group payload: ",
+        dsuRef.current.getPayload(blockId)
+      );
 
       if (parentBlock !== undefined) {
         dsuRef.current.add(parentBlock.id as UUID);
@@ -341,7 +368,10 @@ export const BlockEditorProvider = ({
           }
         }
         dsuRef.current.union(blockId, parentBlock.id as UUID);
-      } else if (!dsuRef.current.hasPayload(blockId)) {
+      } else if (
+        !dsuRef.current.hasPayload(blockId) ||
+        (event.type === "move" && event.payload.previous.parent !== undefined) // && parentBlock === undefined
+      ) {
         const newBlockGroupId = generateUUID();
         const prevBlock = editor.getPrevBlock(blockId);
         const prevBlockGroupId =
@@ -363,7 +393,6 @@ export const BlockEditorProvider = ({
           prevBlockGroupId,
           null
         );
-
         dsuRef.current.add(newBlockGroupId, Infinity);
         dsuRef.current.union(blockId, newBlockGroupId);
         dsuRef.current.setPayload(blockId, newBlockGroupMeta);
@@ -398,6 +427,7 @@ export const BlockEditorProvider = ({
           nextBlockGroupNode.prev = currentBlockGroupNode;
         }
 
+        console.log("adding to needsNewBlockGroupBlockIds: ", blockId);
         needsNewBlockGroupBlockIds.add(blockId);
 
         if (prevBlock !== undefined && prevBlockGroupId === null) {
@@ -409,12 +439,12 @@ export const BlockEditorProvider = ({
     // Step 3: Relink the blocks which may cause broken linked list
     //  (This is mostly happened when the user insert a new block before the current block,
     //    ex. Hit enter while the text cursor is on the head of some blocks)
-    for (const blockId of needsRelinkBlockIds) {
-      const blockGroupMeta = dsuRef.current.getPayload(blockId);
+    for (const needsRelinkBlockId of needsRelinkBlockIds) {
+      const blockGroupMeta = dsuRef.current.getPayload(needsRelinkBlockId);
       if (!blockGroupMeta) continue;
 
       const blockGroupId = blockGroupMeta.id;
-      const prevBlock = editor.getPrevBlock(blockId);
+      const prevBlock = editor.getPrevBlock(needsRelinkBlockId);
       if (prevBlock === undefined) continue;
 
       const correctPrevGroupId = dsuRef.current.getPayload(
@@ -441,6 +471,8 @@ export const BlockEditorProvider = ({
       return node.prev.key;
     };
 
+    console.log("remaining events", events);
+
     // Step 4: Iterate through the events to combine them into the requests
     for (const event of events) {
       const blockId = event.payload.block.id as UUID;
@@ -454,10 +486,17 @@ export const BlockEditorProvider = ({
       switch (event.type) {
         case "insert": {
           const parentBlock = editor.getParentBlock(blockId);
+          console.log(
+            "handling insert operation, parentBlock",
+            parentBlock,
+            ", has new block group: ",
+            needsNewBlockGroupBlockIds.has(blockId)
+          );
           if (
             parentBlock === undefined &&
             needsNewBlockGroupBlockIds.has(blockId)
           ) {
+            console.log("Push to insertBlockGroupsAndBlocksRequest...");
             const prevBlockGroupId = getSafePrevBlockGroupId(blockGroupId!);
             insertBlockGroupsAndBlocksRequest.body.blockGroupContents.push({
               blockGroupId: blockGroupId!,
@@ -523,25 +562,41 @@ export const BlockEditorProvider = ({
               ? (dsuRef.current.getPayload(currentPrevBlock.id as UUID) ?? null)
               : null;
 
-            if (needsNewBlockGroupBlockIds.has(blockId)) {
-              // There should be no way to move block from some where to a place without parent block
-              // and the movement does NOT change the block group of the movable block
-              // except for the deletion of a tabbed block(not root block of some block group),
-              // which required a create operation for the new block group
-              // implementations...
+            // biome-ignore format: make comment of the if conditions at the same line
+            if (needsNewBlockGroupBlockIds.has(blockId)) { // if move some children block to the root layer
+              // remember that the parent block id is undefined in this scope
+              const prevBlockGroupId = getSafePrevBlockGroupId(blockGroupId!);
+              insertBlockGroupsRequest.body.blockPackContents.push({
+                blockGroupId: blockGroupId!, 
+                prevBlockGroupId: prevBlockGroupId,
+              })
+              updateBlocksRequest.body.updatedBlocks.push({
+                blockId: blockId, 
+                values: {
+                  type: event.payload.block.type as BlockType,
+                    props: event.payload.block.props,
+                    content: event.payload.block.content as any,
+                    parentBlockId: null,
+                    blockGroupId: blockGroupId!,
+                }, 
+                setNull: {
+                  parentBlockId: true
+                }
+              })
+            } else {
+              moveBlockGroupsRequest.body.movedBlockGroups.push({
+                blockPackId: blockPackMeta.id,
+                movableBlockGroupId: movableBlockGroup.id,
+                movablePrevBlockGroupId:
+                  movablePrevBlockGroup !== null
+                    ? movablePrevBlockGroup.id
+                    : null,
+                destinationBlockGroupId:
+                  destinationBlockGroup !== null
+                    ? destinationBlockGroup.id
+                    : null,
+              });
             }
-            moveBlockGroupsRequest.body.movedBlockGroups.push({
-              blockPackId: blockPackMeta.id,
-              movableBlockGroupId: movableBlockGroup.id,
-              movablePrevBlockGroupId:
-                movablePrevBlockGroup !== null
-                  ? movablePrevBlockGroup.id
-                  : null,
-              destinationBlockGroupId:
-                destinationBlockGroup !== null
-                  ? destinationBlockGroup.id
-                  : null,
-            });
           } else {
             const destinationParentBlockGroup = dsuRef.current.getPayload(
               destinationParentBlock.id as UUID
@@ -562,12 +617,6 @@ export const BlockEditorProvider = ({
               continue;
             }
 
-            console.log(
-              "test: ",
-              destinationParentBlockGroup,
-              movableBlockGroup
-            );
-
             // update the new block group when its parent block has different block group
             if (destinationParentBlockGroup.id !== movableBlockGroup.id) {
               updateBlocksRequest.body.updatedBlocks.push({
@@ -587,46 +636,11 @@ export const BlockEditorProvider = ({
                 },
               });
             }
-
-            // clean useless block group if the movable block is the root of the block tree of some block group
-            if (event.payload.previous.parent === undefined) {
-              deleteBlockGroupsRequest.body.blockGroupIds.push(
-                movableBlockGroup.id
-              );
-              const prevBlockGroupId = getSafePrevBlockGroupId(
-                movableBlockGroup.id
-              );
-              if (prevBlockGroupId !== null) {
-                deleteBlockGroupsRequest.affected.prevBlockGroupIds.push(
-                  prevBlockGroupId
-                );
-              }
-              blockGroupsLinkedListRef.current.delete(movableBlockGroup.id);
-            }
           }
           break;
         }
         case "delete":
           deleteBlocksRequest.body.blockIds.push(blockId);
-          const involvedBlockGroup = dsuRef.current.getPayload(blockId);
-          if (
-            involvedBlockGroup !== undefined &&
-            involvedBlockGroup.rawArborizedEditableBlock !== undefined &&
-            involvedBlockGroup.rawArborizedEditableBlock.id === blockId
-          ) {
-            deleteBlockGroupsRequest.body.blockGroupIds.push(
-              involvedBlockGroup.id
-            );
-            const prevBlockGroupId = getSafePrevBlockGroupId(
-              involvedBlockGroup.id
-            );
-            if (prevBlockGroupId !== null) {
-              deleteBlockGroupsRequest.affected.blockPackIds.push(
-                prevBlockGroupId
-              );
-            }
-            blockGroupsLinkedListRef.current.delete(involvedBlockGroup.id);
-          }
           break;
       }
     }
@@ -634,6 +648,7 @@ export const BlockEditorProvider = ({
     return {
       insertBlocksRequest: insertBlocksRequest,
       insertBlockGroupsAndBlocksRequest: insertBlockGroupsAndBlocksRequest,
+      insertBlockGroupsRequest: insertBlockGroupsRequest,
       updateBlocksRequest: updateBlocksRequest,
       moveBlockGroupsRequest: moveBlockGroupsRequest,
       deleteBlocksRequest: deleteBlocksRequest,
@@ -657,20 +672,47 @@ export const BlockEditorProvider = ({
       const {
         insertBlocksRequest,
         insertBlockGroupsAndBlocksRequest,
+        insertBlockGroupsRequest,
         updateBlocksRequest,
         moveBlockGroupsRequest,
         deleteBlocksRequest,
         deleteBlockGroupsRequest,
       } = toRequest(mergedEvents);
-      console.log(
-        "Prepared Requests: ",
-        insertBlocksRequest,
-        insertBlockGroupsAndBlocksRequest,
-        updateBlocksRequest,
-        moveBlockGroupsRequest,
-        deleteBlocksRequest,
-        deleteBlockGroupsRequest
-      );
+      if (insertBlocksRequest.body.insertedBlocks.length > 0) {
+        console.log("Prepared Insert Blocks Request: ", insertBlocksRequest);
+      }
+      if (
+        insertBlockGroupsAndBlocksRequest.body.blockGroupContents.length > 0
+      ) {
+        console.log(
+          "Prepared Insert BlockGroups and Blocks Request: ",
+          insertBlockGroupsAndBlocksRequest
+        );
+      }
+      if (insertBlockGroupsRequest.body.blockPackContents.length > 0) {
+        console.log(
+          "Prepared Insert BlockGroups Request:",
+          insertBlockGroupsRequest
+        );
+      }
+      if (updateBlocksRequest.body.updatedBlocks.length > 0) {
+        console.log("Prepared Update Blocks Request: ", updateBlocksRequest);
+      }
+      if (moveBlockGroupsRequest.body.movedBlockGroups.length > 0) {
+        console.log(
+          "Prepared Move BlockGroups Request: ",
+          moveBlockGroupsRequest
+        );
+      }
+      if (deleteBlocksRequest.body.blockIds.length > 0) {
+        console.log("Prepared Delete Blocks Request: ", deleteBlocksRequest);
+      }
+      if (deleteBlockGroupsRequest.body.blockGroupIds.length > 0) {
+        console.log(
+          "Prepared Delete BlockGroups Request: ",
+          deleteBlockGroupsRequest
+        );
+      }
       setState("syncing");
       await Promise.all([
         insertBlocksRequest.body.insertedBlocks.length > 0 &&
@@ -679,6 +721,8 @@ export const BlockEditorProvider = ({
           insertBlockGroupsAndBlocksMutator.mutateAsync(
             insertBlockGroupsAndBlocksRequest
           ),
+        insertBlockGroupsRequest.body.blockPackContents.length > 0 &&
+          insertBlockGroupsMutator.mutateAsync(insertBlockGroupsRequest),
         updateBlocksRequest.body.updatedBlocks.length > 0 &&
           updateBlocksMutator.mutateAsync(updateBlocksRequest),
         moveBlockGroupsRequest.body.movedBlockGroups.length > 0 &&
@@ -751,37 +795,40 @@ export const BlockEditorProvider = ({
           const blockId = change.block.id as UUID;
           const movedPrevBlock = editor.getPrevBlock(blockId);
           const movedParentBlock = editor.getParentBlock(blockId);
-          eventQueueRef.current.push({
-            type: change.type,
-            payload: {
-              block: change.block,
-              source: change.source,
-              previous: {
-                block: change.prevBlock,
-                parent: movedParentBlock,
-                prev: movedPrevBlock,
+          beforeChangeEventMapRef.current.set(
+            change.block.id + ":" + change.block.type,
+            {
+              type: change.type,
+              payload: {
+                block: change.block,
+                source: change.source,
+                previous: {
+                  block: change.prevBlock,
+                  parent: movedParentBlock,
+                  prev: movedPrevBlock,
+                },
               },
-            },
-            timestamp: new Date(),
-          });
+              timestamp: new Date(),
+            }
+          );
         }
       }
     );
 
     const unSubscribeOnChange = editor.onChange(async (_, { getChanges }) => {
       const changes = getChanges();
-      // console.log("=========== Detected changed ===========");
+      console.log("=========== Detected changed ===========");
       for (const change of changes) {
-        // console.log("type: ", change.type);
-        // console.log("block: ", change.block);
-        // console.log("prev block: ", editor.getPrevBlock(change.block.id));
-        // console.log("next block: ", editor.getNextBlock(change.block.id));
-        // console.log("previous status: ", change.prevBlock);
-        // console.log(
-        //   "block group: ",
-        //   dsuRef.current.find(change.block.id as UUID)
-        // );
-        if (change.type === "move") continue; // handling move operations in onBeforeChange event listener
+        console.log("type: ", change.type);
+        console.log("block: ", change.block);
+        console.log("prev block: ", editor.getPrevBlock(change.block.id));
+        console.log("next block: ", editor.getNextBlock(change.block.id));
+        console.log("previous status: ", change.prevBlock);
+        console.log(
+          "block group: ",
+          dsuRef.current.find(change.block.id as UUID)
+        );
+
         eventQueueRef.current.push({
           type: change.type,
           payload: {
@@ -791,10 +838,16 @@ export const BlockEditorProvider = ({
               block: change.prevBlock,
             },
           },
-          timestamp: new Date(),
+          ...beforeChangeEventMapRef.current.get(
+            // place the event if it does exist in the beforeChangeEventMap
+            // which means it just been modified in onBeforeChange trigger
+            change.block.id + ":" + change.block.type
+          ),
+          timestamp: new Date(), // make sure the actual timestamp in the onChange trigger
         });
       }
-      // console.log("=========== End of storing changed ===========");
+      beforeChangeEventMapRef.current.clear();
+      console.log("=========== End of storing changed ===========");
 
       if (eventQueueRef.current.length > MinForcedMergedEvents) {
         sync();

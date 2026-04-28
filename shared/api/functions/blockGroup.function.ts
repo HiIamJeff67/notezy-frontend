@@ -1,5 +1,11 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import {
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  BatchInsertBlockGroupsByBlockPackIdsRequest,
+  BatchInsertBlockGroupsByBlockPackIdsRequestSchema,
+  BatchInsertBlockGroupsByBlockPackIdsResponse,
   type BatchMoveMyBlockGroupsByIdsRequest,
   BatchMoveMyBlockGroupsByIdsRequestSchema,
   type BatchMoveMyBlockGroupsByIdsResponse,
@@ -30,6 +36,9 @@ import {
   type InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
   type InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  InsertBlockGroupsByBlockPackIdRequest,
+  InsertBlockGroupsByBlockPackIdRequestSchema,
+  InsertBlockGroupsByBlockPackIdResponse,
   type InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
   type InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
@@ -47,6 +56,8 @@ import {
   type RestoreMyBlockGroupsByIdsResponse,
 } from "@shared/api/interfaces/blockGroup.interface";
 import {
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  BatchInsertBlockGroupsByBlockPackIds,
   BatchMoveMyBlockGroupsByIds,
   DeleteMyBlockGroupById,
   DeleteMyBlockGroupsByIds,
@@ -59,6 +70,7 @@ import {
   InsertBlockGroupAndItsBlocksByBlockPackId,
   InsertBlockGroupByBlockPackId,
   InsertBlockGroupsAndTheirBlocksByBlockPackId,
+  InsertBlockGroupsByBlockPackId,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
   MoveMyBlockGroupById,
   MoveMyBlockGroupsByIds,
@@ -348,6 +360,79 @@ export const mutationFnInsertBlockGroupByBlockPackId = async (
   }
 };
 
+export const mutationFnInsertBlockGroupsByBlockPackId = async (
+  request: InsertBlockGroupsByBlockPackIdRequest
+): Promise<InsertBlockGroupsByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      InsertBlockGroupsByBlockPackIdRequestSchema.parse(request);
+    const response = await InsertBlockGroupsByBlockPackId(validatedRequest);
+    if (response.refreshableTokens?.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken
+      );
+    }
+    if (response.refreshableTokens?.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
+export const mutationFnBatchInsertBlockGroupsByBlockPackIds = async (
+  request: BatchInsertBlockGroupsByBlockPackIdsRequest
+): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
+  try {
+    const validatedRequest =
+      BatchInsertBlockGroupsByBlockPackIdsRequestSchema.parse(request);
+    const response =
+      await BatchInsertBlockGroupsByBlockPackIds(validatedRequest);
+    if (response.refreshableTokens?.newAccessToken) {
+      LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+      LocalStorageManipulator.setItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken
+      );
+    }
+    if (response.refreshableTokens?.newCSRFToken) {
+      SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+      SessionStorageManipulator.setItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken
+      );
+    }
+    return response;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
+
 export const mutationFnInsertBlockGroupAndItsBlocksByBlockPackId = async (
   request: InsertBlockGroupAndItsBlocksByBlockPackIdRequest
 ): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> => {
@@ -421,6 +506,50 @@ export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId = async (
     throw error;
   }
 };
+
+export const mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
+  async (
+    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+  ): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
+    try {
+      const validatedRequest =
+        BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.parse(
+          request
+        );
+      const response =
+        await BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+          validatedRequest
+        );
+      if (response.refreshableTokens?.newAccessToken) {
+        LocalStorageManipulator.removeItem(LocalStorageKey.accessToken);
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.accessToken,
+          response.refreshableTokens?.newAccessToken
+        );
+      }
+      if (response.refreshableTokens?.newCSRFToken) {
+        SessionStorageManipulator.removeItem(SessionStorageKey.csrfToken);
+        SessionStorageManipulator.setItem(
+          SessionStorageKey.csrfToken,
+          response.refreshableTokens?.newCSRFToken
+        );
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      }
+      throw error;
+    }
+  };
 
 export const mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
   async (

@@ -236,6 +236,7 @@ export const InsertBlockGroupByBlockPackIdRequestSchema =
     }),
     body: z.object({
       blockPackId: z.uuidv4(),
+      blockGroupId: z.uuidv4().nullable(),
       prevBlockGroupId: z.uuidv4().nullable(),
     }),
   });
@@ -254,6 +255,76 @@ export const InsertBlockGroupByBlockPackIdResponseSchema =
 
 export type InsertBlockGroupByBlockPackIdResponse = z.infer<
   typeof InsertBlockGroupByBlockPackIdResponseSchema
+>;
+
+/* ============================== InsertBlockGroupsByBlockPackId ============================== */
+
+export const InsertBlockGroupsByBlockPackIdRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      blockPackId: z.uuidv4(),
+      blockPackContents: z.array(
+        z.object({
+          blockGroupId: z.uuidv4().nullable(),
+          prevBlockGroupId: z.uuidv4().nullable(),
+        })
+      ),
+    }),
+  });
+
+export type InsertBlockGroupsByBlockPackIdRequest = z.infer<
+  typeof InsertBlockGroupsByBlockPackIdRequestSchema
+>;
+
+export const InsertBlockGroupsByBlockPackIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      ids: z.array(z.uuidv4()),
+      createdAt: z.coerce.date(),
+    }),
+  });
+
+export type InsertBlockGroupsByBlockPackIdResponse = z.infer<
+  typeof InsertBlockGroupsByBlockPackIdResponseSchema
+>;
+
+/* ============================== BatchInsertBlockGroupsByBlockPackIds ============================== */
+
+export const BatchInsertBlockGroupsByBlockPackIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      blockPackContents: z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          blockGroupId: z.uuidv4().nullable(),
+          prevBlockGroupId: z.uuidv4().nullable(),
+        })
+      ),
+    }),
+  });
+
+export type BatchInsertBlockGroupsByBlockPackIdsRequest = z.infer<
+  typeof BatchInsertBlockGroupsByBlockPackIdsRequestSchema
+>;
+
+export const BatchInsertBlockGroupsByBlockPackIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      ids: z.array(z.uuidv4()),
+      createdAt: z.coerce.date(),
+    }),
+  });
+
+export type BatchInsertBlockGroupsByBlockPackIdsResponse = z.infer<
+  typeof BatchInsertBlockGroupsByBlockPackIdsResponseSchema
 >;
 
 /* ============================== InsertBlockGroupAndItsBlocksByBlockPackId ============================== */
@@ -330,6 +401,52 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema =
 export type InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse = z.infer<
   typeof InsertBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema
 >;
+
+/* ============================== BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds ============================== */
+
+export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z.object({
+      userAgent: z.string().min(1),
+      authorization: z.string().optional(),
+    }),
+    body: z.object({
+      blockGroupContents: z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          blockGroupId: z.uuidv4().nullable(),
+          prevBlockGroupId: z.uuidv4().nullable(),
+          arborizedEditableBlock: z.custom<PartialBlock>(),
+        })
+      ),
+    }),
+  });
+
+export type BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest = z.infer<
+  typeof BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema
+>;
+
+export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      isAllSuccess: z.boolean(),
+      failedIndexes: z.array(z.int32()),
+      successIndexes: z.array(z.int32()),
+      successBlockGroupAndBlockIds: z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          blockGroupId: z.uuidv4(),
+          blockIds: z.array(z.uuidv4()),
+        })
+      ),
+      createdAt: z.coerce.date(),
+    }),
+  });
+
+export type BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse =
+  z.infer<
+    typeof BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema
+  >;
 
 /* ============================== InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId ============================== */
 
