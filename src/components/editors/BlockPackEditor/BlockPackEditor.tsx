@@ -1,5 +1,3 @@
-"use client";
-
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useLoading } from "@/hooks/useLoading";
@@ -15,7 +13,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { Suspense, useEffect, useReducer, useState } from "react";
 import toast from "react-hot-toast";
 import BlockPackEditorContent from "./BlockPackEditorContent";

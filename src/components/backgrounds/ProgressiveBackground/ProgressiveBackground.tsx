@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 

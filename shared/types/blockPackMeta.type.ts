@@ -1,7 +1,7 @@
 import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export interface BlockPackMeta {
   id: UUID;

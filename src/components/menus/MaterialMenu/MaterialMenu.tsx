@@ -37,7 +37,7 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
               {shelfItemManager.isItemNodeEditing(materialNode.id) ? (
                 <SidebarMenuItem
                   key={materialId}
-                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
+                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
                 >
                   <input
                     ref={shelfItemManager.inputRef}

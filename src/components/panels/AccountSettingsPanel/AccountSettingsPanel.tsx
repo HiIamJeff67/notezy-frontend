@@ -1,5 +1,3 @@
-"use client";
-
 import { useSendAuthCode } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
 import {

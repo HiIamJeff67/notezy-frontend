@@ -130,7 +130,7 @@ const RootShelfMenuItem = ({
                   ref={node => {
                     drop(node);
                   }}
-                  className="w-full rounded-sm border-1 border-secondary hover:border-transparent 
+                  className="w-full rounded-sm border border-secondary hover:border-transparent 
                         whitespace-nowrap text-ellipsis overflow-hidden"
                   onClick={async () => {
                     shelfItemManager.toggleRootShelf(summary.root);

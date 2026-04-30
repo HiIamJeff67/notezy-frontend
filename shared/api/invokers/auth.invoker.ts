@@ -31,7 +31,7 @@ export async function Register(
   request: RegisterRequest
 ): Promise<RegisterResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
     {
       method: "POST",
       headers: {
@@ -58,7 +58,7 @@ export async function RegisterViaGoogle(
   request: RegisterViaGoogleRequest
 ): Promise<RegisterViaGoogleResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.registerViaGoogle}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.registerViaGoogle}`,
     {
       method: "POST",
       headers: {
@@ -84,7 +84,7 @@ export async function RegisterViaGoogle(
 
 export async function Login(request: LoginRequest): Promise<LoginResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
     {
       method: "POST",
       headers: {
@@ -111,7 +111,7 @@ export async function LoginViaGoogle(
   request: LoginViaGoogleRequest
 ): Promise<LoginViaGoogleResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.loginViaGoogle}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.loginViaGoogle}`,
     {
       method: "POST",
       headers: {
@@ -136,7 +136,7 @@ export async function LoginViaGoogle(
 
 export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
     {
       method: "POST",
       headers: {
@@ -165,7 +165,7 @@ export async function SendAuthCode(
   request: SendAuthCodeRequest
 ): Promise<SendAuthCodeResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.sendAuthCode}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.sendAuthCode}`,
     {
       method: "POST",
       headers: {
@@ -195,7 +195,7 @@ export async function ValidateEmail(
   request: ValidateEmailRequest
 ): Promise<ValidateEmailResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.validateEmail}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.validateEmail}`,
     {
       method: "PUT",
       headers: {
@@ -226,7 +226,7 @@ export async function ResetEmail(
   request: ResetEmailRequest
 ): Promise<ResetEmailResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetEmail}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetEmail}`,
     {
       method: "PUT",
       headers: {
@@ -257,7 +257,7 @@ export async function ForgetPassword(
   request: ForgetPasswordRequest
 ): Promise<ForgetPasswordResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.forgetPassword}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.forgetPassword}`,
     {
       method: "PUT",
       headers: {
@@ -287,7 +287,7 @@ export async function ResetMe(
   request: ResetMeRequest
 ): Promise<ResetMeResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetMe}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetMe}`,
     {
       method: "PUT",
       headers: {
@@ -318,7 +318,7 @@ export async function DeleteMe(
   request: DeleteMeRequest
 ): Promise<DeleteMeResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.deleteMe}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.deleteMe}`,
     {
       method: "DELETE",
       headers: {

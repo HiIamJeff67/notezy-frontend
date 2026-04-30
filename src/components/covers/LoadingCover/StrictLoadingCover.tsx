@@ -1,5 +1,3 @@
-"use client";
-
 import { useTheme } from "@/hooks/useTheme";
 
 interface StrictLoadingCoverProps {
@@ -13,7 +11,7 @@ const StrictLoadingCover = ({ condition }: StrictLoadingCoverProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray bg-opacity-60 backdrop-blur-sm cursor-wait"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-gray bg-opacity-60 backdrop-blur-sm cursor-wait"
       style={{ pointerEvents: "auto" }}
     >
       <div className="flex flex-col items-center justify-center">

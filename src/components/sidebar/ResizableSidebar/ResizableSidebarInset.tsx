@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
 import { useResizeSidebar } from "@/hooks";

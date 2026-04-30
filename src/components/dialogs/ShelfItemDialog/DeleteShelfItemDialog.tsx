@@ -1,5 +1,3 @@
-"use client";
-
 import React, { Suspense, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";

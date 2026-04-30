@@ -51,7 +51,8 @@
     "localdb",
     "refreshable",
     "infantilize",
-    "infantilized"
+    "infantilized",
+    "unpic"
   ],
   "ignorePaths": [
     "node_modules/**",

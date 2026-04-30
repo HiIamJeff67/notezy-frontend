@@ -1,5 +1,3 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateMe } from "@shared/api/invokers/user.invoker";
 import { FakeUser } from "@shared/constants";

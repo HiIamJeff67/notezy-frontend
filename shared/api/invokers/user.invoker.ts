@@ -15,7 +15,7 @@ export async function GetUserData(
   request: GetUserDataRequest
 ): Promise<GetUserDataResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getUserData}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getUserData}`,
     {
       method: "GET",
       headers: {
@@ -42,7 +42,7 @@ export async function GetUserData(
 
 export async function GetMe(request: GetMeRequest): Promise<GetMeResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getMe}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getMe}`,
     {
       method: "GET",
       headers: {
@@ -71,7 +71,7 @@ export async function UpdateMe(
   request: UpdateMeRequest
 ): Promise<UpdateMeResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.updateMe}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.updateMe}`,
     {
       method: "PUT",
       headers: {

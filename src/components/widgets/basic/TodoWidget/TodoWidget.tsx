@@ -10,7 +10,7 @@ import {
   TodoSetting,
 } from "@widgets/basic/TodoWidget/setting/todoSetting";
 import { WidgetProps } from "@widgets/widget";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { CheckIcon, GripVertical, LinkIcon, Plus, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { VerticalDNDable } from "@/components/commons/DNDable/VerticalDNDable";

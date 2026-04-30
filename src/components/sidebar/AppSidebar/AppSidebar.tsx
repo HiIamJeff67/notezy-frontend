@@ -1,5 +1,3 @@
-"use client";
-
 import { WebURLPathDictionary } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import {

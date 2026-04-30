@@ -1,6 +1,6 @@
 import { PartialBlock } from "@blocknote/core";
 import { MaterialType } from "@shared/enums";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { generateUUID } from "./uuidv4.type";
 
 /*

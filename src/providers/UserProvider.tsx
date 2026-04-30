@@ -1,5 +1,3 @@
-"use client";
-
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { ClientCommonExceptions } from "@shared/api/exceptions/clientCommon.exception";
 import { useLogout } from "@shared/api/hooks/auth.hook";

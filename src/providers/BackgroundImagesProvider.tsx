@@ -1,10 +1,8 @@
-"use client";
-
 import { IndexedDBManipulator } from "@shared/lib/indexedDBManipulator";
 import { ImageInfo, ImageThumbnailInfo } from "@shared/types/imageInfo.type";
 import { IndexedDBKey } from "@shared/types/indexedDB.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { createContext, useCallback, useEffect, useState } from "react";
 
 interface BackgroundImagesContextType {

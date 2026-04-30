@@ -53,7 +53,7 @@ export async function GetMyBlockGroupById(
 ): Promise<GetMyBlockGroupByIdResponse> {
   const { blockGroupId } = request.param;
   const params = new URLSearchParams({ blockGroupId: blockGroupId }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -87,7 +87,7 @@ export async function GetMyBlockGroupAndItsBlocksById(
   const params = new URLSearchParams({
     blockGroupId: blockGroupId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -123,7 +123,7 @@ export async function GetMyBlockGroupsAndTheirBlocksByIds(
     params.append("blockGroupIds", blockGroupId);
   });
   params.toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -157,7 +157,7 @@ export async function GetMyBlockGroupsAndTheirBlocksByBlockPackId(
   const params = new URLSearchParams({
     blockPackId: blockPackId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsAndTheirBlocksByBlockPackId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsAndTheirBlocksByBlockPackId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -191,7 +191,7 @@ export async function GetMyBlockGroupsByPrevBlockGroupId(
   const params = new URLSearchParams({
     prevBlockGroupId: prevBlockGroupId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsByPrevBlockGroupId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsByPrevBlockGroupId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -225,7 +225,7 @@ export async function GetAllMyBlockGroupsByBlockPackId(
   const params = new URLSearchParams({
     blockPackId: blockPackId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getAllMyBlockGroupsByBlockPackId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getAllMyBlockGroupsByBlockPackId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -256,7 +256,7 @@ export async function InsertBlockGroupByBlockPackId(
   request: InsertBlockGroupByBlockPackIdRequest
 ): Promise<InsertBlockGroupByBlockPackIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupByBlockPackId}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupByBlockPackId}`,
     {
       method: "POST",
       headers: {
@@ -288,7 +288,7 @@ export async function InsertBlockGroupsByBlockPackId(
   request: InsertBlockGroupsByBlockPackIdRequest
 ): Promise<InsertBlockGroupsByBlockPackIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackId}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackId}`,
     {
       method: "POST",
       headers: {
@@ -320,7 +320,7 @@ export async function BatchInsertBlockGroupsByBlockPackIds(
   request: BatchInsertBlockGroupsByBlockPackIdsRequest
 ): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
     {
       method: "POST",
       headers: {
@@ -352,7 +352,7 @@ export async function InsertBlockGroupAndItsBlocksByBlockPackId(
   request: InsertBlockGroupAndItsBlocksByBlockPackIdRequest
 ): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupAndItsBlocksByBlockPackId}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupAndItsBlocksByBlockPackId}`,
     {
       method: "POST",
       headers: {
@@ -384,7 +384,7 @@ export async function InsertBlockGroupsAndTheirBlocksByBlockPackId(
   request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest
 ): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackId}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackId}`,
     {
       method: "POST",
       headers: {
@@ -416,7 +416,7 @@ export async function BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
   request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
 ): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsAndTheirBlocksByBlockPackIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsAndTheirBlocksByBlockPackIds}`,
     {
       method: "POST",
       headers: {
@@ -449,7 +449,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
     request: InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest
   ): Promise<InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertSequentialBlockGroupsAndTheirBlocksByBlockPackId}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertSequentialBlockGroupsAndTheirBlocksByBlockPackId}`,
       {
         method: "POST",
         headers: {
@@ -483,7 +483,7 @@ export async function MoveMyBlockGroupById(
   request: MoveMyBlockGroupByIdRequest
 ): Promise<MoveMyBlockGroupByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupById}`,
     {
       method: "PUT",
       headers: {
@@ -515,7 +515,7 @@ export async function MoveMyBlockGroupsByIds(
   request: MoveMyBlockGroupsByIdsRequest
 ): Promise<MoveMyBlockGroupsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByIds}`,
     {
       method: "PUT",
       headers: {
@@ -547,7 +547,7 @@ export async function BatchMoveMyBlockGroupsByIds(
   request: BatchMoveMyBlockGroupsByIdsRequest
 ): Promise<BatchMoveMyBlockGroupsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
     {
       method: "PUT",
       headers: {
@@ -579,7 +579,7 @@ export async function RestoreMyBlockGroupById(
   request: RestoreMyBlockGroupByIdRequest
 ): Promise<RestoreMyBlockGroupByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupById}`,
     {
       method: "PATCH",
       headers: {
@@ -611,7 +611,7 @@ export async function RestoreMyBlockGroupsByIds(
   request: RestoreMyBlockGroupsByIdsRequest
 ): Promise<RestoreMyBlockGroupsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupsByIds}`,
     {
       method: "PATCH",
       headers: {
@@ -643,7 +643,7 @@ export async function DeleteMyBlockGroupById(
   request: DeleteMyBlockGroupByIdRequest
 ): Promise<DeleteMyBlockGroupByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupById}`,
     {
       method: "DELETE",
       headers: {
@@ -675,7 +675,7 @@ export async function DeleteMyBlockGroupsByIds(
   request: DeleteMyBlockGroupsByIdsRequest
 ): Promise<DeleteMyBlockGroupsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupsByIds}`,
     {
       method: "DELETE",
       headers: {

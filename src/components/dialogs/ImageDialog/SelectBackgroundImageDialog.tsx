@@ -1,4 +1,4 @@
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import Closeable from "@/components/commons/Closeable/Closeable";
@@ -137,6 +137,7 @@ const SelectBackgroundImageDialog = ({
                   onClose={() => backgroundImagesManager.remove([thumb.id])}
                   hasParent
                 >
+                  {/* leave the client images to use the original react img component */}
                   <img
                     src={thumb.thumbnailURL}
                     alt="Background thumbnail"

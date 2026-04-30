@@ -32,7 +32,7 @@ export async function GetMyRootShelfById(
   const params = new URLSearchParams({
     rootShelfId: rootShelfId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -61,7 +61,7 @@ export async function GetMyRootShelfById(
 export async function SearchRecentRootShelves(
   request: SearchRecentRootShelvesRequest
 ): Promise<SearchRecentRootShelvesResponse> {
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}`;
   if (request.param) {
     const { query, limit, offset } = request.param;
     const params = new URLSearchParams({
@@ -69,7 +69,7 @@ export async function SearchRecentRootShelves(
       ...(limit !== undefined && { limit: String(limit) }),
       ...(offset !== undefined && { offset: String(offset) }),
     }).toString();
-    url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}?${params}`;
+    url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}?${params}`;
   }
   const response = await fetch(url, {
     method: "GET",
@@ -98,7 +98,7 @@ export async function CreateRootShelf(
   request: CreateRootShelfRequest
 ): Promise<CreateRootShelfResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelf}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelf}`,
     {
       method: "POST",
       headers: {
@@ -127,7 +127,7 @@ export async function CreateRootShelves(
   request: CreateRootShelvesRequest
 ): Promise<CreateRootShelvesResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelves}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelves}`,
     {
       method: "POST",
       headers: {
@@ -157,7 +157,7 @@ export async function UpdateMyRootShelfById(
   request: UpdateMyRootShelfByIdRequest
 ): Promise<UpdateMyRootShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById}`,
     {
       method: "PUT",
       headers: {
@@ -187,7 +187,7 @@ export async function UpdateMyRootShelvesByIds(
   request: UpdateMyRootShelvesByIdsRequest
 ): Promise<UpdateMyRootShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelvesByIds}`,
     {
       method: "PUT",
       headers: {
@@ -217,7 +217,7 @@ export async function RestoreMyRootShelfById(
   request: RestoreMyRootShelfByIdRequest
 ): Promise<RestoreMyRootShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById}`,
     {
       method: "PATCH",
       headers: {
@@ -247,7 +247,7 @@ export async function RestoreMyRootShelvesByIds(
   request: RestoreMyRootShelvesByIdsRequest
 ): Promise<RestoreMyRootShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelvesByIds}`,
     {
       method: "PATCH",
       headers: {
@@ -277,7 +277,7 @@ export async function DeleteMyRootShelfById(
   request: DeleteMyRootShelfByIdRequest
 ): Promise<DeleteMyRootShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById}`,
     {
       method: "DELETE",
       headers: {
@@ -307,7 +307,7 @@ export async function DeleteMyRootShelvesByIds(
   request: DeleteMyRootShelvesByIdsRequest
 ): Promise<DeleteMyRootShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelvesByIds}`,
     {
       method: "DELETE",
       headers: {

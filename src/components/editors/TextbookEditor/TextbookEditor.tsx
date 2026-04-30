@@ -1,5 +1,3 @@
-"use client";
-
 import { Download, Save, Upload } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";

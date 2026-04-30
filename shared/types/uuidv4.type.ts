@@ -1,4 +1,4 @@
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 // Check if the UUID type is a version 4 uuid
 export function isValidUUID(value: string): value is UUID {

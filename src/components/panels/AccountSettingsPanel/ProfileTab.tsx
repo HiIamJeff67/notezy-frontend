@@ -6,6 +6,7 @@ import { AllCountries, AllUserGenders } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UserInfo, UserInfoSchema } from "@shared/types/user.type";
+import { Image } from "@unpic/react";
 import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
@@ -175,7 +176,7 @@ const ProfileTab = memo(() => {
         <div
           className="
           flex flex-col bg-muted gap-6 w-full h-full
-          overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
+          overflow-y-scroll [scrollbar-color:var(--muted-foreground)_var(--secondary)]!"
         >
           <div className="relative w-full group" style={backgroundStyle}>
             <ModifyImageHover
@@ -187,9 +188,11 @@ const ProfileTab = memo(() => {
                 className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer"
                 onClick={() => {}}
               >
-                <img
+                <Image
                   src={avatarSrc}
                   alt="Avatar"
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover bg-gray-100"
                   loading="lazy"
                 />

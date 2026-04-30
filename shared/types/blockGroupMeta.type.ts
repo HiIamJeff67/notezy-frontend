@@ -1,5 +1,5 @@
 import { PartialBlock } from "@blocknote/core";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export interface BlockGroupMeta {
   id: UUID;

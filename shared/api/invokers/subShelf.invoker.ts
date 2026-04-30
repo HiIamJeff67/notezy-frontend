@@ -42,7 +42,7 @@ export async function GetMySubShelfById(
   const params = new URLSearchParams({
     subShelfId: subShelfId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -74,7 +74,7 @@ export async function GetMySubShelvesByPrevSubShelfId(
   const params = new URLSearchParams({
     prevSubShelfId: prevSubShelfId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -106,7 +106,7 @@ export async function GetAllMySubShelvesByRootShelfId(
   const params = new URLSearchParams({
     rootShelfId: rootShelfId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -140,7 +140,7 @@ export async function GetMySubShelvesAndItemsByPrevSubShelfId(
   const params = new URLSearchParams({
     prevSubShelfId: prevSubShelfId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -171,7 +171,7 @@ export async function CreateSubShelfByRootShelfId(
   request: CreateSubShelfByRootShelfIdRequest
 ): Promise<CreateSubShelfByRootShelfIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId}`,
     {
       method: "POST",
       headers: {
@@ -201,7 +201,7 @@ export async function CreateSubShelvesByRootShelfIds(
   request: CreateSubShelvesByRootShelfIdsRequest
 ): Promise<CreateSubShelvesByRootShelfIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelvesByRootShelfIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelvesByRootShelfIds}`,
     {
       method: "POST",
       headers: {
@@ -231,7 +231,7 @@ export async function UpdateMySubShelfById(
   request: UpdateMySubShelfByIdRequest
 ): Promise<UpdateMySubShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById}`,
     {
       method: "PUT",
       headers: {
@@ -261,7 +261,7 @@ export async function UpdateMySubShelvesByIds(
   request: UpdateMySubShelvesByIdsRequest
 ): Promise<UpdateMySubShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelvesByIds}`,
     {
       method: "PUT",
       headers: {
@@ -291,7 +291,7 @@ export async function MoveMySubShelf(
   request: MoveMySubShelfRequest
 ): Promise<MoveMySubShelfResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf}`,
     {
       method: "PUT",
       headers: {
@@ -320,7 +320,7 @@ export async function MoveMySubShelves(
   request: MoveMySubShelvesRequest
 ): Promise<MoveMySubShelvesResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelves}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelves}`,
     {
       method: "PUT",
       headers: {
@@ -349,7 +349,7 @@ export async function BatchMoveMySubShelves(
   request: BatchMoveMySubShelvesRequest
 ): Promise<BatchMoveMySubShelvesResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
     {
       method: "PUT",
       headers: {
@@ -379,7 +379,7 @@ export async function RestoreMySubShelfById(
   request: RestoreMySubShelfByIdRequest
 ): Promise<RestoreMySubShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById}`,
     {
       method: "PATCH",
       headers: {
@@ -409,7 +409,7 @@ export async function RestoreMySubShelvesByIds(
   request: RestoreMySubShelvesByIdsRequest
 ): Promise<RestoreMySubShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelvesByIds}`,
     {
       method: "PATCH",
       headers: {
@@ -439,7 +439,7 @@ export async function DeleteMySubShelfById(
   request: DeleteMySubShelfByIdRequest
 ): Promise<DeleteMySubShelfByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById}`,
     {
       method: "DELETE",
       headers: {
@@ -469,7 +469,7 @@ export async function DeleteMySubShelvesByIds(
   request: DeleteMySubShelvesByIdsRequest
 ): Promise<DeleteMySubShelvesByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelvesByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelvesByIds}`,
     {
       method: "DELETE",
       headers: {

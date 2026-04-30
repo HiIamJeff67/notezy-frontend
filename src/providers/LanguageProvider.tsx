@@ -1,5 +1,3 @@
-"use client";
-
 import { LanguageKeyMap, Languages } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey, translations } from "@shared/translations/index";

@@ -13,7 +13,7 @@ export async function GetMyInfo(
   request: GetMyInfoRequest
 ): Promise<GetMyInfoResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.getMyInfo}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.getMyInfo}`,
     {
       method: "GET",
       headers: {
@@ -42,7 +42,7 @@ export async function UpdateMyInfo(
   request: UpdateMyInfoRequest
 ): Promise<UpdateMyInfoResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.updateMyInfo}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.updateMyInfo}`,
     {
       method: "PUT",
       headers: {

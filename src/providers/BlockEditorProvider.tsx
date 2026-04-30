@@ -1,5 +1,3 @@
-"use client";
-
 import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import {
   useDeleteMyBlocksByIds,
@@ -40,7 +38,7 @@ import {
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import {
   createContext,
   useCallback,

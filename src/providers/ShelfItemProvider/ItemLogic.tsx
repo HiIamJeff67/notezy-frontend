@@ -17,7 +17,7 @@ import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { RefObject, useCallback, useEffect, useState } from "react";
 import { getAuthorization } from "@/util/getAuthorization";
 

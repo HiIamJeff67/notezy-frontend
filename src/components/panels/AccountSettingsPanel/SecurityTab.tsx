@@ -1,5 +1,3 @@
-"use client";
-
 import { Dialog } from "@radix-ui/react-dialog";
 import { useValidateEmail } from "@shared/api/hooks/auth.hook";
 import { UserRole } from "@shared/enums";

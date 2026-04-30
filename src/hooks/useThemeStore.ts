@@ -1,5 +1,3 @@
-"use client";
-
 import { DefaultThemes } from "@shared/constants";
 import { Theme } from "@shared/types/theme.type";
 import { useCallback, useState } from "react";

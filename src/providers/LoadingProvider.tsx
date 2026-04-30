@@ -1,10 +1,8 @@
-"use client";
-
+import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import React, { createContext, useRef, useState } from "react";
 
 interface LoadingContextType {
   isStrictLoading: boolean;
-  setIsStrictLoading: (state: boolean) => void;
   isLaxLoading: boolean;
   setIsLaxLoading: (state: boolean) => void;
   startSyncTransactionLoading: <T>(fn: () => T) => T;
@@ -13,7 +11,7 @@ interface LoadingContextType {
     loadingTimeout?: number,
     errorTimeout?: number
   ) => Promise<T>;
-  isAnyLoading: boolean;
+  registerLoadingDependencies: (...getters: Array<() => boolean>) => () => void;
 }
 
 export const LoadingContext = createContext<LoadingContextType | undefined>(
@@ -25,22 +23,11 @@ export const LoadingProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isStrictLoading, _setIsStrictLoading] = useState<boolean>(false); // the strict loading states
-  const [isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
+  const [_isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
+
   const strictLoadingCounterRef = useRef<number>(0);
   const laxLoadingCounterRef = useRef<number>(0);
-
-  const setIsStrictLoading = (state: boolean) => {
-    if (state) {
-      _setIsStrictLoading(true);
-      strictLoadingCounterRef.current++;
-    } else {
-      strictLoadingCounterRef.current--;
-      if (strictLoadingCounterRef.current === 0) {
-        _setIsStrictLoading(false);
-      }
-    }
-  };
+  const loadingDependenciesRef = useRef<Set<() => boolean>>(new Set());
 
   const setIsLaxLoading = (state: boolean) => {
     if (state) {
@@ -55,7 +42,7 @@ export const LoadingProvider = ({
   };
 
   const startSyncTransactionLoading = <T,>(fn: () => T) => {
-    _setIsStrictLoading(true);
+    _setIsLaxLoading(true);
     strictLoadingCounterRef.current++;
     try {
       return fn();
@@ -65,7 +52,7 @@ export const LoadingProvider = ({
         strictLoadingCounterRef.current - 1
       );
       if (strictLoadingCounterRef.current === 0) {
-        _setIsStrictLoading(false);
+        _setIsLaxLoading(false);
       }
     }
   };
@@ -75,7 +62,7 @@ export const LoadingProvider = ({
     loadingTimeout: number = Infinity,
     errorTimeout: number = Infinity
   ) => {
-    _setIsStrictLoading(true);
+    _setIsLaxLoading(true);
     strictLoadingCounterRef.current++;
 
     let isLoadingActive: boolean = true;
@@ -90,7 +77,7 @@ export const LoadingProvider = ({
           strictLoadingCounterRef.current - 1
         );
         if (strictLoadingCounterRef.current === 0) {
-          _setIsStrictLoading(false);
+          _setIsLaxLoading(false);
         }
         if (loadingTimer) clearTimeout(loadingTimeout);
         if (errorTimeout) clearTimeout(errorTimeout);
@@ -138,14 +125,21 @@ export const LoadingProvider = ({
     }
   };
 
+  const registerLoadingDependencies = (...getters: Array<() => boolean>) => {
+    getters.forEach(getter => loadingDependenciesRef.current.add(getter));
+    return () => {
+      // return a clean up function
+      getters.forEach(getter => loadingDependenciesRef.current.delete(getter));
+    };
+  };
+
   const contextValue: LoadingContextType = {
-    isStrictLoading: isStrictLoading,
-    setIsStrictLoading: setIsStrictLoading,
-    isLaxLoading: isLaxLoading,
+    isStrictLoading: _isLaxLoading,
+    isLaxLoading: _isLaxLoading,
     setIsLaxLoading: setIsLaxLoading,
     startSyncTransactionLoading: startSyncTransactionLoading,
     startAsyncTransactionLoading: startAsyncTransactionLoading,
-    isAnyLoading: isStrictLoading || isLaxLoading,
+    registerLoadingDependencies: registerLoadingDependencies,
   };
 
   return (

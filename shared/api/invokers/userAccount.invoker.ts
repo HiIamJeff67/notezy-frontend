@@ -17,7 +17,7 @@ export async function GetMyAccount(
   request: GetMyAccountRequest
 ): Promise<GetMyAccountResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.getMyAccount}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.getMyAccount}`,
     {
       method: "GET",
       headers: {
@@ -43,7 +43,7 @@ export async function UpdateMyAccount(
   request: UpdateMyAccountRequest
 ): Promise<UpdateMyAccountResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.updatedMyAccount}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.updatedMyAccount}`,
     {
       method: "PUT",
       headers: {
@@ -71,7 +71,7 @@ export async function BindGoogleAccount(
   request: BindGoogleAccountRequest
 ): Promise<BindGoogleAccountResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.bindGoogleAccount}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.bindGoogleAccount}`,
     {
       method: "PUT",
       headers: {
@@ -99,7 +99,7 @@ export async function UnbindGoogleAccount(
   request: UnbindGoogleAccountRequest
 ): Promise<UnbindGoogleAccountResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.unbindGoogleAccount}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.unbindGoogleAccount}`,
     {
       method: "PUT",
       headers: {

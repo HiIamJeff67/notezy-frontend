@@ -1,5 +1,4 @@
-"use client";
-
+import { Image } from "@unpic/react";
 import { useState } from "react";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
@@ -90,10 +89,12 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
                     );
                   }}
                 >
-                  <img
+                  <Image
                     src={URL.createObjectURL(image)}
+                    width={160}
+                    height={160}
                     alt={image.name}
-                    className="object-cover w-16 h-16"
+                    className="object-cover w-full h-full"
                   />
                 </Closeable>
               </div>

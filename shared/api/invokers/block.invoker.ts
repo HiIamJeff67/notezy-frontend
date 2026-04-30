@@ -41,7 +41,7 @@ export async function GetMyBlockById(
 ): Promise<GetMyBlockByIdResponse> {
   const { blockId } = request.param;
   const params = new URLSearchParams({ blockId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById}?${params}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -73,7 +73,7 @@ export async function GetMyBlocksByIds(
   const { blockIds } = request.param;
   const params = new URLSearchParams();
   blockIds.forEach(id => params.append("blockIds", id));
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByIds}?${params.toString()}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByIds}?${params.toString()}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -104,7 +104,7 @@ export async function GetMyBlocksByBlockGroupId(
 ): Promise<GetMyBlocksByBlockGroupIdResponse> {
   const { blockGroupId } = request.param;
   const params = new URLSearchParams({ blockGroupId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupId}?${params}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -137,7 +137,7 @@ export async function GetMyBlocksByBlockGroupIds(
   const { blockGroupIds } = request.param;
   const params = new URLSearchParams();
   blockGroupIds.forEach(id => params.append("blockGroupIds", id));
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupIds}?${params.toString()}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupIds}?${params.toString()}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -169,7 +169,7 @@ export async function GetMyBlocksByBlockPackId(
 ): Promise<GetMyBlocksByBlockPackIdResponse> {
   const { blockPackId } = request.param;
   const params = new URLSearchParams({ blockPackId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId}?${params}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -199,7 +199,7 @@ export async function GetMyBlocksByBlockPackId(
 export async function GetAllMyBlocks(
   request: GetAllMyBlocksRequest
 ): Promise<GetAllMyBlocksResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -228,7 +228,7 @@ export async function GetAllMyBlocks(
 export async function InsertBlock(
   request: InsertBlockRequest
 ): Promise<InsertBlockResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlock}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlock}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -258,7 +258,7 @@ export async function InsertBlock(
 export async function InsertBlocks(
   request: InsertBlocksRequest
 ): Promise<InsertBlocksResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -288,7 +288,7 @@ export async function InsertBlocks(
 export async function UpdateMyBlockById(
   request: UpdateMyBlockByIdRequest
 ): Promise<UpdateMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlockById}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlockById}`;
 
   const response = await fetch(url, {
     method: "PUT",
@@ -319,7 +319,7 @@ export async function UpdateMyBlockById(
 export async function UpdateMyBlocksByIds(
   request: UpdateMyBlocksByIdsRequest
 ): Promise<UpdateMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlocksByIds}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlocksByIds}`;
 
   const response = await fetch(url, {
     method: "PUT",
@@ -350,7 +350,7 @@ export async function UpdateMyBlocksByIds(
 export async function RestoreMyBlockById(
   request: RestoreMyBlockByIdRequest
 ): Promise<RestoreMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlockById}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlockById}`;
 
   const response = await fetch(url, {
     method: "PATCH",
@@ -381,7 +381,7 @@ export async function RestoreMyBlockById(
 export async function RestoreMyBlocksByIds(
   request: RestoreMyBlocksByIdsRequest
 ): Promise<RestoreMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlocksByIds}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlocksByIds}`;
 
   const response = await fetch(url, {
     method: "PATCH",
@@ -412,7 +412,7 @@ export async function RestoreMyBlocksByIds(
 export async function DeleteMyBlockById(
   request: DeleteMyBlockByIdRequest
 ): Promise<DeleteMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlockById}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlockById}`;
 
   const response = await fetch(url, {
     method: "DELETE",
@@ -443,7 +443,7 @@ export async function DeleteMyBlockById(
 export async function DeleteMyBlocksByIds(
   request: DeleteMyBlocksByIdsRequest
 ): Promise<DeleteMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlocksByIds}`;
+  const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlocksByIds}`;
 
   const response = await fetch(url, {
     method: "DELETE",

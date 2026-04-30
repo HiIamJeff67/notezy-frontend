@@ -1,5 +1,3 @@
-"use client";
-
 import React, { createContext, useState } from "react";
 import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";

@@ -387,8 +387,12 @@ export const useInsertBlockGroupsByBlockPackId = () => {
     mutationFn: mutationFnInsertBlockGroupsByBlockPackId,
     onSuccess: (_, variables) => {
       const blockPackId = variables.body.blockPackId as UUID;
-      const prevBlockGroupIds = variables.body
-        .prevBlockGroupIds as (UUID | null)[];
+      const prevBlockGroupIds: (UUID | null)[] = [];
+      for (const blockPackContent of variables.body.blockPackContents) {
+        prevBlockGroupIds.push(
+          blockPackContent.prevBlockGroupId as UUID | null
+        );
+      }
       const targetKeys: QueryKey[] = [
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockGroup.manyByBlockPackId(blockPackId),

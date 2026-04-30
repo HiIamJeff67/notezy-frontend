@@ -1,5 +1,3 @@
-"use client";
-
 import { DefaultStandardTheme } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";

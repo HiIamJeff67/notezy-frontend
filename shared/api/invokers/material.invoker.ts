@@ -40,7 +40,7 @@ export async function GetMyMaterialById(
   const params = new URLSearchParams({
     materialId: materialId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -74,7 +74,7 @@ export async function GetMyMaterialAndItsParentById(
   const params = new URLSearchParams({
     materialId: materialId,
   }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialAndItsParentById}?${params}`;
+  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialAndItsParentById}?${params}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -110,7 +110,7 @@ export async function GetMyMaterialsByParentSubShelfId(
   }).toString();
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialsByParentSubShelfId}?${params}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialsByParentSubShelfId}?${params}`,
     {
       method: "GET",
       headers: {
@@ -146,7 +146,7 @@ export async function GetAllMyMaterialsByRootShelfId(
   }).toString();
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByRootShelfId}?${params}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByRootShelfId}?${params}`,
     {
       method: "GET",
       headers: {
@@ -177,7 +177,7 @@ export async function CreateTextbookMaterial(
   request: CreateTextbookMaterialRequest
 ): Promise<CreateTextbookMaterialResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
     {
       method: "POST",
       headers: {
@@ -209,7 +209,7 @@ export async function CreateNotebookMaterial(
   request: CreateNotebookMaterialRequest
 ): Promise<CreateNotebookMaterialResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createNotebookMaterial}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createNotebookMaterial}`,
     {
       method: "POST",
       headers: {
@@ -241,7 +241,7 @@ export async function UpdateMyMaterialById(
   request: UpdateMyMaterialByIdRequest
 ): Promise<UpdateMyMaterialByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyMaterialById}`,
     {
       method: "PUT",
       headers: {
@@ -279,7 +279,7 @@ export async function SaveMyNotebookMaterialById(
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyNotebookMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyNotebookMaterialById}`,
     {
       method: "PUT",
       headers: {
@@ -311,7 +311,7 @@ export async function MoveMyMaterialById(
   request: MoveMyMaterialByIdRequest
 ): Promise<MoveMyMaterialByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialById}`,
     {
       method: "PUT",
       headers: {
@@ -343,7 +343,7 @@ export async function MoveMyMaterialsByIds(
   request: MoveMyMaterialsByIdsRequest
 ): Promise<MoveMyMaterialsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialsByIds}`,
     {
       method: "PUT",
       headers: {
@@ -375,7 +375,7 @@ export async function RestoreMyMaterialById(
   request: RestoreMyMaterialByIdRequest
 ): Promise<RestoreMyMaterialByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialById}`,
     {
       method: "PATCH",
       headers: {
@@ -407,7 +407,7 @@ export async function RestoreMyMaterialsByIds(
   request: RestoreMyMaterialsByIdsRequest
 ): Promise<RestoreMyMaterialsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialsByIds}`,
     {
       method: "PATCH",
       headers: {
@@ -439,7 +439,7 @@ export async function DeleteMyMaterialById(
   request: DeleteMyMaterialByIdRequest
 ): Promise<DeleteMyMaterialByIdResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialById}`,
     {
       method: "DELETE",
       headers: {
@@ -471,7 +471,7 @@ export async function DeleteMyMaterialsByIds(
   request: DeleteMyMaterialsByIdsRequest
 ): Promise<DeleteMyMaterialsByIdsResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialsByIds}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialsByIds}`,
     {
       method: "DELETE",
       headers: {

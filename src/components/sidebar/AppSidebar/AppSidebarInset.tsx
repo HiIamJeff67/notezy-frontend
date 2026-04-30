@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import ResizableSidebarInset from "@/components/sidebar/ResizableSidebar/ResizableSidebarInset";
 

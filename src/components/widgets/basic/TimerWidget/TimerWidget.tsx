@@ -158,7 +158,7 @@ const TimerWidget = ({
       className={`
         flex flex-col justify-around items-center
         w-full h-full p-6
-        overflow-hidden bg-background border border-foreground/10 rounded-lg ${className}
+        overflow-hidden bg-background rounded-lg ${className}
       `}
       style={style}
     >

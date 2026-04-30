@@ -1,5 +1,3 @@
-"use client";
-
 import { PartialBlock } from "@blocknote/core";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";

@@ -1,5 +1,3 @@
-"use client";
-
 import { IndexedDBItem, IndexedDBKey } from "@shared/types/indexedDB.type";
 import {
   clear,

@@ -1,6 +1,6 @@
 import { getQueryClient } from "@shared/api/queryClient";
 import { QueryClient } from "@tanstack/react-query";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { queryFnGetMyRootShelfById } from "../functions/rootShelf.function";
 import { GetMyRootShelfByIdRequest } from "../interfaces/rootShelf.interface";
 import { PrefetchQueryDefaultOptions } from "../queryHookOptions";

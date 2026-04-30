@@ -13,7 +13,7 @@ import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export const prefetchGetMyMaterialById = (initialQueryClient?: QueryClient) => {
   const queryClient = initialQueryClient ?? getQueryClient();
