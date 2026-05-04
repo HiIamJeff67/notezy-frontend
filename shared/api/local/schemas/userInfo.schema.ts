@@ -5,7 +5,10 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const userInfo = sqliteTable("UserInfoTable", {
   publicId: text("public_id")
     .primaryKey()
-    .references(() => user.publicId),
+    .references(() => user.publicId, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
   avatarURL: text("avatar_url"),
   header: text("header"),
   introduction: text("introduction"),

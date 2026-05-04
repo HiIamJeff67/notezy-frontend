@@ -1,9 +1,12 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { ClientCommonExceptions } from "@shared/api/exceptions/clientCommon.exception";
 import { useLogout } from "@shared/api/hooks/auth.hook";
-import { useGetMe, useGetUserData } from "@shared/api/hooks/user.hook";
-import { useGetMyAccount } from "@shared/api/hooks/userAccount.hook";
-import { useGetMyInfo } from "@shared/api/hooks/userInfo.hook";
+import {
+  queryFnGetMe,
+  queryFnGetUserData,
+} from "@shared/api/invokers/user.invoker";
+import { queryFnGetMyAccount } from "@shared/api/invokers/userAccount.invoker";
+import { queryFnGetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
@@ -53,10 +56,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
 
-  const getUserDataQuerier = useGetUserData();
-  const getUserQuerier = useGetMe();
-  const getUserInfoQuerier = useGetMyInfo();
-  const getUserAccountQuerier = useGetMyAccount();
   const logoutMutator = useLogout();
 
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -92,10 +91,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (!isOnline)
             throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
-          if (accessToken === null) throw new Error(); // throw empty error to enter catch scope
 
           const userAgent = navigator.userAgent;
-          const response = await getUserDataQuerier.queryAsync({
+          const response = await queryFnGetUserData({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -128,9 +126,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
               router.push(WebURLPathDictionary.auth.login);
             }
           }
+          return;
         }
       }),
-    [router, loadingManager, getUserDataQuerier]
+    [router, loadingManager]
   );
 
   /**
@@ -153,10 +152,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (!isOnline)
             throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
-          if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
-          const response = await getUserQuerier.queryAsync({
+          const response = await queryFnGetMe({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -188,9 +186,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
               router.push(WebURLPathDictionary.auth.login);
             }
           }
+          return;
         }
       }),
-    [router, loadingManager, getUserQuerier]
+    [router, loadingManager]
   );
 
   const updateUser = (fields: Partial<User>): boolean => {
@@ -206,10 +205,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (!isOnline)
             throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
-          if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
-          const response = await getUserInfoQuerier.queryAsync({
+          const response = await queryFnGetMyInfo({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -241,9 +239,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
               router.push(WebURLPathDictionary.auth.login);
             }
           }
+          return;
         }
       }),
-    [router, loadingManager, getUserInfoQuerier]
+    [router, loadingManager]
   );
 
   const updateUserInfo = (fields: Partial<UserInfo>): boolean => {
@@ -259,10 +258,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (!isOnline)
             throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
-          if (accessToken === null) throw new Error("");
 
           const userAgent = navigator.userAgent;
-          const response = await getUserAccountQuerier.queryAsync({
+          const response = await queryFnGetMyAccount({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -294,9 +292,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
               router.push(WebURLPathDictionary.auth.login);
             }
           }
+          return;
         }
       }),
-    [router, loadingManager, getUserAccountQuerier]
+    [router, loadingManager]
   );
 
   const updateUserAccount = (fields: Partial<UserAccount>): boolean => {

@@ -6,7 +6,7 @@ export interface BlockGroupMeta {
   blockPackId: UUID;
   prevBlockGroupId: UUID | null;
   syncBlockGroupId: UUID | null;
-  size: bigint;
+  size: number;
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
@@ -25,7 +25,7 @@ export const getDefaultBlockGroupMeta = (
     blockPackId: blockPackId,
     prevBlockGroupId: prevBlockGroupId,
     syncBlockGroupId: syncBlockGroupId,
-    size: BigInt(0),
+    size: 0,
     deletedAt: null,
     updatedAt: new Date(),
     createdAt: new Date(),

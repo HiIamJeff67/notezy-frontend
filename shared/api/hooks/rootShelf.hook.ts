@@ -1,5 +1,6 @@
 import type { UUID } from "node:crypto";
 import { useApolloClient } from "@apollo/client/react";
+import type { GetMyRootShelfByIdRequest } from "@shared/api/interfaces/rootShelf.interface";
 import {
   mutationFnCreateRootShelf,
   mutationFnCreateRootShelves,
@@ -10,17 +11,14 @@ import {
   mutationFnUpdateMyRootShelfById,
   mutationFnUpdateMyRootShelvesByIds,
   queryFnGetMyRootShelfById,
-} from "@shared/api/functions/rootShelf.function";
-import type {
-  GetMyRootShelfByIdRequest,
-  GetMyRootShelfByIdResponse,
-} from "@shared/api/interfaces/rootShelf.interface";
+} from "@shared/api/invokers/rootShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type QueryKey,
   type UseQueryOptions,
@@ -29,16 +27,29 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMyRootShelfById = (
-  hookRequest?: GetMyRootShelfByIdRequest,
+  hookRequest: GetMyRootShelfByIdRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.rootShelf.oneById(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyRootShelfById(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyRootShelfById(
+        hookRequest as GetMyRootShelfByIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -46,21 +57,8 @@ export const useGetMyRootShelfById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyRootShelfByIdRequest
-  ): Promise<GetMyRootShelfByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.rootShelf.oneById(
-        callbackRequest.param.rootShelfId as UUID
-      ),
-      queryFn: async () => await queryFnGetMyRootShelfById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_ROOT_SHELF_BY_ID_HOOK" as const,
   };
 };
@@ -70,7 +68,17 @@ export const useCreateRootShelf = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateRootShelf,
-    onSuccess: (response, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
@@ -81,7 +89,7 @@ export const useCreateRootShelf = () => {
               node: {
                 __typename: "PrivateRootShelf",
                 id: response.data.id,
-                name: variables.body.name,
+                name: request.body.name,
                 subShelfCount: 0,
                 itemCount: 0,
                 lastAnalyzedAt: response.data.lastAnalyzedAt,
@@ -119,19 +127,29 @@ export const useCreateRootShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateRootShelves,
-    onSuccess: (response, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
       apolloClient.cache.modify({
         fields: {
           searchRootShelves(existingSearchRootShelves, { readField }) {
             if (!existingSearchRootShelves) return existingSearchRootShelves;
 
             const newEdges = [];
-            // since the response and the variables(request body) are aligned in the backend,
+            // since the response and the request(request body) are aligned in the backend,
             // we can just try to iterate through them
             for (
               let i = 0;
               i < response.data.ids.length &&
-              i < variables.body.createdRootShelves.length;
+              i < request.body.createdRootShelves.length;
               i++
             ) {
               const newEdge = {
@@ -139,7 +157,7 @@ export const useCreateRootShelves = () => {
                 node: {
                   __typename: "PrivateRootShelf",
                   id: response.data.ids[i],
-                  name: variables.body.createdRootShelves[i].name,
+                  name: request.body.createdRootShelves[i].name,
                   subShelfCount: 0,
                   itemCount: 0,
                   lastAnalyzedAt: response.data.lastAnalyzedAt,
@@ -180,8 +198,18 @@ export const useUpdateMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyRootShelfById,
-    onSuccess: (response, variables) => {
-      const rootShelfId = variables.body.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const rootShelfId = request.body.rootShelfId as UUID;
       queryClient.invalidateQueries({
         queryKey: queryKeys.rootShelf.oneById(rootShelfId),
       });
@@ -191,8 +219,8 @@ export const useUpdateMyRootShelfById = () => {
           id: rootShelfId,
         }),
         fields: {
-          ...(variables.body.values.name && {
-            name: () => variables.body.values.name,
+          ...(request.body.values.name && {
+            name: () => request.body.values.name,
           }),
         },
       });
@@ -213,8 +241,18 @@ export const useUpdateMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyRootShelvesByIds,
-    onSuccess: (_, variables) => {
-      for (const updatedRootShelf of variables.body.updatedRootShelves) {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      for (const updatedRootShelf of request.body.updatedRootShelves) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.rootShelf.oneById(
             updatedRootShelf.rootShelfId as UUID
@@ -250,8 +288,18 @@ export const useRestoreMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyRootShelfById,
-    onSuccess: (response, variables) => {
-      const rootShelfId = variables.body.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const rootShelfId = request.body.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -319,8 +367,18 @@ export const useRestoreMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyRootShelvesByIds,
-    onSuccess: (response, variables) => {
-      const rootShelfIds = (variables.body.rootShelfIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const rootShelfIds = (request.body.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [
@@ -393,8 +451,18 @@ export const useDeleteMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyRootShelfById,
-    onSuccess: (_, variables) => {
-      const rootShelfId = variables.body.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const rootShelfId = request.body.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByRootShelfId(rootShelfId),
@@ -439,8 +507,18 @@ export const useDeleteMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyRootShelvesByIds,
-    onSuccess: (_, variables) => {
-      const rootShelfIds = (variables.body.rootShelfIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const rootShelfIds = (request.body.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [

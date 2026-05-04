@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6919c7cb-8222-4089-bd40-ddfb81ceba13",
+  "id": "167748ba-fcf7-4c73-a3bb-f1fba154b85a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "BlockTable": {
@@ -65,7 +65,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.694Z\"'"
+          "default": "'\"2026-05-01T12:30:58.245Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -73,7 +73,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.694Z\"'"
+          "default": "'\"2026-05-01T12:30:58.245Z\"'"
         }
       },
       "indexes": {},
@@ -89,6 +89,13 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_public_id": {
+          "name": "owner_public_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -134,7 +141,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.700Z\"'"
+          "default": "'\"2026-05-01T12:30:58.250Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -142,17 +149,34 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.700Z\"'"
+          "default": "'\"2026-05-01T12:30:58.250Z\"'"
         }
       },
       "indexes": {
         "block_group_unique_idx_block_pack_id_prev_block_group_id": {
           "name": "block_group_unique_idx_block_pack_id_prev_block_group_id",
-          "columns": ["block_pack_id", "prev_block_group_id"],
+          "columns": [
+            "block_pack_id",
+            "prev_block_group_id"
+          ],
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "BlockGroupTable_owner_public_id_UserTable_public_id_fk": {
+          "name": "BlockGroupTable_owner_public_id_UserTable_public_id_fk",
+          "tableFrom": "BlockGroupTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "owner_public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -217,7 +241,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.706Z\"'"
+          "default": "'\"2026-05-01T12:30:58.254Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -225,13 +249,16 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.706Z\"'"
+          "default": "'\"2026-05-01T12:30:58.254Z\"'"
         }
       },
       "indexes": {
         "block_pack_unique_idx_parent_sub_shelf_id_name": {
           "name": "block_pack_unique_idx_parent_sub_shelf_id_name",
-          "columns": ["parent_sub_shelf_id", "name"],
+          "columns": [
+            "parent_sub_shelf_id",
+            "name"
+          ],
           "isUnique": true
         }
       },
@@ -247,6 +274,13 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_public_id": {
+          "name": "owner_public_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -280,7 +314,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-01T12:30:58.256Z\"'"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -288,7 +322,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-01T12:30:58.256Z\"'"
         },
         "updated_at": {
           "name": "updated_at",
@@ -296,7 +330,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-01T12:30:58.256Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -304,17 +338,33 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-01T12:30:58.256Z\"'"
         }
       },
       "indexes": {
         "root_shelf_unique_idx_owner_id_name": {
           "name": "root_shelf_unique_idx_owner_id_name",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "RootShelfTable_owner_public_id_UserTable_public_id_fk": {
+          "name": "RootShelfTable_owner_public_id_UserTable_public_id_fk",
+          "tableFrom": "RootShelfTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "owner_public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -372,7 +422,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.718Z\"'"
+          "default": "'\"2026-05-01T12:30:58.258Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -380,13 +430,17 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.718Z\"'"
+          "default": "'\"2026-05-01T12:30:58.258Z\"'"
         }
       },
       "indexes": {
         "sub_shelf_unique_idx_name_root_shelf_id_path": {
           "name": "sub_shelf_unique_idx_name_root_shelf_id_path",
-          "columns": ["name", "root_shelf_id", "path"],
+          "columns": [
+            "name",
+            "root_shelf_id",
+            "path"
+          ],
           "isUnique": true
         }
       },
@@ -454,13 +508,17 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.724Z\"'"
+          "default": "'\"2026-05-01T12:30:58.260Z\"'"
         }
       },
       "indexes": {
         "transaction_unique_idx_entity_id_entity_type_action_type": {
           "name": "transaction_unique_idx_entity_id_entity_type_action_type",
-          "columns": ["entity_id", "entity_type", "action_type"],
+          "columns": [
+            "entity_id",
+            "entity_type",
+            "action_type"
+          ],
           "isUnique": true
         }
       },
@@ -468,9 +526,470 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "UserTable": {
+      "name": "UserTable",
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Guest'"
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Free'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Online'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.249Z\"'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.249Z\"'"
+        }
+      },
+      "indexes": {
+        "UserTable_name_unique": {
+          "name": "UserTable_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "UserTable_email_unique": {
+          "name": "UserTable_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "UserAccountTable": {
+      "name": "UserAccountTable",
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "google_credential": {
+          "name": "google_credential",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "discord_credential": {
+          "name": "discord_credential",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "root_shelf_count": {
+          "name": "root_shelf_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "block_pack_count": {
+          "name": "block_pack_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "block_count": {
+          "name": "block_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "material_count": {
+          "name": "material_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "workflow_count": {
+          "name": "workflow_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "additional_items_count": {
+          "name": "additional_items_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.263Z\"'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "UserAccountTable_public_id_UserTable_public_id_fk": {
+          "name": "UserAccountTable_public_id_UserTable_public_id_fk",
+          "tableFrom": "UserAccountTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "UserInfoTable": {
+      "name": "UserInfoTable",
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "header": {
+          "name": "header",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "introduction": {
+          "name": "introduction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PreferNotToSay'"
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.267Z\"'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.267Z\"'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "UserInfoTable_public_id_UserTable_public_id_fk": {
+          "name": "UserInfoTable_public_id_UserTable_public_id_fk",
+          "tableFrom": "UserInfoTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "UserSettingTable": {
+      "name": "UserSettingTable",
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'English'"
+        },
+        "general_setting_code": {
+          "name": "general_setting_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "privacy_setting_code": {
+          "name": "privacy_setting_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.268Z\"'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "UserSettingTable_public_id_UserTable_public_id_fk": {
+          "name": "UserSettingTable_public_id_UserTable_public_id_fk",
+          "tableFrom": "UserSettingTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
-  "views": {},
+  "views": {
+    "UserDataView": {
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Guest'"
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Free'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Online'"
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'English'"
+        },
+        "general_setting_code": {
+          "name": "general_setting_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "privacy_setting_code": {
+          "name": "privacy_setting_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.249Z\"'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-01T12:30:58.249Z\"'"
+        }
+      },
+      "name": "UserDataView",
+      "isExisting": false,
+      "definition": "select \"UserTable\".\"public_id\", \"UserTable\".\"name\", \"UserTable\".\"display_name\", \"UserTable\".\"email\", \"UserTable\".\"role\", \"UserTable\".\"plan\", \"UserTable\".\"status\", \"UserInfoTable\".\"avatar_url\", \"UserSettingTable\".\"language\", \"UserSettingTable\".\"general_setting_code\", \"UserSettingTable\".\"privacy_setting_code\", \"UserTable\".\"created_at\", \"UserTable\".\"updated_at\" from \"UserTable\" left join \"UserInfoTable\" on \"UserInfoTable\".\"public_id\" = \"UserTable\".\"public_id\" left join \"UserSettingTable\" on \"UserSettingTable\".\"public_id\" = \"UserTable\".\"public_id\" left join \"UserAccountTable\" on \"UserAccountTable\".\"public_id\" = \"UserTable\".\"public_id\""
+    }
+  },
   "enums": {},
   "_meta": {
     "schemas": {},

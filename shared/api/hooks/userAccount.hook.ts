@@ -1,35 +1,45 @@
+import type { GetMyAccountRequest } from "@shared/api/interfaces/userAccount.interface";
 import {
   mutationFnBindGoogleAccount,
   mutationFnUnbindGoogleAccount,
   mutationFnUpdateMyAccount,
   queryFnGetMyAccount,
-} from "@shared/api/functions/userAccount.function";
-import type {
-  GetMyAccountRequest,
-  GetMyAccountResponse,
-} from "@shared/api/interfaces/userAccount.interface";
+} from "@shared/api/invokers/userAccount.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  type FetchQueryOptions,
   type UseQueryOptions,
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
 
 export const useGetMyAccount = (
-  hookRequest?: GetMyAccountRequest,
+  hookRequest: GetMyAccountRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.userAccount.my(),
-    queryFn: async () => await queryFnGetMyAccount(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyAccount(
+        hookRequest as GetMyAccountRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -37,22 +47,8 @@ export const useGetMyAccount = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyAccountRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetMyAccountResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.userAccount.my(),
-      queryFn: async () => await queryFnGetMyAccount(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetMyAccountResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_ACCOUNT_HOOK" as const,
   };
 };
@@ -62,7 +58,17 @@ export const useUpdateMyAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
     onError: error => {
@@ -81,7 +87,17 @@ export const useBindGoogleAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBindGoogleAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
     onError: error => {
@@ -100,7 +116,17 @@ export const useUnbindGoogleAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUnbindGoogleAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
     onError: error => {

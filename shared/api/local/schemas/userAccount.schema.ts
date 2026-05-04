@@ -5,7 +5,10 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const userAccount = sqliteTable("UserAccountTable", {
   publicId: text("public_id")
     .primaryKey()
-    .references(() => user.publicId),
+    .references(() => user.publicId, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
   countryCode: text("country_code"),
   phoneNumber: text("phone_number"),
   googleCredential: text("google_credential"),

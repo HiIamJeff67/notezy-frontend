@@ -1,20 +1,19 @@
+import type {
+  GetMeRequest,
+  GetUserDataRequest,
+} from "@shared/api/interfaces/user.interface";
 import {
   mutationFnUpdateMe,
   queryFnGetMe,
   queryFnGetUserData,
-} from "@shared/api/functions/user.function";
-import type {
-  GetMeRequest,
-  GetMeResponse,
-  GetUserDataRequest,
-  GetUserDataResponse,
-} from "@shared/api/interfaces/user.interface";
+} from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type UseQueryOptions,
   useMutation,
@@ -22,14 +21,27 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetUserData = (
-  hookRequest?: GetUserDataRequest,
+  hookRequest: GetUserDataRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.user.data(),
-    queryFn: async () => await queryFnGetUserData(hookRequest), // use the request from the param of useGetUserData()
+    queryFn: async () => {
+      const response = await queryFnGetUserData(
+        hookRequest as GetUserDataRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -37,32 +49,32 @@ export const useGetUserData = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetUserDataRequest
-  ): Promise<GetUserDataResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.user.data(),
-      queryFn: async () => await queryFnGetUserData(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_USER_DATA_HOOK" as const,
   };
 };
 
 export const useGetMe = (
-  hookRequest?: GetMeRequest,
+  hookRequest: GetMeRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.user.me(),
-    queryFn: async () => await queryFnGetMe(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMe(hookRequest as GetMeRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime, // sync with the access token expired duration
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -70,19 +82,8 @@ export const useGetMe = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMeRequest
-  ): Promise<GetMeResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.user.me(),
-      queryFn: async () => await queryFnGetMe(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_ME_HOOK" as const,
   };
 };
@@ -92,7 +93,17 @@ export const useUpdateMe = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMe,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
     onError: error => {

@@ -26,7 +26,6 @@ import { Route as RootBlockPackEditorBlockPackIdRouteImport } from './routes/_ro
 import { Route as AuthRedirectXRouteImport } from './routes/_auth.redirect.x'
 import { Route as AuthRedirectGoogleRouteImport } from './routes/_auth.redirect.google'
 import { Route as AuthRedirectErrorRouteImport } from './routes/_auth.redirect.error'
-import { Route as RootBlockPackEditorBlockPackIdIndexRouteImport } from './routes/_root.block-pack-editor.$blockPackId.index'
 import { Route as RootMaterialEditorTextbookMaterialIdRouteImport } from './routes/_root.material-editor.textbook.$materialId'
 import { Route as RootMaterialEditorNotebookMaterialIdRouteImport } from './routes/_root.material-editor.notebook.$materialId'
 
@@ -114,12 +113,6 @@ const AuthRedirectErrorRoute = AuthRedirectErrorRouteImport.update({
   path: '/redirect/error',
   getParentRoute: () => AuthRoute,
 } as any)
-const RootBlockPackEditorBlockPackIdIndexRoute =
-  RootBlockPackEditorBlockPackIdIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => RootBlockPackEditorBlockPackIdRoute,
-  } as any)
 const RootMaterialEditorTextbookMaterialIdRoute =
   RootMaterialEditorTextbookMaterialIdRouteImport.update({
     id: '/textbook/$materialId',
@@ -146,12 +139,11 @@ export interface FileRoutesByFullPath {
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
-  '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRouteWithChildren
+  '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/dashboard/': typeof RootDashboardIndexRoute
   '/material-editor/': typeof RootMaterialEditorIndexRoute
   '/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
   '/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
-  '/block-pack-editor/$blockPackId/': typeof RootBlockPackEditorBlockPackIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -164,11 +156,11 @@ export interface FileRoutesByTo {
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
+  '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/dashboard': typeof RootDashboardIndexRoute
   '/material-editor': typeof RootMaterialEditorIndexRoute
   '/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
   '/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
-  '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,12 +178,11 @@ export interface FileRoutesById {
   '/_auth/redirect/error': typeof AuthRedirectErrorRoute
   '/_auth/redirect/google': typeof AuthRedirectGoogleRoute
   '/_auth/redirect/x': typeof AuthRedirectXRoute
-  '/_root/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRouteWithChildren
+  '/_root/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/_root/dashboard/': typeof RootDashboardIndexRoute
   '/_root/material-editor/': typeof RootMaterialEditorIndexRoute
   '/_root/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
   '/_root/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
-  '/_root/block-pack-editor/$blockPackId/': typeof RootBlockPackEditorBlockPackIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -213,7 +204,6 @@ export interface FileRouteTypes {
     | '/material-editor/'
     | '/material-editor/notebook/$materialId'
     | '/material-editor/textbook/$materialId'
-    | '/block-pack-editor/$blockPackId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -226,11 +216,11 @@ export interface FileRouteTypes {
     | '/redirect/error'
     | '/redirect/google'
     | '/redirect/x'
+    | '/block-pack-editor/$blockPackId'
     | '/dashboard'
     | '/material-editor'
     | '/material-editor/notebook/$materialId'
     | '/material-editor/textbook/$materialId'
-    | '/block-pack-editor/$blockPackId'
   id:
     | '__root__'
     | '/'
@@ -252,7 +242,6 @@ export interface FileRouteTypes {
     | '/_root/material-editor/'
     | '/_root/material-editor/notebook/$materialId'
     | '/_root/material-editor/textbook/$materialId'
-    | '/_root/block-pack-editor/$blockPackId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -382,13 +371,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRedirectErrorRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_root/block-pack-editor/$blockPackId/': {
-      id: '/_root/block-pack-editor/$blockPackId/'
-      path: '/'
-      fullPath: '/block-pack-editor/$blockPackId/'
-      preLoaderRoute: typeof RootBlockPackEditorBlockPackIdIndexRouteImport
-      parentRoute: typeof RootBlockPackEditorBlockPackIdRoute
-    }
     '/_root/material-editor/textbook/$materialId': {
       id: '/_root/material-editor/textbook/$materialId'
       path: '/textbook/$materialId'
@@ -455,28 +437,13 @@ const RootMaterialEditorRouteChildren: RootMaterialEditorRouteChildren = {
 const RootMaterialEditorRouteWithChildren =
   RootMaterialEditorRoute._addFileChildren(RootMaterialEditorRouteChildren)
 
-interface RootBlockPackEditorBlockPackIdRouteChildren {
-  RootBlockPackEditorBlockPackIdIndexRoute: typeof RootBlockPackEditorBlockPackIdIndexRoute
-}
-
-const RootBlockPackEditorBlockPackIdRouteChildren: RootBlockPackEditorBlockPackIdRouteChildren =
-  {
-    RootBlockPackEditorBlockPackIdIndexRoute:
-      RootBlockPackEditorBlockPackIdIndexRoute,
-  }
-
-const RootBlockPackEditorBlockPackIdRouteWithChildren =
-  RootBlockPackEditorBlockPackIdRoute._addFileChildren(
-    RootBlockPackEditorBlockPackIdRouteChildren,
-  )
-
 interface RootRouteChildren {
   RootDashboardRoute: typeof RootDashboardRouteWithChildren
   RootIntroductionRoute: typeof RootIntroductionRoute
   RootMaterialEditorRoute: typeof RootMaterialEditorRouteWithChildren
   RootPlaygroundRoute: typeof RootPlaygroundRoute
   RootPrivacyPolicyRoute: typeof RootPrivacyPolicyRoute
-  RootBlockPackEditorBlockPackIdRoute: typeof RootBlockPackEditorBlockPackIdRouteWithChildren
+  RootBlockPackEditorBlockPackIdRoute: typeof RootBlockPackEditorBlockPackIdRoute
 }
 
 const RootRouteChildren: RootRouteChildren = {
@@ -485,8 +452,7 @@ const RootRouteChildren: RootRouteChildren = {
   RootMaterialEditorRoute: RootMaterialEditorRouteWithChildren,
   RootPlaygroundRoute: RootPlaygroundRoute,
   RootPrivacyPolicyRoute: RootPrivacyPolicyRoute,
-  RootBlockPackEditorBlockPackIdRoute:
-    RootBlockPackEditorBlockPackIdRouteWithChildren,
+  RootBlockPackEditorBlockPackIdRoute: RootBlockPackEditorBlockPackIdRoute,
 }
 
 const RootRouteWithChildren = RootRoute._addFileChildren(RootRouteChildren)

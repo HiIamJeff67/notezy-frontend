@@ -1,124 +1,115 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  BindGoogleAccountRequest,
-  BindGoogleAccountResponse,
-  GetMyAccountRequest,
-  GetMyAccountResponse,
-  UnbindGoogleAccountRequest,
-  UnbindGoogleAccountResponse,
-  UpdateMyAccountRequest,
-  UpdateMyAccountResponse,
+  BindGoogleAccountServerFn,
+  GetMyAccountServerFn,
+  UnbindGoogleAccountServerFn,
+  UpdateMyAccountServerFn,
+} from "@shared/api/functions/userAccount.serverFn";
+import {
+  type BindGoogleAccountRequest,
+  BindGoogleAccountRequestSchema,
+  type BindGoogleAccountResponse,
+  BindGoogleAccountResponseSchema,
+  type GetMyAccountRequest,
+  GetMyAccountRequestSchema,
+  type GetMyAccountResponse,
+  GetMyAccountResponseSchema,
+  type UnbindGoogleAccountRequest,
+  UnbindGoogleAccountRequestSchema,
+  type UnbindGoogleAccountResponse,
+  UnbindGoogleAccountResponseSchema,
+  type UpdateMyAccountRequest,
+  UpdateMyAccountRequestSchema,
+  type UpdateMyAccountResponse,
+  UpdateMyAccountResponseSchema,
 } from "@shared/api/interfaces/userAccount.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyAccount(
+export const queryFnGetMyAccount = async (
   request: GetMyAccountRequest
-): Promise<GetMyAccountResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.getMyAccount}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      credentials: "include",
+): Promise<GetMyAccountResponse> => {
+  try {
+    const validatedRequest = GetMyAccountRequestSchema.parse(request);
+    const response = await GetMyAccountServerFn({ data: validatedRequest });
+    return GetMyAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetMyAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function UpdateMyAccount(
+export const mutationFnUpdateMyAccount = async (
   request: UpdateMyAccountRequest
-): Promise<UpdateMyAccountResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.updatedMyAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyAccountResponse> => {
+  try {
+    const validatedRequest = UpdateMyAccountRequestSchema.parse(request);
+    const response = await UpdateMyAccountServerFn({ data: validatedRequest });
+    return UpdateMyAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as UpdateMyAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function BindGoogleAccount(
+export const mutationFnBindGoogleAccount = async (
   request: BindGoogleAccountRequest
-): Promise<BindGoogleAccountResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.bindGoogleAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<BindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = BindGoogleAccountRequestSchema.parse(request);
+    const response = await BindGoogleAccountServerFn({
+      data: validatedRequest,
+    });
+    return BindGoogleAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as BindGoogleAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function UnbindGoogleAccount(
+export const mutationFnUnbindGoogleAccount = async (
   request: UnbindGoogleAccountRequest
-): Promise<UnbindGoogleAccountResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.unbindGoogleAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UnbindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = UnbindGoogleAccountRequestSchema.parse(request);
+    const response = await UnbindGoogleAccountServerFn({
+      data: validatedRequest,
+    });
+    return UnbindGoogleAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as UnbindGoogleAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

@@ -2,8 +2,8 @@ import {
   useLoginViaGoogle,
   useRegisterViaGoogle,
 } from "@shared/api/hooks/auth.hook";
-import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { useBindGoogleAccount } from "@shared/api/hooks/userAccount.hook";
+import { queryFnGetUserData } from "@shared/api/invokers/user.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -26,7 +26,6 @@ function GoogleRedirectPage() {
   const registerViaGoogleMutator = useRegisterViaGoogle();
   const loginViaGoogleMutator = useLoginViaGoogle();
   const bindGoogleAccountMutator = useBindGoogleAccount();
-  const userDataQuerier = useGetUserData();
 
   const hasRendered = useRef(false);
 
@@ -76,6 +75,7 @@ function GoogleRedirectPage() {
             body: { authorizationCode: code },
           });
           accessToken = responseOfLogin.data.accessToken;
+          console.log("redirect with accessToken: ", accessToken);
           break;
         case "binding":
           accessToken = LocalStorageManipulator.getItemByKey(
@@ -91,7 +91,7 @@ function GoogleRedirectPage() {
           break;
       }
 
-      const responseOfGettingUserData = await userDataQuerier.queryAsync({
+      const responseOfGettingUserData = await queryFnGetUserData({
         header: {
           userAgent: navigator.userAgent,
           authorization: getAuthorization(accessToken),
@@ -101,6 +101,7 @@ function GoogleRedirectPage() {
       userManager.setUserData(responseOfGettingUserData.data);
       router.push(WebURLPathDictionary.root.dashboard._);
     } catch (error) {
+      console.log(error);
       toast.error(languageManager.tError(error));
       router.push(
         WebURLPathDictionary.auth.redirect.error(
@@ -116,7 +117,6 @@ function GoogleRedirectPage() {
     registerViaGoogleMutator,
     loginViaGoogleMutator,
     bindGoogleAccountMutator,
-    userDataQuerier,
     userManager,
   ]);
 

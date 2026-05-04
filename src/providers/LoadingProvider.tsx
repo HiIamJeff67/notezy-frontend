@@ -1,4 +1,3 @@
-import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import React, { createContext, useRef, useState } from "react";
 
 interface LoadingContextType {
@@ -25,7 +24,6 @@ export const LoadingProvider = ({
 }) => {
   const [_isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
 
-  const strictLoadingCounterRef = useRef<number>(0);
   const laxLoadingCounterRef = useRef<number>(0);
   const loadingDependenciesRef = useRef<Set<() => boolean>>(new Set());
 
@@ -43,15 +41,15 @@ export const LoadingProvider = ({
 
   const startSyncTransactionLoading = <T,>(fn: () => T) => {
     _setIsLaxLoading(true);
-    strictLoadingCounterRef.current++;
+    laxLoadingCounterRef.current++;
     try {
       return fn();
     } finally {
-      strictLoadingCounterRef.current = Math.min(
+      laxLoadingCounterRef.current = Math.max(
         0,
-        strictLoadingCounterRef.current - 1
+        laxLoadingCounterRef.current - 1
       );
-      if (strictLoadingCounterRef.current === 0) {
+      if (laxLoadingCounterRef.current === 0) {
         _setIsLaxLoading(false);
       }
     }
@@ -63,7 +61,7 @@ export const LoadingProvider = ({
     errorTimeout: number = Infinity
   ) => {
     _setIsLaxLoading(true);
-    strictLoadingCounterRef.current++;
+    laxLoadingCounterRef.current++;
 
     let isLoadingActive: boolean = true;
     let loadingTimer: NodeJS.Timeout | null = null;
@@ -72,15 +70,15 @@ export const LoadingProvider = ({
     const stopLoading = () => {
       if (isLoadingActive) {
         isLoadingActive = false;
-        strictLoadingCounterRef.current = Math.max(
+        laxLoadingCounterRef.current = Math.max(
           0,
-          strictLoadingCounterRef.current - 1
+          laxLoadingCounterRef.current - 1
         );
-        if (strictLoadingCounterRef.current === 0) {
+        if (laxLoadingCounterRef.current === 0) {
           _setIsLaxLoading(false);
         }
-        if (loadingTimer) clearTimeout(loadingTimeout);
-        if (errorTimeout) clearTimeout(errorTimeout);
+        if (loadingTimer) clearTimeout(loadingTimer);
+        if (errorTimer) clearTimeout(errorTimer);
       }
     };
 

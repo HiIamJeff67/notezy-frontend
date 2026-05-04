@@ -5,13 +5,19 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { subShelf } from "./subShelf.schema";
 
 // the same schemas as the blockPack in api interface
 export const blockPack = sqliteTable(
   "BlockPackTable",
   {
     id: text("id").primaryKey(),
-    parentSubShelfId: text("parent_sub_shelf_id").notNull(),
+    parentSubShelfId: text("parent_sub_shelf_id")
+      .notNull()
+      .references(() => subShelf.id, {
+        onUpdate: "cascade",
+        onDelete: "cascade",
+      }),
     name: text("name").notNull().default("undefined"),
     icon: text("icon"),
     headerBackgroundURL: text("header_background_url"),

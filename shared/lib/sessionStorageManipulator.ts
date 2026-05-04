@@ -2,11 +2,18 @@ import {
   SessionStorageItem,
   SessionStorageKey,
 } from "@shared/types/sessionStorage.type";
+import { Key } from "lucide-react";
 
 export class SessionStorageManipulator {
   private static readonly SessionStoragePrefix = "notezy_";
 
-  private static getStorageKey(key: SessionStorageKey): string {
+  private static getStorageKey(
+    key: SessionStorageKey,
+    publicId?: string
+  ): string {
+    if (publicId !== undefined) {
+      return this.SessionStoragePrefix + publicId.toString() + "_" + key;
+    }
     return this.SessionStoragePrefix + key;
   }
 
@@ -23,12 +30,12 @@ export class SessionStorageManipulator {
   };
 
   static getItemByKey = <K extends SessionStorageKey>(
-    key: K
+    key: K,
+    publicId?: string
   ): SessionStorageItem[K] | null => {
+    if (!this.isSessionStorageAvailable()) return null;
     try {
-      if (!this.isSessionStorageAvailable()) return null;
-
-      const storageKey = this.getStorageKey(key);
+      const storageKey = this.getStorageKey(key, publicId);
       const item = sessionStorage.getItem(storageKey);
 
       return item === null ? null : JSON.parse(item);
@@ -39,7 +46,8 @@ export class SessionStorageManipulator {
   };
 
   static getItemsByKeys = <K extends SessionStorageKey>(
-    keys: K[]
+    keys: K[],
+    publicId?: string
   ): Pick<SessionStorageItem, K> => {
     if (!this.isSessionStorageAvailable())
       return {} as Pick<SessionStorageItem, K>;
@@ -47,7 +55,7 @@ export class SessionStorageManipulator {
     const result = {} as Pick<SessionStorageItem, K>;
 
     keys.forEach(key => {
-      result[key] = this.getItemByKey(key);
+      result[key] = this.getItemByKey(key, publicId);
     });
 
     return result;
@@ -81,20 +89,24 @@ export class SessionStorageManipulator {
     return result;
   };
 
-  static hasItem = <K extends SessionStorageKey>(key: K): boolean => {
+  static hasItem = <K extends SessionStorageKey>(
+    key: K,
+    publicId?: string
+  ): boolean => {
     if (!this.isSessionStorageAvailable()) return false;
 
-    return this.getItemByKey(key) !== null;
+    return this.getItemByKey(key, publicId) !== null;
   };
 
   static setItem = <K extends SessionStorageKey>(
     key: K,
-    value: SessionStorageItem[K] // use the key of the Storage
+    value: SessionStorageItem[K], // use the key of the Storage
+    publicId?: string
   ): boolean => {
     if (!this.isSessionStorageAvailable()) return false;
 
     try {
-      const storageKey = this.getStorageKey(key);
+      const storageKey = this.getStorageKey(key, publicId);
       sessionStorage.setItem(storageKey, JSON.stringify(value));
       return true;
     } catch (error) {
@@ -103,23 +115,31 @@ export class SessionStorageManipulator {
     }
   };
 
-  static setItems = (items: Partial<SessionStorageKey>): boolean => {
-    if (!this.isSessionStorageAvailable()) return false;
+  static setItems = (
+    items: Partial<SessionStorageKey>,
+    publicId?: string
+  ): number => {
+    if (!this.isSessionStorageAvailable()) return 0;
 
-    let success = true;
+    let count = 0;
     Object.entries(items).forEach(([key, value]) => {
       if (value !== undefined) {
-        success = success && this.setItem(key as SessionStorageKey, value);
+        count += this.setItem(key as SessionStorageKey, value, publicId)
+          ? 1
+          : 0;
       }
     });
-    return success;
+    return count;
   };
 
-  static removeItem = <K extends SessionStorageKey>(key: K): boolean => {
+  static removeItem = <K extends SessionStorageKey>(
+    key: K,
+    publicId?: string
+  ): boolean => {
     if (!this.isSessionStorageAvailable()) return false;
 
     try {
-      const storageKey = this.getStorageKey(key);
+      const storageKey = this.getStorageKey(key, publicId);
       sessionStorage.removeItem(storageKey);
       return true;
     } catch (error) {
@@ -127,15 +147,53 @@ export class SessionStorageManipulator {
     }
   };
 
-  static removeItems = <K extends SessionStorageKey>(keys: K[]): boolean => {
-    if (!this.isSessionStorageAvailable()) return false;
+  static removeItems = <K extends SessionStorageKey>(
+    keys: K[],
+    publicId?: string
+  ): number => {
+    if (!this.isSessionStorageAvailable()) return 0;
 
-    let success = true;
-    keys.forEach((key, _) => (success = success && this.removeItem(key)));
-    return success;
+    let count = 0;
+    keys.forEach((key, _) => (count += this.removeItem(key, publicId) ? 1 : 0));
+    return count;
   };
 
-  static clearAllItems = <K extends SessionStorageKey>(keys: K[]): boolean => {
+  static ensureItem = <K extends SessionStorageKey>(
+    key: K,
+    value: SessionStorageItem[K] | null | undefined,
+    publicId?: string
+  ): boolean => {
+    if (!this.isSessionStorageAvailable()) return false;
+    else if (!value) return false;
+
+    try {
+      this.removeItem(key, publicId);
+      this.setItem(key, value, publicId);
+      return true;
+    } catch (error) {
+      console.error(`Failed to ensure sessionStorage item "${key}":`, error);
+      return false;
+    }
+  };
+
+  static ensureItems = (
+    items: Partial<SessionStorageItem>,
+    publicId?: string
+  ): number => {
+    if (!this.isSessionStorageAvailable()) return 0;
+
+    let count = 0;
+    Object.entries(items).forEach(([key, value]) => {
+      if (value !== undefined) {
+        count += this.ensureItem(key as SessionStorageKey, value, publicId)
+          ? 1
+          : 0;
+      }
+    });
+    return count;
+  };
+
+  static clearAllItems = (): boolean => {
     if (!this.isSessionStorageAvailable()) return false;
 
     let success = true;

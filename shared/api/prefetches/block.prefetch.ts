@@ -1,12 +1,4 @@
 import {
-  queryFnGetAllMyBlocks,
-  queryFnGetMyBlockById,
-  queryFnGetMyBlocksByBlockGroupId,
-  queryFnGetMyBlocksByBlockGroupIds,
-  queryFnGetMyBlocksByBlockPackId,
-  queryFnGetMyBlocksByIds,
-} from "@shared/api/functions/block.function";
-import {
   GetAllMyBlocksRequest,
   GetMyBlockByIdRequest,
   GetMyBlocksByBlockGroupIdRequest,
@@ -15,6 +7,14 @@ import {
   GetMyBlocksByIdsRequest,
 } from "@shared/api/interfaces/block.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
+import {
+  queryFnGetAllMyBlocks,
+  queryFnGetMyBlockById,
+  queryFnGetMyBlocksByBlockGroupId,
+  queryFnGetMyBlocksByBlockGroupIds,
+  queryFnGetMyBlocksByBlockPackId,
+  queryFnGetMyBlocksByIds,
+} from "@shared/api/invokers/block.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

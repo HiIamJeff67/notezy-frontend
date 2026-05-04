@@ -1,15 +1,15 @@
 import {
-  queryFnGetAllMyBlockPacksByRootShelfId,
-  queryFnGetMyBlockPackAndItsParentById,
-  queryFnGetMyBlockPackById,
-  queryFnGetMyBlockPacksByParentSubShelfId,
-} from "@shared/api/functions/blockPack.function";
-import {
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackByIdRequest,
   GetMyBlockPacksByParentSubShelfIdRequest,
 } from "@shared/api/interfaces/blockPack.interface";
+import {
+  queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsParentById,
+  queryFnGetMyBlockPackById,
+  queryFnGetMyBlockPacksByParentSubShelfId,
+} from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

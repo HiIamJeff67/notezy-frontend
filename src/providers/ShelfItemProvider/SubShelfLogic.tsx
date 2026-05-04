@@ -1,15 +1,15 @@
-import { useGetMyBlockPacksByParentSubShelfId } from "@shared/api/hooks/blockPack.hook";
-import { useGetMyMaterialsByParentSubShelfId } from "@shared/api/hooks/material.hook";
 import {
   useCreateSubShelfByRootShelfId,
   useDeleteMySubShelfById,
-  useGetMySubShelvesByPrevSubShelfId,
   useMoveMySubShelf,
   useUpdateMySubShelfById,
 } from "@shared/api/hooks/subShelf.hook";
 import { GetMyBlockPacksByParentSubShelfIdResponse } from "@shared/api/interfaces/blockPack.interface";
 import { GetMyMaterialsByParentSubShelfIdResponse } from "@shared/api/interfaces/material.interface";
 import { GetMySubShelvesByPrevSubShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import { queryFnGetMyBlockPacksByParentSubShelfId } from "@shared/api/invokers/blockPack.invoker";
+import { queryFnGetMyMaterialsByParentSubShelfId } from "@shared/api/invokers/material.invoker";
+import { queryFnGetMySubShelvesByPrevSubShelfId } from "@shared/api/invokers/subShelf.invoker";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
@@ -42,11 +42,6 @@ export const useSubShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseSubShelfLogicProps) => {
-  const getMySubShelvesBySubShelfQuerier = useGetMySubShelvesByPrevSubShelfId();
-  const getMyMaterialsBySubShelfQuerier = useGetMyMaterialsByParentSubShelfId();
-  const getMyBlockPacksBySubShelfQuerier =
-    useGetMyBlockPacksByParentSubShelfId();
-
   const createSubShelfMutator = useCreateSubShelfByRootShelfId();
   const updateSubShelfMutator = useUpdateMySubShelfById();
   const deleteSubShelfMutator = useDeleteMySubShelfById();
@@ -110,7 +105,7 @@ export const useSubShelfLogic = ({
       );
       const authorization = getAuthorization(accessToken);
       const responseOfGettingSubShelves =
-        (await getMySubShelvesBySubShelfQuerier.queryAsync({
+        (await queryFnGetMySubShelvesByPrevSubShelfId({
           header: {
             userAgent: userAgent,
             authorization: authorization,
@@ -120,7 +115,7 @@ export const useSubShelfLogic = ({
           },
         })) as GetMySubShelvesByPrevSubShelfIdResponse;
       const responseOfGettingMaterials =
-        (await getMyMaterialsBySubShelfQuerier.queryAsync({
+        (await queryFnGetMyMaterialsByParentSubShelfId({
           header: {
             userAgent: userAgent,
             authorization: authorization,
@@ -130,7 +125,7 @@ export const useSubShelfLogic = ({
           },
         })) as GetMyMaterialsByParentSubShelfIdResponse;
       const responseOfGettingBlockPacks =
-        (await getMyBlockPacksBySubShelfQuerier.queryAsync({
+        (await queryFnGetMyBlockPacksByParentSubShelfId({
           header: {
             userAgent: userAgent,
             authorization: authorization,
@@ -157,9 +152,9 @@ export const useSubShelfLogic = ({
     },
     [
       SubShelfManipulator,
-      getMySubShelvesBySubShelfQuerier,
-      getMyMaterialsBySubShelfQuerier,
-      getMyBlockPacksBySubShelfQuerier,
+      queryFnGetMySubShelvesByPrevSubShelfId,
+      queryFnGetMyMaterialsByParentSubShelfId,
+      queryFnGetMyBlockPacksByParentSubShelfId,
     ]
   );
 

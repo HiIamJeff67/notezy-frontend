@@ -1,12 +1,4 @@
 import {
-  queryFnGetAllMyBlockGroupsByBlockPackId,
-  queryFnGetMyBlockGroupAndItsBlocksById,
-  queryFnGetMyBlockGroupById,
-  queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId,
-  queryFnGetMyBlockGroupsAndTheirBlocksByIds,
-  queryFnGetMyBlockGroupsByPrevBlockGroupId,
-} from "@shared/api/functions/blockGroup.function";
-import {
   GetAllMyBlockGroupsByBlockPackIdRequest,
   GetMyBlockGroupAndItsBlocksByIdRequest,
   GetMyBlockGroupByIdRequest,
@@ -14,6 +6,14 @@ import {
   GetMyBlockGroupsAndTheirBlocksByIdsRequest,
   GetMyBlockGroupsByPrevBlockGroupIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
+import {
+  queryFnGetAllMyBlockGroupsByBlockPackId,
+  queryFnGetMyBlockGroupAndItsBlocksById,
+  queryFnGetMyBlockGroupById,
+  queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId,
+  queryFnGetMyBlockGroupsAndTheirBlocksByIds,
+  queryFnGetMyBlockGroupsByPrevBlockGroupId,
+} from "@shared/api/invokers/blockGroup.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

@@ -35,10 +35,8 @@ import { choiceRandom } from "@/util/random";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
-import {
-  useGetMyMaterialAndItsParentById,
-  useSaveMyNotebookMaterialById,
-} from "@shared/api/hooks/material.hook";
+import { useSaveMyNotebookMaterialById } from "@shared/api/hooks/material.hook";
+import { queryFnGetMyMaterialAndItsParentById } from "@shared/api/invokers/material.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
 import {
@@ -55,17 +53,16 @@ import { useEffect, useReducer, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface NotebookEditorProps {
-  defaultMeta: NotebookMaterialMeta;
+  notebookMaterialMeta: NotebookMaterialMeta;
 }
 
-const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
+const NotebookEditor = ({ notebookMaterialMeta }: NotebookEditorProps) => {
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
 
-  const getMyMaterialAndItsParentQuerier = useGetMyMaterialAndItsParentById();
   const saveMyNotebookMaterialMutator = useSaveMyNotebookMaterialById();
 
   const [editor, setEditor] = useState<BlockNoteEditor | undefined>(undefined);
@@ -76,7 +73,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
   const [isExporting, startExportingTransition] = useTransition();
   const [meta, dispatchMeta] = useReducer(
     notebookMaterialMetaReducer,
-    defaultMeta
+    notebookMaterialMeta
   );
 
   // update the file name in this page
@@ -126,7 +123,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       LocalStorageKey.accessToken
     );
     const responseOfGettingMaterial =
-      await getMyMaterialAndItsParentQuerier.queryAsync({
+      await queryFnGetMyMaterialAndItsParentById({
         header: {
           userAgent: userAgent,
           authorization: getAuthorization(accessToken),
@@ -137,8 +134,9 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
       });
     if (
       responseOfGettingMaterial.data.type !== MaterialType.Notebook ||
-      responseOfGettingMaterial.data.id !== defaultMeta.id ||
-      responseOfGettingMaterial.data.parentSubShelfId !== defaultMeta.parentId
+      responseOfGettingMaterial.data.id !== notebookMaterialMeta.id ||
+      responseOfGettingMaterial.data.parentSubShelfId !==
+        notebookMaterialMeta.parentId
     ) {
       // since the root shelf id is default to be fake generated, so we don't need to verify it
       return undefined;
@@ -498,7 +496,7 @@ const NotebookEditor = ({ defaultMeta }: NotebookEditorProps) => {
         summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        {getMyMaterialAndItsParentQuerier.isFetching ? (
+        {fetchMyMaterialAndItsParentByIdMutator.isPending ? (
           <StrictLoadingCover />
         ) : (
           <BlockNoteView

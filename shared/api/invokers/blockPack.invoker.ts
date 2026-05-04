@@ -1,521 +1,429 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsResponse,
-  CreateBlockPackRequest,
-  CreateBlockPackResponse,
-  CreateBlockPacksRequest,
-  CreateBlockPacksResponse,
-  DeleteMyBlockPackByIdRequest,
-  DeleteMyBlockPackByIdResponse,
-  DeleteMyBlockPacksByIdsRequest,
-  DeleteMyBlockPacksByIdsResponse,
-  GetAllMyBlockPacksByRootShelfIdRequest,
+  BatchMoveMyBlockPacksByIdsServerFn,
+  CreateBlockPackServerFn,
+  CreateBlockPacksServerFn,
+  DeleteMyBlockPackByIdServerFn,
+  DeleteMyBlockPacksByIdsServerFn,
+  GetAllMyBlockPacksByRootShelfIdServerFn,
+  GetMyBlockPackAndItsParentByIdServerFn,
+  GetMyBlockPackByIdServerFn,
+  GetMyBlockPacksByParentSubShelfIdServerFn,
+  MoveMyBlockPackByIdServerFn,
+  MoveMyBlockPacksByIdsServerFn,
+  RestoreMyBlockPackByIdServerFn,
+  RestoreMyBlockPacksByIdsServerFn,
+  UpdateMyBlockPackByIdServerFn,
+  UpdateMyBlockPacksByIdsServerFn,
+} from "@shared/api/functions/blockPack.serverFn";
+import {
+  type BatchMoveMyBlockPacksByIdsRequest,
+  BatchMoveMyBlockPacksByIdsRequestSchema,
+  type BatchMoveMyBlockPacksByIdsResponse,
+  BatchMoveMyBlockPacksByIdsResponseSchema,
+  type CreateBlockPackRequest,
+  CreateBlockPackRequestSchema,
+  type CreateBlockPackResponse,
+  CreateBlockPackResponseSchema,
+  type CreateBlockPacksRequest,
+  CreateBlockPacksRequestSchema,
+  type CreateBlockPacksResponse,
+  CreateBlockPacksResponseSchema,
+  type DeleteMyBlockPackByIdRequest,
+  DeleteMyBlockPackByIdRequestSchema,
+  type DeleteMyBlockPackByIdResponse,
+  DeleteMyBlockPackByIdResponseSchema,
+  type DeleteMyBlockPacksByIdsRequest,
+  DeleteMyBlockPacksByIdsRequestSchema,
+  type DeleteMyBlockPacksByIdsResponse,
+  DeleteMyBlockPacksByIdsResponseSchema,
+  type GetAllMyBlockPacksByRootShelfIdRequest,
+  GetAllMyBlockPacksByRootShelfIdRequestSchema,
   GetAllMyBlockPacksByRootShelfIdResponse,
-  GetMyBlockPackAndItsParentByIdRequest,
+  GetAllMyBlockPacksByRootShelfIdResponseSchema,
+  type GetMyBlockPackAndItsParentByIdRequest,
+  GetMyBlockPackAndItsParentByIdRequestSchema,
   GetMyBlockPackAndItsParentByIdResponse,
-  GetMyBlockPackByIdRequest,
+  GetMyBlockPackAndItsParentByIdResponseSchema,
+  type GetMyBlockPackByIdRequest,
+  GetMyBlockPackByIdRequestSchema,
   GetMyBlockPackByIdResponse,
-  GetMyBlockPacksByParentSubShelfIdRequest,
+  GetMyBlockPackByIdResponseSchema,
+  type GetMyBlockPacksByParentSubShelfIdRequest,
+  GetMyBlockPacksByParentSubShelfIdRequestSchema,
   GetMyBlockPacksByParentSubShelfIdResponse,
-  MoveMyBlockPackByIdRequest,
-  MoveMyBlockPackByIdResponse,
-  MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsResponse,
-  RestoreMyBlockPackByIdRequest,
-  RestoreMyBlockPackByIdResponse,
-  RestoreMyBlockPacksByIdsRequest,
-  RestoreMyBlockPacksByIdsResponse,
-  UpdateMyBlockPackByIdRequest,
-  UpdateMyBlockPackByIdResponse,
-  UpdateMyBlockPacksByIdsRequest,
-  UpdateMyBlockPacksByIdsResponse,
+  GetMyBlockPacksByParentSubShelfIdResponseSchema,
+  type MoveMyBlockPackByIdRequest,
+  MoveMyBlockPackByIdRequestSchema,
+  type MoveMyBlockPackByIdResponse,
+  MoveMyBlockPackByIdResponseSchema,
+  type MoveMyBlockPacksByIdsRequest,
+  MoveMyBlockPacksByIdsRequestSchema,
+  type MoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByIdsResponseSchema,
+  type RestoreMyBlockPackByIdRequest,
+  RestoreMyBlockPackByIdRequestSchema,
+  type RestoreMyBlockPackByIdResponse,
+  RestoreMyBlockPackByIdResponseSchema,
+  type RestoreMyBlockPacksByIdsRequest,
+  RestoreMyBlockPacksByIdsRequestSchema,
+  type RestoreMyBlockPacksByIdsResponse,
+  RestoreMyBlockPacksByIdsResponseSchema,
+  type UpdateMyBlockPackByIdRequest,
+  UpdateMyBlockPackByIdRequestSchema,
+  type UpdateMyBlockPackByIdResponse,
+  UpdateMyBlockPackByIdResponseSchema,
+  type UpdateMyBlockPacksByIdsRequest,
+  UpdateMyBlockPacksByIdsRequestSchema,
+  type UpdateMyBlockPacksByIdsResponse,
+  UpdateMyBlockPacksByIdsResponseSchema,
 } from "@shared/api/interfaces/blockPack.interface";
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyBlockPackById(
+export const queryFnGetMyBlockPackById = async (
   request: GetMyBlockPackByIdRequest
-): Promise<GetMyBlockPackByIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({ blockPackId: blockPackId }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyBlockPackByIdResponse> => {
+  try {
+    const validatedRequest = GetMyBlockPackByIdRequestSchema.parse(request);
+    const response = await GetMyBlockPackByIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyBlockPackByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlockPackByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockPackAndItsParentById(
+export const queryFnGetMyBlockPackAndItsParentById = async (
   request: GetMyBlockPackAndItsParentByIdRequest
-): Promise<GetMyBlockPackAndItsParentByIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({ blockPackId: blockPackId }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackAndItsParentById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyBlockPackAndItsParentByIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockPackAndItsParentByIdRequestSchema.parse(request);
+    const response = await GetMyBlockPackAndItsParentByIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyBlockPackAndItsParentByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlockPackAndItsParentByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockPacksByParentSubShelfId(
+export const queryFnGetMyBlockPacksByParentSubShelfId = async (
   request: GetMyBlockPacksByParentSubShelfIdRequest
-): Promise<GetMyBlockPacksByParentSubShelfIdResponse> {
-  const { parentSubShelfId } = request.param;
-  const params = new URLSearchParams({
-    parentSubShelfId: parentSubShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPacksByParentSubShelfId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockPacksByParentSubShelfIdRequestSchema.parse(request);
+    const response = await GetMyBlockPacksByParentSubShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyBlockPacksByParentSubShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlockPacksByParentSubShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetAllMyBlockPacksByRootShelfId(
+export const queryFnGetAllMyBlockPacksByRootShelfId = async (
   request: GetAllMyBlockPacksByRootShelfIdRequest
-): Promise<GetAllMyBlockPacksByRootShelfIdResponse> {
-  const { rootShelfId } = request.param;
-  const params = new URLSearchParams({
-    rootShelfId: rootShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getAllMyBlockPacksByRootShelfId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetAllMyBlockPacksByRootShelfIdRequestSchema.parse(request);
+    const response = await GetAllMyBlockPacksByRootShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetAllMyBlockPacksByRootShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetAllMyBlockPacksByRootShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function CreateBlockPack(
+export const mutationFnCreateBlockPack = async (
   request: CreateBlockPackRequest
-): Promise<CreateBlockPackResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.createBlockPack}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateBlockPackResponse> => {
+  try {
+    const validatedRequest = CreateBlockPackRequestSchema.parse(request);
+    const response = await CreateBlockPackServerFn({ data: validatedRequest });
+    return CreateBlockPackResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as CreateBlockPackResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function CreateBlockPacks(
+export const mutationFnCreateBlockPacks = async (
   request: CreateBlockPacksRequest
-): Promise<CreateBlockPacksResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.createBlockPacks}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateBlockPacksResponse> => {
+  try {
+    const validatedRequest = CreateBlockPacksRequestSchema.parse(request);
+    const response = await CreateBlockPacksServerFn({ data: validatedRequest });
+    return CreateBlockPacksResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as CreateBlockPacksResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function UpdateMyBlockPackById(
+export const mutationFnUpdateMyBlockPackById = async (
   request: UpdateMyBlockPackByIdRequest
-): Promise<UpdateMyBlockPackByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.updateMyBlockPackById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyBlockPackByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyBlockPackByIdRequestSchema.parse(request);
+    const response = await UpdateMyBlockPackByIdServerFn({
+      data: validatedRequest,
+    });
+    return UpdateMyBlockPackByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as UpdateMyBlockPackByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function UpdateMyBlockPacksByIds(
+export const mutationFnUpdateMyBlockPacksByIds = async (
   request: UpdateMyBlockPacksByIdsRequest
-): Promise<UpdateMyBlockPacksByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.updateMyBlockPacksByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyBlockPacksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      UpdateMyBlockPacksByIdsRequestSchema.parse(request);
+    const response = await UpdateMyBlockPacksByIdsServerFn({
+      data: validatedRequest,
+    });
+    return UpdateMyBlockPacksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as UpdateMyBlockPacksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function MoveMyBlockPackById(
+export const mutationFnMoveMyBlockPackById = async (
   request: MoveMyBlockPackByIdRequest
-): Promise<MoveMyBlockPackByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPackById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMyBlockPackByIdResponse> => {
+  try {
+    const validatedRequest = MoveMyBlockPackByIdRequestSchema.parse(request);
+    const response = await MoveMyBlockPackByIdServerFn({
+      data: validatedRequest,
+    });
+    return MoveMyBlockPackByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as MoveMyBlockPackByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function MoveMyBlockPacksByIds(
+export const mutationFnMoveMyBlockPacksByIds = async (
   request: MoveMyBlockPacksByIdsRequest
-): Promise<MoveMyBlockPacksByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPacksByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMyBlockPacksByIdsResponse> => {
+  try {
+    const validatedRequest = MoveMyBlockPacksByIdsRequestSchema.parse(request);
+    const response = await MoveMyBlockPacksByIdsServerFn({
+      data: validatedRequest,
+    });
+    return MoveMyBlockPacksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as MoveMyBlockPacksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function BatchMoveMyBlockPacksByIds(
+export const mutationFnBatchMoveMyBlockPacksByIds = async (
   request: BatchMoveMyBlockPacksByIdsRequest
-): Promise<BatchMoveMyBlockPacksByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.batchMoveMyBlockPacksByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      BatchMoveMyBlockPacksByIdsRequestSchema.parse(request);
+    const response = await BatchMoveMyBlockPacksByIdsServerFn({
+      data: validatedRequest,
+    });
+    return BatchMoveMyBlockPacksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as BatchMoveMyBlockPacksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlockPackById(
+export const mutationFnRestoreMyBlockPackById = async (
   request: RestoreMyBlockPackByIdRequest
-): Promise<RestoreMyBlockPackByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.restoreMyBlockPackById}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyBlockPackByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyBlockPackByIdRequestSchema.parse(request);
+    const response = await RestoreMyBlockPackByIdServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMyBlockPackByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlockPackByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlockPacksByIds(
+export const mutationFnRestoreMyBlockPacksByIds = async (
   request: RestoreMyBlockPacksByIdsRequest
-): Promise<RestoreMyBlockPacksByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.restoreMyBlockPacksByIds}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyBlockPacksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMyBlockPacksByIdsRequestSchema.parse(request);
+    const response = await RestoreMyBlockPacksByIdsServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMyBlockPacksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlockPacksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlockPackById(
+export const mutationFnDeleteMyBlockPackById = async (
   request: DeleteMyBlockPackByIdRequest
-): Promise<DeleteMyBlockPackByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.deleteMyBlockPackById}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyBlockPackByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlockPackByIdRequestSchema.parse(request);
+    const response = await DeleteMyBlockPackByIdServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMyBlockPackByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlockPackByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlockPacksByIds(
+export const mutationFnDeleteMyBlockPacksByIds = async (
   request: DeleteMyBlockPacksByIdsRequest
-): Promise<DeleteMyBlockPacksByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.deleteMyBlockPacksByIds}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyBlockPacksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      DeleteMyBlockPacksByIdsRequestSchema.parse(request);
+    const response = await DeleteMyBlockPacksByIdsServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMyBlockPacksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlockPacksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
+};

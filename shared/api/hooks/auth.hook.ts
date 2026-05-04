@@ -1,4 +1,5 @@
 import { useApolloClient } from "@apollo/client/react";
+import { AuthAdaptors } from "@shared/api/adaptors/authAdaptor";
 import {
   mutationFnDeleteMe,
   mutationFnForgetPassword,
@@ -11,9 +12,13 @@ import {
   mutationFnResetMe,
   mutationFnSendAuthCode,
   mutationFnValidateEmail,
-} from "@shared/api/functions/auth.function";
+} from "@shared/api/invokers/auth.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { type QueryKey, useMutation } from "@tanstack/react-query";
 
 export const useRegister = () => {
@@ -21,7 +26,19 @@ export const useRegister = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRegister,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterRegister(request, response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -41,7 +58,19 @@ export const useRegisterViaGoogle = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRegisterViaGoogle,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterRegisterViaGoogle(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -61,7 +90,19 @@ export const useLogin = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLogin,
-    onSuccess: (_response, _) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterLogin(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -81,7 +122,19 @@ export const useLoginViaGoogle = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLoginViaGoogle,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterLoginViaGoogle(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -102,7 +155,16 @@ export const useLogout = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLogout,
-    onSuccess: _ => {
+    onSuccess: async (response, request) => {
+      await AuthAdaptors.syncLocaldbAfterLogout(response);
+      LocalStorageManipulator.removeItem(
+        LocalStorageKey.accessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.removeItem(
+        SessionStorageKey.csrfToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.removeQueries();
       apolloClient.clearStore();
     },
@@ -120,7 +182,20 @@ export const useLogout = () => {
 export const useSendAuthCode = () => {
   const mutation = useMutation({
     mutationFn: mutationFnSendAuthCode,
-    onSuccess: (_, __) => {},
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+    },
     onError: error => {
       throw error;
     },
@@ -135,7 +210,21 @@ export const useSendAuthCode = () => {
 export const useValidateEmail = () => {
   const mutation = useMutation({
     mutationFn: mutationFnValidateEmail,
-    onSuccess: (_, __) => {},
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterValidateEmail(response);
+    },
     onError: error => {
       throw error;
     },
@@ -152,7 +241,20 @@ export const useResetEmail = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnResetEmail,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterResetEmail(request, response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -172,7 +274,19 @@ export const useForgetPassword = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnForgetPassword,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
@@ -193,7 +307,20 @@ export const useResetMe = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnResetMe,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      await AuthAdaptors.syncLocaldbAfterResetMe(response);
       apolloClient.cache.evict({ fieldName: "searchRootShelves" });
       const targetKeys: QueryKey[] = [
         queryKeys.user.data(),
@@ -229,7 +356,16 @@ export const useDeleteMe = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMe,
-    onSuccess: _ => {
+    onSuccess: async (response, request) => {
+      await AuthAdaptors.syncLocaldbAfterDeleteMe(response);
+      LocalStorageManipulator.removeItem(
+        LocalStorageKey.accessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.removeItem(
+        SessionStorageKey.csrfToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
     },
     onError: error => {

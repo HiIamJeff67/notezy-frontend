@@ -1,5 +1,5 @@
-import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
 import { GetMyInfoRequest } from "@shared/api/interfaces/userInfo.interface";
+import { queryFnGetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useDebounceValue = <T>(value: T, delay: number = 500) => {
   const [debounceValue, setDebounceValue] = useState<T>(value);
+  const latestValue = useRef(value);
 
   useEffect(() => {
+    latestValue.current = value;
     const timeout = setTimeout(() => {
-      setDebounceValue(value);
+      setDebounceValue(latestValue.current);
     }, delay);
     return () => clearTimeout(timeout);
   }, [value, delay]);

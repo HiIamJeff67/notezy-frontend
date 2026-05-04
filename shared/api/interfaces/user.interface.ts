@@ -7,7 +7,7 @@ import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
 export const GetUserDataRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
 });
@@ -16,6 +16,9 @@ export type GetUserDataRequest = z.infer<typeof GetUserDataRequestSchema>;
 
 export const GetUserDataResponseSchema = NotezyResponseSchema.extend({
   data: UserDataSchema,
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetUserDataResponse = z.infer<typeof GetUserDataResponseSchema>;
@@ -24,7 +27,7 @@ export type GetUserDataResponse = z.infer<typeof GetUserDataResponseSchema>;
 
 export const GetMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
 });
@@ -33,6 +36,9 @@ export type GetMeRequest = z.infer<typeof GetMeRequestSchema>;
 
 export const GetMeResponseSchema = NotezyResponseSchema.extend({
   data: UserSchema,
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMeResponse = z.infer<typeof GetMeResponseSchema>;
@@ -41,7 +47,7 @@ export type GetMeResponse = z.infer<typeof GetMeResponseSchema>;
 
 export const UpdateMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -64,6 +70,9 @@ export type UpdateMeRequest = z.infer<typeof UpdateMeRequestSchema>;
 export const UpdateMeResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
   }),
 });
 

@@ -8,7 +8,7 @@ import z from "zod";
 
 export const RegisterRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
   }),
   body: z.object({
     name: z
@@ -47,7 +47,7 @@ export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 
 export const RegisterViaGoogleRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
   }),
   body: z.object({
     authorizationCode: z.string(),
@@ -78,7 +78,7 @@ export type RegisterViaGoogleResponse = z.infer<
 
 export const LoginRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
   }),
   body: z.object({
     account: z.string(),
@@ -113,7 +113,7 @@ export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 
 export const LoginViaGoogleRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
   }),
   body: z.object({
     authorizationCode: z.string(),
@@ -143,7 +143,7 @@ export type LoginViaGoogleResponse = z.infer<
 
 export const LogoutRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
 });
@@ -154,6 +154,9 @@ export const LogoutResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type LogoutResponse = z.infer<typeof LogoutResponseSchema>;
@@ -162,7 +165,7 @@ export type LogoutResponse = z.infer<typeof LogoutResponseSchema>;
 
 export const SendAuthCodeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -186,7 +189,7 @@ export type SendAuthCodeResponse = z.infer<typeof SendAuthCodeResponseSchema>;
 
 export const ValidateEmailRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
     csrfToken: z.string(),
   }),
@@ -201,6 +204,9 @@ export const ValidateEmailResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type ValidateEmailResponse = z.infer<typeof ValidateEmailResponseSchema>;
@@ -209,7 +215,7 @@ export type ValidateEmailResponse = z.infer<typeof ValidateEmailResponseSchema>;
 
 export const ResetEmailRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
     csrfToken: z.string(),
   }),
@@ -225,6 +231,9 @@ export const ResetEmailResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type ResetEmailResponse = z.infer<typeof ResetEmailResponseSchema>;
@@ -233,7 +242,7 @@ export type ResetEmailResponse = z.infer<typeof ResetEmailResponseSchema>;
 
 export const ForgetPasswordRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -268,7 +277,7 @@ export type ForgetPasswordResponse = z.infer<
 
 export const ResetMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
     csrfToken: z.string(),
   }),
@@ -283,6 +292,9 @@ export const ResetMeResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type ResetMeResponse = z.infer<typeof ResetMeResponseSchema>;
@@ -291,7 +303,7 @@ export type ResetMeResponse = z.infer<typeof ResetMeResponseSchema>;
 
 export const DeleteMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
     csrfToken: z.string(),
   }),
@@ -305,6 +317,9 @@ export type DeleteMeRequest = z.infer<typeof DeleteMeRequestSchema>;
 export const DeleteMeResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
   }),
 });
 

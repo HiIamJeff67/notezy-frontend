@@ -16,7 +16,7 @@ import GridBackground from "@/components/backgrounds/GridBackground/GridBackgrou
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage } from "@/hooks";
-import { useRegisterLoadingDependencies } from "@/hooks/useRegisterLoadingDependencies";
+import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();

@@ -1,69 +1,59 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  GetMyInfoRequest,
-  GetMyInfoResponse,
-  UpdateMyInfoRequest,
-  UpdateMyInfoResponse,
+  GetMyInfoServerFn,
+  UpdateMyInfoServerFn,
+} from "@shared/api/functions/userInfo.serverFn";
+import {
+  type GetMyInfoRequest,
+  GetMyInfoRequestSchema,
+  type GetMyInfoResponse,
+  GetMyInfoResponseSchema,
+  type UpdateMyInfoRequest,
+  UpdateMyInfoRequestSchema,
+  type UpdateMyInfoResponse,
+  UpdateMyInfoResponseSchema,
 } from "@shared/api/interfaces/userInfo.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyInfo(
+export const queryFnGetMyInfo = async (
   request: GetMyInfoRequest
-): Promise<GetMyInfoResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.getMyInfo}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      credentials: "include",
+): Promise<GetMyInfoResponse> => {
+  try {
+    const validatedRequest = GetMyInfoRequestSchema.parse(request);
+    const response = await GetMyInfoServerFn({ data: validatedRequest });
+    return GetMyInfoResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetMyInfoResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function UpdateMyInfo(
+export const mutationFnUpdateMyInfo = async (
   request: UpdateMyInfoRequest
-): Promise<UpdateMyInfoResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.updateMyInfo}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyInfoResponse> => {
+  try {
+    const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
+    const response = await UpdateMyInfoServerFn({ data: validatedRequest });
+    return UpdateMyInfoResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse = (await response.json()) as UpdateMyInfoResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

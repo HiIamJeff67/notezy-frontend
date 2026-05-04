@@ -1,17 +1,15 @@
+import type { GetMyInfoRequest } from "@shared/api/interfaces/userInfo.interface";
 import {
   mutationFnUpdateMyInfo,
   queryFnGetMyInfo,
-} from "@shared/api/functions/userInfo.function";
-import type {
-  GetMyInfoRequest,
-  GetMyInfoResponse,
-} from "@shared/api/interfaces/userInfo.interface";
+} from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type UseQueryOptions,
   useMutation,
@@ -19,14 +17,25 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMyInfo = (
-  hookRequest?: GetMyInfoRequest,
+  hookRequest: GetMyInfoRequest,
   options?: UseQueryOptions
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.userInfo.my(),
-    queryFn: async () => await queryFnGetMyInfo(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyInfo(hookRequest as GetMyInfoRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -34,19 +43,8 @@ export const useGetMyInfo = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyInfoRequest
-  ): Promise<GetMyInfoResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.userInfo.my(),
-      queryFn: async () => await queryFnGetMyInfo(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_INFO_HOOK" as const,
   };
 };
@@ -56,7 +54,17 @@ export const useUpdateMyInfo = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyInfo,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
     },
     onError: error => {

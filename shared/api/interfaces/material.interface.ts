@@ -9,7 +9,7 @@ import z from "zod";
 
 export const GetMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   param: z.object({
@@ -33,6 +33,9 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMyMaterialByIdResponse = z.infer<
@@ -44,7 +47,7 @@ export type GetMyMaterialByIdResponse = z.infer<
 export const GetMyMaterialAndItsParentByIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -76,6 +79,9 @@ export const GetMyMaterialAndItsParentByIdResponseSchema =
       parentSubShelfUpdatedAt: z.coerce.date(),
       parentSubShelfCreatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyMaterialAndItsParentByIdResponse = z.infer<
@@ -87,7 +93,7 @@ export type GetMyMaterialAndItsParentByIdResponse = z.infer<
 export const GetMyMaterialsByParentSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -114,6 +120,9 @@ export const GetMyMaterialsByParentSubShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyMaterialsByParentSubShelfIdResponse = z.infer<
@@ -125,7 +134,7 @@ export type GetMyMaterialsByParentSubShelfIdResponse = z.infer<
 export const GetAllMyMaterialsByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -152,6 +161,9 @@ export const GetAllMyMaterialsByRootShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetAllMyMaterialsByRootShelfIdResponse = z.infer<
@@ -162,7 +174,7 @@ export type GetAllMyMaterialsByRootShelfIdResponse = z.infer<
 
 export const CreateTextbookMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -186,6 +198,9 @@ export const CreateTextbookMaterialResponseSchema = NotezyResponseSchema.extend(
       downloadURL: z.string(),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   }
 );
 
@@ -197,7 +212,7 @@ export type CreateTextbookMaterialResponse = z.infer<
 
 export const CreateNotebookMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -221,6 +236,9 @@ export const CreateNotebookMaterialResponseSchema = NotezyResponseSchema.extend(
       downloadURL: z.string(),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   }
 );
 
@@ -232,7 +250,7 @@ export type CreateNotebookMaterialResponse = z.infer<
 
 export const UpdateMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -259,6 +277,9 @@ export const UpdateMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type UpdateMyMaterialByIdResponse = z.infer<
@@ -270,7 +291,7 @@ export type UpdateMyMaterialByIdResponse = z.infer<
 export const SaveMyNotebookMaterialByIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -291,6 +312,9 @@ export const SaveMyNotebookMaterialByIdResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type SaveMyNotebookMaterialByIdResponse = z.infer<
@@ -301,7 +325,7 @@ export type SaveMyNotebookMaterialByIdResponse = z.infer<
 
 export const MoveMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -322,6 +346,9 @@ export const MoveMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMyMaterialByIdResponse = z.infer<
@@ -332,7 +359,7 @@ export type MoveMyMaterialByIdResponse = z.infer<
 
 export const MoveMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -353,6 +380,9 @@ export const MoveMyMaterialsByIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMyMaterialsByIdsResponse = z.infer<
@@ -363,7 +393,7 @@ export type MoveMyMaterialsByIdsResponse = z.infer<
 
 export const RestoreMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -391,6 +421,9 @@ export const RestoreMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type RestoreMyMaterialByIdResponse = z.infer<
@@ -401,7 +434,7 @@ export type RestoreMyMaterialByIdResponse = z.infer<
 
 export const RestoreMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -432,6 +465,9 @@ export const RestoreMyMaterialsByIdsResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type RestoreMyMaterialsByIdsResponse = z.infer<
@@ -442,7 +478,7 @@ export type RestoreMyMaterialsByIdsResponse = z.infer<
 
 export const DeleteMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -462,6 +498,9 @@ export const DeleteMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type DeleteMyMaterialByIdResponse = z.infer<
@@ -472,7 +511,7 @@ export type DeleteMyMaterialByIdResponse = z.infer<
 
 export const DeleteMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -492,6 +531,9 @@ export const DeleteMyMaterialsByIdsResponseSchema = NotezyResponseSchema.extend(
   {
     data: z.object({
       deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
     }),
   }
 );

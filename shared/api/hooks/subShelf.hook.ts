@@ -1,4 +1,10 @@
 import type { UUID } from "node:crypto";
+import type {
+  GetAllMySubShelvesByRootShelfIdRequest,
+  GetMySubShelfByIdRequest,
+  GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  GetMySubShelvesByPrevSubShelfIdRequest,
+} from "@shared/api/interfaces/subShelf.interface";
 import {
   mutationFnBatchMoveMySubShelves,
   mutationFnCreateSubShelfByRootShelfId,
@@ -15,23 +21,14 @@ import {
   queryFnGetMySubShelfById,
   queryFnGetMySubShelvesAndItemsByPrevSubShelfId,
   queryFnGetMySubShelvesByPrevSubShelfId,
-} from "@shared/api/functions/subShelf.function";
-import type {
-  GetAllMySubShelvesByRootShelfIdRequest,
-  GetAllMySubShelvesByRootShelfIdResponse,
-  GetMySubShelfByIdRequest,
-  GetMySubShelfByIdResponse,
-  GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
-  GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
-  GetMySubShelvesByPrevSubShelfIdRequest,
-  GetMySubShelvesByPrevSubShelfIdResponse,
-} from "@shared/api/interfaces/subShelf.interface";
+} from "@shared/api/invokers/subShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type QueryKey,
   type UseQueryOptions,
@@ -41,16 +38,31 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMySubShelfById = (
-  hookRequest?: GetMySubShelfByIdRequest,
+  hookRequest: GetMySubShelfByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.oneById(
-      hookRequest?.param.subShelfId as UUID | undefined
+      hookRequest.param.subShelfId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMySubShelfById(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMySubShelfById(
+        hookRequest as GetMySubShelfByIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -58,37 +70,38 @@ export const useGetMySubShelfById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMySubShelfByIdRequest
-  ): Promise<GetMySubShelfByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.subShelf.oneById(
-        callbackRequest.param.subShelfId as UUID
-      ),
-      queryFn: async () => await queryFnGetMySubShelfById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_SUB_SHELF_BY_ID_HOOK",
   };
 };
 
 export const useGetMySubShelvesByPrevSubShelfId = (
-  hookRequest?: GetMySubShelvesByPrevSubShelfIdRequest,
+  hookRequest: GetMySubShelvesByPrevSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-      hookRequest?.param.prevSubShelfId as UUID | undefined
+      hookRequest.param.prevSubShelfId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetMySubShelvesByPrevSubShelfId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMySubShelvesByPrevSubShelfId(
+        hookRequest as GetMySubShelvesByPrevSubShelfIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -96,38 +109,38 @@ export const useGetMySubShelvesByPrevSubShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMySubShelvesByPrevSubShelfIdRequest
-  ): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-        callbackRequest.param.prevSubShelfId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMySubShelvesByPrevSubShelfId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_SUB_SHELVES_BY_PREV_SUB_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useGetAllMySubShelvesByRootShelfId = (
-  hookRequest?: GetAllMySubShelvesByRootShelfIdRequest,
+  hookRequest: GetAllMySubShelvesByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.manyByRootShelfId(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetAllMySubShelvesByRootShelfId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetAllMySubShelvesByRootShelfId(
+        hookRequest as GetAllMySubShelvesByRootShelfIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -135,38 +148,38 @@ export const useGetAllMySubShelvesByRootShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetAllMySubShelvesByRootShelfIdRequest
-  ): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.subShelf.manyByRootShelfId(
-        callbackRequest.param.rootShelfId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetAllMySubShelvesByRootShelfId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_ALL_MY_SUB_SHELVES_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
-  hookRequest?: GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  hookRequest: GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-      hookRequest?.param.prevSubShelfId as UUID | undefined
+      hookRequest.param.prevSubShelfId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(
+        hookRequest as GetMySubShelvesAndItemsByPrevSubShelfIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -174,22 +187,8 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMySubShelvesAndItemsByPrevSubShelfIdRequest
-  ): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-        callbackRequest.param.prevSubShelfId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_SUB_SHELVES_AND_ITEMS_BY_PREV_SUB_SHELF_ID_HOOK",
     isAbandon: true,
   };
@@ -200,9 +199,19 @@ export const useCreateSubShelfByRootShelfId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateSubShelfByRootShelfId,
-    onSuccess: (_, variables) => {
-      const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const prevSubShelfId = request.affected.prevSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
@@ -230,10 +239,20 @@ export const useCreateSubShelvesByRootShelfIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateSubShelvesByRootShelfIds,
-    onSuccess: (_, variables) => {
-      const prevSubShelfIds = variables.affected
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const prevSubShelfIds = request.affected
         .prevSubShelfIds as (UUID | null)[];
-      const rootShelfIds = variables.affected.rootShelfIds as UUID[];
+      const rootShelfIds = request.affected.rootShelfIds as UUID[];
       const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
@@ -265,9 +284,19 @@ export const useUpdateMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMySubShelfById,
-    onSuccess: (_, variables) => {
-      const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const prevSubShelfId = request.affected.prevSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.manyByPrevSubShelfId(prevSubShelfId),
@@ -294,10 +323,20 @@ export const useUpdateMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMySubShelvesByIds,
-    onSuccess: (_, variables) => {
-      const prevSubShelfIds = variables.affected
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const prevSubShelfIds = request.affected
         .prevSubShelfIds as (UUID | null)[];
-      const rootShelfIds = variables.affected.rootShelfIds as UUID[];
+      const rootShelfIds = request.affected.rootShelfIds as UUID[];
       const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
@@ -328,14 +367,24 @@ export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
   const mutation = useMutation({
     mutationFn: mutationFnMoveMySubShelf,
-    onSuccess: (_, variables) => {
-      const sourceSubShelfId = variables.body.sourceSubShelfId as UUID;
-      const destinationSubShelfId = variables.body
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const sourceSubShelfId = request.body.sourceSubShelfId as UUID;
+      const destinationSubShelfId = request.body
         .destinationSubShelfId as UUID | null;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
-      const childSubShelfIds = (
-        variables.affected.childSubShelfIds || []
-      ).filter(Boolean) as UUID[];
+      const rootShelfId = request.affected.rootShelfId as UUID;
+      const childSubShelfIds = (request.affected.childSubShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         ...childSubShelfIds.map(childSubShelfId =>
@@ -367,18 +416,27 @@ export const useMoveMySubShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMySubShelves,
-    onSuccess: (_, variables) => {
-      const sourceSubShelfIds = (variables.body.sourceSubShelfIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const sourceSubShelfIds = (request.body.sourceSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const destinationSubShelfId = variables.body
-        .destinationSubShelfId as UUID;
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const destinationSubShelfId = request.body.destinationSubShelfId as UUID;
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const childSubShelfIds = (
-        variables.affected.childSubShelfIds || []
-      ).filter(Boolean) as UUID[];
+      const childSubShelfIds = (request.affected.childSubShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
       const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
@@ -414,21 +472,31 @@ export const useBatchMoveMySubShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchMoveMySubShelves,
-    onSuccess: (_, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
       const sourceSubShelfIds = [] as UUID[];
       const destinationSubShelfIds = [] as UUID[];
-      for (const movedSubShelf of variables.body.movedSubShelves) {
+      for (const movedSubShelf of request.body.movedSubShelves) {
         sourceSubShelfIds.push(...(movedSubShelf.sourceSubShelfIds as UUID[]));
         destinationSubShelfIds.push(
           movedSubShelf.destinationSubShelfId as UUID
         );
       }
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const childSubShelfIds = (
-        variables.affected.childSubShelfIds || []
-      ).filter(Boolean) as UUID[];
+      const childSubShelfIds = (request.affected.childSubShelfIds || []).filter(
+        Boolean
+      ) as UUID[];
       const targetKeys: QueryKey[] = [
         ...rootShelfIds.flatMap(rootShelfId => [
           queryKeys.rootShelf.oneById(rootShelfId),
@@ -466,10 +534,20 @@ export const useRestoreMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMySubShelfById,
-    onSuccess: (_, variables) => {
-      const subShelfId = variables.body.subShelfId as UUID;
-      const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const subShelfId = request.body.subShelfId as UUID;
+      const prevSubShelfId = request.affected.prevSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(subShelfId),
@@ -498,14 +576,24 @@ export const useRestoreMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMySubShelvesByIds,
-    onSuccess: (_, variables) => {
-      const subShelfIds = (variables.body.subShelfIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const subShelfIds = (request.body.subShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const prevSubShelfIds = (variables.affected.prevSubShelfIds || []).filter(
+      const prevSubShelfIds = (request.affected.prevSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [
@@ -543,10 +631,20 @@ export const useDeleteMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMySubShelfById,
-    onSuccess: (_, variables) => {
-      const subShelfId = variables.body.subShelfId as UUID;
-      const prevSubShelfId = variables.affected.prevSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const subShelfId = request.body.subShelfId as UUID;
+      const prevSubShelfId = request.affected.prevSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(subShelfId),
@@ -576,14 +674,24 @@ export const useDeleteMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMySubShelvesByIds,
-    onSuccess: (_, variables) => {
-      const subShelfIds = (variables.body.subShelfIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const subShelfIds = (request.body.subShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
-      const prevSubShelfIds = (variables.affected.prevSubShelfIds || []).filter(
+      const prevSubShelfIds = (request.affected.prevSubShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [

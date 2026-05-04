@@ -3,8 +3,8 @@ import {
   useDeleteMyRootShelfById,
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
-import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
 import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import { queryFnGetAllMySubShelvesByRootShelfId } from "@shared/api/invokers/subShelf.invoker";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
@@ -46,7 +46,6 @@ export const useRootShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseRootShelfLogicProps) => {
-  const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
@@ -197,7 +196,7 @@ export const useRootShelfLogic = ({
       LocalStorageKey.accessToken
     );
     const responseOfGettingAllSubShelves =
-      (await getAllMySubShelvesQuerier.queryAsync({
+      (await queryFnGetAllMySubShelvesByRootShelfId({
         header: {
           userAgent: userAgent,
           authorization: getAuthorization(accessToken),

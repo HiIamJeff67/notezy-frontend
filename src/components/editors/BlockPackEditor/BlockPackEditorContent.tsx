@@ -32,7 +32,6 @@ import {
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
-import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
 import { ContentType } from "@shared/enums/blockPackContentType.enum";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { ChevronDownIcon } from "lucide-react";
@@ -51,9 +50,6 @@ const BlockPackEditorContent = ({
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
-
-  const getMyBlockGroupsAndTheirBlocksQuerier =
-    useGetMyBlockGroupsAndTheirBlocksByBlockPackId();
 
   const { editor, state } = useBlockEditor();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -323,13 +319,13 @@ const BlockPackEditorContent = ({
         )}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        {getMyBlockGroupsAndTheirBlocksQuerier.isFetching ? (
-          <StrictLoadingCover />
-        ) : (
+        {state === "idle" ? (
           <BlockNoteView
             editor={editor}
             className="caret-muted-foreground z-10"
           />
+        ) : (
+          <StrictLoadingCover />
         )}
       </div>
     </div>

@@ -25,7 +25,8 @@
     "**/*.tsx",
     "src/components/**/*.tsx",
     "shared/enums/*.enums.ts",
-    "src/reducers/*.reducer.ts"
+    "src/reducers/*.reducer.ts",
+    "shared/types/modeType.typ.ets"
   ],
   "exclude": ["node_modules"]
 }

@@ -63,13 +63,11 @@ export const BlockEditorContext = createContext<
 interface BlockEditorProviderProps {
   children: React.ReactNode;
   blockPackMeta: BlockPackMeta;
-  isBlockPackMetaInitialized: boolean;
 }
 
 export const BlockEditorProvider = ({
   children,
   blockPackMeta,
-  isBlockPackMetaInitialized,
 }: BlockEditorProviderProps) => {
   const languageManager = useLanguage();
 
@@ -154,20 +152,17 @@ export const BlockEditorProvider = ({
         );
       }
 
-      const isNewBlockPack =
-        isBlockPackMetaInitialized && initialContent.length === 0;
-      if (isNewBlockPack) {
-        initialContent = [
-          {
-            id: generateUUID(),
-            type: "paragraph",
-            content: [],
-          },
-        ];
-      }
-
       const editor = BlockNoteEditor.create({
-        initialContent: initialContent,
+        initialContent:
+          initialContent.length === 0
+            ? [
+                {
+                  id: generateUUID(),
+                  type: "paragraph",
+                  content: [],
+                },
+              ]
+            : initialContent,
         trailingBlock: false,
       });
 
@@ -175,11 +170,11 @@ export const BlockEditorProvider = ({
 
       return {
         editor: editor,
-        initialContent: initialContent,
-        isNewBlockPack: isNewBlockPack,
+        initialContent: editor.document,
+        isNewBlockPack: initialContent.length === 0,
       };
     },
-    [isBlockPackMetaInitialized]
+    []
   );
 
   const { editor, initialContent, isNewBlockPack } = useMemo(
@@ -757,7 +752,7 @@ export const BlockEditorProvider = ({
       newBlockGroupId,
       1
     );
-    const request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest = {
+    await insertBlockGroupsAndBlocksMutator.mutateAsync({
       header: {
         userAgent: userAgent,
         authorization: getAuthorization(accessToken),
@@ -774,9 +769,7 @@ export const BlockEditorProvider = ({
           },
         ],
       },
-    };
-    console.log(request);
-    await insertBlockGroupsAndBlocksMutator.mutateAsync(request);
+    });
   }, [insertBlockGroupsAndBlocksMutator, initialContent]);
 
   useEffect(() => {

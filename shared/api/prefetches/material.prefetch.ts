@@ -1,14 +1,14 @@
 import {
-  queryFnGetAllMyMaterialsByRootShelfId,
-  queryFnGetMyMaterialAndItsParentById,
-  queryFnGetMyMaterialById,
-  queryFnGetMyMaterialsByParentSubShelfId,
-} from "@shared/api/functions/material.function";
-import {
   GetAllMyMaterialsByRootShelfIdRequest,
   GetMyMaterialByIdRequest,
   GetMyMaterialsByParentSubShelfIdRequest,
 } from "@shared/api/interfaces/material.interface";
+import {
+  queryFnGetAllMyMaterialsByRootShelfId,
+  queryFnGetMyMaterialAndItsParentById,
+  queryFnGetMyMaterialById,
+  queryFnGetMyMaterialsByParentSubShelfId,
+} from "@shared/api/invokers/material.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

@@ -1,500 +1,346 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  CreateNotebookMaterialRequest,
-  CreateNotebookMaterialResponse,
-  CreateTextbookMaterialRequest,
-  CreateTextbookMaterialResponse,
-  DeleteMyMaterialByIdRequest,
-  DeleteMyMaterialByIdResponse,
-  DeleteMyMaterialsByIdsRequest,
-  DeleteMyMaterialsByIdsResponse,
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdResponse,
-  GetMyMaterialAndItsParentByIdRequest,
-  GetMyMaterialAndItsParentByIdResponse,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdResponse,
-  GetMyMaterialsByParentSubShelfIdRequest,
-  GetMyMaterialsByParentSubShelfIdResponse,
-  MoveMyMaterialByIdRequest,
-  MoveMyMaterialByIdResponse,
-  MoveMyMaterialsByIdsRequest,
-  MoveMyMaterialsByIdsResponse,
-  RestoreMyMaterialByIdRequest,
-  RestoreMyMaterialByIdResponse,
-  RestoreMyMaterialsByIdsRequest,
-  RestoreMyMaterialsByIdsResponse,
-  SaveMyNotebookMaterialByIdRequest,
-  SaveMyNotebookMaterialByIdResponse,
-  UpdateMyMaterialByIdRequest,
-  UpdateMyMaterialByIdResponse,
+  CreateNotebookMaterialServerFn,
+  CreateTextbookMaterialServerFn,
+  DeleteMyMaterialByIdServerFn,
+  DeleteMyMaterialsByIdsServerFn,
+  GetAllMyMaterialsByRootShelfIdServerFn,
+  GetMyMaterialAndItsParentByIdServerFn,
+  GetMyMaterialByIdServerFn,
+  GetMyMaterialsByParentSubShelfIdServerFn,
+  MoveMyMaterialByIdServerFn,
+  RestoreMyMaterialByIdServerFn,
+  RestoreMyMaterialsByIdsServerFn,
+  UpdateMyMaterialByIdServerFn,
+} from "@shared/api/functions/material.serverFn";
+import {
+  type CreateNotebookMaterialRequest,
+  CreateNotebookMaterialRequestSchema,
+  type CreateNotebookMaterialResponse,
+  CreateNotebookMaterialResponseSchema,
+  type CreateTextbookMaterialRequest,
+  CreateTextbookMaterialRequestSchema,
+  type CreateTextbookMaterialResponse,
+  CreateTextbookMaterialResponseSchema,
+  type DeleteMyMaterialByIdRequest,
+  DeleteMyMaterialByIdRequestSchema,
+  type DeleteMyMaterialByIdResponse,
+  DeleteMyMaterialByIdResponseSchema,
+  type DeleteMyMaterialsByIdsRequest,
+  DeleteMyMaterialsByIdsRequestSchema,
+  type DeleteMyMaterialsByIdsResponse,
+  DeleteMyMaterialsByIdsResponseSchema,
+  type GetAllMyMaterialsByRootShelfIdRequest,
+  GetAllMyMaterialsByRootShelfIdRequestSchema,
+  type GetAllMyMaterialsByRootShelfIdResponse,
+  GetAllMyMaterialsByRootShelfIdResponseSchema,
+  type GetMyMaterialAndItsParentByIdRequest,
+  GetMyMaterialAndItsParentByIdRequestSchema,
+  type GetMyMaterialAndItsParentByIdResponse,
+  GetMyMaterialAndItsParentByIdResponseSchema,
+  type GetMyMaterialByIdRequest,
+  GetMyMaterialByIdRequestSchema,
+  type GetMyMaterialByIdResponse,
+  GetMyMaterialByIdResponseSchema,
+  type GetMyMaterialsByParentSubShelfIdRequest,
+  GetMyMaterialsByParentSubShelfIdRequestSchema,
+  type GetMyMaterialsByParentSubShelfIdResponse,
+  GetMyMaterialsByParentSubShelfIdResponseSchema,
+  type MoveMyMaterialByIdRequest,
+  MoveMyMaterialByIdRequestSchema,
+  type MoveMyMaterialByIdResponse,
+  MoveMyMaterialByIdResponseSchema,
+  type RestoreMyMaterialByIdRequest,
+  RestoreMyMaterialByIdRequestSchema,
+  type RestoreMyMaterialByIdResponse,
+  RestoreMyMaterialByIdResponseSchema,
+  type RestoreMyMaterialsByIdsRequest,
+  RestoreMyMaterialsByIdsRequestSchema,
+  type RestoreMyMaterialsByIdsResponse,
+  RestoreMyMaterialsByIdsResponseSchema,
+  type UpdateMyMaterialByIdRequest,
+  UpdateMyMaterialByIdRequestSchema,
+  type UpdateMyMaterialByIdResponse,
+  UpdateMyMaterialByIdResponseSchema,
 } from "@shared/api/interfaces/material.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyMaterialById(
+export const queryFnGetMyMaterialById = async (
   request: GetMyMaterialByIdRequest
-): Promise<GetMyMaterialByIdResponse> {
-  const { materialId } = request.param;
-  const params = new URLSearchParams({
-    materialId: materialId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyMaterialByIdResponse> => {
+  try {
+    const validatedRequest = GetMyMaterialByIdRequestSchema.parse(request);
+    const response = await GetMyMaterialByIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyMaterialByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyMaterialAndItsParentById(
+export const queryFnGetMyMaterialAndItsParentById = async (
   request: GetMyMaterialAndItsParentByIdRequest
-): Promise<GetMyMaterialAndItsParentByIdResponse> {
-  const { materialId } = request.param;
-  const params = new URLSearchParams({
-    materialId: materialId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialAndItsParentById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyMaterialAndItsParentByIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyMaterialAndItsParentByIdRequestSchema.parse(request);
+    const response = await GetMyMaterialAndItsParentByIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyMaterialAndItsParentByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyMaterialAndItsParentByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyMaterialsByParentSubShelfId(
+export const queryFnGetMyMaterialsByParentSubShelfId = async (
   request: GetMyMaterialsByParentSubShelfIdRequest
-): Promise<GetMyMaterialsByParentSubShelfIdResponse> {
-  const { parentSubShelfId } = request.param;
-  const params = new URLSearchParams({
-    parentSubShelfId: parentSubShelfId,
-  }).toString();
-
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialsByParentSubShelfId}?${params}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      credentials: "include",
+): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyMaterialsByParentSubShelfIdRequestSchema.parse(request);
+    const response = await GetMyMaterialsByParentSubShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMyMaterialsByParentSubShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyMaterialsByParentSubShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetAllMyMaterialsByRootShelfId(
+export const queryFnGetAllMyMaterialsByRootShelfId = async (
   request: GetAllMyMaterialsByRootShelfIdRequest
-): Promise<GetAllMyMaterialsByRootShelfIdResponse> {
-  const { rootShelfId } = request.param;
-  const params = new URLSearchParams({
-    rootShelfId: rootShelfId,
-  }).toString();
-
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByRootShelfId}?${params}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      credentials: "include",
+): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetAllMyMaterialsByRootShelfIdRequestSchema.parse(request);
+    const response = await GetAllMyMaterialsByRootShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetAllMyMaterialsByRootShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function CreateTextbookMaterial(
+export const mutationFnCreateTextbookMaterial = async (
   request: CreateTextbookMaterialRequest
-): Promise<CreateTextbookMaterialResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateTextbookMaterialResponse> => {
+  try {
+    const validatedRequest = CreateTextbookMaterialRequestSchema.parse(request);
+    const response = await CreateTextbookMaterialServerFn({
+      data: validatedRequest,
+    });
+    return CreateTextbookMaterialResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as CreateNotebookMaterialResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function CreateNotebookMaterial(
+export const mutationFnCreateNotebookMaterial = async (
   request: CreateNotebookMaterialRequest
-): Promise<CreateNotebookMaterialResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createNotebookMaterial}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateNotebookMaterialResponse> => {
+  try {
+    const validatedRequest = CreateNotebookMaterialRequestSchema.parse(request);
+    const response = await CreateNotebookMaterialServerFn({
+      data: validatedRequest,
+    });
+    return CreateNotebookMaterialResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as CreateNotebookMaterialResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function UpdateMyMaterialById(
+export const mutationFnUpdateMyMaterialById = async (
   request: UpdateMyMaterialByIdRequest
-): Promise<UpdateMyMaterialByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyMaterialById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyMaterialByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyMaterialByIdRequestSchema.parse(request);
+    const response = await UpdateMyMaterialByIdServerFn({
+      data: validatedRequest,
+    });
+    return UpdateMyMaterialByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as UpdateMyMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function SaveMyNotebookMaterialById(
-  request: SaveMyNotebookMaterialByIdRequest
-): Promise<SaveMyNotebookMaterialByIdResponse> {
-  const formData = new FormData();
-  formData.append("materialId", request.body.materialId);
-  if (request.body.contentFile) {
-    formData.append("contentFile", request.body.contentFile);
-  }
-
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyNotebookMaterialById}`,
-    {
-      method: "PUT",
-      headers: {
-        // Do NOT set the content type of form-data manually
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: formData,
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as SaveMyNotebookMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function MoveMyMaterialById(
+export const mutationFnMoveMyMaterialById = async (
   request: MoveMyMaterialByIdRequest
-): Promise<MoveMyMaterialByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMyMaterialByIdResponse> => {
+  try {
+    const validatedRequest = MoveMyMaterialByIdRequestSchema.parse(request);
+    const response = await MoveMyMaterialByIdServerFn({
+      data: validatedRequest,
+    });
+    return MoveMyMaterialByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as MoveMyMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function MoveMyMaterialsByIds(
-  request: MoveMyMaterialsByIdsRequest
-): Promise<MoveMyMaterialsByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialsByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as MoveMyMaterialsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyMaterialById(
+export const mutationFnRestoreMyMaterialById = async (
   request: RestoreMyMaterialByIdRequest
-): Promise<RestoreMyMaterialByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialById}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyMaterialByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyMaterialByIdRequestSchema.parse(request);
+    const response = await RestoreMyMaterialByIdServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMyMaterialByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyMaterialsByIds(
+export const mutationFnRestoreMyMaterialsByIds = async (
   request: RestoreMyMaterialsByIdsRequest
-): Promise<RestoreMyMaterialsByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialsByIds}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyMaterialsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMyMaterialsByIdsRequestSchema.parse(request);
+    const response = await RestoreMyMaterialsByIdsServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMyMaterialsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyMaterialsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyMaterialById(
+export const mutationFnDeleteMyMaterialById = async (
   request: DeleteMyMaterialByIdRequest
-): Promise<DeleteMyMaterialByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialById}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyMaterialByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyMaterialByIdRequestSchema.parse(request);
+    const response = await DeleteMyMaterialByIdServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMyMaterialByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as DeleteMyMaterialByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyMaterialsByIds(
+export const mutationFnDeleteMyMaterialsByIds = async (
   request: DeleteMyMaterialsByIdsRequest
-): Promise<DeleteMyMaterialsByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialsByIds}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyMaterialsByIdsResponse> => {
+  try {
+    const validatedRequest = DeleteMyMaterialsByIdsRequestSchema.parse(request);
+    const response = await DeleteMyMaterialsByIdsServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMyMaterialsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as DeleteMyMaterialsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
+};

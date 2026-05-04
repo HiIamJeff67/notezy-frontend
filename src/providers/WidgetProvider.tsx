@@ -156,7 +156,6 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
 
       widgetsRef.current = sortedWidgets;
-      console.log("userData", userManager.userData?.publicId);
 
       LocalStorageManipulator.setItem(
         LocalStorageKey.dashboardWidgets,

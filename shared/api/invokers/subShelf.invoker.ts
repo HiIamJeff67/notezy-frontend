@@ -1,496 +1,432 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyAPIError } from "@shared/api/exceptions";
 import {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesResponse,
-  CreateSubShelfByRootShelfIdRequest,
-  CreateSubShelfByRootShelfIdResponse,
-  CreateSubShelvesByRootShelfIdsRequest,
-  CreateSubShelvesByRootShelfIdsResponse,
-  DeleteMySubShelfByIdRequest,
-  DeleteMySubShelfByIdResponse,
-  DeleteMySubShelvesByIdsRequest,
-  DeleteMySubShelvesByIdsResponse,
-  GetAllMySubShelvesByRootShelfIdRequest,
-  GetAllMySubShelvesByRootShelfIdResponse,
-  GetMySubShelfByIdRequest,
-  GetMySubShelfByIdResponse,
-  GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
-  GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
-  GetMySubShelvesByPrevSubShelfIdRequest,
-  GetMySubShelvesByPrevSubShelfIdResponse,
-  MoveMySubShelfRequest,
-  MoveMySubShelfResponse,
-  MoveMySubShelvesRequest,
-  MoveMySubShelvesResponse,
-  RestoreMySubShelfByIdRequest,
-  RestoreMySubShelfByIdResponse,
-  RestoreMySubShelvesByIdsRequest,
-  RestoreMySubShelvesByIdsResponse,
-  UpdateMySubShelfByIdRequest,
-  UpdateMySubShelfByIdResponse,
-  UpdateMySubShelvesByIdsRequest,
-  UpdateMySubShelvesByIdsResponse,
+  BatchMoveMySubShelvesServerFn,
+  CreateSubShelfByRootShelfIdServerFn,
+  CreateSubShelvesByRootShelfIdsServerFn,
+  DeleteMySubShelfByIdServerFn,
+  DeleteMySubShelvesByIdsServerFn,
+  GetAllMySubShelvesByRootShelfIdServerFn,
+  GetMySubShelfByIdServerFn,
+  GetMySubShelvesAndItemsByPrevSubShelfIdServerFn,
+  GetMySubShelvesByPrevSubShelfIdServerFn,
+  MoveMySubShelfServerFn,
+  MoveMySubShelvesServerFn,
+  RestoreMySubShelfByIdServerFn,
+  RestoreMySubShelvesByIdsServerFn,
+  UpdateMySubShelfByIdServerFn,
+  UpdateMySubShelvesByIdsServerFn,
+} from "@shared/api/functions/subShelf.serverFn";
+import {
+  type BatchMoveMySubShelvesRequest,
+  BatchMoveMySubShelvesRequestSchema,
+  type BatchMoveMySubShelvesResponse,
+  BatchMoveMySubShelvesResponseSchema,
+  type CreateSubShelfByRootShelfIdRequest,
+  CreateSubShelfByRootShelfIdRequestSchema,
+  type CreateSubShelfByRootShelfIdResponse,
+  CreateSubShelfByRootShelfIdResponseSchema,
+  type CreateSubShelvesByRootShelfIdsRequest,
+  CreateSubShelvesByRootShelfIdsRequestSchema,
+  type CreateSubShelvesByRootShelfIdsResponse,
+  CreateSubShelvesByRootShelfIdsResponseSchema,
+  type DeleteMySubShelfByIdRequest,
+  DeleteMySubShelfByIdRequestSchema,
+  type DeleteMySubShelfByIdResponse,
+  DeleteMySubShelfByIdResponseSchema,
+  type DeleteMySubShelvesByIdsRequest,
+  DeleteMySubShelvesByIdsRequestSchema,
+  type DeleteMySubShelvesByIdsResponse,
+  DeleteMySubShelvesByIdsResponseSchema,
+  type GetAllMySubShelvesByRootShelfIdRequest,
+  GetAllMySubShelvesByRootShelfIdRequestSchema,
+  type GetAllMySubShelvesByRootShelfIdResponse,
+  GetAllMySubShelvesByRootShelfIdResponseSchema,
+  type GetMySubShelfByIdRequest,
+  GetMySubShelfByIdRequestSchema,
+  type GetMySubShelfByIdResponse,
+  GetMySubShelfByIdResponseSchema,
+  type GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
+  GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema,
+  type GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
+  GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema,
+  type GetMySubShelvesByPrevSubShelfIdRequest,
+  GetMySubShelvesByPrevSubShelfIdRequestSchema,
+  type GetMySubShelvesByPrevSubShelfIdResponse,
+  GetMySubShelvesByPrevSubShelfIdResponseSchema,
+  type MoveMySubShelfRequest,
+  MoveMySubShelfRequestSchema,
+  type MoveMySubShelfResponse,
+  MoveMySubShelfResponseSchema,
+  type MoveMySubShelvesRequest,
+  MoveMySubShelvesRequestSchema,
+  type MoveMySubShelvesResponse,
+  MoveMySubShelvesResponseSchema,
+  type RestoreMySubShelfByIdRequest,
+  RestoreMySubShelfByIdRequestSchema,
+  type RestoreMySubShelfByIdResponse,
+  RestoreMySubShelfByIdResponseSchema,
+  type RestoreMySubShelvesByIdsRequest,
+  RestoreMySubShelvesByIdsRequestSchema,
+  type RestoreMySubShelvesByIdsResponse,
+  RestoreMySubShelvesByIdsResponseSchema,
+  type UpdateMySubShelfByIdRequest,
+  UpdateMySubShelfByIdRequestSchema,
+  type UpdateMySubShelfByIdResponse,
+  UpdateMySubShelfByIdResponseSchema,
+  type UpdateMySubShelvesByIdsRequest,
+  UpdateMySubShelvesByIdsRequestSchema,
+  type UpdateMySubShelvesByIdsResponse,
+  UpdateMySubShelvesByIdsResponseSchema,
 } from "@shared/api/interfaces/subShelf.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMySubShelfById(
+export const queryFnGetMySubShelfById = async (
   request: GetMySubShelfByIdRequest
-): Promise<GetMySubShelfByIdResponse> {
-  const { subShelfId } = request.param;
-  const params = new URLSearchParams({
-    subShelfId: subShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMySubShelfByIdResponse> => {
+  try {
+    const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
+    const response = await GetMySubShelfByIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMySubShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as GetMySubShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function GetMySubShelvesByPrevSubShelfId(
+export const queryFnGetMySubShelvesByPrevSubShelfId = async (
   request: GetMySubShelvesByPrevSubShelfIdRequest
-): Promise<GetMySubShelvesByPrevSubShelfIdResponse> {
-  const { prevSubShelfId } = request.param;
-  const params = new URLSearchParams({
-    prevSubShelfId: prevSubShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
+    const response = await GetMySubShelvesByPrevSubShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMySubShelvesByPrevSubShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as GetMySubShelvesByPrevSubShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function GetAllMySubShelvesByRootShelfId(
+export const queryFnGetAllMySubShelvesByRootShelfId = async (
   request: GetAllMySubShelvesByRootShelfIdRequest
-): Promise<GetAllMySubShelvesByRootShelfIdResponse> {
-  const { rootShelfId } = request.param;
-  const params = new URLSearchParams({
-    rootShelfId: rootShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
+    const response = await GetAllMySubShelvesByRootShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetAllMySubShelvesByRootShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetAllMySubShelvesByRootShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMySubShelvesAndItemsByPrevSubShelfId(
+export const queryFnGetMySubShelvesAndItemsByPrevSubShelfId = async (
   request: GetMySubShelvesAndItemsByPrevSubShelfIdRequest
-): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> {
-  const { prevSubShelfId } = request.param;
-  const params = new URLSearchParams({
-    prevSubShelfId: prevSubShelfId,
-  }).toString();
-  let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema.parse(request);
+    const response = await GetMySubShelvesAndItemsByPrevSubShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema.parse(
+      response
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function CreateSubShelfByRootShelfId(
+export const mutationFnCreateSubShelfByRootShelfId = async (
   request: CreateSubShelfByRootShelfIdRequest
-): Promise<CreateSubShelfByRootShelfIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateSubShelfByRootShelfIdResponse> => {
+  try {
+    const validatedRequest =
+      CreateSubShelfByRootShelfIdRequestSchema.parse(request);
+    const response = await CreateSubShelfByRootShelfIdServerFn({
+      data: validatedRequest,
+    });
+    return CreateSubShelfByRootShelfIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as CreateSubShelfByRootShelfIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function CreateSubShelvesByRootShelfIds(
+export const mutationFnCreateSubShelvesByRootShelfIds = async (
   request: CreateSubShelvesByRootShelfIdsRequest
-): Promise<CreateSubShelvesByRootShelfIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelvesByRootShelfIds}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateSubShelvesByRootShelfIdsResponse> => {
+  try {
+    const validatedRequest =
+      CreateSubShelvesByRootShelfIdsRequestSchema.parse(request);
+    const response = await CreateSubShelvesByRootShelfIdsServerFn({
+      data: validatedRequest,
+    });
+    return CreateSubShelvesByRootShelfIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as CreateSubShelvesByRootShelfIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function UpdateMySubShelfById(
+export const mutationFnUpdateMySubShelfById = async (
   request: UpdateMySubShelfByIdRequest
-): Promise<UpdateMySubShelfByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMySubShelfByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
+    const response = await UpdateMySubShelfByIdServerFn({
+      data: validatedRequest,
+    });
+    return UpdateMySubShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as UpdateMySubShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function UpdateMySubShelvesByIds(
+export const mutationFnUpdateMySubShelvesByIds = async (
   request: UpdateMySubShelvesByIdsRequest
-): Promise<UpdateMySubShelvesByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelvesByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMySubShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      UpdateMySubShelvesByIdsRequestSchema.parse(request);
+    const response = await UpdateMySubShelvesByIdsServerFn({
+      data: validatedRequest,
+    });
+    return UpdateMySubShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as UpdateMySubShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function MoveMySubShelf(
+export const mutationFnMoveMySubShelf = async (
   request: MoveMySubShelfRequest
-): Promise<MoveMySubShelfResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMySubShelfResponse> => {
+  try {
+    const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
+    const response = await MoveMySubShelfServerFn({ data: validatedRequest });
+    return MoveMySubShelfResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse = (await response.json()) as MoveMySubShelfResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function MoveMySubShelves(
+export const mutationFnMoveMySubShelves = async (
   request: MoveMySubShelvesRequest
-): Promise<MoveMySubShelvesResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelves}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMySubShelvesResponse> => {
+  try {
+    const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
+    const response = await MoveMySubShelvesServerFn({ data: validatedRequest });
+    return MoveMySubShelvesResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse = (await response.json()) as MoveMySubShelvesResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function BatchMoveMySubShelves(
+export const mutationFnBatchMoveMySubShelves = async (
   request: BatchMoveMySubShelvesRequest
-): Promise<BatchMoveMySubShelvesResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<BatchMoveMySubShelvesResponse> => {
+  try {
+    const validatedRequest = BatchMoveMySubShelvesRequestSchema.parse(request);
+    const response = await BatchMoveMySubShelvesServerFn({
+      data: validatedRequest,
+    });
+    return BatchMoveMySubShelvesResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as BatchMoveMySubShelvesResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function RestoreMySubShelfById(
+export const mutationFnRestoreMySubShelfById = async (
   request: RestoreMySubShelfByIdRequest
-): Promise<RestoreMySubShelfByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMySubShelfByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMySubShelfByIdRequestSchema.parse(request);
+    const response = await RestoreMySubShelfByIdServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMySubShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as RestoreMySubShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function RestoreMySubShelvesByIds(
+export const mutationFnRestoreMySubShelvesByIds = async (
   request: RestoreMySubShelvesByIdsRequest
-): Promise<RestoreMySubShelvesByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelvesByIds}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMySubShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMySubShelvesByIdsRequestSchema.parse(request);
+    const response = await RestoreMySubShelvesByIdsServerFn({
+      data: validatedRequest,
+    });
+    return RestoreMySubShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as RestoreMySubShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function DeleteMySubShelfById(
+export const mutationFnDeleteMySubShelfById = async (
   request: DeleteMySubShelfByIdRequest
-): Promise<DeleteMySubShelfByIdResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMySubShelfByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
+    const response = await DeleteMySubShelfByIdServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMySubShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as DeleteMySubShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function DeleteMySubShelvesByIds(
+export const mutationFnDeleteMySubShelvesByIds = async (
   request: DeleteMySubShelvesByIdsRequest
-): Promise<DeleteMySubShelvesByIdsResponse> {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelvesByIds}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMySubShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      DeleteMySubShelvesByIdsRequestSchema.parse(request);
+    const response = await DeleteMySubShelvesByIdsServerFn({
+      data: validatedRequest,
+    });
+    return DeleteMySubShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed : ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as DeleteMySubShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

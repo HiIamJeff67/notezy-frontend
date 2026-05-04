@@ -18,7 +18,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useTheme, useUser } from "@/hooks";
+import { useAppRouter, useLanguage, useTheme } from "@/hooks";
 
 const DisplayTitle = {
   mainTitle: "Notezy",
@@ -29,7 +29,6 @@ export const HomePage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
   const themeManager = useTheme();
-  const userManager = useUser();
 
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
   const [currentText, setCurrentText] = useState("");
@@ -202,11 +201,7 @@ export const HomePage = () => {
                   const accessToken = LocalStorageManipulator.getItemByKey(
                     LocalStorageKey.accessToken
                   );
-                  router.push(
-                    userManager.userData !== null && accessToken
-                      ? WebURLPathDictionary.root.dashboard._
-                      : WebURLPathDictionary.auth.login
-                  );
+                  router.push(WebURLPathDictionary.auth.login);
                 }}
               >
                 <NoteIcon size={18} />

@@ -5,7 +5,10 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const userSetting = sqliteTable("UserSettingTable", {
   publicId: text("public_id")
     .primaryKey()
-    .references(() => user.publicId),
+    .references(() => user.publicId, {
+      onUpdate: "cascade",
+      onDelete: "cascade",
+    }),
   language: text("language").notNull().default("English"),
   generalSettingCode: integer("general_setting_code").notNull().default(0),
   privacySettingCode: integer("privacy_setting_code").notNull().default(0),

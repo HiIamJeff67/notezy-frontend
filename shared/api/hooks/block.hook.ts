@@ -1,5 +1,15 @@
 import type { UUID } from "node:crypto";
 import {
+  type GetAllMyBlocksRequest,
+  type GetMyBlockByIdRequest,
+  type GetMyBlocksByBlockGroupIdRequest,
+  type GetMyBlocksByBlockGroupIdsRequest,
+  type GetMyBlocksByBlockPackIdRequest,
+  type GetMyBlocksByIdsRequest,
+} from "@shared/api/interfaces/block.interface";
+import type { GetMyBlockPackByIdResponse } from "@shared/api/interfaces/blockPack.interface";
+import { duplicateResponse } from "@shared/api/interfaces/context.interface";
+import {
   mutationFnDeleteMyBlockById,
   mutationFnDeleteMyBlocksByIds,
   mutationFnInsertBlock,
@@ -14,31 +24,15 @@ import {
   queryFnGetMyBlocksByBlockGroupIds,
   queryFnGetMyBlocksByBlockPackId,
   queryFnGetMyBlocksByIds,
-} from "@shared/api/functions/block.function";
-import type {
-  GetAllMyBlocksRequest,
-  GetAllMyBlocksResponse,
-  GetMyBlockByIdRequest,
-  GetMyBlockByIdResponse,
-  GetMyBlocksByBlockGroupIdRequest,
-  GetMyBlocksByBlockGroupIdResponse,
-  GetMyBlocksByBlockGroupIdsRequest,
-  GetMyBlocksByBlockGroupIdsResponse,
-  GetMyBlocksByBlockPackIdRequest,
-  GetMyBlocksByBlockPackIdResponse,
-  GetMyBlocksByIdsRequest,
-  GetMyBlocksByIdsResponse,
-} from "@shared/api/interfaces/block.interface";
-import type { GetMyBlockPackByIdResponse } from "@shared/api/interfaces/blockPack.interface";
-import { duplicateResponse } from "@shared/api/interfaces/context.interface";
+} from "@shared/api/invokers/block.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  type FetchQueryOptions,
   type QueryKey,
   type UseQueryOptions,
   useMutation,
@@ -46,16 +40,27 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMyBlockById = (
-  hookRequest?: GetMyBlockByIdRequest,
+  hookRequest: GetMyBlockByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.block.oneById(
-      hookRequest?.param.blockId as UUID | undefined
+      hookRequest.param.blockId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyBlockById(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyBlockById(hookRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -63,36 +68,34 @@ export const useGetMyBlockById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyBlockByIdRequest
-  ): Promise<GetMyBlockByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.block.oneById(callbackRequest.param.blockId as UUID),
-      queryFn: async () => await queryFnGetMyBlockById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_BLOCK_BY_ID_HOOK" as const,
   };
 };
 
 export const useGetMyBlocksByIds = (
-  hookRequest?: GetMyBlocksByIdsRequest,
+  hookRequest: GetMyBlocksByIdsRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.block.manyByIds(
-      hookRequest?.param.blockIds as UUID[] | undefined
+      hookRequest.param.blockIds as UUID[] | undefined
     ),
     queryFn: async () => {
       const response = await queryFnGetMyBlocksByIds(hookRequest);
-
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       if (response.success && response.data) {
         response.data.forEach((block: any) => {
           queryClient.setQueriesData(
@@ -103,7 +106,6 @@ export const useGetMyBlocksByIds = (
           );
         });
       }
-
       return response;
     },
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -113,54 +115,34 @@ export const useGetMyBlocksByIds = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyBlocksByIdsRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetMyBlocksByIdsResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.block.manyByIds(
-        callbackRequest.param.blockIds as UUID[]
-      ),
-      queryFn: async () => {
-        const response = await queryFnGetMyBlocksByIds(callbackRequest);
-
-        if (response.success && response.data) {
-          response.data.forEach((block: any) => {
-            queryClient.setQueriesData(
-              {
-                queryKey: queryKeys.block.oneById(block.id as UUID),
-              },
-              duplicateResponse(response, true, block)
-            );
-          });
-        }
-
-        return response;
-      },
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetMyBlocksByIdsResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_BLOCKS_BY_IDS_HOOK" as const,
   };
 };
 
 export const useGetMyBlocksByBlockGroupId = (
-  hookRequest?: GetMyBlocksByBlockGroupIdRequest,
+  hookRequest: GetMyBlocksByBlockGroupIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.block.manyByBlockGroupId(
-      hookRequest?.param.blockGroupId as UUID | undefined
+      hookRequest.param.blockGroupId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyBlocksByBlockGroupId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyBlocksByBlockGroupId(hookRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -168,42 +150,34 @@ export const useGetMyBlocksByBlockGroupId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyBlocksByBlockGroupIdRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetMyBlocksByBlockGroupIdResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.block.manyByBlockGroupId(
-        callbackRequest.param.blockGroupId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyBlocksByBlockGroupId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetMyBlocksByBlockGroupIdResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_ID_HOOK" as const,
   };
 };
 
 export const useGetMyBlocksByBlockGroupIds = (
-  hookRequest?: GetMyBlocksByBlockGroupIdsRequest,
+  hookRequest: GetMyBlocksByBlockGroupIdsRequest,
   options?: Partial<UseQueryOptions>
 ) => {
   const queryClient = getQueryClient();
 
   const query = useQuery({
     queryKey: queryKeys.block.manyByBlockGroupIds(
-      hookRequest?.param.blockGroupIds as UUID[] | undefined
+      hookRequest.param.blockGroupIds as UUID[] | undefined
     ),
     queryFn: async () => {
       const response = await queryFnGetMyBlocksByBlockGroupIds(hookRequest);
-
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       if (hookRequest && response.success && response.data) {
         hookRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
           queryClient.setQueriesData(
@@ -216,7 +190,6 @@ export const useGetMyBlocksByBlockGroupIds = (
           );
         });
       }
-
       return response;
     },
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -226,57 +199,34 @@ export const useGetMyBlocksByBlockGroupIds = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyBlocksByBlockGroupIdsRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.block.manyByBlockGroupIds(
-        callbackRequest.param.blockGroupIds as UUID[]
-      ),
-      queryFn: async () => {
-        const response =
-          await queryFnGetMyBlocksByBlockGroupIds(callbackRequest);
-
-        if (hookRequest && response.success && response.data) {
-          hookRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
-            queryClient.setQueriesData(
-              {
-                queryKey: queryKeys.block.manyByBlockGroupId(
-                  blockGroupId as UUID
-                ),
-              },
-              duplicateResponse(response, undefined, response.data[index])
-            );
-          });
-        }
-
-        return response;
-      },
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetMyBlocksByBlockGroupIdsResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_IDS_HOOK" as const,
   };
 };
 
 export const useGetMyBlocksByBlockPackId = (
-  hookRequest?: GetMyBlocksByBlockPackIdRequest,
+  hookRequest: GetMyBlocksByBlockPackIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.block.manyByBlockPackId(
-      hookRequest?.param.blockPackId as UUID | undefined
+      hookRequest.param.blockPackId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyBlocksByBlockPackId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyBlocksByBlockPackId(hookRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -284,38 +234,32 @@ export const useGetMyBlocksByBlockPackId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyBlocksByBlockPackIdRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetMyBlocksByBlockPackIdResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.block.manyByBlockPackId(
-        callbackRequest.param.blockPackId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyBlocksByBlockPackId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetMyBlocksByBlockPackIdResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_BLOCKS_BY_BLOCK_PACK_ID_HOOK" as const,
   };
 };
 
 export const useGetAllMyBlocks = (
-  hookRequest?: GetAllMyBlocksRequest,
+  hookRequest: GetAllMyBlocksRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.block.myAll(),
-    queryFn: async () => await queryFnGetAllMyBlocks(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetAllMyBlocks(hookRequest);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -323,22 +267,8 @@ export const useGetAllMyBlocks = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetAllMyBlocksRequest,
-    options?: Partial<FetchQueryOptions>
-  ): Promise<GetAllMyBlocksResponse> => {
-    const response = await queryClient.fetchQuery({
-      queryKey: queryKeys.block.myAll(),
-      queryFn: async () => await queryFnGetAllMyBlocks(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
-      ...options,
-    });
-    return response as GetAllMyBlocksResponse;
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_ALL_MY_BLOCKS_HOOK" as const,
   };
 };
@@ -348,9 +278,19 @@ export const useInsertBlock = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlock,
-    onSuccess: (_, variables) => {
-      const blockGroupId = variables.body.blockGroupId as UUID;
-      const blockPackId = variables.affected.blockPackId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      const blockGroupId = request.body.blockGroupId as UUID;
+      const blockPackId = request.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.block.manyByBlockGroupId(blockGroupId),
         queryKeys.block.manyByBlockPackId(blockPackId),
@@ -395,9 +335,19 @@ export const useInsertBlocks = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlocks,
-    onSuccess: (response, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       const blockGroupIdsSet = new Set<UUID>();
-      const blockPackId = variables.affected.blockPackId as UUID;
+      const blockPackId = request.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.block.manyByBlockPackId(blockPackId),
         queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
@@ -459,9 +409,19 @@ export const useUpdateMyBlockById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyBlockById,
-    onSuccess: (_, variables) => {
-      const blockGroupId = variables.affected.blockGroupId as UUID;
-      const blockPackId = variables.affected.blockPackId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      const blockGroupId = request.affected.blockGroupId as UUID;
+      const blockPackId = request.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.block.manyByBlockGroupId(blockGroupId),
         queryKeys.block.manyByBlockPackId(blockPackId),
@@ -486,12 +446,22 @@ export const useUpdateMyBlocksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyBlocksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       const blockPackIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
       const blockIdsSet = new Set<UUID>();
       const targetKeys: QueryKey[] = [queryKeys.block.myAll()];
-      variables.affected.blockPackIds.forEach(blockPackId => {
+      request.affected.blockPackIds.forEach(blockPackId => {
         if (!blockPackIdsSet.has(blockPackId as UUID)) {
           blockPackIdsSet.add(blockPackId as UUID);
           targetKeys.push(
@@ -543,10 +513,20 @@ export const useRestoreMyBlockById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlockById,
-    onSuccess: (response, variables) => {
-      const blockId = variables.body.blockId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      const blockId = request.body.blockId as UUID;
       const blockGroupId = response.data.blockGroupId as UUID;
-      const blockPackId = variables.affected.blockPackId as UUID;
+      const blockPackId = request.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [queryKeys.block.oneById(blockId)];
       targetKeys.push(
         queryKeys.block.oneById(blockId),
@@ -590,18 +570,28 @@ export const useRestoreMyBlocksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlocksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       const blockIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
       const blockPackIdsSet = new Set<UUID>();
       const targetKeys: QueryKey[] = [queryKeys.block.myAll()];
-      variables.body.blockIds.forEach(blockId => {
+      request.body.blockIds.forEach(blockId => {
         if (!blockIdsSet.has(blockId as UUID)) {
           blockIdsSet.add(blockId as UUID);
           targetKeys.push(queryKeys.block.oneById(blockId as UUID));
         }
       });
-      variables.affected.blockPackIds.forEach(blockPackId => {
+      request.affected.blockPackIds.forEach(blockPackId => {
         if (!blockPackIdsSet.has(blockPackId as UUID)) {
           blockPackIdsSet.add(blockPackId as UUID);
           targetKeys.push(queryKeys.blockPack.oneById(blockPackId as UUID));
@@ -638,10 +628,20 @@ export const useDeleteMyBlockById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlockById,
-    onSuccess: (_, variables) => {
-      const blockId = variables.body.blockId as UUID;
-      const blockGroupId = variables.affected.blockGroupId as UUID;
-      const blockPackId = variables.affected.blockPackId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
+      const blockId = request.body.blockId as UUID;
+      const blockGroupId = request.affected.blockGroupId as UUID;
+      const blockPackId = request.affected.blockPackId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.block.oneById(blockId),
         queryKeys.block.manyByBlockGroupId(blockGroupId),
@@ -684,24 +684,34 @@ export const useDeleteMyBlocksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlocksByIds,
-    onSuccess: (_, variables) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.embeddedPublicId
+      );
       const blockIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
       const blockPackIdsSet = new Set<UUID>();
       const targetKeys: QueryKey[] = [queryKeys.block.myAll()];
-      variables.body.blockIds.forEach(blockId => {
+      request.body.blockIds.forEach(blockId => {
         if (!blockIdsSet.has(blockId as UUID)) {
           blockIdsSet.add(blockId as UUID);
           targetKeys.push(queryKeys.block.oneById(blockId as UUID));
         }
       });
-      variables.affected.blockPackIds.forEach(blockPackId => {
+      request.affected.blockPackIds.forEach(blockPackId => {
         if (!blockPackIdsSet.has(blockPackId as UUID)) {
           blockPackIdsSet.add(blockPackId as UUID);
           targetKeys.push(queryKeys.blockPack.oneById(blockPackId as UUID));
         }
       });
-      variables.affected.blockGroupIds.forEach(blockGroupId => {
+      request.affected.blockGroupIds.forEach(blockGroupId => {
         if (!blockGroupIdsSet.has(blockGroupId as UUID)) {
           blockGroupIdsSet.add(blockGroupId as UUID);
           targetKeys.push(

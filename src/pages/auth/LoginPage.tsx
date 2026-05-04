@@ -1,5 +1,5 @@
 import { useLogin } from "@shared/api/hooks/auth.hook";
-import { useGetUserData } from "@shared/api/hooks/user.hook";
+import { queryFnGetUserData } from "@shared/api/invokers/user.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
@@ -10,7 +10,7 @@ import GridBackground from "@/components/backgrounds/GridBackground/GridBackgrou
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage, useUser } from "@/hooks";
-import { useRegisterLoadingDependencies } from "@/hooks/useRegisterLoadingDependencies";
+import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 
 const LoginPage = () => {
   const router = useAppRouter();
@@ -18,7 +18,6 @@ const LoginPage = () => {
   const userManager = useUser();
 
   const loginMutator = useLogin();
-  const getUserDataQuerier = useGetUserData();
 
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
@@ -42,13 +41,11 @@ const LoginPage = () => {
             },
           });
 
-          const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
-            {
-              header: {
-                userAgent: userAgent,
-              },
-            }
-          );
+          const responseOfGettingUserData = await queryFnGetUserData({
+            header: {
+              userAgent: userAgent,
+            },
+          });
 
           setAccount("");
           setPassword("");
@@ -60,23 +57,13 @@ const LoginPage = () => {
         }
       });
     },
-    [
-      account,
-      password,
-      languageManager,
-      userManager,
-      loginMutator,
-      getUserDataQuerier,
-      router,
-    ]
+    [account, password, languageManager, userManager, loginMutator, router]
   );
 
   return (
     <GridBackground>
       <Suspense fallback={<StrictLoadingCover />}>
-        <StrictLoadingCover
-          condition={loginMutator.isPending || getUserDataQuerier.isFetching}
-        />
+        <StrictLoadingCover condition={loginMutator.isPending} />
         <AuthPanel
           title={languageManager.t(tKey.auth.login)}
           subtitle={`${languageManager.t(

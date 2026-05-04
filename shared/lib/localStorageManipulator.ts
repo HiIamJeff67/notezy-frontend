@@ -124,17 +124,16 @@ export class LocalStorageManipulator {
   static setItems = (
     items: Partial<LocalStorageItem>,
     publicId?: string
-  ): boolean => {
-    if (!this.isLocalStorageAvailable()) return false;
+  ): number => {
+    if (!this.isLocalStorageAvailable()) return 0;
 
-    let success = true;
+    let count = 0;
     Object.entries(items).forEach(([key, value]) => {
       if (value !== undefined) {
-        success =
-          success && this.setItem(key as LocalStorageKey, value, publicId);
+        count += this.setItem(key as LocalStorageKey, value, publicId) ? 1 : 0;
       }
     });
-    return success;
+    return count;
   };
 
   static removeItem = <K extends LocalStorageKey>(
@@ -159,19 +158,53 @@ export class LocalStorageManipulator {
   static removeItems = <K extends LocalStorageKey>(
     keys: K[],
     publicId?: string
+  ): number => {
+    if (!this.isLocalStorageAvailable()) return 0;
+
+    let count = 0;
+    keys.forEach((key, _) => (count += this.removeItem(key, publicId) ? 1 : 0));
+    return count;
+  };
+
+  static ensureItem = <K extends LocalStorageKey>(
+    key: K,
+    value: LocalStorageItem[K] | null | undefined,
+    publicId?: string
   ): boolean => {
+    if (!this.isLocalStorageAvailable()) return false;
+    else if (!value) return false;
+
+    try {
+      this.removeItem(key, publicId);
+      this.setItem(key, value, publicId);
+      return true;
+    } catch (error) {
+      console.error(`Failed to ensure localStorage item "${key}":`, error);
+      return false;
+    }
+  };
+
+  static ensureItems = (
+    items: Partial<LocalStorageItem>,
+    publicId?: string
+  ): number => {
+    if (!this.isLocalStorageAvailable()) return 0;
+
+    let count = 0;
+    Object.entries(items).forEach(([key, value]) => {
+      if (value !== undefined) {
+        count += this.ensureItem(key as LocalStorageKey, value, publicId)
+          ? 1
+          : 0;
+      }
+    });
+    return count;
+  };
+
+  static clearAllItems = (): boolean => {
     if (!this.isLocalStorageAvailable()) return false;
 
     let success = true;
-    keys.forEach(
-      (key, _) => (success = success && this.removeItem(key, publicId))
-    );
-    return success;
-  };
-
-  static clearAllItems = <K extends LocalStorageKey>(keys: K[]): boolean => {
-    if (!this.isLocalStorageAvailable()) return false;
-
     try {
       const keysToRemove: string[] = [];
 
@@ -185,10 +218,11 @@ export class LocalStorageManipulator {
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
       });
-      return true;
     } catch (error) {
       console.error("Failed to clear all localStorage items:", error);
-      return false;
+      success = false;
     }
+
+    return success;
   };
 }

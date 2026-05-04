@@ -1,4 +1,15 @@
 import type { UUID } from "node:crypto";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { SaveMyNotebookMaterialById } from "@shared/api/functions/material.clientFn";
+import {
+  type GetAllMyMaterialsByRootShelfIdRequest,
+  type GetMyMaterialAndItsParentByIdRequest,
+  type GetMyMaterialByIdRequest,
+  type GetMyMaterialsByParentSubShelfIdRequest,
+  type SaveMyNotebookMaterialByIdRequest,
+  SaveMyNotebookMaterialByIdRequestSchema,
+  SaveMyNotebookMaterialByIdResponseSchema,
+} from "@shared/api/interfaces/material.interface";
 import {
   mutationFnCreateNotebookMaterial,
   mutationFnCreateTextbookMaterial,
@@ -7,47 +18,51 @@ import {
   mutationFnMoveMyMaterialById,
   mutationFnRestoreMyMaterialById,
   mutationFnRestoreMyMaterialsByIds,
-  mutationFnSaveMyNotebookMaterialById,
   mutationFnUpdateMyMaterialById,
   queryFnGetAllMyMaterialsByRootShelfId,
   queryFnGetMyMaterialAndItsParentById,
   queryFnGetMyMaterialById,
   queryFnGetMyMaterialsByParentSubShelfId,
-} from "@shared/api/functions/material.function";
-import type {
-  GetAllMyMaterialsByRootShelfIdRequest,
-  GetAllMyMaterialsByRootShelfIdResponse,
-  GetMyMaterialAndItsParentByIdRequest,
-  GetMyMaterialAndItsParentByIdResponse,
-  GetMyMaterialByIdRequest,
-  GetMyMaterialByIdResponse,
-  GetMyMaterialsByParentSubShelfIdRequest,
-  GetMyMaterialsByParentSubShelfIdResponse,
-} from "@shared/api/interfaces/material.interface";
+} from "@shared/api/invokers/material.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type QueryKey,
   type UseQueryOptions,
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { ZodError } from "zod";
 
 export const useGetMyMaterialById = (
-  hookRequest?: GetMyMaterialByIdRequest,
+  hookRequest: GetMyMaterialByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.material.oneById(
-      hookRequest?.param.materialId as UUID | undefined
+      hookRequest.param.materialId as UUID | undefined
     ),
-    queryFn: async () => await queryFnGetMyMaterialById(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyMaterialById(
+        hookRequest as GetMyMaterialByIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -55,38 +70,37 @@ export const useGetMyMaterialById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyMaterialByIdRequest
-  ): Promise<GetMyMaterialByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.oneById(
-        callbackRequest.param.materialId as UUID
-      ),
-      queryFn: async () => await queryFnGetMyMaterialById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_MATERIAL_BY_ID_HOOK" as const,
   };
 };
 
 export const useGetMyMaterialAndItsParentById = (
-  hookRequest?: GetMyMaterialAndItsParentByIdRequest,
+  hookRequest: GetMyMaterialAndItsParentByIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.material.oneById(
-      hookRequest?.param.materialId as UUID | undefined,
+      hookRequest.param.materialId as UUID | undefined,
       true
     ),
-    queryFn: async () =>
-      await queryFnGetMyMaterialAndItsParentById(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyMaterialAndItsParentById(
+        hookRequest as GetMyMaterialAndItsParentByIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -94,38 +108,36 @@ export const useGetMyMaterialAndItsParentById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyMaterialAndItsParentByIdRequest
-  ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.oneById(
-        callbackRequest.param.materialId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyMaterialAndItsParentById(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_MY_MATERIAL_AND_ITS_PARENT_BY_ID_HOOK" as const,
   };
 };
 
 export const useGetMyMaterialsByParentSubShelfId = (
-  hookRequest?: GetMyMaterialsByParentSubShelfIdRequest,
+  hookRequest: GetMyMaterialsByParentSubShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.material.manyByParentSubShelfId(
-      hookRequest?.param.parentSubShelfId as UUID | undefined
+      hookRequest.param.parentSubShelfId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetMyMaterialsByParentSubShelfId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetMyMaterialsByParentSubShelfId(
+        hookRequest as GetMyMaterialsByParentSubShelfIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -133,38 +145,36 @@ export const useGetMyMaterialsByParentSubShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
-  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.manyByParentSubShelfId(
-        callbackRequest.param.parentSubShelfId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyMaterialsByParentSubShelfId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID_HOOK" as const,
   };
 };
 
 export const useGetAllMyMaterialsByRootShelfId = (
-  hookRequest?: GetAllMyMaterialsByRootShelfIdRequest,
+  hookRequest: GetAllMyMaterialsByRootShelfIdRequest,
   options?: Partial<UseQueryOptions>
 ) => {
-  const queryClient = getQueryClient();
-
   const query = useQuery({
     queryKey: queryKeys.material.manyByRootShelfId(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () =>
-      await queryFnGetAllMyMaterialsByRootShelfId(hookRequest),
+    queryFn: async () => {
+      const response = await queryFnGetAllMyMaterialsByRootShelfId(
+        hookRequest as GetAllMyMaterialsByRootShelfIdRequest
+      );
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      return response;
+    },
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -172,22 +182,8 @@ export const useGetAllMyMaterialsByRootShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
-  ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
-    return await queryClient.fetchQuery({
-      queryKey: queryKeys.material.manyByRootShelfId(
-        callbackRequest.param.rootShelfId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetAllMyMaterialsByRootShelfId(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
-    });
-  };
-
   return {
     ...query,
-    queryAsync,
     name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID_HOOK" as const,
   };
 };
@@ -197,9 +193,19 @@ export const useCreateTextbookMaterial = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateTextbookMaterial,
-    onSuccess: (_, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -227,9 +233,19 @@ export const useCreateNotebookMaterial = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateNotebookMaterial,
-    onSuccess: (_, variables) => {
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -257,10 +273,20 @@ export const useUpdateMyMaterialById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyMaterialById,
-    onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId as UUID;
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialId = request.body.materialId as UUID;
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -287,10 +313,41 @@ export const useSaveMyNotebookMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: mutationFnSaveMyNotebookMaterialById,
-    onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId as UUID;
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
+    // since the SaveMyNotebookMaterialById is a client only function, we define it here directly
+    mutationFn: async (request: SaveMyNotebookMaterialByIdRequest) => {
+      try {
+        const validatedRequest =
+          SaveMyNotebookMaterialByIdRequestSchema.parse(request);
+        const response = await SaveMyNotebookMaterialById(validatedRequest);
+        return SaveMyNotebookMaterialByIdResponseSchema.parse(response);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const errorMessage = error.issues
+            .map(issue => issue.message)
+            .join(", ");
+          throw new Error(`validation failed : ${errorMessage}`);
+        } else if (error instanceof NotezyAPIError) {
+          switch (error.unWrap.reason) {
+            default:
+              throw new Error(error.unWrap.message);
+          }
+        }
+        throw error;
+      }
+    },
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialId = request.body.materialId as UUID;
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.material.oneById(materialId),
         queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
@@ -317,13 +374,23 @@ export const useMoveMyMaterialById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMyMaterialById,
-    onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId as UUID;
-      const destinationParentSubShelfId = variables.body
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialId = request.body.materialId as UUID;
+      const destinationParentSubShelfId = request.body
         .destinationParentSubShelfId as UUID;
-      const sourceParentSubShelfId = variables.affected
+      const sourceParentSubShelfId = request.affected
         .sourceParentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.subShelf.oneById(sourceParentSubShelfId),
@@ -353,10 +420,20 @@ export const useRestoreMyMaterialById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyMaterialById,
-    onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId as UUID;
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialId = request.body.materialId as UUID;
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.oneById(materialId),
@@ -385,14 +462,24 @@ export const useRestoreMyMaterialsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyMaterialsByIds,
-    onSuccess: (_, variables) => {
-      const materialIds = (variables.body.materialIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialIds = (request.body.materialIds || []).filter(
         Boolean
       ) as UUID[];
       const parentSubShelfIds = (
-        variables.affected.parentSubShelfIds || []
+        request.affected.parentSubShelfIds || []
       ).filter(Boolean) as UUID[];
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [
@@ -429,10 +516,20 @@ export const useDeleteMyMaterialById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyMaterialById,
-    onSuccess: (_, variables) => {
-      const materialId = variables.body.materialId as UUID;
-      const parentSubShelfId = variables.affected.parentSubShelfId as UUID;
-      const rootShelfId = variables.affected.rootShelfId as UUID;
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialId = request.body.materialId as UUID;
+      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
+      const rootShelfId = request.affected.rootShelfId as UUID;
       const targetKeys: QueryKey[] = [
         queryKeys.rootShelf.oneById(rootShelfId),
         queryKeys.material.oneById(materialId),
@@ -461,14 +558,24 @@ export const useDeleteMyMaterialsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyMaterialsByIds,
-    onSuccess: (_, variables) => {
-      const materialIds = (variables.body.materialIds || []).filter(
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.embeddedPublicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.embeddedPublicId
+      );
+      const materialIds = (request.body.materialIds || []).filter(
         Boolean
       ) as UUID[];
       const parentSubShelfIds = (
-        variables.affected.parentSubShelfIds || []
+        request.affected.parentSubShelfIds || []
       ).filter(Boolean) as UUID[];
-      const rootShelfIds = (variables.affected.rootShelfIds || []).filter(
+      const rootShelfIds = (request.affected.rootShelfIds || []).filter(
         Boolean
       ) as UUID[];
       const targetKeys: QueryKey[] = [

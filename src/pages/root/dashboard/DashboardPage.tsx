@@ -447,7 +447,7 @@ const DashboardPage = () => {
       />
       {backgroundImagesManager.currentBackgroundImageId === null ? (
         <GridBackground
-          className={`w-full! h-60! relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-60 relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -466,7 +466,7 @@ const DashboardPage = () => {
       ) : (
         <ProgressiveBackground
           ref={headerBackgroundImageRef}
-          className={`w-full! h-60! border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-60 border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -678,7 +678,7 @@ const DashboardPage = () => {
               hasParent
             >
               <Extendable
-                className="w-4 h-4 !top-2 !right-2 !bg-transparent"
+                className="w-4 h-4 top-2! right-2! bg-transparent!"
                 style={{ zIndex: DashboardElementZIndexes.widgets.extendable }}
                 size={24}
                 disabled={!isEditing}

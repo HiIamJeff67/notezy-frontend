@@ -1,5 +1,5 @@
 import type { UUID } from "crypto";
-import { useState } from "react";
+import { useCallback, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useLanguage, useLoading } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
+import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 import { ModalProps } from "@/providers/ModalProvider";
 import CropImageDialog from "./CropImageDialog";
 import UploadImageDialog from "./UploadImageDialog";
@@ -41,6 +42,73 @@ const SelectBackgroundImageDialog = ({
     useState<boolean>(false);
   const [cropImageDialogOpen, setCropImageDialogOpen] =
     useState<boolean>(false);
+
+  const [isCropImageCompleting, startCompletingCropImageTransition] =
+    useTransition();
+  const [isCropImageSelecting, startSelectingCropImageTransition] =
+    useTransition();
+
+  useRegisterLoadingDependencies(
+    () => isCropImageCompleting,
+    () => isCropImageSelecting
+  );
+
+  const handleCropImageOnComplete = useCallback(
+    async (croppedBlob: Blob) =>
+      startCompletingCropImageTransition(async () => {
+        try {
+          if (croppedBackgroundImagePack === null) {
+            throw new Error("failed to crop null image");
+          }
+
+          const croppedFile = new File(
+            [croppedBlob],
+            `cropped-image-${Date.now()}.png`,
+            {
+              type: "image/png",
+            }
+          );
+          const uploadedIds = await backgroundImagesManager.upload([
+            croppedFile,
+          ]); // this should be at most one files
+          if (uploadedIds.length > 0) {
+            if (selectedBackgroundImageId) {
+              await backgroundImagesManager.remove([selectedBackgroundImageId]);
+            }
+            setSelectedBackgroundImageId(uploadedIds[0]);
+          }
+          URL.revokeObjectURL(croppedBackgroundImagePack.url);
+          setCroppedBackgroundImagePack(null);
+          setCropImageDialogOpen(false);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [
+      croppedBackgroundImagePack,
+      selectedBackgroundImageId,
+      backgroundImagesManager,
+      languageManager,
+    ]
+  );
+
+  const handleCropImageOnSelect = useCallback(
+    () =>
+      startSelectingCropImageTransition(async () => {
+        try {
+          if (!selectedBackgroundImageId) return;
+
+          const imagePack = await backgroundImagesManager.getFullImageURL(
+            selectedBackgroundImageId
+          );
+          setCroppedBackgroundImagePack(imagePack);
+          setCropImageDialogOpen(true);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [selectedBackgroundImageId, backgroundImagesManager, languageManager]
+  );
 
   return (
     <Dialog
@@ -77,35 +145,7 @@ const SelectBackgroundImageDialog = ({
             onOpenChange={setCropImageDialogOpen}
             imageURL={croppedBackgroundImagePack.url}
             aspectRatio={cropperAspectRatio}
-            onComplete={async croppedBlob =>
-              await loadingManager.startAsyncTransactionLoading(async () => {
-                try {
-                  const croppedFile = new File(
-                    [croppedBlob],
-                    `cropped-image-${Date.now()}.png`,
-                    {
-                      type: "image/png",
-                    }
-                  );
-                  const uploadedIds = await backgroundImagesManager.upload([
-                    croppedFile,
-                  ]); // this should be at most one files
-                  if (uploadedIds.length > 0) {
-                    if (selectedBackgroundImageId) {
-                      await backgroundImagesManager.remove([
-                        selectedBackgroundImageId,
-                      ]);
-                    }
-                    setSelectedBackgroundImageId(uploadedIds[0]);
-                  }
-                  URL.revokeObjectURL(croppedBackgroundImagePack.url);
-                  setCroppedBackgroundImagePack(null);
-                  setCropImageDialogOpen(false);
-                } catch (error) {
-                  toast.error(languageManager.tError(error));
-                }
-              })
-            }
+            onComplete={handleCropImageOnComplete}
             onCancel={() => {
               croppedBackgroundImagePack.revoke();
               setCroppedBackgroundImagePack(null);
@@ -153,22 +193,7 @@ const SelectBackgroundImageDialog = ({
             variant="secondary"
             className="w-20"
             disabled={selectedBackgroundImageId === null}
-            onClick={async () =>
-              await loadingManager.startAsyncTransactionLoading(async () => {
-                try {
-                  if (!selectedBackgroundImageId) return;
-
-                  const imagePack =
-                    await backgroundImagesManager.getFullImageURL(
-                      selectedBackgroundImageId
-                    );
-                  setCroppedBackgroundImagePack(imagePack);
-                  setCropImageDialogOpen(true);
-                } catch (error) {
-                  toast.error(languageManager.tError(error));
-                }
-              })
-            }
+            onClick={handleCropImageOnSelect}
           >
             Crop
           </Button>

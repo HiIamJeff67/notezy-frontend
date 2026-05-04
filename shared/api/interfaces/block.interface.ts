@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export const GetMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   param: z.object({
@@ -32,6 +32,9 @@ export const GetMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMyBlockByIdResponse = z.infer<
@@ -42,7 +45,7 @@ export type GetMyBlockByIdResponse = z.infer<
 
 export const GetMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   param: z.object({
@@ -68,6 +71,9 @@ export const GetMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
       createdAt: z.coerce.date(),
     })
   ),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMyBlocksByIdsResponse = z.infer<
@@ -79,7 +85,7 @@ export type GetMyBlocksByIdsResponse = z.infer<
 export const GetMyBlocksByBlockGroupIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -96,6 +102,9 @@ export const GetMyBlocksByBlockGroupIdResponseSchema =
     data: z.object({
       rawArborizedEditableBlock: z.custom<PartialBlock>(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyBlocksByBlockGroupIdResponse = z.infer<
@@ -107,7 +116,7 @@ export type GetMyBlocksByBlockGroupIdResponse = z.infer<
 export const GetMyBlocksByBlockGroupIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -126,6 +135,9 @@ export const GetMyBlocksByBlockGroupIdsResponseSchema =
         rawArborizedEditableBlock: z.custom<PartialBlock>(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyBlocksByBlockGroupIdsResponse = z.infer<
@@ -137,7 +149,7 @@ export type GetMyBlocksByBlockGroupIdsResponse = z.infer<
 export const GetMyBlocksByBlockPackIdRequestSchema = NotezyRequestSchema.extend(
   {
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -165,6 +177,9 @@ export const GetMyBlocksByBlockPackIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyBlocksByBlockPackIdResponse = z.infer<
@@ -175,7 +190,7 @@ export type GetMyBlocksByBlockPackIdResponse = z.infer<
 
 export const GetAllMyBlocksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
 });
@@ -196,6 +211,9 @@ export const GetAllMyBlocksResponseSchema = NotezyResponseSchema.extend({
       createdAt: z.coerce.date(),
     })
   ),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetAllMyBlocksResponse = z.infer<
@@ -206,7 +224,7 @@ export type GetAllMyBlocksResponse = z.infer<
 
 export const InsertBlockRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -225,6 +243,9 @@ export const InsertBlockResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type InsertBlockResponse = z.infer<typeof InsertBlockResponseSchema>;
@@ -233,7 +254,7 @@ export type InsertBlockResponse = z.infer<typeof InsertBlockResponseSchema>;
 
 export const InsertBlocksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -265,6 +286,9 @@ export const InsertBlocksResponseSchema = NotezyResponseSchema.extend({
     ),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type InsertBlocksResponse = z.infer<typeof InsertBlocksResponseSchema>;
@@ -273,7 +297,7 @@ export type InsertBlocksResponse = z.infer<typeof InsertBlocksResponseSchema>;
 
 export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -303,6 +327,9 @@ export const UpdateMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type UpdateMyBlockByIdResponse = z.infer<
@@ -313,7 +340,7 @@ export type UpdateMyBlockByIdResponse = z.infer<
 
 export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -355,6 +382,9 @@ export const UpdateMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
     ),
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type UpdateMyBlocksByIdsResponse = z.infer<
@@ -365,7 +395,7 @@ export type UpdateMyBlocksByIdsResponse = z.infer<
 
 export const RestoreMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -393,6 +423,9 @@ export const RestoreMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type RestoreMyBlockByIdResponse = z.infer<
@@ -403,7 +436,7 @@ export type RestoreMyBlockByIdResponse = z.infer<
 
 export const RestoreMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -433,6 +466,9 @@ export const RestoreMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
       createdAt: z.coerce.date(),
     })
   ),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type RestoreMyBlocksByIdsResponse = z.infer<
@@ -443,7 +479,7 @@ export type RestoreMyBlocksByIdsResponse = z.infer<
 
 export const DeleteMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -463,6 +499,9 @@ export const DeleteMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type DeleteMyBlockByIdResponse = z.infer<
@@ -473,7 +512,7 @@ export type DeleteMyBlockByIdResponse = z.infer<
 
 export const DeleteMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -492,6 +531,9 @@ export type DeleteMyBlocksByIdsRequest = z.infer<
 export const DeleteMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
   }),
 });
 

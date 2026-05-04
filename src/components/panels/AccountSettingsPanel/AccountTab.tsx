@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateMe } from "@shared/api/invokers/user.invoker";
+import { useUpdateMe } from "@shared/api/hooks/user.hook";
 import { FakeUser } from "@shared/constants";
 import { AllUserStatus } from "@shared/enums";
 import { User, UserSchema } from "@shared/types/user.type";
@@ -33,6 +33,7 @@ const AccountTab = memo(() => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userManager = useUser();
+  const updateMeMutator = useUpdateMe();
 
   const user: User = useMemo(() => {
     if (!userManager.userData) return FakeUser;
@@ -73,7 +74,7 @@ const AccountTab = memo(() => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
           const userAgent = navigator.userAgent;
-          await UpdateMe({
+          await updateMeMutator.mutateAsync({
             header: { userAgent },
             body: {
               values: {
@@ -101,7 +102,7 @@ const AccountTab = memo(() => {
           toast.error(languageManager.tError(error));
         }
       }),
-    [loadingManager, userManager, languageManager]
+    [loadingManager, userManager, languageManager, updateMeMutator]
   );
 
   return (

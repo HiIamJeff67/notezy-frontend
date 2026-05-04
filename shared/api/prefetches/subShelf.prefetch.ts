@@ -1,13 +1,13 @@
 import {
-  queryFnGetAllMySubShelvesByRootShelfId,
-  queryFnGetMySubShelfById,
-  queryFnGetMySubShelvesByPrevSubShelfId,
-} from "@shared/api/functions/subShelf.function";
-import {
   GetAllMySubShelvesByRootShelfIdRequest,
   GetMySubShelfByIdRequest,
   GetMySubShelvesByPrevSubShelfIdRequest,
 } from "@shared/api/interfaces/subShelf.interface";
+import {
+  queryFnGetAllMySubShelvesByRootShelfId,
+  queryFnGetMySubShelfById,
+  queryFnGetMySubShelvesByPrevSubShelfId,
+} from "@shared/api/invokers/subShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateMyInfo } from "@shared/api/hooks/userInfo.hook";
-import { DefaultAvatar1URL } from "@shared/api/invokers/static.invoker";
 import { FakeUserInfo } from "@shared/constants";
 import { AllCountries, AllUserGenders } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -57,10 +56,12 @@ const ProfileTab = memo(() => {
   const [birthDateDialogOpen, setBirthDateDialogOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUserInfo = async () =>
+    const fetchUserInfo = async () => {
+      if (userManager.userInfo) return;
       await userManager.fetchUserInfo(
         LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
       );
+    };
 
     fetchUserInfo();
   }, []);
@@ -87,7 +88,10 @@ const ProfileTab = memo(() => {
     [coverBackgroundURL]
   );
 
-  const avatarSrc = useMemo(() => avatarURL || DefaultAvatar1URL, [avatarURL]);
+  const avatarSrc = useMemo(
+    () => avatarURL || `${import.meta.env.BASE_URL}avatars/userAvatar1.png`,
+    [avatarURL]
+  );
 
   const genderOptions = useMemo(
     () =>

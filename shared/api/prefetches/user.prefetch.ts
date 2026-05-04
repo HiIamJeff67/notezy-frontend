@@ -1,11 +1,11 @@
 import {
-  queryFnGetMe,
-  queryFnGetUserData,
-} from "@shared/api/functions/user.function";
-import {
   GetMeRequest,
   GetUserDataRequest,
 } from "@shared/api/interfaces/user.interface";
+import {
+  queryFnGetMe,
+  queryFnGetUserData,
+} from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";

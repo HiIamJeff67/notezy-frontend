@@ -1,5 +1,5 @@
 import { useRegister } from "@shared/api/hooks/auth.hook";
-import { useGetUserData } from "@shared/api/hooks/user.hook";
+import { queryFnGetUserData } from "@shared/api/invokers/user.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
@@ -10,7 +10,7 @@ import GridBackground from "@/components/backgrounds/GridBackground/GridBackgrou
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage, useUser } from "@/hooks";
-import { useRegisterLoadingDependencies } from "@/hooks/useRegisterLoadingDependencies";
+import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 
 const RegisterPage = () => {
   const router = useAppRouter();
@@ -18,7 +18,6 @@ const RegisterPage = () => {
   const userManager = useUser();
 
   const registerMutator = useRegister();
-  const getUserDataQuerier = useGetUserData();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,12 +52,10 @@ const RegisterPage = () => {
             },
           });
 
-          const responseOfGettingUserData = await getUserDataQuerier.queryAsync(
-            {
-              header: { userAgent: navigator.userAgent },
-              body: {},
-            }
-          );
+          const responseOfGettingUserData = await queryFnGetUserData({
+            header: { userAgent: navigator.userAgent },
+            body: {},
+          });
 
           if (
             !responseOfGettingUserData ||
@@ -92,7 +89,6 @@ const RegisterPage = () => {
       languageManager,
       userManager,
       registerMutator,
-      getUserDataQuerier,
       router,
     ]
   );
@@ -100,9 +96,7 @@ const RegisterPage = () => {
   return (
     <GridBackground>
       <Suspense fallback={<StrictLoadingCover />}>
-        <StrictLoadingCover
-          condition={registerMutator.isPending || getUserDataQuerier.isFetching}
-        />
+        <StrictLoadingCover condition={registerMutator.isPending} />
         <AuthPanel
           title={languageManager.t(tKey.auth.register)}
           subtitle={`${languageManager.t(

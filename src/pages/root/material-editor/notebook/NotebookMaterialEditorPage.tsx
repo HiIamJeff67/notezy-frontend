@@ -18,7 +18,7 @@ const NotebookMaterialEditorPage = ({
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <NotebookEditor
-        defaultMeta={getDefaultNotebookMaterialMeta(
+        notebookMaterialMeta={getDefaultNotebookMaterialMeta(
           materialId,
           parentSubShelfId,
           rootShelfId

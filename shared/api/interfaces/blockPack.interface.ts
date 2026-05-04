@@ -10,7 +10,7 @@ import { BatchMoveMySubShelvesResponseSchema } from "./subShelf.interface";
 
 export const GetMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   param: z.object({
@@ -34,6 +34,9 @@ export const GetMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMyBlockPackByIdResponse = z.infer<
@@ -44,10 +47,12 @@ export type GetMyBlockPackByIdResponse = z.infer<
 
 export const GetMyBlockPackAndItsParentByIdRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1),
-      authorization: z.string().optional(),
-    }),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     param: z.object({
       blockPackId: z.uuidv4(),
     }),
@@ -77,6 +82,9 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
       parentSubShelfUpdatedAt: z.coerce.date(),
       parentSubShelfCreatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyBlockPackAndItsParentByIdResponse = z.infer<
@@ -88,7 +96,7 @@ export type GetMyBlockPackAndItsParentByIdResponse = z.infer<
 export const GetMyBlockPacksByParentSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -115,6 +123,9 @@ export const GetMyBlockPacksByParentSubShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMyBlockPacksByParentSubShelfIdResponse = z.infer<
@@ -126,7 +137,7 @@ export type GetMyBlockPacksByParentSubShelfIdResponse = z.infer<
 export const GetAllMyBlockPacksByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -153,6 +164,9 @@ export const GetAllMyBlockPacksByRootShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetAllMyBlockPacksByRootShelfIdResponse = z.infer<
@@ -163,7 +177,7 @@ export type GetAllMyBlockPacksByRootShelfIdResponse = z.infer<
 
 export const CreateBlockPackRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -187,6 +201,9 @@ export const CreateBlockPackResponseSchema = NotezyResponseSchema.extend({
     id: z.uuidv4(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type CreateBlockPackResponse = z.infer<
@@ -197,7 +214,7 @@ export type CreateBlockPackResponse = z.infer<
 
 export const CreateBlockPacksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -225,6 +242,9 @@ export const CreateBlockPacksResponseSchema = NotezyResponseSchema.extend({
     ids: z.array(z.uuidv4()),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type CreateBlockPacksResponse = z.infer<
@@ -235,7 +255,7 @@ export type CreateBlockPacksResponse = z.infer<
 
 export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -263,6 +283,9 @@ export const UpdateMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type UpdateMyBlockPackByIdResponse = z.infer<
@@ -273,7 +296,7 @@ export type UpdateMyBlockPackByIdResponse = z.infer<
 
 export const UpdateMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -306,6 +329,9 @@ export const UpdateMyBlockPacksByIdsResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type UpdateMyBlockPacksByIdsResponse = z.infer<
@@ -316,7 +342,7 @@ export type UpdateMyBlockPacksByIdsResponse = z.infer<
 
 export const MoveMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -337,6 +363,9 @@ export const MoveMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMyBlockPackByIdResponse = z.infer<
@@ -347,7 +376,7 @@ export type MoveMyBlockPackByIdResponse = z.infer<
 
 export const MoveMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -368,6 +397,9 @@ export const MoveMyBlockPacksByIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMyBlockPacksByIdsResponse = z.infer<
@@ -379,7 +411,7 @@ export type MoveMyBlockPacksByIdsResponse = z.infer<
 export const BatchMoveMyBlockPacksByIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -405,6 +437,9 @@ export const BatchMoveMyBlockPacksByIdsResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type BatchMoveMyBlockPacksByIdsResponse = z.infer<
@@ -415,7 +450,7 @@ export type BatchMoveMyBlockPacksByIdsResponse = z.infer<
 
 export const RestoreMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -444,6 +479,9 @@ export const RestoreMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend(
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   }
 );
 
@@ -456,7 +494,7 @@ export type RestoreMyBlockPackByIdResponse = z.infer<
 export const RestoreMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend(
   {
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -488,6 +526,9 @@ export const RestoreMyBlockPacksByIdsResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type RestoreMyBlockPacksByIdsResponse = z.infer<
@@ -498,7 +539,7 @@ export type RestoreMyBlockPacksByIdsResponse = z.infer<
 
 export const DeleteMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -518,6 +559,9 @@ export const DeleteMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type DeleteMyBlockPackByIdResponse = z.infer<
@@ -528,7 +572,7 @@ export type DeleteMyBlockPackByIdResponse = z.infer<
 
 export const DeleteMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -548,6 +592,9 @@ export const DeleteMyBlockPacksByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
     }),
   });
 

@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export const GetMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   param: z.object({
@@ -33,6 +33,9 @@ export const GetMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type GetMySubShelfByIdResponse = z.infer<
@@ -44,7 +47,7 @@ export type GetMySubShelfByIdResponse = z.infer<
 export const GetMySubShelvesByPrevSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -70,6 +73,9 @@ export const GetMySubShelvesByPrevSubShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMySubShelvesByPrevSubShelfIdResponse = z.infer<
@@ -81,7 +87,7 @@ export type GetMySubShelvesByPrevSubShelfIdResponse = z.infer<
 export const GetAllMySubShelvesByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -99,7 +105,7 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
       z.object({
         id: z.uuidv4(),
         name: z.string(),
-        rooShelfId: z.uuidv4(),
+        rootShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
         deletedAt: z.coerce.date().nullable(),
@@ -107,6 +113,9 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetAllMySubShelvesByRootShelfIdResponse = z.infer<
@@ -118,7 +127,7 @@ export type GetAllMySubShelvesByRootShelfIdResponse = z.infer<
 export const GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     param: z.object({
@@ -175,6 +184,9 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
         })
       ),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type GetMySubShelvesAndItemsByPrevSubShelfIdResponse = z.infer<
@@ -186,7 +198,7 @@ export type GetMySubShelvesAndItemsByPrevSubShelfIdResponse = z.infer<
 export const CreateSubShelfByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -210,6 +222,9 @@ export const CreateSubShelfByRootShelfIdResponseSchema =
       id: z.uuidv4(),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type CreateSubShelfByRootShelfIdResponse = z.infer<
@@ -221,7 +236,7 @@ export type CreateSubShelfByRootShelfIdResponse = z.infer<
 export const CreateSubShelvesByRootShelfIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -249,6 +264,9 @@ export const CreateSubShelvesByRootShelfIdsResponseSchema =
       ids: z.array(z.uuidv4()),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type CreateSubShelvesByRootShelfIdsResponse = z.infer<
@@ -259,7 +277,7 @@ export type CreateSubShelvesByRootShelfIdsResponse = z.infer<
 
 export const UpdateMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -285,6 +303,9 @@ export const UpdateMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type UpdateMySubShelfByIdResponse = z.infer<
@@ -295,7 +316,7 @@ export type UpdateMySubShelfByIdResponse = z.infer<
 
 export const UpdateMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -326,6 +347,9 @@ export const UpdateMySubShelvesByIdsResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type UpdateMySubShelvesByIdsResponse = z.infer<
@@ -336,7 +360,7 @@ export type UpdateMySubShelvesByIdsResponse = z.infer<
 
 export const MoveMySubShelfRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -357,6 +381,9 @@ export const MoveMySubShelfResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMySubShelfResponse = z.infer<
@@ -367,7 +394,7 @@ export type MoveMySubShelfResponse = z.infer<
 
 export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -390,6 +417,9 @@ export const MoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type MoveMySubShelvesResponse = z.infer<
@@ -400,7 +430,7 @@ export type MoveMySubShelvesResponse = z.infer<
 
 export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -427,6 +457,9 @@ export const BatchMoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type BatchMoveMySubShelvesResponse = z.infer<
@@ -437,7 +470,7 @@ export type BatchMoveMySubShelvesResponse = z.infer<
 
 export const RestoreMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -464,6 +497,9 @@ export const RestoreMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type RestoreMySubShelfByIdResponse = z.infer<
@@ -475,7 +511,7 @@ export type RestoreMySubShelfByIdResponse = z.infer<
 export const RestoreMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
   {
     header: z.object({
-      userAgent: z.string().min(1),
+      userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
     }),
     body: z.object({
@@ -506,6 +542,9 @@ export const RestoreMySubShelvesByIdsResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
+    }),
   });
 
 export type RestoreMySubShelvesByIdsResponse = z.infer<
@@ -516,7 +555,7 @@ export type RestoreMySubShelvesByIdsResponse = z.infer<
 
 export const DeleteMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -536,6 +575,9 @@ export const DeleteMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    embeddedPublicId: z.string(),
+  }),
 });
 
 export type DeleteMySubShelfByIdResponse = z.infer<
@@ -546,7 +588,7 @@ export type DeleteMySubShelfByIdResponse = z.infer<
 
 export const DeleteMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
   }),
   body: z.object({
@@ -566,6 +608,9 @@ export const DeleteMySubShelvesByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      embeddedPublicId: z.string(),
     }),
   });
 

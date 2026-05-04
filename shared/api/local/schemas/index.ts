@@ -8,3 +8,4 @@ export * from "./user.schema";
 export * from "./userAccount.schema";
 export * from "./userData.schema";
 export * from "./userInfo.schema";
+export * from "./userSetting.schema";
