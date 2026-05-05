@@ -24,8 +24,7 @@ export const prefetchGetMySubShelfById = (initialQueryClient?: QueryClient) => {
       queryKey: queryKeys.subShelf.oneById(
         prefetchRequest.param.subShelfId as UUID
       ),
-      queryFn: async () =>
-        await queryFnGetMySubShelfById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMySubShelfById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -50,7 +49,7 @@ export const prefetchGetMySubShelvesByPrevSubShelfId = (
         prefetchRequest.param.prevSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMySubShelvesByPrevSubShelfId(prefetchRequest, true),
+        await queryFnGetMySubShelvesByPrevSubShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -75,7 +74,7 @@ export const prefetchGetAllMySubShelvesByRootShelfId = (
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMySubShelvesByRootShelfId(prefetchRequest, true),
+        await queryFnGetAllMySubShelvesByRootShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

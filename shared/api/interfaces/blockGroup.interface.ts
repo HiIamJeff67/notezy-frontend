@@ -11,7 +11,7 @@ export const GetMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     blockGroupId: z.uuidv4(),
   }),
@@ -48,7 +48,7 @@ export const GetMyBlockGroupAndItsBlocksByIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockGroupId: z.uuidv4(),
     }),
@@ -87,7 +87,7 @@ export const GetMyBlockGroupsAndTheirBlocksByIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockGroupIds: z.array(z.uuidv4()),
     }),
@@ -171,7 +171,7 @@ export const GetMyBlockGroupsByPrevBlockGroupIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       prevBlockGroupId: z.uuidv4(),
     }),
@@ -211,7 +211,7 @@ export const GetAllMyBlockGroupsByBlockPackIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockPackId: z.uuidv4(),
     }),
@@ -251,7 +251,7 @@ export const InsertBlockGroupByBlockPackIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackId: z.uuidv4(),
       blockGroupId: z.uuidv4().nullable(),
@@ -285,7 +285,7 @@ export const InsertBlockGroupsByBlockPackIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackId: z.uuidv4(),
       blockPackContents: z.array(
@@ -323,7 +323,7 @@ export const BatchInsertBlockGroupsByBlockPackIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackContents: z.array(
         z.object({
@@ -361,7 +361,7 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackId: z.uuidv4(),
       prevBlockGroupId: z.uuidv4().nullable(),
@@ -395,7 +395,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackId: z.uuidv4(),
       blockGroupContents: z.array(
@@ -442,7 +442,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockGroupContents: z.array(
         z.object({
@@ -491,7 +491,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackId: z.uuidv4(),
       prevBlockGroupId: z.uuidv4().nullable(),
@@ -534,7 +534,7 @@ export const MoveMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
     movableBlockGroupId: z.uuidv4(),
@@ -566,7 +566,7 @@ export const MoveMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
     movableBlockGroupIds: z.array(z.uuidv4()),
@@ -601,7 +601,7 @@ export const BatchMoveMyBlockGroupsByIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       movedBlockGroups: z.array(
         z.object({
@@ -638,7 +638,7 @@ export const RestoreMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockGroupId: z.uuidv4(),
   }),
@@ -676,7 +676,7 @@ export const RestoreMyBlockGroupsByIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockGroupIds: z.array(z.uuidv4()),
     }),
@@ -715,7 +715,7 @@ export const DeleteMyBlockGroupByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockGroupId: z.uuidv4(),
   }),
@@ -751,7 +751,7 @@ export const DeleteMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockGroupIds: z.array(z.uuidv4()),
     }),

@@ -12,7 +12,7 @@ export const GetMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -49,7 +49,7 @@ export const GetMySubShelvesByPrevSubShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
     }),
@@ -89,7 +89,7 @@ export const GetAllMySubShelvesByRootShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
     }),
@@ -129,7 +129,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
     }),
@@ -200,7 +200,7 @@ export const CreateSubShelfByRootShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       rootShelfId: z.uuidv4(),
       prevSubShelfId: z.uuidv4().nullable(),
@@ -238,7 +238,7 @@ export const CreateSubShelvesByRootShelfIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       createdSubShelves: z.array(
         z.object({
@@ -279,7 +279,7 @@ export const UpdateMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
     values: z
@@ -318,7 +318,7 @@ export const UpdateMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     updatedSubShelves: z.array(
       z.object({
@@ -362,7 +362,7 @@ export const MoveMySubShelfRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfId: z.uuidv4(),
@@ -396,7 +396,7 @@ export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
@@ -432,7 +432,7 @@ export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     movedSubShelves: z.array(
       z.object({
@@ -472,7 +472,7 @@ export const RestoreMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -513,7 +513,7 @@ export const RestoreMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       subShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
@@ -557,7 +557,7 @@ export const DeleteMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -590,7 +590,7 @@ export const DeleteMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     subShelfIds: z.array(z.uuidv4()).min(1).max(128),
   }),

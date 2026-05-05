@@ -25,8 +25,7 @@ export const prefetchGetMyMaterialById = (initialQueryClient?: QueryClient) => {
       queryKey: queryKeys.material.oneById(
         prefetchRequest.param.materialId as UUID
       ),
-      queryFn: async () =>
-        await queryFnGetMyMaterialById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyMaterialById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -51,7 +50,7 @@ export const prefetchGetMyMaterialAndItsParentById = (
         prefetchRequest.param.materialId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialAndItsParentById(prefetchRequest, true),
+        await queryFnGetMyMaterialAndItsParentById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -76,7 +75,7 @@ export const prefetchGetMyMaterialsByParentSubShelfId = (
         prefetchRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyMaterialsByParentSubShelfId(prefetchRequest, true),
+        await queryFnGetMyMaterialsByParentSubShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -101,7 +100,7 @@ export const prefetchGetAllMyMaterialsByRootShelfId = (
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyMaterialsByRootShelfId(prefetchRequest, true),
+        await queryFnGetAllMyMaterialsByRootShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

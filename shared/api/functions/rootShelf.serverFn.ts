@@ -39,13 +39,13 @@ export const GetMyRootShelfByIdServerFn = createServerFn({ method: "GET" })
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -87,13 +87,15 @@ export const SearchRecentRootShelvesServerFn = createServerFn({ method: "GET" })
       }
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -125,7 +127,7 @@ export const CreateRootShelfServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<CreateRootShelfResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelf}`,
       {
@@ -133,7 +135,7 @@ export const CreateRootShelfServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -166,7 +168,7 @@ export const CreateRootShelvesServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<CreateRootShelvesResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelves}`,
       {
@@ -174,7 +176,7 @@ export const CreateRootShelvesServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -208,7 +210,9 @@ export const UpdateMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<UpdateMyRootShelfByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById}`,
         {
@@ -216,7 +220,7 @@ export const UpdateMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -253,7 +257,9 @@ export const UpdateMyRootShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<UpdateMyRootShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelvesByIds}`,
         {
@@ -261,7 +267,7 @@ export const UpdateMyRootShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -296,7 +302,9 @@ export const RestoreMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<RestoreMyRootShelfByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById}`,
         {
@@ -304,7 +312,7 @@ export const RestoreMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -341,7 +349,9 @@ export const RestoreMyRootShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<RestoreMyRootShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelvesByIds}`,
         {
@@ -349,7 +359,7 @@ export const RestoreMyRootShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -384,7 +394,9 @@ export const DeleteMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<DeleteMyRootShelfByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById}`,
         {
@@ -392,7 +404,7 @@ export const DeleteMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -429,7 +441,9 @@ export const DeleteMyRootShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<DeleteMyRootShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelvesByIds}`,
         {
@@ -437,7 +451,7 @@ export const DeleteMyRootShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),

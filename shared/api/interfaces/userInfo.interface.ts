@@ -9,7 +9,7 @@ export const GetMyInfoRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
 });
 
 export type GetMyInfoRequest = z.infer<typeof GetMyInfoRequestSchema>;
@@ -29,7 +29,7 @@ export const UpdateMyInfoRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     values: z.object({
       avatarURL: z.url().nullable(),

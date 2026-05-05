@@ -48,13 +48,13 @@ export const GetMyBlockByIdServerFn = createServerFn({ method: "GET" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -91,14 +91,14 @@ export const GetMyBlocksByIdsServerFn = createServerFn({ method: "GET" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByIds}?${params.toString()}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -138,13 +138,15 @@ export const GetMyBlocksByBlockGroupIdServerFn = createServerFn({
       const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -186,13 +188,15 @@ export const GetMyBlocksByBlockGroupIdsServerFn = createServerFn({
       const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupIds}?${params.toString()}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -233,13 +237,15 @@ export const GetMyBlocksByBlockPackIdServerFn = createServerFn({
       const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -275,13 +281,13 @@ export const GetAllMyBlocksServerFn = createServerFn({ method: "GET" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -315,13 +321,13 @@ export const InsertBlockServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlock}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -356,13 +362,13 @@ export const InsertBlocksServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -397,13 +403,13 @@ export const UpdateMyBlockByIdServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlockById}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -439,13 +445,13 @@ export const UpdateMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlocksByIds}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -481,13 +487,13 @@ export const RestoreMyBlockByIdServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlockById}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -523,13 +529,13 @@ export const RestoreMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlocksByIds}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -541,9 +547,7 @@ export const RestoreMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as RestoreMyBlocksByIdsResponse;
     if (formattedResponse.exception != null) {
@@ -551,7 +555,6 @@ export const RestoreMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -565,13 +568,13 @@ export const DeleteMyBlockByIdServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlockById}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -583,9 +586,7 @@ export const DeleteMyBlockByIdServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as DeleteMyBlockByIdResponse;
     if (formattedResponse.exception != null) {
@@ -593,7 +594,6 @@ export const DeleteMyBlockByIdServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -607,13 +607,13 @@ export const DeleteMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlocksByIds}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -625,9 +625,7 @@ export const DeleteMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as DeleteMyBlocksByIdsResponse;
     if (formattedResponse.exception != null) {
@@ -635,7 +633,6 @@ export const DeleteMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );

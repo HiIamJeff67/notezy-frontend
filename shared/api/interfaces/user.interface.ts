@@ -9,7 +9,7 @@ export const GetUserDataRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
 });
 
 export type GetUserDataRequest = z.infer<typeof GetUserDataRequestSchema>;
@@ -29,7 +29,7 @@ export const GetMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
 });
 
 export type GetMeRequest = z.infer<typeof GetMeRequestSchema>;
@@ -49,7 +49,7 @@ export const UpdateMeRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     values: z
       .object({

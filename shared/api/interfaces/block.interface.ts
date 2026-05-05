@@ -12,7 +12,7 @@ export const GetMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     blockId: z.uuidv4(),
   }),
@@ -47,7 +47,7 @@ export const GetMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
@@ -87,7 +87,7 @@ export const GetMyBlocksByBlockGroupIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockGroupId: z.uuidv4(),
     }),
@@ -118,7 +118,7 @@ export const GetMyBlocksByBlockGroupIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockGroupIds: z.array(z.uuidv4()),
     }),
@@ -151,7 +151,7 @@ export const GetMyBlocksByBlockPackIdRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       blockPackId: z.uuidv4(),
     }),
@@ -192,7 +192,7 @@ export const GetAllMyBlocksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
 });
 
 export type GetAllMyBlocksRequest = z.infer<typeof GetAllMyBlocksRequestSchema>;
@@ -226,7 +226,7 @@ export const InsertBlockRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     parentBlockId: z.uuidv4().nullable(),
     blockGroupId: z.uuidv4(),
@@ -256,7 +256,7 @@ export const InsertBlocksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     insertedBlocks: z.array(
       z.object({
@@ -299,7 +299,7 @@ export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockId: z.uuidv4(),
     values: z
@@ -342,7 +342,7 @@ export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     updatedBlocks: z.array(
       z.object({
@@ -397,7 +397,7 @@ export const RestoreMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockId: z.uuidv4(),
   }),
@@ -438,7 +438,7 @@ export const RestoreMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
@@ -481,7 +481,7 @@ export const DeleteMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockId: z.uuidv4(),
   }),
@@ -514,7 +514,7 @@ export const DeleteMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),

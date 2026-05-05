@@ -1,4 +1,5 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
+import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   GetMyInfoRequest,
@@ -17,7 +18,7 @@ export const GetMyInfoServerFn = createServerFn({ method: "GET" })
   .handler(async ({ data: request }): Promise<GetMyInfoResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.getMyInfo}`,
       {
@@ -25,7 +26,7 @@ export const GetMyInfoServerFn = createServerFn({ method: "GET" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -37,14 +38,13 @@ export const GetMyInfoServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetMyInfoResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -57,7 +57,7 @@ export const UpdateMyInfoServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<UpdateMyInfoResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userInfo.updateMyInfo}`,
       {
@@ -65,7 +65,7 @@ export const UpdateMyInfoServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -78,14 +78,13 @@ export const UpdateMyInfoServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as UpdateMyInfoResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );

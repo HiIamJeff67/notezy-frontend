@@ -36,7 +36,7 @@ export const RegisterServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<RegisterResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
       {
@@ -54,16 +54,13 @@ export const RegisterServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as RegisterResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.set(formattedResponse.data.accessToken);
 
     return formattedResponse;
@@ -74,7 +71,7 @@ export const RegisterViaGoogleServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<RegisterViaGoogleResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.registerViaGoogle}`,
       {
@@ -92,9 +89,7 @@ export const RegisterViaGoogleServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as RegisterViaGoogleResponse;
     if (formattedResponse.exception != null) {
@@ -102,7 +97,6 @@ export const RegisterViaGoogleServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.set(formattedResponse.data.accessToken);
 
     return formattedResponse;
@@ -113,7 +107,7 @@ export const LoginServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<LoginResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
       {
@@ -131,16 +125,13 @@ export const LoginServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as LoginResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.set(formattedResponse.data.accessToken);
 
     return formattedResponse;
@@ -151,7 +142,7 @@ export const LoginViaGoogleServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<LoginViaGoogleResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.loginViaGoogle}`,
       {
@@ -169,16 +160,13 @@ export const LoginViaGoogleServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as LoginViaGoogleResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.set(formattedResponse.data.accessToken);
 
     return formattedResponse;
@@ -189,7 +177,7 @@ export const LogoutServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<LogoutResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
       {
@@ -197,7 +185,7 @@ export const LogoutServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -209,9 +197,6 @@ export const LogoutServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
-    forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as LogoutResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
@@ -226,7 +211,7 @@ export const SendAuthCodeServerFn = createServerFn({ method: "POST" })
   .inputValidator((data: SendAuthCodeRequest) => data)
   .handler(async ({ data: request }): Promise<SendAuthCodeResponse> => {
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.sendAuthCode}`,
       {
@@ -234,7 +219,7 @@ export const SendAuthCodeServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
         },
@@ -246,9 +231,6 @@ export const SendAuthCodeServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
-    forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as SendAuthCodeResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
@@ -264,7 +246,7 @@ export const ValidateEmailServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<ValidateEmailResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.validateEmail}`,
       {
@@ -272,7 +254,7 @@ export const ValidateEmailServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           "X-CSRF-Token": request.header.csrfToken,
@@ -286,16 +268,13 @@ export const ValidateEmailServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as ValidateEmailResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -308,7 +287,7 @@ export const ResetEmailServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<ResetEmailResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetEmail}`,
       {
@@ -316,7 +295,7 @@ export const ResetEmailServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           "X-CSRF-Token": request.header.csrfToken,
@@ -330,16 +309,13 @@ export const ResetEmailServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as ResetEmailResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -351,7 +327,7 @@ export const ForgetPasswordServerFn = createServerFn({ method: "POST" })
   .inputValidator((data: ForgetPasswordRequest) => data)
   .handler(async ({ data: request }): Promise<ForgetPasswordResponse> => {
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.forgetPassword}`,
       {
@@ -359,7 +335,7 @@ export const ForgetPasswordServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
         },
@@ -371,9 +347,6 @@ export const ForgetPasswordServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
-    forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as ForgetPasswordResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
@@ -389,7 +362,7 @@ export const ResetMeServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<ResetMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetMe}`,
       {
@@ -397,7 +370,7 @@ export const ResetMeServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           "X-CSRF-Token": request.header.csrfToken,
@@ -411,16 +384,13 @@ export const ResetMeServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as ResetMeResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -433,7 +403,7 @@ export const DeleteMeServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<DeleteMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.deleteMe}`,
       {
@@ -441,7 +411,7 @@ export const DeleteMeServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           "X-CSRF-Token": request.header.csrfToken,
@@ -455,9 +425,6 @@ export const DeleteMeServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
-    forwardUpstreamSetCookies(response);
-
     const formattedResponse = (await response.json()) as DeleteMeResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(

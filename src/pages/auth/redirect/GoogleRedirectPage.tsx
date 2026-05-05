@@ -75,7 +75,6 @@ function GoogleRedirectPage() {
             body: { authorizationCode: code },
           });
           accessToken = responseOfLogin.data.accessToken;
-          console.log("redirect with accessToken: ", accessToken);
           break;
         case "binding":
           accessToken = LocalStorageManipulator.getItemByKey(

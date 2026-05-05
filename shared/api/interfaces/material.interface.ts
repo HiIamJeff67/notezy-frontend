@@ -11,7 +11,7 @@ export const GetMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     materialId: z.uuidv4(),
   }),
@@ -49,7 +49,7 @@ export const GetMyMaterialAndItsParentByIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       materialId: z.uuidv4(),
     }),
@@ -95,7 +95,7 @@ export const GetMyMaterialsByParentSubShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       parentSubShelfId: z.uuidv4(),
     }),
@@ -136,7 +136,7 @@ export const GetAllMyMaterialsByRootShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
     }),
@@ -176,7 +176,7 @@ export const CreateTextbookMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     parentSubShelfId: z.uuidv4(),
     name: z.string().min(1).max(128),
@@ -214,7 +214,7 @@ export const CreateNotebookMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     parentSubShelfId: z.uuidv4(),
     name: z.string().min(1).max(128),
@@ -252,7 +252,7 @@ export const UpdateMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialId: z.uuidv4(),
     values: z
@@ -293,7 +293,7 @@ export const SaveMyNotebookMaterialByIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       materialId: z.uuidv4(),
       contentFile: z.file().optional(),
@@ -327,7 +327,7 @@ export const MoveMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialId: z.uuidv4(),
     destinationParentSubShelfId: z.uuidv4(),
@@ -361,7 +361,7 @@ export const MoveMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialIds: z.array(z.uuidv4()).min(1).max(128),
     destinationParentSubShelfId: z.uuidv4(),
@@ -395,7 +395,7 @@ export const RestoreMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialId: z.uuidv4(),
   }),
@@ -436,7 +436,7 @@ export const RestoreMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialIds: z.array(z.uuidv4()).min(1).max(128),
   }),
@@ -480,7 +480,7 @@ export const DeleteMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialId: z.uuidv4(),
   }),
@@ -513,7 +513,7 @@ export const DeleteMyMaterialsByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     materialIds: z.array(z.uuidv4()).min(1).max(128),
   }),

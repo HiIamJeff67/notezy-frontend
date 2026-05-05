@@ -62,13 +62,13 @@ export const GetMyBlockGroupByIdServerFn = createServerFn({ method: "GET" })
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -79,9 +79,7 @@ export const GetMyBlockGroupByIdServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as GetMyBlockGroupByIdResponse;
     if (formattedResponse.exception != null) {
@@ -89,7 +87,6 @@ export const GetMyBlockGroupByIdServerFn = createServerFn({ method: "GET" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -112,13 +109,15 @@ export const GetMyBlockGroupAndItsBlocksByIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -129,9 +128,7 @@ export const GetMyBlockGroupAndItsBlocksByIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMyBlockGroupAndItsBlocksByIdResponse;
       if (formattedResponse.exception != null) {
@@ -139,7 +136,6 @@ export const GetMyBlockGroupAndItsBlocksByIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -165,13 +161,15 @@ export const GetMyBlockGroupsAndTheirBlocksByIdsServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -182,9 +180,7 @@ export const GetMyBlockGroupsAndTheirBlocksByIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMyBlockGroupsAndTheirBlocksByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -192,7 +188,6 @@ export const GetMyBlockGroupsAndTheirBlocksByIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -238,9 +233,7 @@ export const GetMyBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
         if (!isJsonResponse(response)) {
           throw new Error(tKey.error.encounterUnknownError);
         }
-
         forwardUpstreamSetCookies(response);
-
         const formattedResponse =
           (await response.json()) as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
         if (formattedResponse.exception != null) {
@@ -248,7 +241,6 @@ export const GetMyBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
             new NotezyException(formattedResponse.exception)
           );
         }
-
         AccessTokenCookieHandler.ensure(
           formattedResponse.refreshableTokens?.newAccessToken
         );
@@ -272,13 +264,15 @@ export const GetMyBlockGroupsByPrevBlockGroupIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsByPrevBlockGroupId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -289,9 +283,7 @@ export const GetMyBlockGroupsByPrevBlockGroupIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMyBlockGroupsByPrevBlockGroupIdResponse;
       if (formattedResponse.exception != null) {
@@ -299,7 +291,6 @@ export const GetMyBlockGroupsByPrevBlockGroupIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -323,13 +314,15 @@ export const GetAllMyBlockGroupsByBlockPackIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getAllMyBlockGroupsByBlockPackId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -340,9 +333,7 @@ export const GetAllMyBlockGroupsByBlockPackIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetAllMyBlockGroupsByBlockPackIdResponse;
       if (formattedResponse.exception != null) {
@@ -350,7 +341,6 @@ export const GetAllMyBlockGroupsByBlockPackIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -369,7 +359,9 @@ export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
     }): Promise<InsertBlockGroupByBlockPackIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupByBlockPackId}`,
         {
@@ -377,7 +369,7 @@ export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -390,9 +382,7 @@ export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as InsertBlockGroupByBlockPackIdResponse;
       if (formattedResponse.exception != null) {
@@ -400,7 +390,6 @@ export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -419,7 +408,9 @@ export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
     }): Promise<InsertBlockGroupsByBlockPackIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackId}`,
         {
@@ -427,7 +418,7 @@ export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -440,9 +431,7 @@ export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as InsertBlockGroupsByBlockPackIdResponse;
       if (formattedResponse.exception != null) {
@@ -450,7 +439,6 @@ export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -469,7 +457,9 @@ export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
     }): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
         {
@@ -477,7 +467,7 @@ export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -490,9 +480,7 @@ export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as BatchInsertBlockGroupsByBlockPackIdsResponse;
       if (formattedResponse.exception != null) {
@@ -500,7 +488,6 @@ export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -523,7 +510,9 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
     }): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupAndItsBlocksByBlockPackId}`,
         {
@@ -531,7 +520,7 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -544,9 +533,7 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as InsertBlockGroupAndItsBlocksByBlockPackIdResponse;
       if (formattedResponse.exception != null) {
@@ -554,7 +541,6 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -576,7 +562,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
       }): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
         const inboundCookie = getRequestHeader("cookie");
         const userAgent =
-          request.header.userAgent ??
+          request.header?.userAgent ??
           getRequestHeader("User-Agent") ??
           "unknown";
         const response = await fetch(
@@ -586,7 +572,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
             headers: {
               "Content-Type": "application/json",
               "User-Agent": userAgent,
-              ...(request.header.authorization
+              ...(request.header?.authorization
                 ? { Authorization: request.header.authorization }
                 : {}),
               ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -599,9 +585,7 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
         if (!isJsonResponse(response)) {
           throw new Error(tKey.error.encounterUnknownError);
         }
-
         forwardUpstreamSetCookies(response);
-
         const formattedResponse =
           (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
         if (formattedResponse.exception != null) {
@@ -609,7 +593,6 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
             new NotezyException(formattedResponse.exception)
           );
         }
-
         AccessTokenCookieHandler.ensure(
           formattedResponse.refreshableTokens?.newAccessToken
         );
@@ -629,7 +612,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
       }): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
         const inboundCookie = getRequestHeader("cookie");
         const userAgent =
-          request.header.userAgent ??
+          request.header?.userAgent ??
           getRequestHeader("User-Agent") ??
           "unknown";
         const response = await fetch(
@@ -639,7 +622,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
             headers: {
               "Content-Type": "application/json",
               "User-Agent": userAgent,
-              ...(request.header.authorization
+              ...(request.header?.authorization
                 ? { Authorization: request.header.authorization }
                 : {}),
               ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -652,9 +635,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
         if (!isJsonResponse(response)) {
           throw new Error(tKey.error.encounterUnknownError);
         }
-
         forwardUpstreamSetCookies(response);
-
         const formattedResponse =
           (await response.json()) as BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse;
         if (formattedResponse.exception != null) {
@@ -662,7 +643,6 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
             new NotezyException(formattedResponse.exception)
           );
         }
-
         AccessTokenCookieHandler.ensure(
           formattedResponse.refreshableTokens?.newAccessToken
         );
@@ -685,7 +665,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
       }): Promise<InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
         const inboundCookie = getRequestHeader("cookie");
         const userAgent =
-          request.header.userAgent ??
+          request.header?.userAgent ??
           getRequestHeader("User-Agent") ??
           "unknown";
         const response = await fetch(
@@ -695,7 +675,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
             headers: {
               "Content-Type": "application/json",
               "User-Agent": userAgent,
-              ...(request.header.authorization
+              ...(request.header?.authorization
                 ? { Authorization: request.header.authorization }
                 : {}),
               ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -708,9 +688,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
         if (!isJsonResponse(response)) {
           throw new Error(tKey.error.encounterUnknownError);
         }
-
         forwardUpstreamSetCookies(response);
-
         const formattedResponse =
           (await response.json()) as InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse;
         if (formattedResponse.exception != null) {
@@ -718,7 +696,6 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
             new NotezyException(formattedResponse.exception)
           );
         }
-
         AccessTokenCookieHandler.ensure(
           formattedResponse.refreshableTokens?.newAccessToken
         );
@@ -732,7 +709,7 @@ export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<MoveMyBlockGroupByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupById}`,
       {
@@ -740,7 +717,7 @@ export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -753,9 +730,7 @@ export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as MoveMyBlockGroupByIdResponse;
     if (formattedResponse.exception != null) {
@@ -763,7 +738,6 @@ export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -777,7 +751,9 @@ export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<MoveMyBlockGroupsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByIds}`,
         {
@@ -785,7 +761,7 @@ export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -798,9 +774,7 @@ export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as MoveMyBlockGroupsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -808,7 +782,6 @@ export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -825,7 +798,9 @@ export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
         {
@@ -833,7 +808,7 @@ export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -846,9 +821,7 @@ export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as BatchMoveMyBlockGroupsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -856,7 +829,6 @@ export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -873,7 +845,9 @@ export const RestoreMyBlockGroupByIdServerFn = createServerFn({
     async ({ data: request }): Promise<RestoreMyBlockGroupByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupById}`,
         {
@@ -881,7 +855,7 @@ export const RestoreMyBlockGroupByIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -894,9 +868,7 @@ export const RestoreMyBlockGroupByIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as RestoreMyBlockGroupByIdResponse;
       if (formattedResponse.exception != null) {
@@ -904,7 +876,6 @@ export const RestoreMyBlockGroupByIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -921,7 +892,9 @@ export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<RestoreMyBlockGroupsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupsByIds}`,
         {
@@ -929,7 +902,7 @@ export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -942,9 +915,7 @@ export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as RestoreMyBlockGroupsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -952,7 +923,6 @@ export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -967,7 +937,9 @@ export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<DeleteMyBlockGroupByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupById}`,
         {
@@ -975,7 +947,7 @@ export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -988,9 +960,7 @@ export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as DeleteMyBlockGroupByIdResponse;
       if (formattedResponse.exception != null) {
@@ -998,7 +968,6 @@ export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -1015,7 +984,9 @@ export const DeleteMyBlockGroupsByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<DeleteMyBlockGroupsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupsByIds}`,
         {
@@ -1023,7 +994,7 @@ export const DeleteMyBlockGroupsByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -1036,9 +1007,7 @@ export const DeleteMyBlockGroupsByIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as DeleteMyBlockGroupsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -1046,7 +1015,6 @@ export const DeleteMyBlockGroupsByIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );

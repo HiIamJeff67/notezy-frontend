@@ -32,8 +32,7 @@ export const prefetchGetMyBlockGroupById = (
       queryKey: queryKeys.blockGroup.oneById(
         prefetchRequest.param.blockGroupId as UUID
       ),
-      queryFn: async () =>
-        await queryFnGetMyBlockGroupById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyBlockGroupById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -58,7 +57,7 @@ export const prefetchGetMyBlockGroupAndItsBlocksById = (
         prefetchRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlockGroupAndItsBlocksById(prefetchRequest, true),
+        await queryFnGetMyBlockGroupAndItsBlocksById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -83,10 +82,8 @@ export const prefetchGetMyBlockGroupsAndTheirBlocksByIds = (
         prefetchRequest.param.blockGroupIds as UUID[]
       ),
       queryFn: async () => {
-        const response = await queryFnGetMyBlockGroupsAndTheirBlocksByIds(
-          prefetchRequest,
-          true
-        );
+        const response =
+          await queryFnGetMyBlockGroupsAndTheirBlocksByIds(prefetchRequest);
 
         response.data.map(blockGroupAndItsBlock => {
           queryClient.setQueriesData(
@@ -126,8 +123,7 @@ export const prefetchGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
       ),
       queryFn: async () =>
         await queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId(
-          prefetchRequest,
-          true
+          prefetchRequest
         ),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
@@ -153,7 +149,7 @@ export const prefetchGetMyBlockGroupsByPrevBlockGroupId = (
         prefetchRequest.param.prevBlockGroupId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlockGroupsByPrevBlockGroupId(prefetchRequest, true),
+        await queryFnGetMyBlockGroupsByPrevBlockGroupId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -178,7 +174,7 @@ export const prefetchGetAllMyBlockGroupsByBlockPackId = (
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyBlockGroupsByBlockPackId(prefetchRequest, true),
+        await queryFnGetAllMyBlockGroupsByBlockPackId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

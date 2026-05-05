@@ -1,4 +1,5 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
+import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   BindGoogleAccountRequest,
@@ -21,7 +22,7 @@ export const GetMyAccountServerFn = createServerFn({ method: "GET" })
   .handler(async ({ data: request }): Promise<GetMyAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.getMyAccount}`,
       {
@@ -29,7 +30,7 @@ export const GetMyAccountServerFn = createServerFn({ method: "GET" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -41,14 +42,13 @@ export const GetMyAccountServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetMyAccountResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -61,7 +61,7 @@ export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<UpdateMyAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.updatedMyAccount}`,
       {
@@ -70,7 +70,7 @@ export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
           "User-Agent": userAgent,
           "X-CSRF-Token": request.header.csrfToken,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -83,7 +83,7 @@ export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse =
       (await response.json()) as UpdateMyAccountResponse;
     if (formattedResponse.exception != null) {
@@ -91,7 +91,6 @@ export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -104,7 +103,7 @@ export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<BindGoogleAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.bindGoogleAccount}`,
       {
@@ -112,7 +111,7 @@ export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -125,7 +124,7 @@ export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse =
       (await response.json()) as BindGoogleAccountResponse;
     if (formattedResponse.exception != null) {
@@ -133,7 +132,6 @@ export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -146,7 +144,7 @@ export const UnbindGoogleAccountServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<UnbindGoogleAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.unbindGoogleAccount}`,
       {
@@ -154,7 +152,7 @@ export const UnbindGoogleAccountServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -167,7 +165,7 @@ export const UnbindGoogleAccountServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse =
       (await response.json()) as UnbindGoogleAccountResponse;
     if (formattedResponse.exception != null) {
@@ -175,7 +173,6 @@ export const UnbindGoogleAccountServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );

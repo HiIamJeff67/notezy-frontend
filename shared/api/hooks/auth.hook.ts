@@ -1,5 +1,5 @@
 import { useApolloClient } from "@apollo/client/react";
-import { AuthAdaptors } from "@shared/api/adaptors/authAdaptor";
+import { AuthAdaptors } from "@shared/api/adaptors/auth.adaptor";
 import {
   mutationFnDeleteMe,
   mutationFnForgetPassword,

@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36">
   <diagram name="第1頁" id="m_Hs1AJgEOYSMR9rUCcY">
-    <mxGraphModel dx="1753" dy="1762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1881" dy="1843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -216,26 +216,6 @@
         <mxCell id="AjWPsFjQNDLMv6rMPjqg-62" edge="1" parent="1" source="AjWPsFjQNDLMv6rMPjqg-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.507;entryY=1.001;entryDx=0;entryDy=0;entryPerimeter=0;" target="RoSgpbQDArmf0p5dOoAb-4">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AjWPsFjQNDLMv6rMPjqg-63" edge="1" parent="1" source="AjWPsFjQNDLMv6rMPjqg-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="AjWPsFjQNDLMv6rMPjqg-43">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="433" y="160" />
-              <mxPoint x="540" y="160" />
-              <mxPoint x="540" y="-140" />
-              <mxPoint x="370" y="-140" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="AjWPsFjQNDLMv6rMPjqg-64" edge="1" parent="1" source="AjWPsFjQNDLMv6rMPjqg-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="AjWPsFjQNDLMv6rMPjqg-44">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="433" y="140" />
-              <mxPoint x="520" y="140" />
-              <mxPoint x="520" y="-120" />
-              <mxPoint x="180" y="-120" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
         <mxCell id="AjWPsFjQNDLMv6rMPjqg-74" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Client only utils&lt;/h1&gt;&lt;div&gt;The above utils such as adaptors, local storage, session&amp;nbsp; storage, etc. are the wrapper from the client only stuff which are only available after the page is rendered and can neither be called in a server function nor inside a loader function. Since that, we place those things in the hooks, a client only wrapper for manipulating the data and modifying the caches&lt;/div&gt;" vertex="1">
           <mxGeometry height="220" width="190" x="640" y="30" as="geometry" />
         </mxCell>
@@ -277,6 +257,14 @@
         </mxCell>
         <mxCell id="AjWPsFjQNDLMv6rMPjqg-88" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="apolloClient&lt;br&gt;(maintaining query cache)" vertex="1">
           <mxGeometry height="60" width="146" x="650" y="-300" as="geometry" />
+        </mxCell>
+        <mxCell id="AjWPsFjQNDLMv6rMPjqg-93" edge="1" parent="1" source="AjWPsFjQNDLMv6rMPjqg-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="AjWPsFjQNDLMv6rMPjqg-42">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="433" y="150" />
+              <mxPoint x="550" y="150" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

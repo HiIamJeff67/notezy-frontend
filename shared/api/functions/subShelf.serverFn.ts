@@ -49,13 +49,13 @@ export const GetMySubShelfByIdServerFn = createServerFn({ method: "GET" })
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -96,13 +96,15 @@ export const GetMySubShelvesByPrevSubShelfIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -144,13 +146,15 @@ export const GetAllMySubShelvesByRootShelfIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -162,7 +166,6 @@ export const GetAllMySubShelvesByRootShelfIdServerFn = createServerFn({
         throw new Error(tKey.error.encounterUnknownError);
       }
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetAllMySubShelvesByRootShelfIdResponse;
       if (formattedResponse.exception != null) {
@@ -195,13 +198,15 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -213,7 +218,6 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdServerFn = createServerFn({
         throw new Error(tKey.error.encounterUnknownError);
       }
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
       if (formattedResponse.exception != null) {
@@ -237,7 +241,9 @@ export const CreateSubShelfByRootShelfIdServerFn = createServerFn({
     async ({ data: request }): Promise<CreateSubShelfByRootShelfIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId}`,
         {
@@ -245,7 +251,7 @@ export const CreateSubShelfByRootShelfIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -284,7 +290,9 @@ export const CreateSubShelvesByRootShelfIdsServerFn = createServerFn({
     }): Promise<CreateSubShelvesByRootShelfIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelvesByRootShelfIds}`,
         {
@@ -292,7 +300,7 @@ export const CreateSubShelvesByRootShelfIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -326,7 +334,7 @@ export const UpdateMySubShelfByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<UpdateMySubShelfByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById}`,
       {
@@ -334,7 +342,7 @@ export const UpdateMySubShelfByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -370,7 +378,9 @@ export const UpdateMySubShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<UpdateMySubShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelvesByIds}`,
         {
@@ -378,7 +388,7 @@ export const UpdateMySubShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -412,7 +422,7 @@ export const MoveMySubShelfServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<MoveMySubShelfResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf}`,
       {
@@ -420,7 +430,7 @@ export const MoveMySubShelfServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -452,7 +462,7 @@ export const MoveMySubShelvesServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<MoveMySubShelvesResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelves}`,
       {
@@ -460,7 +470,7 @@ export const MoveMySubShelvesServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -494,7 +504,9 @@ export const BatchMoveMySubShelvesServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<BatchMoveMySubShelvesResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
         {
@@ -502,7 +514,7 @@ export const BatchMoveMySubShelvesServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -537,7 +549,9 @@ export const RestoreMySubShelfByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<RestoreMySubShelfByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById}`,
         {
@@ -545,7 +559,7 @@ export const RestoreMySubShelfByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -582,7 +596,9 @@ export const RestoreMySubShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<RestoreMySubShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelvesByIds}`,
         {
@@ -590,7 +606,7 @@ export const RestoreMySubShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -624,7 +640,7 @@ export const DeleteMySubShelfByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<DeleteMySubShelfByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById}`,
       {
@@ -632,7 +648,7 @@ export const DeleteMySubShelfByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -668,7 +684,9 @@ export const DeleteMySubShelvesByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<DeleteMySubShelvesByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelvesByIds}`,
         {
@@ -676,7 +694,7 @@ export const DeleteMySubShelvesByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),

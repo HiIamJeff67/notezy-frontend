@@ -18,14 +18,14 @@ export async function SaveMyNotebookMaterialById(
 
   const clientCookies =
     typeof document !== "undefined" ? document.cookie : undefined;
-  const userAgent = request.header.userAgent ?? "unknown";
+  const userAgent = request.header?.userAgent ?? "unknown";
   const response = await fetch(
     `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyNotebookMaterialById}`,
     {
       method: "PUT",
       headers: {
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(clientCookies ? { "X-Client-Cookies": clientCookies } : {}),
@@ -38,7 +38,6 @@ export async function SaveMyNotebookMaterialById(
   if (!isJsonResponse(response)) {
     throw new Error(tKey.error.encounterUnknownError);
   }
-
   const formattedResponse =
     (await response.json()) as SaveMyNotebookMaterialByIdResponse;
   if (formattedResponse.exception != null) {

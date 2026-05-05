@@ -12,7 +12,7 @@ export const GetMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     blockPackId: z.uuidv4(),
   }),
@@ -98,7 +98,7 @@ export const GetMyBlockPacksByParentSubShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       parentSubShelfId: z.uuidv4(),
     }),
@@ -139,7 +139,7 @@ export const GetAllMyBlockPacksByRootShelfIdRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
     }),
@@ -179,7 +179,7 @@ export const CreateBlockPackRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     parentSubShelfId: z.uuidv4(),
     name: z.string().min(1).max(128),
@@ -216,7 +216,7 @@ export const CreateBlockPacksRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     createdBlockPacks: z.array(
       z.object({
@@ -257,7 +257,7 @@ export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
     values: z
@@ -298,7 +298,7 @@ export const UpdateMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     updatedBlockPacks: z.array(
       z.object({
@@ -344,7 +344,7 @@ export const MoveMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
     destinationParentSubShelfId: z.uuidv4(),
@@ -378,7 +378,7 @@ export const MoveMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackIds: z.array(z.uuidv4()),
     destinationParentSubShelfId: z.uuidv4(),
@@ -413,7 +413,7 @@ export const BatchMoveMyBlockPacksByIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       movedBlockPacks: z.array(
         z.object({
@@ -452,7 +452,7 @@ export const RestoreMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
   }),
@@ -496,7 +496,7 @@ export const RestoreMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       blockPackIds: z.array(z.uuidv4()),
     }),
@@ -541,7 +541,7 @@ export const DeleteMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
   }),
@@ -574,7 +574,7 @@ export const DeleteMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     blockPackIds: z.array(z.uuidv4()),
   }),

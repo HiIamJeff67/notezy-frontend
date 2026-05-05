@@ -13,7 +13,7 @@ export const prefetchGetMyInfo = (initialQueryClient?: QueryClient) => {
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.userInfo.my(),
-      queryFn: async () => await queryFnGetMyInfo(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyInfo(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

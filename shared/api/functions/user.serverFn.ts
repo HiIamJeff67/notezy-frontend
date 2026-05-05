@@ -1,4 +1,5 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
+import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
   GetMeRequest,
@@ -14,38 +15,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-function getAccessTokenFromAuthorizationHeader(
-  authorization?: string
-): string | undefined {
-  if (!authorization) return undefined;
-  const token = authorization.replace(/^Bearer\s+/i, "").trim();
-  return token.length > 0 ? token : undefined;
-}
-
-function buildOutboundCookieHeader(
-  inboundCookie: string | undefined,
-  authorization: string | undefined
-): string | undefined {
-  const accessToken = getAccessTokenFromAuthorizationHeader(authorization);
-  if (!accessToken) return inboundCookie;
-
-  const synthesizedAccessTokenCookie = `accessToken=${accessToken}`;
-  if (!inboundCookie) return synthesizedAccessTokenCookie;
-  if (inboundCookie.includes("accessToken=")) return inboundCookie;
-
-  return `${inboundCookie}; ${synthesizedAccessTokenCookie}`;
-}
-
 export const GetUserDataServerFn = createServerFn({ method: "GET" })
   .inputValidator((data: GetUserDataRequest) => data)
   .handler(async ({ data: request }): Promise<GetUserDataResponse> => {
     const inboundCookie = getRequestHeader("cookie");
-    const outboundCookie = buildOutboundCookieHeader(
-      inboundCookie,
-      request.header.authorization
-    );
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getUserData}`,
       {
@@ -53,10 +28,10 @@ export const GetUserDataServerFn = createServerFn({ method: "GET" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
-          ...(outboundCookie ? { Cookie: outboundCookie } : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
         credentials: "include",
       }
@@ -65,14 +40,13 @@ export const GetUserDataServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetUserDataResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -84,12 +58,8 @@ export const GetMeServerFn = createServerFn({ method: "GET" })
   .inputValidator((data: GetMeRequest) => data)
   .handler(async ({ data: request }): Promise<GetMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
-    const outboundCookie = buildOutboundCookieHeader(
-      inboundCookie,
-      request.header.authorization
-    );
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.getMe}`,
       {
@@ -97,10 +67,10 @@ export const GetMeServerFn = createServerFn({ method: "GET" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
-          ...(outboundCookie ? { Cookie: outboundCookie } : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
         credentials: "include",
       }
@@ -109,7 +79,7 @@ export const GetMeServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetMeResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
@@ -128,12 +98,8 @@ export const UpdateMeServerFn = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMeRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
-    const outboundCookie = buildOutboundCookieHeader(
-      inboundCookie,
-      request.header.authorization
-    );
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.user.updateMe}`,
       {
@@ -141,10 +107,10 @@ export const UpdateMeServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
-          ...(outboundCookie ? { Cookie: outboundCookie } : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
         body: JSON.stringify(request.body),
         credentials: "include",
@@ -154,7 +120,7 @@ export const UpdateMeServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
+    forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as UpdateMeResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(

@@ -45,13 +45,13 @@ export const GetMyMaterialByIdServerFn = createServerFn({ method: "GET" })
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "User-Agent": userAgent,
-        ...(request.header.authorization
+        ...(request.header?.authorization
           ? { Authorization: request.header.authorization }
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -62,9 +62,7 @@ export const GetMyMaterialByIdServerFn = createServerFn({ method: "GET" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as GetMyMaterialByIdResponse;
     if (formattedResponse.exception != null) {
@@ -72,7 +70,6 @@ export const GetMyMaterialByIdServerFn = createServerFn({ method: "GET" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -95,13 +92,15 @@ export const GetMyMaterialAndItsParentByIdServerFn = createServerFn({
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialAndItsParentById}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -112,9 +111,7 @@ export const GetMyMaterialAndItsParentByIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMyMaterialAndItsParentByIdResponse;
       if (formattedResponse.exception != null) {
@@ -122,7 +119,6 @@ export const GetMyMaterialAndItsParentByIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -145,7 +141,9 @@ export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
       }).toString();
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialsByParentSubShelfId}?${params}`,
         {
@@ -153,7 +151,7 @@ export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -165,9 +163,7 @@ export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetMyMaterialsByParentSubShelfIdResponse;
       if (formattedResponse.exception != null) {
@@ -175,7 +171,6 @@ export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -198,7 +193,9 @@ export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
       }).toString();
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getAllMyMaterialsByRootShelfId}?${params}`,
         {
@@ -206,7 +203,7 @@ export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -218,9 +215,7 @@ export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as GetAllMyMaterialsByRootShelfIdResponse;
       if (formattedResponse.exception != null) {
@@ -228,7 +223,6 @@ export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -243,7 +237,9 @@ export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<CreateTextbookMaterialResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
         {
@@ -251,7 +247,7 @@ export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -264,9 +260,7 @@ export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as CreateNotebookMaterialResponse;
       if (formattedResponse.exception != null) {
@@ -274,7 +268,6 @@ export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -289,7 +282,9 @@ export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<CreateNotebookMaterialResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createNotebookMaterial}`,
         {
@@ -297,7 +292,7 @@ export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -310,9 +305,7 @@ export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as CreateNotebookMaterialResponse;
       if (formattedResponse.exception != null) {
@@ -320,7 +313,6 @@ export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -334,7 +326,7 @@ export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<UpdateMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.updateMyMaterialById}`,
       {
@@ -342,7 +334,7 @@ export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -355,9 +347,7 @@ export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as UpdateMyMaterialByIdResponse;
     if (formattedResponse.exception != null) {
@@ -365,7 +355,6 @@ export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -378,7 +367,7 @@ export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<MoveMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialById}`,
       {
@@ -386,7 +375,7 @@ export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -399,9 +388,7 @@ export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as MoveMyMaterialByIdResponse;
     if (formattedResponse.exception != null) {
@@ -409,7 +396,6 @@ export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -422,7 +408,7 @@ export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<MoveMyMaterialsByIdsResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.moveMyMaterialsByIds}`,
       {
@@ -430,7 +416,7 @@ export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -443,9 +429,7 @@ export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as MoveMyMaterialsByIdsResponse;
     if (formattedResponse.exception != null) {
@@ -453,7 +437,6 @@ export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -467,7 +450,9 @@ export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<RestoreMyMaterialByIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialById}`,
         {
@@ -475,7 +460,7 @@ export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -488,9 +473,7 @@ export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as RestoreMyMaterialByIdResponse;
       if (formattedResponse.exception != null) {
@@ -498,7 +481,6 @@ export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -515,7 +497,9 @@ export const RestoreMyMaterialsByIdsServerFn = createServerFn({
     async ({ data: request }): Promise<RestoreMyMaterialsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.restoreMyMaterialsByIds}`,
         {
@@ -523,7 +507,7 @@ export const RestoreMyMaterialsByIdsServerFn = createServerFn({
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -536,9 +520,7 @@ export const RestoreMyMaterialsByIdsServerFn = createServerFn({
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as RestoreMyMaterialsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -546,7 +528,6 @@ export const RestoreMyMaterialsByIdsServerFn = createServerFn({
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );
@@ -560,7 +541,7 @@ export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data: request }): Promise<DeleteMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
-      request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialById}`,
       {
@@ -568,7 +549,7 @@ export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "User-Agent": userAgent,
-          ...(request.header.authorization
+          ...(request.header?.authorization
             ? { Authorization: request.header.authorization }
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -581,9 +562,7 @@ export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-
     forwardUpstreamSetCookies(response);
-
     const formattedResponse =
       (await response.json()) as DeleteMyMaterialByIdResponse;
     if (formattedResponse.exception != null) {
@@ -591,7 +570,6 @@ export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
         new NotezyException(formattedResponse.exception)
       );
     }
-
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken
     );
@@ -605,7 +583,9 @@ export const DeleteMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
     async ({ data: request }): Promise<DeleteMyMaterialsByIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
-        request.header.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
       const response = await fetch(
         `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.deleteMyMaterialsByIds}`,
         {
@@ -613,7 +593,7 @@ export const DeleteMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            ...(request.header.authorization
+            ...(request.header?.authorization
               ? { Authorization: request.header.authorization }
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
@@ -626,9 +606,7 @@ export const DeleteMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
       if (!isJsonResponse(response)) {
         throw new Error(tKey.error.encounterUnknownError);
       }
-
       forwardUpstreamSetCookies(response);
-
       const formattedResponse =
         (await response.json()) as DeleteMyMaterialsByIdsResponse;
       if (formattedResponse.exception != null) {
@@ -636,7 +614,6 @@ export const DeleteMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
           new NotezyException(formattedResponse.exception)
         );
       }
-
       AccessTokenCookieHandler.ensure(
         formattedResponse.refreshableTokens?.newAccessToken
       );

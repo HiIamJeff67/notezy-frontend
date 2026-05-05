@@ -7,7 +7,7 @@ export const GetMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -43,7 +43,7 @@ export const SearchRecentRootShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   param: z.object({
     query: z.string().max(256).optional(),
     limit: z.int32().min(1).optional(),
@@ -84,7 +84,7 @@ export const CreateRootShelfRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     name: z.string().min(1).max(128),
   }),
@@ -115,7 +115,7 @@ export const CreateRootShelvesRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     createdRootShelves: z.array(
       z.object({
@@ -150,7 +150,7 @@ export const UpdateMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
     values: z
@@ -186,7 +186,7 @@ export const UpdateMyRootShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       updatedRootShelves: z.array(
         z.object({
@@ -227,7 +227,7 @@ export const RestoreMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -266,7 +266,7 @@ export const RestoreMyRootShelvesByIdsRequestSchema =
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       rootShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
@@ -305,7 +305,7 @@ export const DeleteMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
     userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
-  }),
+  }).optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -339,7 +339,7 @@ export const DeleteMyRootShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
     header: z.object({
       userAgent: z.string().min(1).optional(),
       authorization: z.string().optional(),
-    }),
+    }).optional(),
     body: z.object({
       rootShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
