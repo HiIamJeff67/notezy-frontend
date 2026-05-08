@@ -1,8 +1,8 @@
 import { WebURLPathDictionary } from "@shared/constants";
+import toast from "@shared/lib/toast";
 import { BlockPackNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
-import toast from "react-hot-toast";
 import {
   ContextMenu,
   ContextMenuContent,

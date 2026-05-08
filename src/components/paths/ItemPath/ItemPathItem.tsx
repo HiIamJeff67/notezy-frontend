@@ -1,10 +1,10 @@
+import { MaterialType } from "@shared/api/interfaces/enums";
 import { WebURLPathDictionary } from "@shared/constants";
-import { MaterialType } from "@shared/enums";
+import toast from "@shared/lib/toast";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ChevronRightIcon } from "lucide-react";
 import { useCallback } from "react";
-import toast from "react-hot-toast";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import {
   BreadcrumbItem,

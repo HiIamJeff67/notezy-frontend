@@ -1,4 +1,4 @@
-import { Country, UserGender } from "@shared/enums";
+import { Country, UserGender } from "@shared/api/interfaces/enums";
 import { UserInfoSchema } from "@shared/types/user.type";
 import { z } from "zod";
 import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
@@ -6,10 +6,12 @@ import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 /* ============================== GetMyInfo ============================== */
 
 export const GetMyInfoRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type GetMyInfoRequest = z.infer<typeof GetMyInfoRequestSchema>;
@@ -17,7 +19,7 @@ export type GetMyInfoRequest = z.infer<typeof GetMyInfoRequestSchema>;
 export const GetMyInfoResponseSchema = NotezyResponseSchema.extend({
   data: UserInfoSchema,
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -26,10 +28,12 @@ export type GetMyInfoResponse = z.infer<typeof GetMyInfoResponseSchema>;
 /* ============================== UpdateMyInfo ============================== */
 
 export const UpdateMyInfoRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     values: z.object({
       avatarURL: z.url().nullable(),
@@ -51,7 +55,7 @@ export const UpdateMyInfoResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 

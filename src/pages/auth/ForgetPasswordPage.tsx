@@ -3,6 +3,7 @@ import {
   useSendAuthCode,
 } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
+import toast from "@shared/lib/toast";
 import { tKey } from "@shared/translations";
 import {
   Suspense,
@@ -11,7 +12,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import toast from "react-hot-toast";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";

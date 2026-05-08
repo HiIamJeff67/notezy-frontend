@@ -1,4 +1,9 @@
-import type { GetMyInfoRequest } from "@shared/api/interfaces/userInfo.interface";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import type {
+  GetMyInfoRequest,
+  GetMyInfoResponse,
+} from "@shared/api/interfaces/userInfo.interface";
 import {
   mutationFnUpdateMyInfo,
   queryFnGetMyInfo,
@@ -17,25 +22,41 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMyInfo = (
-  hookRequest: GetMyInfoRequest,
-  options?: UseQueryOptions
+  hookRequest?: GetMyInfoRequest,
+  options?: Partial<UseQueryOptions<GetMyInfoResponse, Error>>
 ) => {
-  const query = useQuery({
-    queryKey: queryKeys.userInfo.my(),
-    queryFn: async () => {
-      const response = await queryFnGetMyInfo(hookRequest as GetMyInfoRequest);
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyInfoRequest
+  ): Promise<GetMyInfoResponse> => {
+    try {
+      if (!request) {
+        throw new NotezyValidationError(
+          ValidationClientException.ReceivedUndefinedRequest()
+        );
+      }
+
+      const response = await queryFnGetMyInfo(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       return response;
-    },
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetMyInfoResponse, Error>({
+    queryKey: queryKeys.userInfo.my(),
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -43,9 +64,20 @@ export const useGetMyInfo = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyInfoRequest
+  ): Promise<GetMyInfoResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.userInfo.my(),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_INFO_HOOK" as const,
+    fetch,
   };
 };
 
@@ -58,22 +90,17 @@ export const useUpdateMyInfo = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UPDATE_MY_INFO_HOOK" as const,
-  };
+  return mutation;
 };

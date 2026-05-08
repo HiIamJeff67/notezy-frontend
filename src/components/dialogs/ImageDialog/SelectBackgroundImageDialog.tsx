@@ -1,11 +1,12 @@
+import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useCallback, useState, useTransition } from "react";
-import toast from "react-hot-toast";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -129,7 +130,10 @@ const SelectBackgroundImageDialog = ({
         <DialogHeader>
           <DialogTitle>Select Background Images</DialogTitle>
         </DialogHeader>
-
+        <DialogDescription className="px-4">
+          Select a image to display on the background. There's only one image
+          available to display at the same time.
+        </DialogDescription>
         <UploadImageDialog
           open={uploadImageDialogOpen}
           onOpenChange={setUploadImageDialogOpen}

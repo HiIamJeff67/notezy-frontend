@@ -35,7 +35,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyMaterialByIdServerFn = createServerFn({ method: "GET" })
+export const GetMyMaterialById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyMaterialByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyMaterialByIdResponse> => {
     const { materialId } = request.param;
@@ -77,7 +77,7 @@ export const GetMyMaterialByIdServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMyMaterialAndItsParentByIdServerFn = createServerFn({
+export const GetMyMaterialAndItsParentById = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyMaterialAndItsParentByIdRequest) => data)
@@ -127,7 +127,7 @@ export const GetMyMaterialAndItsParentByIdServerFn = createServerFn({
     }
   );
 
-export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
+export const GetMyMaterialsByParentSubShelfId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyMaterialsByParentSubShelfIdRequest) => data)
@@ -179,7 +179,7 @@ export const GetMyMaterialsByParentSubShelfIdServerFn = createServerFn({
     }
   );
 
-export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
+export const GetAllMyMaterialsByRootShelfId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetAllMyMaterialsByRootShelfIdRequest) => data)
@@ -231,7 +231,7 @@ export const GetAllMyMaterialsByRootShelfIdServerFn = createServerFn({
     }
   );
 
-export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
+export const CreateTextbookMaterial = createServerFn({ method: "POST" })
   .inputValidator((data: CreateTextbookMaterialRequest) => data)
   .handler(
     async ({ data: request }): Promise<CreateTextbookMaterialResponse> => {
@@ -276,7 +276,7 @@ export const CreateTextbookMaterialServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
+export const CreateNotebookMaterial = createServerFn({ method: "POST" })
   .inputValidator((data: CreateNotebookMaterialRequest) => data)
   .handler(
     async ({ data: request }): Promise<CreateNotebookMaterialResponse> => {
@@ -321,7 +321,7 @@ export const CreateNotebookMaterialServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
+export const UpdateMyMaterialById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyMaterialByIdRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -362,7 +362,7 @@ export const UpdateMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
+export const MoveMyMaterialById = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyMaterialByIdRequest) => data)
   .handler(async ({ data: request }): Promise<MoveMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -403,7 +403,7 @@ export const MoveMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
+export const MoveMyMaterialsByIds = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyMaterialsByIdsRequest) => data)
   .handler(async ({ data: request }): Promise<MoveMyMaterialsByIdsResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -444,7 +444,7 @@ export const MoveMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
+export const RestoreMyMaterialById = createServerFn({ method: "POST" })
   .inputValidator((data: RestoreMyMaterialByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<RestoreMyMaterialByIdResponse> => {
@@ -489,7 +489,7 @@ export const RestoreMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const RestoreMyMaterialsByIdsServerFn = createServerFn({
+export const RestoreMyMaterialsByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: RestoreMyMaterialsByIdsRequest) => data)
@@ -536,7 +536,7 @@ export const RestoreMyMaterialsByIdsServerFn = createServerFn({
     }
   );
 
-export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
+export const DeleteMyMaterialById = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyMaterialByIdRequest) => data)
   .handler(async ({ data: request }): Promise<DeleteMyMaterialByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -577,7 +577,7 @@ export const DeleteMyMaterialByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const DeleteMyMaterialsByIdsServerFn = createServerFn({ method: "POST" })
+export const DeleteMyMaterialsByIds = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyMaterialsByIdsRequest) => data)
   .handler(
     async ({ data: request }): Promise<DeleteMyMaterialsByIdsResponse> => {

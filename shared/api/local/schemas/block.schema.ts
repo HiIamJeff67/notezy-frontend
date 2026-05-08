@@ -1,19 +1,20 @@
+import { BlockGroup } from "@shared/api/local/schemas";
+import { relations } from "drizzle-orm";
 import {
   foreignKey,
   integer,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
-import { blockGroup } from "./blockGroup.schema";
 
-export const block = sqliteTable(
+export const Block = sqliteTable(
   "BlockTable",
   {
     id: text("id").primaryKey(),
     parentBlockId: text("parent_block_id"),
     blockGroupId: text("block_group_id")
       .notNull()
-      .references(() => blockGroup.id, {
+      .references(() => BlockGroup.id, {
         onUpdate: "cascade",
         onDelete: "cascade",
       }),
@@ -38,3 +39,18 @@ export const block = sqliteTable(
       .onDelete("cascade"),
   ]
 );
+
+export const BlockRelations = relations(Block, ({ one, many }) => ({
+  parent: one(Block, {
+    fields: [Block.parentBlockId],
+    references: [Block.id],
+    relationName: "block_relation_parent_children",
+  }),
+  children: many(Block, {
+    relationName: "block_relation_parent_children",
+  }),
+  blockGroup: one(BlockGroup, {
+    fields: [Block.blockGroupId],
+    references: [BlockGroup.id],
+  }),
+}));

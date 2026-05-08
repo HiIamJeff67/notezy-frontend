@@ -29,7 +29,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyRootShelfByIdServerFn = createServerFn({ method: "GET" })
+export const GetMyRootShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyRootShelfByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyRootShelfByIdResponse> => {
     const { rootShelfId } = request.param;
@@ -71,7 +71,7 @@ export const GetMyRootShelfByIdServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const SearchRecentRootShelvesServerFn = createServerFn({ method: "GET" })
+export const SearchRecentRootShelves = createServerFn({ method: "GET" })
   .inputValidator((data: SearchRecentRootShelvesRequest) => data)
   .handler(
     async ({ data: request }): Promise<SearchRecentRootShelvesResponse> => {
@@ -122,7 +122,7 @@ export const SearchRecentRootShelvesServerFn = createServerFn({ method: "GET" })
     }
   );
 
-export const CreateRootShelfServerFn = createServerFn({ method: "POST" })
+export const CreateRootShelf = createServerFn({ method: "POST" })
   .inputValidator((data: CreateRootShelfRequest) => data)
   .handler(async ({ data: request }): Promise<CreateRootShelfResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -163,7 +163,7 @@ export const CreateRootShelfServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const CreateRootShelvesServerFn = createServerFn({ method: "POST" })
+export const CreateRootShelves = createServerFn({ method: "POST" })
   .inputValidator((data: CreateRootShelvesRequest) => data)
   .handler(async ({ data: request }): Promise<CreateRootShelvesResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -204,7 +204,7 @@ export const CreateRootShelvesServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const UpdateMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
+export const UpdateMyRootShelfById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyRootShelfByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<UpdateMyRootShelfByIdResponse> => {
@@ -249,7 +249,7 @@ export const UpdateMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const UpdateMyRootShelvesByIdsServerFn = createServerFn({
+export const UpdateMyRootShelvesByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: UpdateMyRootShelvesByIdsRequest) => data)
@@ -296,7 +296,7 @@ export const UpdateMyRootShelvesByIdsServerFn = createServerFn({
     }
   );
 
-export const RestoreMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
+export const RestoreMyRootShelfById = createServerFn({ method: "POST" })
   .inputValidator((data: RestoreMyRootShelfByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<RestoreMyRootShelfByIdResponse> => {
@@ -341,7 +341,7 @@ export const RestoreMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const RestoreMyRootShelvesByIdsServerFn = createServerFn({
+export const RestoreMyRootShelvesByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: RestoreMyRootShelvesByIdsRequest) => data)
@@ -388,7 +388,7 @@ export const RestoreMyRootShelvesByIdsServerFn = createServerFn({
     }
   );
 
-export const DeleteMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
+export const DeleteMyRootShelfById = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyRootShelfByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<DeleteMyRootShelfByIdResponse> => {
@@ -433,7 +433,7 @@ export const DeleteMyRootShelfByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const DeleteMyRootShelvesByIdsServerFn = createServerFn({
+export const DeleteMyRootShelvesByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: DeleteMyRootShelvesByIdsRequest) => data)

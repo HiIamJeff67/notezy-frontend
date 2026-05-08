@@ -1,20 +1,24 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BatchMoveMyBlockPacksByIdsServerFn,
-  CreateBlockPackServerFn,
-  CreateBlockPacksServerFn,
-  DeleteMyBlockPackByIdServerFn,
-  DeleteMyBlockPacksByIdsServerFn,
-  GetAllMyBlockPacksByRootShelfIdServerFn,
-  GetMyBlockPackAndItsParentByIdServerFn,
-  GetMyBlockPackByIdServerFn,
-  GetMyBlockPacksByParentSubShelfIdServerFn,
-  MoveMyBlockPackByIdServerFn,
-  MoveMyBlockPacksByIdsServerFn,
-  RestoreMyBlockPackByIdServerFn,
-  RestoreMyBlockPacksByIdsServerFn,
-  UpdateMyBlockPackByIdServerFn,
-  UpdateMyBlockPacksByIdsServerFn,
+  BatchMoveMyBlockPacksByIds,
+  CreateBlockPack,
+  CreateBlockPacks,
+  DeleteMyBlockPackById,
+  DeleteMyBlockPacksByIds,
+  GetAllMyBlockPacksByRootShelfId,
+  GetMyBlockPackAndItsParentById,
+  GetMyBlockPackById,
+  GetMyBlockPacksByParentSubShelfId,
+  MoveMyBlockPackById,
+  MoveMyBlockPacksByIds,
+  RestoreMyBlockPackById,
+  RestoreMyBlockPacksByIds,
+  UpdateMyBlockPackById,
+  UpdateMyBlockPacksByIds,
 } from "@shared/api/functions/blockPack.serverFn";
 import {
   type BatchMoveMyBlockPacksByIdsRequest,
@@ -85,20 +89,25 @@ export const queryFnGetMyBlockPackById = async (
 ): Promise<GetMyBlockPackByIdResponse> => {
   try {
     const validatedRequest = GetMyBlockPackByIdRequestSchema.parse(request);
-    const response = await GetMyBlockPackByIdServerFn({
+    const response = await GetMyBlockPackById({
       data: validatedRequest,
     });
     return GetMyBlockPackByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -109,20 +118,25 @@ export const queryFnGetMyBlockPackAndItsParentById = async (
   try {
     const validatedRequest =
       GetMyBlockPackAndItsParentByIdRequestSchema.parse(request);
-    const response = await GetMyBlockPackAndItsParentByIdServerFn({
+    const response = await GetMyBlockPackAndItsParentById({
       data: validatedRequest,
     });
     return GetMyBlockPackAndItsParentByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -133,20 +147,25 @@ export const queryFnGetMyBlockPacksByParentSubShelfId = async (
   try {
     const validatedRequest =
       GetMyBlockPacksByParentSubShelfIdRequestSchema.parse(request);
-    const response = await GetMyBlockPacksByParentSubShelfIdServerFn({
+    const response = await GetMyBlockPacksByParentSubShelfId({
       data: validatedRequest,
     });
     return GetMyBlockPacksByParentSubShelfIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -157,20 +176,25 @@ export const queryFnGetAllMyBlockPacksByRootShelfId = async (
   try {
     const validatedRequest =
       GetAllMyBlockPacksByRootShelfIdRequestSchema.parse(request);
-    const response = await GetAllMyBlockPacksByRootShelfIdServerFn({
+    const response = await GetAllMyBlockPacksByRootShelfId({
       data: validatedRequest,
     });
     return GetAllMyBlockPacksByRootShelfIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -180,18 +204,23 @@ export const mutationFnCreateBlockPack = async (
 ): Promise<CreateBlockPackResponse> => {
   try {
     const validatedRequest = CreateBlockPackRequestSchema.parse(request);
-    const response = await CreateBlockPackServerFn({ data: validatedRequest });
+    const response = await CreateBlockPack({ data: validatedRequest });
     return CreateBlockPackResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -201,18 +230,23 @@ export const mutationFnCreateBlockPacks = async (
 ): Promise<CreateBlockPacksResponse> => {
   try {
     const validatedRequest = CreateBlockPacksRequestSchema.parse(request);
-    const response = await CreateBlockPacksServerFn({ data: validatedRequest });
+    const response = await CreateBlockPacks({ data: validatedRequest });
     return CreateBlockPacksResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -222,20 +256,25 @@ export const mutationFnUpdateMyBlockPackById = async (
 ): Promise<UpdateMyBlockPackByIdResponse> => {
   try {
     const validatedRequest = UpdateMyBlockPackByIdRequestSchema.parse(request);
-    const response = await UpdateMyBlockPackByIdServerFn({
+    const response = await UpdateMyBlockPackById({
       data: validatedRequest,
     });
     return UpdateMyBlockPackByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -246,20 +285,25 @@ export const mutationFnUpdateMyBlockPacksByIds = async (
   try {
     const validatedRequest =
       UpdateMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await UpdateMyBlockPacksByIdsServerFn({
+    const response = await UpdateMyBlockPacksByIds({
       data: validatedRequest,
     });
     return UpdateMyBlockPacksByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -269,20 +313,25 @@ export const mutationFnMoveMyBlockPackById = async (
 ): Promise<MoveMyBlockPackByIdResponse> => {
   try {
     const validatedRequest = MoveMyBlockPackByIdRequestSchema.parse(request);
-    const response = await MoveMyBlockPackByIdServerFn({
+    const response = await MoveMyBlockPackById({
       data: validatedRequest,
     });
     return MoveMyBlockPackByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -292,20 +341,25 @@ export const mutationFnMoveMyBlockPacksByIds = async (
 ): Promise<MoveMyBlockPacksByIdsResponse> => {
   try {
     const validatedRequest = MoveMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await MoveMyBlockPacksByIdsServerFn({
+    const response = await MoveMyBlockPacksByIds({
       data: validatedRequest,
     });
     return MoveMyBlockPacksByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -316,20 +370,25 @@ export const mutationFnBatchMoveMyBlockPacksByIds = async (
   try {
     const validatedRequest =
       BatchMoveMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await BatchMoveMyBlockPacksByIdsServerFn({
+    const response = await BatchMoveMyBlockPacksByIds({
       data: validatedRequest,
     });
     return BatchMoveMyBlockPacksByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -339,20 +398,25 @@ export const mutationFnRestoreMyBlockPackById = async (
 ): Promise<RestoreMyBlockPackByIdResponse> => {
   try {
     const validatedRequest = RestoreMyBlockPackByIdRequestSchema.parse(request);
-    const response = await RestoreMyBlockPackByIdServerFn({
+    const response = await RestoreMyBlockPackById({
       data: validatedRequest,
     });
     return RestoreMyBlockPackByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -363,20 +427,25 @@ export const mutationFnRestoreMyBlockPacksByIds = async (
   try {
     const validatedRequest =
       RestoreMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await RestoreMyBlockPacksByIdsServerFn({
+    const response = await RestoreMyBlockPacksByIds({
       data: validatedRequest,
     });
     return RestoreMyBlockPacksByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -386,20 +455,25 @@ export const mutationFnDeleteMyBlockPackById = async (
 ): Promise<DeleteMyBlockPackByIdResponse> => {
   try {
     const validatedRequest = DeleteMyBlockPackByIdRequestSchema.parse(request);
-    const response = await DeleteMyBlockPackByIdServerFn({
+    const response = await DeleteMyBlockPackById({
       data: validatedRequest,
     });
     return DeleteMyBlockPackByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };
@@ -410,20 +484,25 @@ export const mutationFnDeleteMyBlockPacksByIds = async (
   try {
     const validatedRequest =
       DeleteMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await DeleteMyBlockPacksByIdsServerFn({
+    const response = await DeleteMyBlockPacksByIds({
       data: validatedRequest,
     });
     return DeleteMyBlockPacksByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+
     throw error;
   }
 };

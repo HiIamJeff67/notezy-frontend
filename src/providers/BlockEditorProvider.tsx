@@ -21,15 +21,16 @@ import {
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertBlockGroupsByBlockPackIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
+import { BlockType } from "@shared/api/interfaces/enums";
 import {
   MergingDebounceTimeout,
   MinForcedMergedEvents,
   MinRequestEvents,
 } from "@shared/constants/blockEventLimitations.constant";
-import { BlockType } from "@shared/enums/blockType.enum";
 import { HybridDisjointSet } from "@shared/lib/disjointSet";
 import { LinkedList, LinkedListNode } from "@shared/lib/linkedList";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { BlockEvent } from "@shared/types/blockEvent.type";
 import {
   BlockGroupMeta,
@@ -47,7 +48,6 @@ import {
   useRef,
   useState,
 } from "react";
-import toast from "react-hot-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getAuthorization } from "@/util/getAuthorization";
 

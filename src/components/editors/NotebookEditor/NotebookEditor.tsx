@@ -36,21 +36,21 @@ import { choiceRandom } from "@/util/random";
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { useSaveMyNotebookMaterialById } from "@shared/api/hooks/material.hook";
+import {
+  MaterialContentType,
+  MaterialType,
+} from "@shared/api/interfaces/enums";
 import { queryFnGetMyMaterialAndItsParentById } from "@shared/api/invokers/material.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { AllDefaultBlockPackInitialContents } from "@shared/constants/defaultBlockPackInitialContent.constant";
-import {
-  ExportableMaterialContentTypes,
-  MaterialContentType,
-  MaterialType,
-} from "@shared/enums";
+import { ExportableMaterialContentTypes } from "@shared/constants/exportableMaterialContentTypes.constant";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 import type { UUID } from "crypto";
 import { ChevronDownIcon, XIcon } from "lucide-react";
 import { useEffect, useReducer, useState, useTransition } from "react";
-import toast from "react-hot-toast";
 
 interface NotebookEditorProps {
   notebookMaterialMeta: NotebookMaterialMeta;
@@ -496,14 +496,10 @@ const NotebookEditor = ({ notebookMaterialMeta }: NotebookEditorProps) => {
         summary={shelfItemManager.expandedShelves.get(meta.rootId.toString())}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        {fetchMyMaterialAndItsParentByIdMutator.isPending ? (
-          <StrictLoadingCover />
-        ) : (
-          <BlockNoteView
-            editor={editor}
-            className="caret-muted-foreground z-10"
-          />
-        )}
+        <BlockNoteView
+          editor={editor}
+          className="caret-muted-foreground z-10"
+        />
       </div>
     </div>
   );

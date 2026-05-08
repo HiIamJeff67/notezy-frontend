@@ -1,5 +1,6 @@
 import { useSendAuthCode } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
+import toast from "@shared/lib/toast";
 import {
   lazy,
   Suspense,
@@ -8,7 +9,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAppRouter, useLanguage, useUser } from "@/hooks";
 import AccountModificationTab from "./AccountModificationTab";

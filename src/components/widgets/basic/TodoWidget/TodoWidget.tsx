@@ -1,4 +1,4 @@
-import { generateDynamicDNDType } from "@shared/enums/dndType.enum";
+import { generateDynamicDNDType } from "@shared/enums";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import {
   getDefaultTodoData,

@@ -1,4 +1,4 @@
-import { LanguageKey } from "../types/language.type";
+import { LanguageKey } from "../types/languageData.type";
 import { TranslationWords } from "../types/translationWords.type";
 import { EnglishTranslationWords } from "./english.translation";
 import { JapaneseTranslationWords } from "./japanese.translation";
@@ -111,6 +111,7 @@ export const tKey: TranslationWords = {
         failedToGetUser: "error.apiError.getUser.failedToGetUser",
       },
     },
+    localDatabaseError: "error.localDatabaseError",
   },
   settings: {
     accountSettings: "settings.accountSettings",

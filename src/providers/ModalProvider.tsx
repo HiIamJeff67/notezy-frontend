@@ -16,6 +16,7 @@ export type ModalPropsMap = {
   PreferencesPanel: undefined;
   CreateShelfItemDialog: {
     dialogHeader: React.ReactNode;
+    dialogDescription: React.ReactNode;
     disableInput?: boolean;
     inputPlaceholder?: string;
     onCreate: (value: string) => void | Promise<void>;
@@ -23,6 +24,7 @@ export type ModalPropsMap = {
   };
   DeleteShelfItemDialog: {
     dialogHeader: React.ReactNode;
+    dialogDescription: React.ReactNode;
     confirmKeyword?: string;
     inputPlaceholder?: string;
     onDelete: () => void | Promise<void>;

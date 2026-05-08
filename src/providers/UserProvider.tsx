@@ -1,19 +1,16 @@
+import { TestAdaptor } from "@shared/api/adaptors/test.adaptor";
 import { NotezyAPIError } from "@shared/api/exceptions";
-import { ClientCommonExceptions } from "@shared/api/exceptions/clientCommon.exception";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { fetchGetMe, fetchGetUserData } from "@shared/api/fetches/user.fetch";
+import { fetchGetMyAccount } from "@shared/api/fetches/userAccount.fetch";
+import { fetchGetMyInfo } from "@shared/api/fetches/userInfo.fetch";
 import { useLogout } from "@shared/api/hooks/auth.hook";
-import {
-  queryFnGetMe,
-  queryFnGetUserData,
-} from "@shared/api/invokers/user.invoker";
-import { queryFnGetMyAccount } from "@shared/api/invokers/userAccount.invoker";
-import { queryFnGetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { tKey } from "@shared/translations";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useLoading } from "@/hooks/useLoading";
@@ -90,10 +87,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
           if (!isOnline)
-            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
+            throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
+
+          TestAdaptor.getAllExistingUsers();
 
           const userAgent = navigator.userAgent;
-          const response = await queryFnGetUserData({
+          const response = await fetchGetUserData({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -101,18 +100,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             body: {},
           });
 
-          if (!response) {
-            throw new Error(
-              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-            );
-          }
-
           setUserData(response.data);
         } catch (error) {
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
-              ClientCommonExceptions.NetworkRequired().reason
+              FetchClientExceptions.NetworkRequired().reason
           ) {
             if (
               !router.isSamePath(
@@ -151,28 +144,22 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
           if (!isOnline)
-            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
+            throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await queryFnGetMe({
+          const response = await fetchGetMe({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
             },
           });
 
-          if (!response) {
-            throw new Error(
-              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-            );
-          }
-
           setUser(response.data);
         } catch (error) {
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
-              ClientCommonExceptions.NetworkRequired().reason
+              FetchClientExceptions.NetworkRequired().reason
           ) {
             if (
               !router.isSamePath(
@@ -204,28 +191,22 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
           if (!isOnline)
-            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
+            throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await queryFnGetMyInfo({
+          const response = await fetchGetMyInfo({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
             },
           });
 
-          if (!response) {
-            throw new Error(
-              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-            );
-          }
-
           setUserInfo(response.data);
         } catch (error) {
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
-              ClientCommonExceptions.NetworkRequired().reason
+              FetchClientExceptions.NetworkRequired().reason
           ) {
             if (
               !router.isSamePath(
@@ -257,28 +238,22 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
           if (!isOnline)
-            throw new NotezyAPIError(ClientCommonExceptions.NetworkRequired());
+            throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await queryFnGetMyAccount({
+          const response = await fetchGetMyAccount({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
             },
           });
 
-          if (!response) {
-            throw new Error(
-              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-            );
-          }
-
           setUserAccount(response.data);
         } catch (error) {
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
-              ClientCommonExceptions.NetworkRequired().reason
+              FetchClientExceptions.NetworkRequired().reason
           ) {
             if (
               !router.isSamePath(

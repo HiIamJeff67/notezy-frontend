@@ -1,0 +1,48 @@
+{
+  "Generate Some Codes to Start Building API Exceptions": {
+    "prefix": ["apiexception", "apiexcep"],
+    "body": [
+      "import {",
+      "\tExceptionCode,",
+      "\tExceptionPrefix,",
+      "\tExceptionReasonDictionary,",
+      "\tExceptionSubDomainCodeShiftAmount,",
+      "\tNotezyException",
+      "} from \"@shared/api/exceptions\";",
+      "import { StatusCodes } from \"http-status-codes\";",
+      "",
+      "const ${1:_DomainName_}ExceptionDomainCode: ExceptionCode = ${2:_SubDomainCode_};",
+      "const ExceptionBaseCode_${1:_DomainName_}: ExceptionCode = ${1:_DomainName_}ExceptionDomainCode * ExceptionSubDomainCodeShiftAmount;",
+      "const ExceptionPrefix_${1:_DomainName_}: ExceptionPrefix = \"${1:_DomainName_}\";",
+      "",
+      "export class ${1:_DomainName_}Exceptions {",
+      "\tstatic BaseCode: ExceptionCode = ExceptionBaseCode_${1:_DomainName_};",
+      "\tstatic Prefix: ExceptionPrefix = ExceptionPrefix_${1:_DomainName_};",
+      "}"
+    ],
+    "description": "Create a basic structure with serveral lines of codes for the exception followed the roles of Notezy API"
+  },
+  "Generate Some Codes to Start Building Client Exceptions": {
+    "prefix": ["clientexception", "clientexcep", "cliexcep"],
+    "body": [
+      "import {",
+      "\tExceptionCode,",
+      "\tExceptionPrefix,",
+      "\tExceptionReasonDictionary,",
+      "\tExceptionSubDomainCodeShiftAmount,",
+      "\tNotezyException",
+      "} from \"@shared/api/exceptions\";",
+      "import { StatusCodes } from \"http-status-codes\";",
+      "",
+      "const ${1:_DomainName_}ClientExceptionDomainCode: ExceptionCode = ${2:_SubDomainCode_};",
+      "const ClientExceptionBaseCode_${1:_DomainName_}: ExceptionCode = ${1:_DomainName_}ClientExceptionDomainCode * ExceptionSubDomainCodeShiftAmount;",
+      "const ClientExceptionPrefix_${1:_DomainName_}: ExceptionPrefix = \"${1:_DomainName_}\";",
+      "",
+      "export class ${1:_DomainName_}ClientExceptions {",
+      "\tstatic BaseCode: ExceptionCode = ClientExceptionBaseCode_${1:_DomainName_};",
+      "\tstatic Prefix: ExceptionPrefix = ClientExceptionPrefix_${1:_DomainName_};",
+      "}"
+    ],
+    "description": "Create a basic structure with serveral lines of codes for the client version exception followed the roles of Notezy API"
+  }
+}

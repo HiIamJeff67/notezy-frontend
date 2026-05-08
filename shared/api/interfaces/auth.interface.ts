@@ -165,7 +165,7 @@ export const LogoutResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -217,7 +217,7 @@ export const ValidateEmailResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -244,7 +244,7 @@ export const ResetEmailResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -307,7 +307,7 @@ export const ResetMeResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -333,7 +333,7 @@ export const DeleteMeResponseSchema = NotezyResponseSchema.extend({
     deletedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 

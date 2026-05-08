@@ -1,4 +1,4 @@
-import { Language } from "./language.type";
+import { Language } from "./languageData.type";
 import { Theme } from "./theme.type";
 
 export enum LocalStorageKey {
@@ -8,6 +8,7 @@ export enum LocalStorageKey {
   lastVisitedAt = "last_visited_at",
   sidebarWidth = "sidebar_width",
   dashboardWidgets = "dashboard_widgets",
+  currentLocalDBVersion = "currentLocalDBVersion",
 }
 
 export interface LocalStorageItem {
@@ -17,4 +18,5 @@ export interface LocalStorageItem {
   [LocalStorageKey.accessToken]: string | null;
   [LocalStorageKey.sidebarWidth]: string | null;
   [LocalStorageKey.dashboardWidgets]: string | null;
+  [LocalStorageKey.currentLocalDBVersion]: string | null;
 }

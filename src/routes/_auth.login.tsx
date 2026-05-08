@@ -4,11 +4,16 @@ import LoginPage from "@/pages/auth/LoginPage";
 
 export const Route = createFileRoute("/_auth/login")({
   loader: async () => {
-    const response = await fetchGetUserData({});
-    if (response && response.success) {
-      throw redirect({ to: "/dashboard", replace: true });
+    try {
+      const response = await fetchGetUserData({});
+      if (response && response.success) {
+        throw redirect({ to: "/dashboard", replace: true });
+      }
+      return {};
+    } catch (error) {
+      // if the current user is not exist, return an empty object to the login page
+      return {};
     }
-    return {};
   },
   component: LoginPage,
 });

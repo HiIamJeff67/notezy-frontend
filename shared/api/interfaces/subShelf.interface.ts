@@ -2,17 +2,21 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialTypes } from "@shared/enums";
-import { AllSupportedBlockPackIcons } from "@shared/enums/supportedBlockPackIcon.enum";
+import {
+  AllMaterialTypes,
+  AllSupportedBlockPackIcons,
+} from "@shared/api/interfaces/enums";
 import { z } from "zod";
 
 /* ============================== GetMySubShelfById ============================== */
 
 export const GetMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   param: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -34,7 +38,7 @@ export const GetMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     createdAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -46,10 +50,12 @@ export type GetMySubShelfByIdResponse = z.infer<
 
 export const GetMySubShelvesByPrevSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
     }),
@@ -74,7 +80,7 @@ export const GetMySubShelvesByPrevSubShelfIdResponseSchema =
       })
     ),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -86,10 +92,12 @@ export type GetMySubShelvesByPrevSubShelfIdResponse = z.infer<
 
 export const GetAllMySubShelvesByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
     }),
@@ -114,7 +122,7 @@ export const GetAllMySubShelvesByRootShelfIdResponseSchema =
       })
     ),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -126,10 +134,12 @@ export type GetAllMySubShelvesByRootShelfIdResponse = z.infer<
 
 export const GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
     }),
@@ -185,7 +195,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
       ),
     }),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -197,11 +207,14 @@ export type GetMySubShelvesAndItemsByPrevSubShelfIdResponse = z.infer<
 
 export const CreateSubShelfByRootShelfIdRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
+      id: z.uuidv4().optional(),
       rootShelfId: z.uuidv4(),
       prevSubShelfId: z.uuidv4().nullable(),
       name: z.string().min(1).max(128),
@@ -223,7 +236,7 @@ export const CreateSubShelfByRootShelfIdResponseSchema =
       createdAt: z.coerce.date(),
     }),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -235,13 +248,16 @@ export type CreateSubShelfByRootShelfIdResponse = z.infer<
 
 export const CreateSubShelvesByRootShelfIdsRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
       createdSubShelves: z.array(
         z.object({
+          id: z.uuidv4().optional(),
           rootShelfId: z.uuidv4(),
           prevSubShelfId: z.uuidv4().nullable(),
           name: z.string().min(1).max(128),
@@ -265,7 +281,7 @@ export const CreateSubShelvesByRootShelfIdsResponseSchema =
       createdAt: z.coerce.date(),
     }),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -276,10 +292,12 @@ export type CreateSubShelvesByRootShelfIdsResponse = z.infer<
 /* ============================== UpdateMySubShelfById ============================== */
 
 export const UpdateMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
     values: z
@@ -304,7 +322,7 @@ export const UpdateMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -315,10 +333,12 @@ export type UpdateMySubShelfByIdResponse = z.infer<
 /* ============================== UpdateMySubShelvesByIds ============================== */
 
 export const UpdateMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     updatedSubShelves: z.array(
       z.object({
@@ -348,7 +368,7 @@ export const UpdateMySubShelvesByIdsResponseSchema =
       updatedAt: z.coerce.date(),
     }),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -359,10 +379,12 @@ export type UpdateMySubShelvesByIdsResponse = z.infer<
 /* ============================== MoveMySubShelf ============================== */
 
 export const MoveMySubShelfRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfId: z.uuidv4(),
@@ -382,7 +404,7 @@ export const MoveMySubShelfResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -393,10 +415,12 @@ export type MoveMySubShelfResponse = z.infer<
 /* ============================== MoveMySubShelves ============================== */
 
 export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
@@ -418,7 +442,7 @@ export const MoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -429,10 +453,12 @@ export type MoveMySubShelvesResponse = z.infer<
 /* ============================== BatchMoveMySubShelves ============================== */
 
 export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     movedSubShelves: z.array(
       z.object({
@@ -458,7 +484,7 @@ export const BatchMoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -469,10 +495,12 @@ export type BatchMoveMySubShelvesResponse = z.infer<
 /* ============================== RestoreMySubShelfById ============================== */
 
 export const RestoreMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -498,7 +526,7 @@ export const RestoreMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     createdAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -510,10 +538,12 @@ export type RestoreMySubShelfByIdResponse = z.infer<
 
 export const RestoreMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
   {
-    header: z.object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    }).optional(),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
       subShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
@@ -543,7 +573,7 @@ export const RestoreMySubShelvesByIdsResponseSchema =
       })
     ),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 
@@ -554,10 +584,12 @@ export type RestoreMySubShelvesByIdsResponse = z.infer<
 /* ============================== DeleteMySubShelfById ============================== */
 
 export const DeleteMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     subShelfId: z.uuidv4(),
   }),
@@ -576,7 +608,7 @@ export const DeleteMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
     deletedAt: z.coerce.date(),
   }),
   embedded: z.object({
-    embeddedPublicId: z.string(),
+    publicId: z.string(),
   }),
 });
 
@@ -587,10 +619,12 @@ export type DeleteMySubShelfByIdResponse = z.infer<
 /* ============================== DeleteMySubShelvesByIds ============================== */
 
 export const DeleteMySubShelvesByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  }).optional(),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     subShelfIds: z.array(z.uuidv4()).min(1).max(128),
   }),
@@ -610,7 +644,7 @@ export const DeleteMySubShelvesByIdsResponseSchema =
       deletedAt: z.coerce.date(),
     }),
     embedded: z.object({
-      embeddedPublicId: z.string(),
+      publicId: z.string(),
     }),
   });
 

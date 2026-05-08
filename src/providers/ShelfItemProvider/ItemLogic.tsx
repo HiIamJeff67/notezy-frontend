@@ -9,7 +9,8 @@ import {
   useDeleteMyMaterialById,
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
-import { AnalysisStatus, MaterialType } from "@shared/enums";
+import { MaterialType } from "@shared/api/interfaces/enums";
+import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";

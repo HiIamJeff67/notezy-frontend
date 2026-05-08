@@ -1,8 +1,8 @@
+import toast from "@shared/lib/toast";
 import { Download, Save, Upload } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useLanguage, useLoading } from "@/hooks";

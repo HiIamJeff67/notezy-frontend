@@ -4,14 +4,14 @@ import {
   useResetEmail,
   useResetMe,
 } from "@shared/api/hooks/auth.hook";
+import { UserRole } from "@shared/api/interfaces/enums";
 import { WebURLPathDictionary } from "@shared/constants";
-import { UserRole } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
 import SettingMenu from "@/components/menus/SettingMenu/SettingMenu";
 import SettingMenuButton from "@/components/menus/SettingMenu/SettingMenuButton";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";

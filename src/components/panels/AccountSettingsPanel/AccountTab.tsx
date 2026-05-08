@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateMe } from "@shared/api/hooks/user.hook";
+import { AllUserStatus } from "@shared/api/interfaces/enums";
 import { FakeUser } from "@shared/constants";
-import { AllUserStatus } from "@shared/enums";
+import toast from "@shared/lib/toast";
 import { User, UserSchema } from "@shared/types/user.type";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";
 import {

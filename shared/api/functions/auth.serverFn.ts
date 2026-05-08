@@ -31,7 +31,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const RegisterServerFn = createServerFn({ method: "POST" })
+export const Register = createServerFn({ method: "POST" })
   .inputValidator((data: RegisterRequest) => data)
   .handler(async ({ data: request }): Promise<RegisterResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -66,7 +66,7 @@ export const RegisterServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const RegisterViaGoogleServerFn = createServerFn({ method: "POST" })
+export const RegisterViaGoogle = createServerFn({ method: "POST" })
   .inputValidator((data: RegisterViaGoogleRequest) => data)
   .handler(async ({ data: request }): Promise<RegisterViaGoogleResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -102,7 +102,7 @@ export const RegisterViaGoogleServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const LoginServerFn = createServerFn({ method: "POST" })
+export const Login = createServerFn({ method: "POST" })
   .inputValidator((data: LoginRequest) => data)
   .handler(async ({ data: request }): Promise<LoginResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -137,7 +137,7 @@ export const LoginServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const LoginViaGoogleServerFn = createServerFn({ method: "POST" })
+export const LoginViaGoogle = createServerFn({ method: "POST" })
   .inputValidator((data: LoginViaGoogleRequest) => data)
   .handler(async ({ data: request }): Promise<LoginViaGoogleResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -172,7 +172,7 @@ export const LoginViaGoogleServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const LogoutServerFn = createServerFn({ method: "POST" })
+export const Logout = createServerFn({ method: "POST" })
   .inputValidator((data: LogoutRequest) => data)
   .handler(async ({ data: request }): Promise<LogoutResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -207,7 +207,7 @@ export const LogoutServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const SendAuthCodeServerFn = createServerFn({ method: "POST" })
+export const SendAuthCode = createServerFn({ method: "POST" })
   .inputValidator((data: SendAuthCodeRequest) => data)
   .handler(async ({ data: request }): Promise<SendAuthCodeResponse> => {
     const userAgent =
@@ -241,7 +241,7 @@ export const SendAuthCodeServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const ValidateEmailServerFn = createServerFn({ method: "POST" })
+export const ValidateEmail = createServerFn({ method: "POST" })
   .inputValidator((data: ValidateEmailRequest) => data)
   .handler(async ({ data: request }): Promise<ValidateEmailResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -282,7 +282,7 @@ export const ValidateEmailServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const ResetEmailServerFn = createServerFn({ method: "POST" })
+export const ResetEmail = createServerFn({ method: "POST" })
   .inputValidator((data: ResetEmailRequest) => data)
   .handler(async ({ data: request }): Promise<ResetEmailResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -323,7 +323,7 @@ export const ResetEmailServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const ForgetPasswordServerFn = createServerFn({ method: "POST" })
+export const ForgetPassword = createServerFn({ method: "POST" })
   .inputValidator((data: ForgetPasswordRequest) => data)
   .handler(async ({ data: request }): Promise<ForgetPasswordResponse> => {
     const userAgent =
@@ -357,7 +357,7 @@ export const ForgetPasswordServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const ResetMeServerFn = createServerFn({ method: "POST" })
+export const ResetMe = createServerFn({ method: "POST" })
   .inputValidator((data: ResetMeRequest) => data)
   .handler(async ({ data: request }): Promise<ResetMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -398,7 +398,7 @@ export const ResetMeServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const DeleteMeServerFn = createServerFn({ method: "POST" })
+export const DeleteMe = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMeRequest) => data)
   .handler(async ({ data: request }): Promise<DeleteMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");

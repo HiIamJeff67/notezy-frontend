@@ -1,46 +1,39 @@
-import { tKey } from "../translations";
-import { Language, LanguageKey } from "../types/language.type";
-
-export const LanguageKeys: LanguageKey[] = [
-  "English",
-  "TraditionalChinese",
-  "SimpleChinese",
-  "Japanese",
-  "Korean",
-];
+import { Language } from "@shared/api/interfaces/enums";
+import { tKey } from "@shared/translations";
+import { LanguageData } from "@shared/types/languageData.type";
 
 // since the support languages are not large, we can just build their map here
-export const LanguageKeyMap: Record<LanguageKey, Language> = {
+export const LanguageKeyMap: Record<Language, LanguageData> = {
   English: {
-    key: "English",
+    key: Language.English,
     translationKey: tKey.languages.english,
     nativeName: "English",
     code: "en",
   },
   TraditionalChinese: {
-    key: "TraditionalChinese",
+    key: Language.TraditionalChinese,
     translationKey: tKey.languages.traditionalChinese,
     nativeName: "繁體中文",
     code: "zh-TW",
   },
   SimpleChinese: {
-    key: "SimpleChinese",
+    key: Language.SimpleChinese,
     translationKey: tKey.languages.simpleChinese,
     nativeName: "简体中文",
     code: "zh-CN",
   },
   Japanese: {
-    key: "Japanese",
+    key: Language.Japanese,
     translationKey: tKey.languages.japanese,
     nativeName: "日本語",
     code: "ja",
   },
   Korean: {
-    key: "Korean",
+    key: Language.Korean,
     translationKey: tKey.languages.korean,
     nativeName: "한국어",
     code: "ko",
   },
 };
 
-export const Languages = LanguageKeys.map(key => LanguageKeyMap[key]);
+export const AllLanguageData = Object.values(LanguageKeyMap);

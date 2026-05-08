@@ -17,7 +17,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyAccountServerFn = createServerFn({ method: "GET" })
+export const GetMyAccount = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyAccountRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -56,7 +56,7 @@ export const GetMyAccountServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
+export const UpdateMyAccount = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyAccountRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMyAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -98,7 +98,7 @@ export const UpdateMyAccountServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
+export const BindGoogleAccount = createServerFn({ method: "POST" })
   .inputValidator((data: BindGoogleAccountRequest) => data)
   .handler(async ({ data: request }): Promise<BindGoogleAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -139,7 +139,7 @@ export const BindGoogleAccountServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const UnbindGoogleAccountServerFn = createServerFn({ method: "POST" })
+export const UnbindGoogleAccount = createServerFn({ method: "POST" })
   .inputValidator((data: UnbindGoogleAccountRequest) => data)
   .handler(async ({ data: request }): Promise<UnbindGoogleAccountResponse> => {
     const inboundCookie = getRequestHeader("cookie");

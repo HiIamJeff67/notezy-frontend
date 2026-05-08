@@ -1,11 +1,15 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  GetMeServerFn,
-  GetUserDataServerFn,
-  UpdateMeServerFn,
+  GetMe,
+  GetUserData,
+  UpdateMe,
 } from "@shared/api/functions/user.serverFn";
 import {
   type GetMeRequest,
@@ -29,12 +33,13 @@ export const queryFnGetUserData = async (
 ): Promise<GetUserDataResponse> => {
   try {
     const validatedRequest = GetUserDataRequestSchema.parse(request);
-    const response = await GetUserDataServerFn({ data: validatedRequest });
+    const response = await GetUserData({ data: validatedRequest });
     return GetUserDataResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
@@ -42,6 +47,9 @@ export const queryFnGetUserData = async (
         default:
           throw new Error(error.unWrap.message);
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     throw error;
@@ -53,12 +61,13 @@ export const queryFnGetMe = async (
 ): Promise<GetMeResponse> => {
   try {
     const validatedRequest = GetMeRequestSchema.parse(request);
-    const response = await GetMeServerFn({ data: validatedRequest });
+    const response = await GetMe({ data: validatedRequest });
     return GetMeResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
@@ -66,6 +75,9 @@ export const queryFnGetMe = async (
         default:
           throw new Error(error.unWrap.message);
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     throw error;
@@ -77,12 +89,13 @@ export const mutationFnUpdateMe = async (
 ): Promise<UpdateMeResponse> => {
   try {
     const validatedRequest = UpdateMeRequestSchema.parse(request);
-    const response = await UpdateMeServerFn({ data: validatedRequest });
+    const response = await UpdateMe({ data: validatedRequest });
     return UpdateMeResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
@@ -90,6 +103,9 @@ export const mutationFnUpdateMe = async (
         default:
           throw new Error(error.unWrap.message);
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     throw error;

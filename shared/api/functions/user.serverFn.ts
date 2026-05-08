@@ -15,7 +15,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetUserDataServerFn = createServerFn({ method: "GET" })
+export const GetUserData = createServerFn({ method: "GET" })
   .inputValidator((data: GetUserDataRequest) => data)
   .handler(async ({ data: request }): Promise<GetUserDataResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -54,7 +54,7 @@ export const GetUserDataServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMeServerFn = createServerFn({ method: "GET" })
+export const GetMe = createServerFn({ method: "GET" })
   .inputValidator((data: GetMeRequest) => data)
   .handler(async ({ data: request }): Promise<GetMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -94,7 +94,7 @@ export const GetMeServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const UpdateMeServerFn = createServerFn({ method: "POST" })
+export const UpdateMe = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMeRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMeResponse> => {
     const inboundCookie = getRequestHeader("cookie");

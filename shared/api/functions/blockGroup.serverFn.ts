@@ -52,7 +52,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyBlockGroupByIdServerFn = createServerFn({ method: "GET" })
+export const GetMyBlockGroupById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockGroupByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockGroupByIdResponse> => {
     const { blockGroupId } = request.param;
@@ -94,7 +94,7 @@ export const GetMyBlockGroupByIdServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMyBlockGroupAndItsBlocksByIdServerFn = createServerFn({
+export const GetMyBlockGroupAndItsBlocksById = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlockGroupAndItsBlocksByIdRequest) => data)
@@ -144,7 +144,7 @@ export const GetMyBlockGroupAndItsBlocksByIdServerFn = createServerFn({
     }
   );
 
-export const GetMyBlockGroupsAndTheirBlocksByIdsServerFn = createServerFn({
+export const GetMyBlockGroupsAndTheirBlocksByIds = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlockGroupsAndTheirBlocksByIdsRequest) => data)
@@ -196,60 +196,59 @@ export const GetMyBlockGroupsAndTheirBlocksByIdsServerFn = createServerFn({
     }
   );
 
-export const GetMyBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
-  createServerFn({
-    method: "GET",
-  })
-    .inputValidator(
-      (data: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest) => data
-    )
-    .handler(
-      async ({
-        data: request,
-      }): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
-        const { blockPackId } = request.param;
-        const params = new URLSearchParams({
-          blockPackId: blockPackId,
-        }).toString();
-        let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsAndTheirBlocksByBlockPackId}?${params}`;
-        const inboundCookie = getRequestHeader("cookie");
-        const userAgent =
-          request.header?.userAgent ??
-          getRequestHeader("User-Agent") ??
-          "unknown";
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": userAgent,
-            ...(request.header?.authorization
-              ? { Authorization: request.header.authorization }
-              : {}),
-            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-          },
-          credentials: "include",
-        });
+export const GetMyBlockGroupsAndTheirBlocksByBlockPackId = createServerFn({
+  method: "GET",
+})
+  .inputValidator(
+    (data: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest) => data
+  )
+  .handler(
+    async ({
+      data: request,
+    }): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
+      const { blockPackId } = request.param;
+      const params = new URLSearchParams({
+        blockPackId: blockPackId,
+      }).toString();
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsAndTheirBlocksByBlockPackId}?${params}`;
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        credentials: "include",
+      });
 
-        if (!isJsonResponse(response)) {
-          throw new Error(tKey.error.encounterUnknownError);
-        }
-        forwardUpstreamSetCookies(response);
-        const formattedResponse =
-          (await response.json()) as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-        if (formattedResponse.exception != null) {
-          throw new NotezyAPIError(
-            new NotezyException(formattedResponse.exception)
-          );
-        }
-        AccessTokenCookieHandler.ensure(
-          formattedResponse.refreshableTokens?.newAccessToken
-        );
-
-        return formattedResponse;
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
       }
-    );
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
 
-export const GetMyBlockGroupsByPrevBlockGroupIdServerFn = createServerFn({
+      return formattedResponse;
+    }
+  );
+
+export const GetMyBlockGroupsByPrevBlockGroupId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlockGroupsByPrevBlockGroupIdRequest) => data)
@@ -299,7 +298,7 @@ export const GetMyBlockGroupsByPrevBlockGroupIdServerFn = createServerFn({
     }
   );
 
-export const GetAllMyBlockGroupsByBlockPackIdServerFn = createServerFn({
+export const GetAllMyBlockGroupsByBlockPackId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetAllMyBlockGroupsByBlockPackIdRequest) => data)
@@ -349,7 +348,7 @@ export const GetAllMyBlockGroupsByBlockPackIdServerFn = createServerFn({
     }
   );
 
-export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
+export const InsertBlockGroupByBlockPackId = createServerFn({
   method: "POST",
 })
   .inputValidator((data: InsertBlockGroupByBlockPackIdRequest) => data)
@@ -398,7 +397,7 @@ export const InsertBlockGroupByBlockPackIdServerFn = createServerFn({
     }
   );
 
-export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
+export const InsertBlockGroupsByBlockPackId = createServerFn({
   method: "POST",
 })
   .inputValidator((data: InsertBlockGroupsByBlockPackIdRequest) => data)
@@ -447,7 +446,7 @@ export const InsertBlockGroupsByBlockPackIdServerFn = createServerFn({
     }
   );
 
-export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
+export const BatchInsertBlockGroupsByBlockPackIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: BatchInsertBlockGroupsByBlockPackIdsRequest) => data)
@@ -496,11 +495,9 @@ export const BatchInsertBlockGroupsByBlockPackIdsServerFn = createServerFn({
     }
   );
 
-export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
-  {
-    method: "POST",
-  }
-)
+export const InsertBlockGroupAndItsBlocksByBlockPackId = createServerFn({
+  method: "POST",
+})
   .inputValidator(
     (data: InsertBlockGroupAndItsBlocksByBlockPackIdRequest) => data
   )
@@ -549,59 +546,58 @@ export const InsertBlockGroupAndItsBlocksByBlockPackIdServerFn = createServerFn(
     }
   );
 
-export const InsertBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
-  createServerFn({
-    method: "POST",
-  })
-    .inputValidator(
-      (data: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest) => data
-    )
-    .handler(
-      async ({
-        data: request,
-      }): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
-        const inboundCookie = getRequestHeader("cookie");
-        const userAgent =
-          request.header?.userAgent ??
-          getRequestHeader("User-Agent") ??
-          "unknown";
-        const response = await fetch(
-          `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": userAgent,
-              ...(request.header?.authorization
-                ? { Authorization: request.header.authorization }
-                : {}),
-              ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-            },
-            body: JSON.stringify(request.body),
-            credentials: "include",
-          }
-        );
-
-        if (!isJsonResponse(response)) {
-          throw new Error(tKey.error.encounterUnknownError);
+export const InsertBlockGroupsAndTheirBlocksByBlockPackId = createServerFn({
+  method: "POST",
+})
+  .inputValidator(
+    (data: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest) => data
+  )
+  .handler(
+    async ({
+      data: request,
+    }): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": userAgent,
+            ...(request.header?.authorization
+              ? { Authorization: request.header.authorization }
+              : {}),
+            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+          },
+          body: JSON.stringify(request.body),
+          credentials: "include",
         }
-        forwardUpstreamSetCookies(response);
-        const formattedResponse =
-          (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-        if (formattedResponse.exception != null) {
-          throw new NotezyAPIError(
-            new NotezyException(formattedResponse.exception)
-          );
-        }
-        AccessTokenCookieHandler.ensure(
-          formattedResponse.refreshableTokens?.newAccessToken
-        );
+      );
 
-        return formattedResponse;
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
       }
-    );
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
 
-export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
+      return formattedResponse;
+    }
+  );
+
+export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
   createServerFn({ method: "POST" })
     .inputValidator(
       (data: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest) => data
@@ -651,7 +647,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsServerFn =
       }
     );
 
-export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
+export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
   createServerFn({
     method: "POST",
   })
@@ -704,7 +700,7 @@ export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdServerFn =
       }
     );
 
-export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
+export const MoveMyBlockGroupById = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyBlockGroupByIdRequest) => data)
   .handler(async ({ data: request }): Promise<MoveMyBlockGroupByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -745,7 +741,7 @@ export const MoveMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
+export const MoveMyBlockGroupsByIds = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyBlockGroupsByIdsRequest) => data)
   .handler(
     async ({ data: request }): Promise<MoveMyBlockGroupsByIdsResponse> => {
@@ -790,7 +786,7 @@ export const MoveMyBlockGroupsByIdsServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
+export const BatchMoveMyBlockGroupsByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: BatchMoveMyBlockGroupsByIdsRequest) => data)
@@ -837,7 +833,7 @@ export const BatchMoveMyBlockGroupsByIdsServerFn = createServerFn({
     }
   );
 
-export const RestoreMyBlockGroupByIdServerFn = createServerFn({
+export const RestoreMyBlockGroupById = createServerFn({
   method: "POST",
 })
   .inputValidator((data: RestoreMyBlockGroupByIdRequest) => data)
@@ -884,7 +880,7 @@ export const RestoreMyBlockGroupByIdServerFn = createServerFn({
     }
   );
 
-export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
+export const RestoreMyBlockGroupsByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: RestoreMyBlockGroupsByIdsRequest) => data)
@@ -931,7 +927,7 @@ export const RestoreMyBlockGroupsByIdsServerFn = createServerFn({
     }
   );
 
-export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
+export const DeleteMyBlockGroupById = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyBlockGroupByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<DeleteMyBlockGroupByIdResponse> => {
@@ -976,7 +972,7 @@ export const DeleteMyBlockGroupByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const DeleteMyBlockGroupsByIdsServerFn = createServerFn({
+export const DeleteMyBlockGroupsByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: DeleteMyBlockGroupsByIdsRequest) => data)

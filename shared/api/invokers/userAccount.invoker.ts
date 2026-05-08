@@ -1,9 +1,13 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BindGoogleAccountServerFn,
-  GetMyAccountServerFn,
-  UnbindGoogleAccountServerFn,
-  UpdateMyAccountServerFn,
+  BindGoogleAccount,
+  GetMyAccount,
+  UnbindGoogleAccount,
+  UpdateMyAccount,
 } from "@shared/api/functions/userAccount.serverFn";
 import {
   type BindGoogleAccountRequest,
@@ -30,18 +34,21 @@ export const queryFnGetMyAccount = async (
 ): Promise<GetMyAccountResponse> => {
   try {
     const validatedRequest = GetMyAccountRequestSchema.parse(request);
-    const response = await GetMyAccountServerFn({ data: validatedRequest });
+    const response = await GetMyAccount({ data: validatedRequest });
     return GetMyAccountResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
-    }
-    if (error instanceof NotezyAPIError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
           throw new Error(error.unWrap.message);
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -52,17 +59,21 @@ export const mutationFnUpdateMyAccount = async (
 ): Promise<UpdateMyAccountResponse> => {
   try {
     const validatedRequest = UpdateMyAccountRequestSchema.parse(request);
-    const response = await UpdateMyAccountServerFn({ data: validatedRequest });
+    const response = await UpdateMyAccount({ data: validatedRequest });
     return UpdateMyAccountResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -73,19 +84,23 @@ export const mutationFnBindGoogleAccount = async (
 ): Promise<BindGoogleAccountResponse> => {
   try {
     const validatedRequest = BindGoogleAccountRequestSchema.parse(request);
-    const response = await BindGoogleAccountServerFn({
+    const response = await BindGoogleAccount({
       data: validatedRequest,
     });
     return BindGoogleAccountResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -96,19 +111,23 @@ export const mutationFnUnbindGoogleAccount = async (
 ): Promise<UnbindGoogleAccountResponse> => {
   try {
     const validatedRequest = UnbindGoogleAccountRequestSchema.parse(request);
-    const response = await UnbindGoogleAccountServerFn({
+    const response = await UnbindGoogleAccount({
       data: validatedRequest,
     });
     return UnbindGoogleAccountResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }

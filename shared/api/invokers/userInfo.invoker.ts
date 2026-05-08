@@ -1,7 +1,11 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  GetMyInfoServerFn,
-  UpdateMyInfoServerFn,
+  GetMyInfo,
+  UpdateMyInfo,
 } from "@shared/api/functions/userInfo.serverFn";
 import {
   type GetMyInfoRequest,
@@ -20,18 +24,21 @@ export const queryFnGetMyInfo = async (
 ): Promise<GetMyInfoResponse> => {
   try {
     const validatedRequest = GetMyInfoRequestSchema.parse(request);
-    const response = await GetMyInfoServerFn({ data: validatedRequest });
+    const response = await GetMyInfo({ data: validatedRequest });
     return GetMyInfoResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
-    }
-    if (error instanceof NotezyAPIError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
           throw new Error(error.unWrap.message);
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -42,17 +49,21 @@ export const mutationFnUpdateMyInfo = async (
 ): Promise<UpdateMyInfoResponse> => {
   try {
     const validatedRequest = UpdateMyInfoRequestSchema.parse(request);
-    const response = await UpdateMyInfoServerFn({ data: validatedRequest });
+    const response = await UpdateMyInfo({ data: validatedRequest });
     return UpdateMyInfoResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }

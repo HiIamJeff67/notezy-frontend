@@ -13,13 +13,13 @@ import { queryFnGetMySubShelvesByPrevSubShelfId } from "@shared/api/invokers/sub
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
+import toast from "@shared/lib/toast";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import type { UUID } from "crypto";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { getAuthorization } from "@/util/getAuthorization";
 
 interface UseSubShelfLogicProps {

@@ -1,8 +1,8 @@
+import toast from "@shared/lib/toast";
 import { RootShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
-import toast from "react-hot-toast";
 import SubShelfMenuItem from "@/components/menus/SubShelfMenu/SubShelfMenuItem";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";

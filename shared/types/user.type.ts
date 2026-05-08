@@ -5,7 +5,7 @@ import {
   UserPlan,
   UserRole,
   UserStatus,
-} from "@shared/enums";
+} from "@shared/api/interfaces/enums";
 import { z } from "zod";
 
 export const UserSchema = z.object({

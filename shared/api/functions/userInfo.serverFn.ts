@@ -13,7 +13,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyInfoServerFn = createServerFn({ method: "GET" })
+export const GetMyInfo = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyInfoRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyInfoResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -52,7 +52,7 @@ export const GetMyInfoServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const UpdateMyInfoServerFn = createServerFn({ method: "POST" })
+export const UpdateMyInfo = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyInfoRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMyInfoResponse> => {
     const inboundCookie = getRequestHeader("cookie");

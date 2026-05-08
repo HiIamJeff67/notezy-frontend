@@ -1,11 +1,17 @@
 import type { UUID } from "node:crypto";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import { SaveMyNotebookMaterialById } from "@shared/api/functions/material.clientFn";
 import {
   type GetAllMyMaterialsByRootShelfIdRequest,
+  type GetAllMyMaterialsByRootShelfIdResponse,
   type GetMyMaterialAndItsParentByIdRequest,
+  type GetMyMaterialAndItsParentByIdResponse,
   type GetMyMaterialByIdRequest,
+  type GetMyMaterialByIdResponse,
   type GetMyMaterialsByParentSubShelfIdRequest,
+  type GetMyMaterialsByParentSubShelfIdResponse,
   type SaveMyNotebookMaterialByIdRequest,
   SaveMyNotebookMaterialByIdRequestSchema,
   SaveMyNotebookMaterialByIdResponseSchema,
@@ -40,29 +46,39 @@ import {
 import { ZodError } from "zod";
 
 export const useGetMyMaterialById = (
-  hookRequest: GetMyMaterialByIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyMaterialByIdRequest,
+  options?: Partial<UseQueryOptions<GetMyMaterialByIdResponse, Error>>
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyMaterialByIdRequest
+  ): Promise<GetMyMaterialByIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyMaterialById(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyMaterialByIdResponse, Error>({
     queryKey: queryKeys.material.oneById(
-      hookRequest.param.materialId as UUID | undefined
+      hookRequest?.param.materialId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyMaterialById(
-        hookRequest as GetMyMaterialByIdRequest
-      );
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -70,37 +86,62 @@ export const useGetMyMaterialById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyMaterialByIdRequest
+  ): Promise<GetMyMaterialByIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.material.oneById(
+        callbackRequest.param.materialId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_MATERIAL_BY_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyMaterialAndItsParentById = (
-  hookRequest: GetMyMaterialAndItsParentByIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyMaterialAndItsParentByIdRequest,
+  options?: Partial<
+    UseQueryOptions<GetMyMaterialAndItsParentByIdResponse, Error>
+  >
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyMaterialAndItsParentByIdRequest
+  ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyMaterialAndItsParentById(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyMaterialAndItsParentByIdResponse, Error>({
     queryKey: queryKeys.material.oneById(
-      hookRequest.param.materialId as UUID | undefined,
+      hookRequest?.param.materialId as UUID | undefined,
       true
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyMaterialAndItsParentById(
-        hookRequest as GetMyMaterialAndItsParentByIdRequest
-      );
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -108,36 +149,62 @@ export const useGetMyMaterialAndItsParentById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyMaterialAndItsParentByIdRequest
+  ): Promise<GetMyMaterialAndItsParentByIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.material.oneById(
+        callbackRequest.param.materialId as UUID | undefined,
+        true
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_MATERIAL_AND_ITS_PARENT_BY_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyMaterialsByParentSubShelfId = (
-  hookRequest: GetMyMaterialsByParentSubShelfIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyMaterialsByParentSubShelfIdRequest,
+  options?: Partial<
+    UseQueryOptions<GetMyMaterialsByParentSubShelfIdResponse, Error>
+  >
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyMaterialsByParentSubShelfIdRequest
+  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyMaterialsByParentSubShelfId(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyMaterialsByParentSubShelfIdResponse, Error>({
     queryKey: queryKeys.material.manyByParentSubShelfId(
-      hookRequest.param.parentSubShelfId as UUID | undefined
+      hookRequest?.param.parentSubShelfId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyMaterialsByParentSubShelfId(
-        hookRequest as GetMyMaterialsByParentSubShelfIdRequest
-      );
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -145,36 +212,61 @@ export const useGetMyMaterialsByParentSubShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyMaterialsByParentSubShelfIdRequest
+  ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.material.manyByParentSubShelfId(
+        callbackRequest.param.parentSubShelfId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_ALL_MY_MATERIALS_BY_PARENT_SUB_SHELF_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetAllMyMaterialsByRootShelfId = (
-  hookRequest: GetAllMyMaterialsByRootShelfIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetAllMyMaterialsByRootShelfIdRequest,
+  options?: Partial<
+    UseQueryOptions<GetAllMyMaterialsByRootShelfIdResponse, Error>
+  >
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyMaterialsByRootShelfIdRequest
+  ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetAllMyMaterialsByRootShelfId(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetAllMyMaterialsByRootShelfIdResponse, Error>({
     queryKey: queryKeys.material.manyByRootShelfId(
-      hookRequest.param.rootShelfId as UUID | undefined
+      hookRequest?.param.rootShelfId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetAllMyMaterialsByRootShelfId(
-        hookRequest as GetAllMyMaterialsByRootShelfIdRequest
-      );
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -182,9 +274,22 @@ export const useGetAllMyMaterialsByRootShelfId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetAllMyMaterialsByRootShelfIdRequest
+  ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.material.manyByRootShelfId(
+        callbackRequest.param.rootShelfId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_ALL_MY_MATERIALS_BY_ROOT_SHELF_ID_HOOK" as const,
+    fetch,
   };
 };
 
@@ -197,12 +302,12 @@ export const useCreateTextbookMaterial = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
       const rootShelfId = request.affected.rootShelfId as UUID;
@@ -217,15 +322,10 @@ export const useCreateTextbookMaterial = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "CREATE_TEXTBOOK_MATERIAL_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useCreateNotebookMaterial = () => {
@@ -237,12 +337,12 @@ export const useCreateNotebookMaterial = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
       const rootShelfId = request.affected.rootShelfId as UUID;
@@ -257,15 +357,10 @@ export const useCreateNotebookMaterial = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "CREATE_NOTEBOOK_MATERIAL_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useUpdateMyMaterialById = () => {
@@ -277,12 +372,12 @@ export const useUpdateMyMaterialById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialId = request.body.materialId as UUID;
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
@@ -298,15 +393,10 @@ export const useUpdateMyMaterialById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UPDATE_MY_MATERIAL_BY_ID_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useSaveMyNotebookMaterialById = () => {
@@ -339,12 +429,12 @@ export const useSaveMyNotebookMaterialById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialId = request.body.materialId as UUID;
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
@@ -358,15 +448,10 @@ export const useSaveMyNotebookMaterialById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "SAVE_MY_NOTEBOOK_MATERIAL_BY_ID_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useMoveMyMaterialById = () => {
@@ -378,12 +463,12 @@ export const useMoveMyMaterialById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialId = request.body.materialId as UUID;
       const destinationParentSubShelfId = request.body
@@ -405,15 +490,10 @@ export const useMoveMyMaterialById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "MOVE_MY_MATERIAL_BY_ID_HOOK" as const,
-  };
+  return mutation;
 };
 export const useRestoreMyMaterialById = () => {
   const queryClient = getQueryClient();
@@ -424,12 +504,12 @@ export const useRestoreMyMaterialById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialId = request.body.materialId as UUID;
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
@@ -446,15 +526,10 @@ export const useRestoreMyMaterialById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "RESTORE_MY_MATERIAL_BY_ID_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useRestoreMyMaterialsByIds = () => {
@@ -466,12 +541,12 @@ export const useRestoreMyMaterialsByIds = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialIds = (request.body.materialIds || []).filter(
         Boolean
@@ -500,15 +575,10 @@ export const useRestoreMyMaterialsByIds = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "RESTORE_MY_MATERIALS_BY_IDS_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useDeleteMyMaterialById = () => {
@@ -520,12 +590,12 @@ export const useDeleteMyMaterialById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialId = request.body.materialId as UUID;
       const parentSubShelfId = request.affected.parentSubShelfId as UUID;
@@ -542,15 +612,10 @@ export const useDeleteMyMaterialById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "DELETE_MY_MATERIAL_BY_ID_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useDeleteMyMaterialsByIds = () => {
@@ -562,12 +627,12 @@ export const useDeleteMyMaterialsByIds = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded?.embeddedPublicId
+        response.embedded?.publicId
       );
       const materialIds = (request.body.materialIds || []).filter(
         Boolean
@@ -596,13 +661,8 @@ export const useDeleteMyMaterialsByIds = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "DELETE_MY_MATERIALS_BY_IDS_HOOK" as const,
-  };
+  return mutation;
 };

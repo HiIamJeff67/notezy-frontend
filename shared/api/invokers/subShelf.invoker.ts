@@ -1,20 +1,24 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BatchMoveMySubShelvesServerFn,
-  CreateSubShelfByRootShelfIdServerFn,
-  CreateSubShelvesByRootShelfIdsServerFn,
-  DeleteMySubShelfByIdServerFn,
-  DeleteMySubShelvesByIdsServerFn,
-  GetAllMySubShelvesByRootShelfIdServerFn,
-  GetMySubShelfByIdServerFn,
-  GetMySubShelvesAndItemsByPrevSubShelfIdServerFn,
-  GetMySubShelvesByPrevSubShelfIdServerFn,
-  MoveMySubShelfServerFn,
-  MoveMySubShelvesServerFn,
-  RestoreMySubShelfByIdServerFn,
-  RestoreMySubShelvesByIdsServerFn,
-  UpdateMySubShelfByIdServerFn,
-  UpdateMySubShelvesByIdsServerFn,
+  BatchMoveMySubShelves,
+  CreateSubShelfByRootShelfId,
+  CreateSubShelvesByRootShelfIds,
+  DeleteMySubShelfById,
+  DeleteMySubShelvesByIds,
+  GetAllMySubShelvesByRootShelfId,
+  GetMySubShelfById,
+  GetMySubShelvesAndItemsByPrevSubShelfId,
+  GetMySubShelvesByPrevSubShelfId,
+  MoveMySubShelf,
+  MoveMySubShelves,
+  RestoreMySubShelfById,
+  RestoreMySubShelvesByIds,
+  UpdateMySubShelfById,
+  UpdateMySubShelvesByIds,
 } from "@shared/api/functions/subShelf.serverFn";
 import {
   type BatchMoveMySubShelvesRequest,
@@ -85,19 +89,23 @@ export const queryFnGetMySubShelfById = async (
 ): Promise<GetMySubShelfByIdResponse> => {
   try {
     const validatedRequest = GetMySubShelfByIdRequestSchema.parse(request);
-    const response = await GetMySubShelfByIdServerFn({
+    const response = await GetMySubShelfById({
       data: validatedRequest,
     });
     return GetMySubShelfByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -109,19 +117,23 @@ export const queryFnGetMySubShelvesByPrevSubShelfId = async (
   try {
     const validatedRequest =
       GetMySubShelvesByPrevSubShelfIdRequestSchema.parse(request);
-    const response = await GetMySubShelvesByPrevSubShelfIdServerFn({
+    const response = await GetMySubShelvesByPrevSubShelfId({
       data: validatedRequest,
     });
     return GetMySubShelvesByPrevSubShelfIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -133,19 +145,23 @@ export const queryFnGetAllMySubShelvesByRootShelfId = async (
   try {
     const validatedRequest =
       GetAllMySubShelvesByRootShelfIdRequestSchema.parse(request);
-    const response = await GetAllMySubShelvesByRootShelfIdServerFn({
+    const response = await GetAllMySubShelvesByRootShelfId({
       data: validatedRequest,
     });
     return GetAllMySubShelvesByRootShelfIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -157,7 +173,7 @@ export const queryFnGetMySubShelvesAndItemsByPrevSubShelfId = async (
   try {
     const validatedRequest =
       GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema.parse(request);
-    const response = await GetMySubShelvesAndItemsByPrevSubShelfIdServerFn({
+    const response = await GetMySubShelvesAndItemsByPrevSubShelfId({
       data: validatedRequest,
     });
     return GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema.parse(
@@ -165,13 +181,17 @@ export const queryFnGetMySubShelvesAndItemsByPrevSubShelfId = async (
     );
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -183,19 +203,23 @@ export const mutationFnCreateSubShelfByRootShelfId = async (
   try {
     const validatedRequest =
       CreateSubShelfByRootShelfIdRequestSchema.parse(request);
-    const response = await CreateSubShelfByRootShelfIdServerFn({
+    const response = await CreateSubShelfByRootShelfId({
       data: validatedRequest,
     });
     return CreateSubShelfByRootShelfIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -207,19 +231,23 @@ export const mutationFnCreateSubShelvesByRootShelfIds = async (
   try {
     const validatedRequest =
       CreateSubShelvesByRootShelfIdsRequestSchema.parse(request);
-    const response = await CreateSubShelvesByRootShelfIdsServerFn({
+    const response = await CreateSubShelvesByRootShelfIds({
       data: validatedRequest,
     });
     return CreateSubShelvesByRootShelfIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -230,19 +258,23 @@ export const mutationFnUpdateMySubShelfById = async (
 ): Promise<UpdateMySubShelfByIdResponse> => {
   try {
     const validatedRequest = UpdateMySubShelfByIdRequestSchema.parse(request);
-    const response = await UpdateMySubShelfByIdServerFn({
+    const response = await UpdateMySubShelfById({
       data: validatedRequest,
     });
     return UpdateMySubShelfByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -254,19 +286,23 @@ export const mutationFnUpdateMySubShelvesByIds = async (
   try {
     const validatedRequest =
       UpdateMySubShelvesByIdsRequestSchema.parse(request);
-    const response = await UpdateMySubShelvesByIdsServerFn({
+    const response = await UpdateMySubShelvesByIds({
       data: validatedRequest,
     });
     return UpdateMySubShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -277,17 +313,21 @@ export const mutationFnMoveMySubShelf = async (
 ): Promise<MoveMySubShelfResponse> => {
   try {
     const validatedRequest = MoveMySubShelfRequestSchema.parse(request);
-    const response = await MoveMySubShelfServerFn({ data: validatedRequest });
+    const response = await MoveMySubShelf({ data: validatedRequest });
     return MoveMySubShelfResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -298,17 +338,21 @@ export const mutationFnMoveMySubShelves = async (
 ): Promise<MoveMySubShelvesResponse> => {
   try {
     const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
-    const response = await MoveMySubShelvesServerFn({ data: validatedRequest });
+    const response = await MoveMySubShelves({ data: validatedRequest });
     return MoveMySubShelvesResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -319,19 +363,23 @@ export const mutationFnBatchMoveMySubShelves = async (
 ): Promise<BatchMoveMySubShelvesResponse> => {
   try {
     const validatedRequest = BatchMoveMySubShelvesRequestSchema.parse(request);
-    const response = await BatchMoveMySubShelvesServerFn({
+    const response = await BatchMoveMySubShelves({
       data: validatedRequest,
     });
     return BatchMoveMySubShelvesResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -342,19 +390,23 @@ export const mutationFnRestoreMySubShelfById = async (
 ): Promise<RestoreMySubShelfByIdResponse> => {
   try {
     const validatedRequest = RestoreMySubShelfByIdRequestSchema.parse(request);
-    const response = await RestoreMySubShelfByIdServerFn({
+    const response = await RestoreMySubShelfById({
       data: validatedRequest,
     });
     return RestoreMySubShelfByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -366,19 +418,23 @@ export const mutationFnRestoreMySubShelvesByIds = async (
   try {
     const validatedRequest =
       RestoreMySubShelvesByIdsRequestSchema.parse(request);
-    const response = await RestoreMySubShelvesByIdsServerFn({
+    const response = await RestoreMySubShelvesByIds({
       data: validatedRequest,
     });
     return RestoreMySubShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -389,19 +445,23 @@ export const mutationFnDeleteMySubShelfById = async (
 ): Promise<DeleteMySubShelfByIdResponse> => {
   try {
     const validatedRequest = DeleteMySubShelfByIdRequestSchema.parse(request);
-    const response = await DeleteMySubShelfByIdServerFn({
+    const response = await DeleteMySubShelfById({
       data: validatedRequest,
     });
     return DeleteMySubShelfByIdResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
@@ -413,19 +473,23 @@ export const mutationFnDeleteMySubShelvesByIds = async (
   try {
     const validatedRequest =
       DeleteMySubShelvesByIdsRequestSchema.parse(request);
-    const response = await DeleteMySubShelvesByIdsServerFn({
+    const response = await DeleteMySubShelvesByIds({
       data: validatedRequest,
     });
     return DeleteMySubShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessage = error.issues.map(issue => issue.message).join(", ");
-      throw new Error(`validation failed : ${errorMessage}`);
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         default:
-          throw new Error(error.unWrap.message);
+          throw error;
       }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }

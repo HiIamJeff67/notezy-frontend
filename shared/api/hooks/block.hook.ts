@@ -1,11 +1,19 @@
 import type { UUID } from "node:crypto";
-import {
-  type GetAllMyBlocksRequest,
-  type GetMyBlockByIdRequest,
-  type GetMyBlocksByBlockGroupIdRequest,
-  type GetMyBlocksByBlockGroupIdsRequest,
-  type GetMyBlocksByBlockPackIdRequest,
-  type GetMyBlocksByIdsRequest,
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import type {
+  GetAllMyBlocksRequest,
+  GetAllMyBlocksResponse,
+  GetMyBlockByIdRequest,
+  GetMyBlockByIdResponse,
+  GetMyBlocksByBlockGroupIdRequest,
+  GetMyBlocksByBlockGroupIdResponse,
+  GetMyBlocksByBlockGroupIdsRequest,
+  GetMyBlocksByBlockGroupIdsResponse,
+  GetMyBlocksByBlockPackIdRequest,
+  GetMyBlocksByBlockPackIdResponse,
+  GetMyBlocksByIdsRequest,
+  GetMyBlocksByIdsResponse,
 } from "@shared/api/interfaces/block.interface";
 import type { GetMyBlockPackByIdResponse } from "@shared/api/interfaces/blockPack.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
@@ -40,27 +48,39 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetMyBlockById = (
-  hookRequest: GetMyBlockByIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyBlockByIdRequest,
+  options?: Partial<UseQueryOptions<GetMyBlockByIdResponse, Error>>
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyBlockByIdRequest
+  ): Promise<GetMyBlockByIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyBlockById(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyBlockByIdResponse, Error>({
     queryKey: queryKeys.block.oneById(
-      hookRequest.param.blockId as UUID | undefined
+      hookRequest?.param.blockId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlockById(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -68,46 +88,69 @@ export const useGetMyBlockById = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyBlockByIdRequest
+  ): Promise<GetMyBlockByIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.oneById(
+        callbackRequest.param.blockId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_BLOCK_BY_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyBlocksByIds = (
-  hookRequest: GetMyBlocksByIdsRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyBlocksByIdsRequest,
+  options?: Partial<UseQueryOptions<GetMyBlocksByIdsResponse, Error>>
 ) => {
   const queryClient = getQueryClient();
 
-  const query = useQuery({
+  const perform = async (
+    request?: GetMyBlocksByIdsRequest
+  ): Promise<GetMyBlocksByIdsResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyBlocksByIds(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    if (response.success && response.data) {
+      response.data.forEach((block: any) => {
+        queryClient.setQueriesData(
+          {
+            queryKey: queryKeys.block.oneById(block.id as UUID),
+          },
+          duplicateResponse(response, true, block)
+        );
+      });
+    }
+    return response;
+  };
+
+  const query = useQuery<GetMyBlocksByIdsResponse, Error>({
     queryKey: queryKeys.block.manyByIds(
-      hookRequest.param.blockIds as UUID[] | undefined
+      hookRequest?.param.blockIds as UUID[] | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlocksByIds(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      if (response.success && response.data) {
-        response.data.forEach((block: any) => {
-          queryClient.setQueriesData(
-            {
-              queryKey: queryKeys.block.oneById(block.id as UUID),
-            },
-            duplicateResponse(response, true, block)
-          );
-        });
-      }
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -115,34 +158,59 @@ export const useGetMyBlocksByIds = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyBlocksByIdsRequest
+  ): Promise<GetMyBlocksByIdsResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.manyByIds(
+        callbackRequest.param.blockIds as UUID[] | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_BLOCKS_BY_IDS_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyBlocksByBlockGroupId = (
-  hookRequest: GetMyBlocksByBlockGroupIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyBlocksByBlockGroupIdRequest,
+  options?: Partial<UseQueryOptions<GetMyBlocksByBlockGroupIdResponse, Error>>
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyBlocksByBlockGroupIdRequest
+  ): Promise<GetMyBlocksByBlockGroupIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyBlocksByBlockGroupId(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyBlocksByBlockGroupIdResponse, Error>({
     queryKey: queryKeys.block.manyByBlockGroupId(
-      hookRequest.param.blockGroupId as UUID | undefined
+      hookRequest?.param.blockGroupId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlocksByBlockGroupId(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -150,48 +218,69 @@ export const useGetMyBlocksByBlockGroupId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyBlocksByBlockGroupIdRequest
+  ): Promise<GetMyBlocksByBlockGroupIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.manyByBlockGroupId(
+        callbackRequest.param.blockGroupId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyBlocksByBlockGroupIds = (
-  hookRequest: GetMyBlocksByBlockGroupIdsRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyBlocksByBlockGroupIdsRequest,
+  options?: Partial<UseQueryOptions<GetMyBlocksByBlockGroupIdsResponse, Error>>
 ) => {
   const queryClient = getQueryClient();
 
-  const query = useQuery({
+  const perform = async (
+    request?: GetMyBlocksByBlockGroupIdsRequest
+  ): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyBlocksByBlockGroupIds(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    if (response.success && response.data) {
+      request.param.blockGroupIds.forEach((blockGroupId, index) => {
+        queryClient.setQueriesData(
+          {
+            queryKey: queryKeys.block.manyByBlockGroupId(blockGroupId as UUID),
+          },
+          duplicateResponse(response, undefined, response.data[index])
+        );
+      });
+    }
+    return response;
+  };
+
+  const query = useQuery<GetMyBlocksByBlockGroupIdsResponse, Error>({
     queryKey: queryKeys.block.manyByBlockGroupIds(
-      hookRequest.param.blockGroupIds as UUID[] | undefined
+      hookRequest?.param.blockGroupIds as UUID[] | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlocksByBlockGroupIds(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      if (hookRequest && response.success && response.data) {
-        hookRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
-          queryClient.setQueriesData(
-            {
-              queryKey: queryKeys.block.manyByBlockGroupId(
-                blockGroupId as UUID
-              ),
-            },
-            duplicateResponse(response, undefined, response.data[index])
-          );
-        });
-      }
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -199,34 +288,59 @@ export const useGetMyBlocksByBlockGroupIds = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyBlocksByBlockGroupIdsRequest
+  ): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.manyByBlockGroupIds(
+        callbackRequest.param.blockGroupIds as UUID[] | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_IDS_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMyBlocksByBlockPackId = (
-  hookRequest: GetMyBlocksByBlockPackIdRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetMyBlocksByBlockPackIdRequest,
+  options?: Partial<UseQueryOptions<GetMyBlocksByBlockPackIdResponse, Error>>
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyBlocksByBlockPackIdRequest
+  ): Promise<GetMyBlocksByBlockPackIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetMyBlocksByBlockPackId(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetMyBlocksByBlockPackIdResponse, Error>({
     queryKey: queryKeys.block.manyByBlockPackId(
-      hookRequest.param.blockPackId as UUID | undefined
+      hookRequest?.param.blockPackId as UUID | undefined
     ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlocksByBlockPackId(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -234,32 +348,57 @@ export const useGetMyBlocksByBlockPackId = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMyBlocksByBlockPackIdRequest
+  ): Promise<GetMyBlocksByBlockPackIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.manyByBlockPackId(
+        callbackRequest.param.blockPackId as UUID | undefined
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_MY_BLOCKS_BY_BLOCK_PACK_ID_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetAllMyBlocks = (
-  hookRequest: GetAllMyBlocksRequest,
-  options?: Partial<UseQueryOptions>
+  hookRequest?: GetAllMyBlocksRequest,
+  options?: Partial<UseQueryOptions<GetAllMyBlocksResponse, Error>>
 ) => {
-  const query = useQuery({
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyBlocksRequest
+  ): Promise<GetAllMyBlocksResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetAllMyBlocks(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetAllMyBlocksResponse, Error>({
     queryKey: queryKeys.block.myAll(),
-    queryFn: async () => {
-      const response = await queryFnGetAllMyBlocks(hookRequest);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
-      );
-      return response;
-    },
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -267,9 +406,20 @@ export const useGetAllMyBlocks = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetAllMyBlocksRequest
+  ): Promise<GetAllMyBlocksResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.block.myAll(),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_ALL_MY_BLOCKS_HOOK" as const,
+    fetch,
   };
 };
 
@@ -282,12 +432,12 @@ export const useInsertBlock = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockGroupId = request.body.blockGroupId as UUID;
       const blockPackId = request.affected.blockPackId as UUID;
@@ -322,12 +472,10 @@ export const useInsertBlock = () => {
         })
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "INSERT_BLOCK_HOOK" as const };
+  return mutation;
 };
 
 export const useInsertBlocks = () => {
@@ -339,12 +487,12 @@ export const useInsertBlocks = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockGroupIdsSet = new Set<UUID>();
       const blockPackId = request.affected.blockPackId as UUID;
@@ -396,12 +544,10 @@ export const useInsertBlocks = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "INSERT_BLOCKS_HOOK" as const };
+  return mutation;
 };
 
 export const useUpdateMyBlockById = () => {
@@ -413,12 +559,12 @@ export const useUpdateMyBlockById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockGroupId = request.affected.blockGroupId as UUID;
       const blockPackId = request.affected.blockPackId as UUID;
@@ -433,12 +579,10 @@ export const useUpdateMyBlockById = () => {
         })
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "UPDATE_MY_BLOCK_BY_ID_HOOK" as const };
+  return mutation;
 };
 
 export const useUpdateMyBlocksByIds = () => {
@@ -450,12 +594,12 @@ export const useUpdateMyBlocksByIds = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockPackIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
@@ -500,12 +644,10 @@ export const useUpdateMyBlocksByIds = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "UPDATE_MY_BLOCKS_BY_IDS_HOOK" as const };
+  return mutation;
 };
 
 export const useRestoreMyBlockById = () => {
@@ -517,12 +659,12 @@ export const useRestoreMyBlockById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockId = request.body.blockId as UUID;
       const blockGroupId = response.data.blockGroupId as UUID;
@@ -557,12 +699,10 @@ export const useRestoreMyBlockById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "RESTORE_MY_BLOCK_BY_ID_HOOK" as const };
+  return mutation;
 };
 
 export const useRestoreMyBlocksByIds = () => {
@@ -574,12 +714,12 @@ export const useRestoreMyBlocksByIds = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
@@ -615,12 +755,10 @@ export const useRestoreMyBlocksByIds = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "RESTORE_MY_BLOCKS_BY_IDS_HOOK" as const };
+  return mutation;
 };
 
 export const useDeleteMyBlockById = () => {
@@ -632,12 +770,12 @@ export const useDeleteMyBlockById = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockId = request.body.blockId as UUID;
       const blockGroupId = request.affected.blockGroupId as UUID;
@@ -671,12 +809,10 @@ export const useDeleteMyBlockById = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "DELETE_MY_BLOCK_BY_ID_HOOK" as const };
+  return mutation;
 };
 
 export const useDeleteMyBlocksByIds = () => {
@@ -688,12 +824,12 @@ export const useDeleteMyBlocksByIds = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       const blockIdsSet = new Set<UUID>();
       const blockGroupIdsSet = new Set<UUID>();
@@ -729,10 +865,8 @@ export const useDeleteMyBlocksByIds = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return { ...mutation, name: "DELETE_MY_BLOCKS_BY_IDS_HOOK" as const };
+  return mutation;
 };

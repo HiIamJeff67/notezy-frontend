@@ -37,10 +37,6 @@ function splitMigrationSqlStatements(sqlFileContent: string): string[] {
     .filter(Boolean);
 }
 
-function isUserDataViewCreateStatement(statement: string): boolean {
-  return /^CREATE\s+VIEW\s+[`"]?UserDataView[`"]?\s+/i.test(statement.trim());
-}
-
 function hashMigrationContent(content: string): string {
   let hash = 2166136261;
   for (let i = 0; i < content.length; i += 1) {
@@ -115,21 +111,6 @@ function buildOrderedMigrations(): Array<{ tag: string; sqlContent: string }> {
   });
 }
 
-function getLatestUserDataViewCreateStatement(
-  orderedMigrations: Array<{ tag: string; sqlContent: string }>
-): string | null {
-  let latestUserDataViewCreateStatement: string | null = null;
-  for (const migration of orderedMigrations) {
-    const statements = splitMigrationSqlStatements(migration.sqlContent);
-    for (const statement of statements) {
-      if (!isUserDataViewCreateStatement(statement)) continue;
-      latestUserDataViewCreateStatement = statement;
-    }
-  }
-
-  return latestUserDataViewCreateStatement;
-}
-
 async function getAppliedMigrations(): Promise<Map<string, MigrationRecord>> {
   const result = await exec(
     `SELECT "tag", "hash" FROM "${LOCAL_MIGRATIONS_TABLE}"`,
@@ -192,7 +173,7 @@ async function applyMigration(
   }
 }
 
-async function runLocalDbMigrations(): Promise<void> {
+async function runLocalDBMigrations(): Promise<void> {
   await recoverPartiallyMigratedUserTable();
   await ensureMigrationTableExists();
   const orderedMigrations = buildOrderedMigrations();
@@ -213,31 +194,12 @@ async function runLocalDbMigrations(): Promise<void> {
     const statements = splitMigrationSqlStatements(migration.sqlContent);
     await applyMigration(migration.tag, expectedHash, statements);
   }
-
-  const latestUserDataViewCreateStatement =
-    getLatestUserDataViewCreateStatement(orderedMigrations);
-  if (latestUserDataViewCreateStatement) {
-    try {
-      await exec(`SELECT 1 FROM "UserDataView" LIMIT 1`, [], "all");
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        (/no such table: UserDataView/i.test(error.message) ||
-          /error in view UserDataView/i.test(error.message))
-      ) {
-        await exec(`DROP VIEW IF EXISTS "UserDataView"`, [], "run");
-        await exec(latestUserDataViewCreateStatement, [], "run");
-      } else {
-        throw error;
-      }
-    }
-  }
 }
 
-export async function ensureLocalDbMigrated(): Promise<void> {
+export async function ensureLocalDBMigrated(): Promise<void> {
   if (migrationPromise) return migrationPromise;
 
-  migrationPromise = runLocalDbMigrations().catch(error => {
+  migrationPromise = runLocalDBMigrations().catch(error => {
     migrationPromise = null;
     throw error;
   });
@@ -246,7 +208,7 @@ export async function ensureLocalDbMigrated(): Promise<void> {
 }
 
 if (typeof window !== "undefined") {
-  void ensureLocalDbMigrated();
+  void ensureLocalDBMigrated();
 }
 
 const driver = async (
@@ -254,7 +216,7 @@ const driver = async (
   params: unknown[],
   method: "all" | "get" | "run" | "values"
 ) => {
-  await ensureLocalDbMigrated();
+  await ensureLocalDBMigrated();
   return rawDriver(sql, params, method);
 };
 
@@ -265,8 +227,8 @@ const batchDriver = async (
     method: "all" | "get" | "run" | "values";
   }[]
 ) => {
-  await ensureLocalDbMigrated();
+  await ensureLocalDBMigrated();
   return rawBatchDriver(queries);
 };
 
-export const localdb = drizzle(driver, batchDriver, { schema: schema });
+export const localDB = drizzle(driver, batchDriver, { schema: schema });

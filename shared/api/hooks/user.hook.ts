@@ -1,6 +1,10 @@
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetMeRequest,
+  GetMeResponse,
   GetUserDataRequest,
+  GetUserDataResponse,
 } from "@shared/api/interfaces/user.interface";
 import {
   mutationFnUpdateMe,
@@ -21,27 +25,41 @@ import {
 } from "@tanstack/react-query";
 
 export const useGetUserData = (
-  hookRequest: GetUserDataRequest,
-  options?: UseQueryOptions
+  hookRequest?: GetUserDataRequest,
+  options?: Partial<UseQueryOptions<GetUserDataResponse, Error>>
 ) => {
-  const query = useQuery({
-    queryKey: queryKeys.user.data(),
-    queryFn: async () => {
-      const response = await queryFnGetUserData(
-        hookRequest as GetUserDataRequest
-      );
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetUserDataRequest
+  ): Promise<GetUserDataResponse> => {
+    try {
+      if (!request) {
+        throw new NotezyValidationError(
+          ValidationClientException.ReceivedUndefinedRequest()
+        );
+      }
+
+      const response = await queryFnGetUserData(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       return response;
-    },
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetUserDataResponse, Error>({
+    queryKey: queryKeys.user.data(),
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -49,32 +67,57 @@ export const useGetUserData = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetUserDataRequest
+  ): Promise<GetUserDataResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.user.data(),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_USER_DATA_HOOK" as const,
+    fetch,
   };
 };
 
 export const useGetMe = (
-  hookRequest: GetMeRequest,
-  options?: UseQueryOptions
+  hookRequest?: GetMeRequest,
+  options?: Partial<UseQueryOptions<GetMeResponse, Error>>
 ) => {
-  const query = useQuery({
-    queryKey: queryKeys.user.me(),
-    queryFn: async () => {
-      const response = await queryFnGetMe(hookRequest as GetMeRequest);
+  const queryClient = getQueryClient();
+
+  const perform = async (request?: GetMeRequest): Promise<GetMeResponse> => {
+    try {
+      if (!request) {
+        throw new NotezyValidationError(
+          ValidationClientException.ReceivedUndefinedRequest()
+        );
+      }
+
+      const response = await queryFnGetMe(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       return response;
-    },
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetMeResponse, Error>({
+    queryKey: queryKeys.user.me(),
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime, // sync with the access token expired duration
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
@@ -82,9 +125,20 @@ export const useGetMe = (
     enabled: !!hookRequest && options && options.enabled,
   });
 
+  const fetch = async (
+    callbackRequest: GetMeRequest
+  ): Promise<GetMeResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.user.me(),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
   return {
     ...query,
-    name: "GET_ME_HOOK" as const,
+    fetch,
   };
 };
 
@@ -97,22 +151,17 @@ export const useUpdateMe = () => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.embeddedPublicId
+        response.embedded.publicId
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UPDATE_ME_HOOK" as const,
-  };
+  return mutation;
 };

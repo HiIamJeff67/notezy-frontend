@@ -1,9 +1,9 @@
+import { MaterialType } from "@shared/api/interfaces/enums";
 import { WebURLPathDictionary } from "@shared/constants";
-import { MaterialType } from "@shared/enums";
+import toast from "@shared/lib/toast";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
-import toast from "react-hot-toast";
 import {
   ContextMenu,
   ContextMenuContent,

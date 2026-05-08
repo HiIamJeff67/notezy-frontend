@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateMyInfo } from "@shared/api/hooks/userInfo.hook";
+import { AllCountries, AllUserGenders } from "@shared/api/interfaces/enums";
 import { FakeUserInfo } from "@shared/constants";
-import { AllCountries, AllUserGenders } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UserInfo, UserInfoSchema } from "@shared/types/user.type";
 import { Image } from "@unpic/react";
 import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";

@@ -1,11 +1,14 @@
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import { useRegister } from "@shared/api/hooks/auth.hook";
+import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryFnGetUserData } from "@shared/api/invokers/user.invoker";
 import { WebURLPathDictionary } from "@shared/constants";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
+import toast from "@shared/lib/toast";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
 import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
-import toast from "react-hot-toast";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
@@ -18,6 +21,7 @@ const RegisterPage = () => {
   const userManager = useUser();
 
   const registerMutator = useRegister();
+  const { fetch: fetchUserData } = useGetUserData();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,70 +32,72 @@ const RegisterPage = () => {
 
   useRegisterLoadingDependencies(() => isRegisterPending);
 
-  const handleRegisterOnSubmit = useCallback(
-    async function (): Promise<void> {
-      startRegisterTransition(async () => {
-        try {
-          if (password !== confirmPassword) {
-            throw new Error(
-              languageManager.t(
-                tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-              )
-            );
-          }
+  const handleRegisterOnSubmit = useCallback(async (): Promise<void> => {
+    const register = async () => {
+      if (password !== confirmPassword) {
+        throw new Error(
+          languageManager.t(
+            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
+          )
+        );
+      }
 
-          const userAgent = navigator.userAgent;
-          const responseOfRegistering = await registerMutator.mutateAsync({
-            header: {
-              userAgent: userAgent,
-            },
-            body: {
-              name: name,
-              email: email,
-              password: password,
-            },
-          });
+      const userAgent = navigator.userAgent;
+      const responseOfRegistering = await registerMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+        },
+        body: {
+          name: name,
+          email: email,
+          password: password,
+        },
+      });
 
-          const responseOfGettingUserData = await queryFnGetUserData({
-            header: { userAgent: navigator.userAgent },
-            body: {},
-          });
+      const responseOfGettingUserData = await fetchUserData({
+        header: { userAgent: navigator.userAgent },
+        body: {},
+      });
 
-          if (
-            !responseOfGettingUserData ||
-            (responseOfGettingUserData?.refreshableTokens?.newAccessToken &&
-              responseOfRegistering.data.accessToken !==
-                responseOfGettingUserData.refreshableTokens.newAccessToken)
-          ) {
-            throw new Error(
-              languageManager.t(tKey.error.apiError.getUser.failedToGetUser)
-            );
-          }
+      if (
+        responseOfGettingUserData?.refreshableTokens?.newAccessToken &&
+        responseOfRegistering.data.accessToken !==
+          responseOfGettingUserData.refreshableTokens.newAccessToken
+      ) {
+        throw new NotezyValidationError(
+          ValidationClientException.InconsistentToken(
+            responseOfRegistering.data.accessToken,
+            responseOfGettingUserData.refreshableTokens.newAccessToken
+          )
+        );
+      }
 
-          setName("");
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-          userManager.setUserData(responseOfGettingUserData.data);
-          router.push(WebURLPathDictionary.root.dashboard._);
-        } catch (error) {
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      userManager.setUserData(responseOfGettingUserData.data);
+      router.push(WebURLPathDictionary.root.dashboard._);
+    };
+
+    startRegisterTransition(
+      async () =>
+        await register().catch(error => {
           setPassword("");
           setConfirmPassword("");
           toast.error(languageManager.tError(error));
-        }
-      });
-    },
-    [
-      name,
-      email,
-      password,
-      confirmPassword,
-      languageManager,
-      userManager,
-      registerMutator,
-      router,
-    ]
-  );
+        })
+    );
+  }, [
+    name,
+    email,
+    password,
+    confirmPassword,
+    languageManager,
+    userManager,
+    registerMutator,
+    router,
+  ]);
 
   return (
     <GridBackground>

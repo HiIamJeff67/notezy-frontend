@@ -42,7 +42,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyBlockPackByIdServerFn = createServerFn({ method: "GET" })
+export const GetMyBlockPackById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockPackByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockPackByIdResponse> => {
     const { blockPackId } = request.param;
@@ -82,7 +82,7 @@ export const GetMyBlockPackByIdServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMyBlockPackAndItsParentByIdServerFn = createServerFn({
+export const GetMyBlockPackAndItsParentById = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlockPackAndItsParentByIdRequest) => data)
@@ -132,7 +132,7 @@ export const GetMyBlockPackAndItsParentByIdServerFn = createServerFn({
     }
   );
 
-export const GetMyBlockPacksByParentSubShelfIdServerFn = createServerFn({
+export const GetMyBlockPacksByParentSubShelfId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlockPacksByParentSubShelfIdRequest) => data)
@@ -182,7 +182,7 @@ export const GetMyBlockPacksByParentSubShelfIdServerFn = createServerFn({
     }
   );
 
-export const GetAllMyBlockPacksByRootShelfIdServerFn = createServerFn({
+export const GetAllMyBlockPacksByRootShelfId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetAllMyBlockPacksByRootShelfIdRequest) => data)
@@ -232,7 +232,7 @@ export const GetAllMyBlockPacksByRootShelfIdServerFn = createServerFn({
     }
   );
 
-export const CreateBlockPackServerFn = createServerFn({ method: "POST" })
+export const CreateBlockPack = createServerFn({ method: "POST" })
   .inputValidator((data: CreateBlockPackRequest) => data)
   .handler(async ({ data: request }): Promise<CreateBlockPackResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -273,7 +273,7 @@ export const CreateBlockPackServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const CreateBlockPacksServerFn = createServerFn({ method: "POST" })
+export const CreateBlockPacks = createServerFn({ method: "POST" })
   .inputValidator((data: CreateBlockPacksRequest) => data)
   .handler(async ({ data: request }): Promise<CreateBlockPacksResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -314,7 +314,7 @@ export const CreateBlockPacksServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const UpdateMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
+export const UpdateMyBlockPackById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyBlockPackByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<UpdateMyBlockPackByIdResponse> => {
@@ -359,7 +359,7 @@ export const UpdateMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const UpdateMyBlockPacksByIdsServerFn = createServerFn({
+export const UpdateMyBlockPacksByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: UpdateMyBlockPacksByIdsRequest) => data)
@@ -406,7 +406,7 @@ export const UpdateMyBlockPacksByIdsServerFn = createServerFn({
     }
   );
 
-export const MoveMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
+export const MoveMyBlockPackById = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyBlockPackByIdRequest) => data)
   .handler(async ({ data: request }): Promise<MoveMyBlockPackByIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
@@ -447,7 +447,7 @@ export const MoveMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyBlockPacksByIdsServerFn = createServerFn({ method: "POST" })
+export const MoveMyBlockPacksByIds = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMyBlockPacksByIdsRequest) => data)
   .handler(
     async ({ data: request }): Promise<MoveMyBlockPacksByIdsResponse> => {
@@ -492,7 +492,7 @@ export const MoveMyBlockPacksByIdsServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const BatchMoveMyBlockPacksByIdsServerFn = createServerFn({
+export const BatchMoveMyBlockPacksByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: BatchMoveMyBlockPacksByIdsRequest) => data)
@@ -539,7 +539,7 @@ export const BatchMoveMyBlockPacksByIdsServerFn = createServerFn({
     }
   );
 
-export const RestoreMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
+export const RestoreMyBlockPackById = createServerFn({ method: "POST" })
   .inputValidator((data: RestoreMyBlockPackByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<RestoreMyBlockPackByIdResponse> => {
@@ -584,7 +584,7 @@ export const RestoreMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const RestoreMyBlockPacksByIdsServerFn = createServerFn({
+export const RestoreMyBlockPacksByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: RestoreMyBlockPacksByIdsRequest) => data)
@@ -631,7 +631,7 @@ export const RestoreMyBlockPacksByIdsServerFn = createServerFn({
     }
   );
 
-export const DeleteMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
+export const DeleteMyBlockPackById = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyBlockPackByIdRequest) => data)
   .handler(
     async ({ data: request }): Promise<DeleteMyBlockPackByIdResponse> => {
@@ -676,7 +676,7 @@ export const DeleteMyBlockPackByIdServerFn = createServerFn({ method: "POST" })
     }
   );
 
-export const DeleteMyBlockPacksByIdsServerFn = createServerFn({
+export const DeleteMyBlockPacksByIds = createServerFn({
   method: "POST",
 })
   .inputValidator((data: DeleteMyBlockPacksByIdsRequest) => data)

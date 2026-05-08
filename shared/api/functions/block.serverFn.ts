@@ -40,7 +40,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { isJsonResponse } from "@/util/isJsonContext";
 
-export const GetMyBlockByIdServerFn = createServerFn({ method: "GET" })
+export const GetMyBlockById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockByIdResponse> => {
     const { blockId } = request.param;
@@ -82,7 +82,7 @@ export const GetMyBlockByIdServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMyBlocksByIdsServerFn = createServerFn({ method: "GET" })
+export const GetMyBlocksByIds = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlocksByIdsRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlocksByIdsResponse> => {
     const { blockIds } = request.param;
@@ -127,7 +127,7 @@ export const GetMyBlocksByIdsServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetMyBlocksByBlockGroupIdServerFn = createServerFn({
+export const GetMyBlocksByBlockGroupId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlocksByBlockGroupIdRequest) => data)
@@ -176,7 +176,7 @@ export const GetMyBlocksByBlockGroupIdServerFn = createServerFn({
     }
   );
 
-export const GetMyBlocksByBlockGroupIdsServerFn = createServerFn({
+export const GetMyBlocksByBlockGroupIds = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlocksByBlockGroupIdsRequest) => data)
@@ -226,7 +226,7 @@ export const GetMyBlocksByBlockGroupIdsServerFn = createServerFn({
     }
   );
 
-export const GetMyBlocksByBlockPackIdServerFn = createServerFn({
+export const GetMyBlocksByBlockPackId = createServerFn({
   method: "GET",
 })
   .inputValidator((data: GetMyBlocksByBlockPackIdRequest) => data)
@@ -275,7 +275,7 @@ export const GetMyBlocksByBlockPackIdServerFn = createServerFn({
     }
   );
 
-export const GetAllMyBlocksServerFn = createServerFn({ method: "GET" })
+export const GetAllMyBlocks = createServerFn({ method: "GET" })
   .inputValidator((data: GetAllMyBlocksRequest) => data)
   .handler(async ({ data: request }): Promise<GetAllMyBlocksResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
@@ -315,7 +315,7 @@ export const GetAllMyBlocksServerFn = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const InsertBlockServerFn = createServerFn({ method: "POST" })
+export const InsertBlock = createServerFn({ method: "POST" })
   .inputValidator((data: InsertBlockRequest) => data)
   .handler(async ({ data: request }): Promise<InsertBlockResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlock}`;
@@ -356,7 +356,7 @@ export const InsertBlockServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const InsertBlocksServerFn = createServerFn({ method: "POST" })
+export const InsertBlocks = createServerFn({ method: "POST" })
   .inputValidator((data: InsertBlocksRequest) => data)
   .handler(async ({ data: request }): Promise<InsertBlocksResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
@@ -397,7 +397,7 @@ export const InsertBlocksServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const UpdateMyBlockByIdServerFn = createServerFn({ method: "POST" })
+export const UpdateMyBlockById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyBlockByIdRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMyBlockByIdResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlockById}`;
@@ -439,7 +439,7 @@ export const UpdateMyBlockByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const UpdateMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
+export const UpdateMyBlocksByIds = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyBlocksByIdsRequest) => data)
   .handler(async ({ data: request }): Promise<UpdateMyBlocksByIdsResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlocksByIds}`;
@@ -481,7 +481,7 @@ export const UpdateMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const RestoreMyBlockByIdServerFn = createServerFn({ method: "POST" })
+export const RestoreMyBlockById = createServerFn({ method: "POST" })
   .inputValidator((data: RestoreMyBlockByIdRequest) => data)
   .handler(async ({ data: request }): Promise<RestoreMyBlockByIdResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlockById}`;
@@ -523,7 +523,7 @@ export const RestoreMyBlockByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const RestoreMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
+export const RestoreMyBlocksByIds = createServerFn({ method: "POST" })
   .inputValidator((data: RestoreMyBlocksByIdsRequest) => data)
   .handler(async ({ data: request }): Promise<RestoreMyBlocksByIdsResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlocksByIds}`;
@@ -562,7 +562,7 @@ export const RestoreMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const DeleteMyBlockByIdServerFn = createServerFn({ method: "POST" })
+export const DeleteMyBlockById = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyBlockByIdRequest) => data)
   .handler(async ({ data: request }): Promise<DeleteMyBlockByIdResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlockById}`;
@@ -601,7 +601,7 @@ export const DeleteMyBlockByIdServerFn = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const DeleteMyBlocksByIdsServerFn = createServerFn({ method: "POST" })
+export const DeleteMyBlocksByIds = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteMyBlocksByIdsRequest) => data)
   .handler(async ({ data: request }): Promise<DeleteMyBlocksByIdsResponse> => {
     const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlocksByIds}`;

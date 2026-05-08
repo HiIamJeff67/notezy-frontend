@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -32,6 +33,11 @@ const CreateWidgetDialog = ({
         <DialogHeader>
           <DialogTitle>Add New Widgets</DialogTitle>
         </DialogHeader>
+        <DialogDescription>
+          Preview the widgets and choose one to add it to your dashboard. You
+          can also visit the community to find more third party widgets which
+          are created by other users or even create widgets on your own.
+        </DialogDescription>
         <div className="w-full font-bold mb-2">Basic</div>
         <div className="w-full flex-1 flex flex-col gap-3 overflow-y-auto max-h-[60vh] md:max-h-[70vh]">
           {Object.values(BasicPreviewWidgets).map((previewWidget, index) => (

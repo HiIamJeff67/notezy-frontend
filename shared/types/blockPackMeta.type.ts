@@ -1,4 +1,4 @@
-import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
+import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";

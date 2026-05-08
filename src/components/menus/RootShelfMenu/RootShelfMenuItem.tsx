@@ -1,10 +1,10 @@
-import { DNDType } from "@shared/enums/dndType.enum";
+import { DNDType } from "@shared/enums";
+import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, SquareDotIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
-import toast from "react-hot-toast";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
@@ -180,10 +180,10 @@ const RootShelfMenuItem = ({
             <ContextMenuItem
               onClick={() =>
                 modalManager.open("DeleteShelfItemDialog", {
-                  dialogHeader:
-                    "Are you sure you want to delete this root shelf ?",
+                  dialogHeader: "Delete a root shelf",
+                  dialogDescription: `Are you sure about deleting the root shelf of "${summary.root.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
                   confirmKeyword: "DELETE",
-                  inputPlaceholder: `To delete this root shelf, please type the keyword of "DELETE"`,
+                  inputPlaceholder: `Type "DELETE" here`,
                   onDelete: async () =>
                     await loadingManager.startAsyncTransactionLoading(
                       async () => {

@@ -32,11 +32,11 @@ import {
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
-import { ContentType } from "@shared/enums/blockPackContentType.enum";
+import { ContentType } from "@shared/enums/contentType.enum";
+import toast from "@shared/lib/toast";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { ChevronDownIcon } from "lucide-react";
 import { useState, useTransition } from "react";
-import toast from "react-hot-toast";
 
 interface BlockPackEditorContentProps {
   blockPackMeta: BlockPackMeta;
