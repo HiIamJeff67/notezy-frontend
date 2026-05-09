@@ -1,14 +1,12 @@
 import {
   ExceptionCode,
   ExceptionPrefix,
+  ExceptionSubDomainCodeShiftAmount,
   NotezyException,
 } from "@shared/api/exceptions";
+import { DatabaseException } from "@shared/api/exceptions/database.exception";
 import { StatusCodes } from "http-status-codes";
 import { ExceptionReasonDictionary } from ".";
-import {
-  DatabaseException,
-  ExceptionSubDomainCodeShiftAmount,
-} from "./database.exception";
 
 const UserExceptionSubDomainCode: ExceptionCode = 31;
 const ExceptionBaseCode_User: ExceptionCode =

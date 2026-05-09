@@ -10,7 +10,7 @@ import {
   useTransition,
 } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAppRouter, useLanguage, useUser } from "@/hooks";
+import { useAppRouter, useLanguage, useNetwork, useUser } from "@/hooks";
 import AccountModificationTab from "./AccountModificationTab";
 import AccountTab from "./AccountTab";
 import BindingTab from "./BindingTab";
@@ -42,6 +42,7 @@ const AccountSettingsPanel = ({
   const router = useAppRouter();
   const languageManager = useLanguage();
   const userManager = useUser();
+  const { isOnline } = useNetwork();
 
   const sendAuthCodeMutator = useSendAuthCode();
 
@@ -143,7 +144,7 @@ const AccountSettingsPanel = ({
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
           <div className="flex-1 h-[520px]">
-            {!userManager.isOnline ? (
+            {!isOnline ? (
               <OfflineTab />
             ) : (
               <>

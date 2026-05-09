@@ -63,9 +63,9 @@ export class RootShelfLocalAdaptor {
       });
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,
+        entityId: id,
         entityType: "RootShelf",
         actionType: "CREATE",
-        isBatchAction: false,
         payload: request,
       });
     });
@@ -97,14 +97,28 @@ export class RootShelfLocalAdaptor {
           name: createdRootShelf.name,
         })
       );
+      request.body.createdRootShelves = createdRootShelves.map(
+        createdRootShelf => ({
+          id: createdRootShelf.id,
+          name: createdRootShelf.name,
+        })
+      );
       await tx.insert(RootShelf).values(createdRootShelves);
-      await tx.insert(Transaction).values({
-        ownerPublicId: loggedInUser.publicId,
-        entityType: TransactionEntityType.RootShelf,
-        actionType: TransactionActionType.CREATE,
-        isBatchAction: true,
-        payload: request,
-      });
+      await tx.insert(Transaction).values(
+        createdRootShelves.map(createdRootShelf => ({
+          ownerPublicId: loggedInUser.publicId,
+          entityId: createdRootShelf.id,
+          entityType: TransactionEntityType.RootShelf,
+          actionType: TransactionActionType.CREATE,
+          payload: {
+            header: request.header,
+            body: {
+              id: createdRootShelf.id,
+              name: createdRootShelf.name,
+            },
+          } satisfies CreateRootShelfRequest,
+        }))
+      );
     });
   }
 

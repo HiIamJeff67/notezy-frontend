@@ -251,7 +251,7 @@ export const BlockEditorProvider = ({
         insertedBlocks: [],
       },
       affected: {
-        blockPackId: blockPackMeta.id,
+        blockPackIds: [blockPackMeta.id],
       },
     };
     const insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest =

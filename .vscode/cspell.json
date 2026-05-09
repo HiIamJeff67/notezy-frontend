@@ -55,7 +55,8 @@
     "unpic",
     "fallbackable",
     "unfallbackable",
-    "renderable"
+    "renderable",
+    "unsynchronized"
   ],
   "ignorePaths": [
     "node_modules/**",

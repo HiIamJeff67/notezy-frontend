@@ -2,7 +2,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialTypes, MaterialType } from "@shared/enums";
+import { AllMaterialTypes, MaterialType } from "@shared/api/interfaces/enums";
 import z from "zod";
 
 /* ============================== GetMyMaterialById ============================== */

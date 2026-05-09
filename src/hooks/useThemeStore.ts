@@ -1,10 +1,10 @@
 import { DefaultThemes } from "@shared/constants";
-import { Theme } from "@shared/types/theme.type";
+import { ThemeData } from "@shared/types/theme.type";
 import { useCallback, useState } from "react";
 
 export const useThemeStore = () => {
   const [availableThemes, setAvailableThemes] =
-    useState<Theme[]>(DefaultThemes);
+    useState<ThemeData[]>(DefaultThemes);
   const [loadingThemes, setLoadingThemes] = useState<Set<string>>(new Set());
 
   /* ==================== Helper Function to Load the Remote CSS ==================== */
@@ -29,13 +29,13 @@ export const useThemeStore = () => {
   };
 
   /* ==================== Function to Add a New Theme ==================== */
-  const addTheme = useCallback((theme: Theme) => {
+  const addTheme = useCallback((themeData: ThemeData) => {
     setAvailableThemes(prev => {
-      const existing = prev.find(t => t.id === theme.id);
+      const existing = prev.find(t => t.id === themeData.id);
       if (existing) {
-        return prev.map(t => (t.id === theme.id ? theme : t));
+        return prev.map(t => (t.id === themeData.id ? themeData : t));
       }
-      return [...prev, theme];
+      return [...prev, themeData];
     });
   }, []);
 
@@ -91,11 +91,11 @@ export const useThemeStore = () => {
   }, []);
 
   return {
-    availableThemes,
-    loadingThemes,
-    addTheme,
-    loadTheme,
-    removeTheme,
+    availableThemes: availableThemes,
+    loadingThemes: loadingThemes,
+    addTheme: addTheme,
+    loadTheme: loadTheme,
+    removeTheme: removeTheme,
     isThemeLoading: (themeId: string) => loadingThemes.has(themeId),
   };
 };

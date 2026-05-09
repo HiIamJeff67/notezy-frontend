@@ -283,7 +283,7 @@ export const InsertBlocksRequestSchema = NotezyRequestSchema.extend({
     ),
   }),
   affected: z.object({
-    blockPackId: z.uuidv4(),
+    blockPackIds: z.array(z.uuidv4()),
   }),
 });
 

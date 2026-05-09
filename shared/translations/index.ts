@@ -1,12 +1,12 @@
-import { LanguageKey } from "../types/languageData.type";
-import { TranslationWords } from "../types/translationWords.type";
-import { EnglishTranslationWords } from "./english.translation";
-import { JapaneseTranslationWords } from "./japanese.translation";
-import { KoreanTranslationWords } from "./korean.translation";
-import { SimpleChineseTranslationWords } from "./simpleChinese.translation";
-import { TraditionalChineseTranslationWords } from "./traditionalChinese.translation";
+import { Language } from "@shared/api/interfaces/enums";
+import { EnglishTranslationWords } from "@shared/translations/english.translation";
+import { JapaneseTranslationWords } from "@shared/translations/japanese.translation";
+import { KoreanTranslationWords } from "@shared/translations/korean.translation";
+import { SimpleChineseTranslationWords } from "@shared/translations/simpleChinese.translation";
+import { TraditionalChineseTranslationWords } from "@shared/translations/traditionalChinese.translation";
+import { TranslationWords } from "@shared/types/translationWords.type";
 
-export const translations: Record<LanguageKey, TranslationWords> = {
+export const translations: Record<Language, TranslationWords> = {
   English: EnglishTranslationWords,
   TraditionalChinese: TraditionalChineseTranslationWords,
   SimpleChinese: SimpleChineseTranslationWords,

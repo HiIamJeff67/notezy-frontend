@@ -1,4 +1,4 @@
-import { MaterialType } from "@shared/enums";
+import { MaterialType } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";

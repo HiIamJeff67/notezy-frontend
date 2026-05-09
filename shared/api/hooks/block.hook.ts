@@ -495,11 +495,13 @@ export const useInsertBlocks = () => {
         response.embedded.publicId
       );
       const blockGroupIdsSet = new Set<UUID>();
-      const blockPackId = request.affected.blockPackId as UUID;
+      const blockPackIds = request.affected.blockPackIds as UUID[];
       const targetKeys: QueryKey[] = [
-        queryKeys.block.manyByBlockPackId(blockPackId),
-        queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
-        queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ...blockPackIds.flatMap(blockPackId => [
+          queryKeys.block.manyByBlockPackId(blockPackId),
+          queryKeys.blockGroupWithBlock.manyByBlockPackId(blockPackId),
+          queryKeys.blockPackWithBlockGroup.oneById(blockPackId),
+        ]),
         queryKeys.block.myAll(),
       ] as any[];
       response.data.successBlockGroupAndBlockIds.forEach(
@@ -523,21 +525,23 @@ export const useInsertBlocks = () => {
       targetKeys.push(
         queryKeys.blockGroupWithBlock.manyByIds([...blockGroupIdsSet])
       );
-      queryClient.setQueryData(
-        queryKeys.blockPack.oneById(blockPackId),
-        (oldData: GetMyBlockPackByIdResponse | undefined) => {
-          if (!oldData?.success) return oldData;
+      blockPackIds.forEach(blockPackId => {
+        queryClient.setQueryData(
+          queryKeys.blockPack.oneById(blockPackId),
+          (oldData: GetMyBlockPackByIdResponse | undefined) => {
+            if (!oldData?.success) return oldData;
 
-          return {
-            ...oldData,
-            data: {
-              ...oldData.data,
-              blockCount:
-                oldData.data.blockCount + response.data.successIndexes.length,
-            },
-          };
-        }
-      );
+            return {
+              ...oldData,
+              data: {
+                ...oldData.data,
+                blockCount:
+                  oldData.data.blockCount + response.data.successIndexes.length,
+              },
+            };
+          }
+        );
+      });
       Promise.all(
         targetKeys.map(targetKey =>
           queryClient.invalidateQueries({ queryKey: targetKey })

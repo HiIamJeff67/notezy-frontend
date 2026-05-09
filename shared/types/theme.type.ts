@@ -1,4 +1,4 @@
-export interface Theme {
+export interface ThemeData {
   id: string;
   name: string;
   isDark: boolean;

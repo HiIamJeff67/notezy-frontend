@@ -10,6 +10,7 @@ import { LoadingProvider } from "@/providers/LoadingProvider";
 import { ModalProvider } from "@/providers/ModalProvider";
 import { ScreenProvider } from "@/providers/ScreenProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { TransactionSynchronizerProvider } from "@/providers/TransactionSynchronizerProvider/TransactionSynchronizerProvider";
 import { UserProvider } from "@/providers/UserProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -22,13 +23,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <LoadingProvider>
             <LanguageProvider>
               <ThemeProvider>
-                <UserProvider>
-                  <BackgroundImagesProvider>
-                    <DndProvider backend={HTML5Backend}>
-                      <ModalProvider>{children}</ModalProvider>
-                    </DndProvider>
-                  </BackgroundImagesProvider>
-                </UserProvider>
+                <TransactionSynchronizerProvider>
+                  <UserProvider>
+                    <BackgroundImagesProvider>
+                      <DndProvider backend={HTML5Backend}>
+                        <ModalProvider>{children}</ModalProvider>
+                      </DndProvider>
+                    </BackgroundImagesProvider>
+                  </UserProvider>
+                </TransactionSynchronizerProvider>
               </ThemeProvider>
             </LanguageProvider>
           </LoadingProvider>

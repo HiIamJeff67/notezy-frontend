@@ -1,4 +1,3 @@
-import { TestAdaptor } from "@shared/api/adaptors/test.adaptor";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { fetchGetMe, fetchGetUserData } from "@shared/api/fetches/user.fetch";
@@ -11,13 +10,11 @@ import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { useAppRouter } from "@/hooks/useAppRouter";
-import { useLanguage } from "@/hooks/useLanguage";
-import { useLoading } from "@/hooks/useLoading";
+import { useAppRouter, useLoading, useNetwork } from "@/hooks";
+import { useTransactionSynchronizer } from "@/hooks/useTransactionSynchronizer";
 import { getAuthorization } from "@/util/getAuthorization";
 
 interface UserContextType {
-  isOnline: boolean;
   enableAutoFetching: boolean;
   setEnableAutoFetching: (state: boolean) => void;
 
@@ -51,36 +48,18 @@ export const UserContext = createContext<UserContextType | undefined>(
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useAppRouter();
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { isOnline } = useNetwork();
+  const { status: transactionSynchronizerStatus } =
+    useTransactionSynchronizer();
+  const isLocalDBReady = transactionSynchronizerStatus === "synchronized";
 
   const logoutMutator = useLogout();
 
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
-
-  // For maintaining the basic user data in the context
-  useEffect(() => {
-    const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKey.accessToken
-    );
-    if (userData === null && accessToken && enableAutoFetching) {
-      console.log("fetching user automatically...");
-      fetchUserData(accessToken);
-    }
-
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, [enableAutoFetching]);
 
   const fetchUserData = useCallback(
     async (accessToken: string | null) =>
@@ -88,8 +67,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (!isOnline)
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
-
-          TestAdaptor.getAllExistingUsers();
 
           const userAgent = navigator.userAgent;
           const response = await fetchGetUserData({
@@ -122,8 +99,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
       }),
-    [router, loadingManager]
+    [router, loadingManager, isLocalDBReady]
   );
+
+  // For maintaining the basic user data in the context
+  useEffect(() => {
+    if (!isLocalDBReady) return;
+
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+    if (userData === null && accessToken && enableAutoFetching) {
+      console.log("fetching user automatically...");
+      void fetchUserData(accessToken);
+    }
+  }, [enableAutoFetching, fetchUserData, isLocalDBReady, userData]);
 
   /**
    * A method within useUser() to update the user data of the current user
@@ -295,7 +285,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const contextValue: UserContextType = {
-    isOnline: isOnline,
     enableAutoFetching: enableAutoFetching,
     setEnableAutoFetching: setEnableAutoFetching,
 

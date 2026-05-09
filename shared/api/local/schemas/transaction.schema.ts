@@ -7,11 +7,9 @@ export const Transaction = sqliteTable("TransactionTable", {
   ownerPublicId: text("owner_public_id")
     .notNull()
     .references(() => User.publicId),
+  entityId: text("entity_id").notNull(),
   entityType: text("entity_type").notNull(), // "RootShelf", "SubShelf", "BlockPack", "BlockGroup", "Block"
   actionType: text("action_type").notNull(), // "CREATE", "UPDATE", "MOVE", "RESTORE", "DELETE", etc.
-  isBatchAction: integer("is_batch_action", { mode: "boolean" })
-    .notNull()
-    .default(false),
   payload: text("payload", { mode: "json" }).notNull(), // parsed request body
   retryCount: integer("retry_count").notNull().default(0),
   lastError: text("last_error"),

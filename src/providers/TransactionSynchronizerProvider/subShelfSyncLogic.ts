@@ -1,0 +1,578 @@
+import {
+  BatchMoveMySubShelvesRequest,
+  BatchMoveMySubShelvesRequestSchema,
+  CreateSubShelfByRootShelfIdRequestSchema,
+  CreateSubShelvesByRootShelfIdsRequest,
+  CreateSubShelvesByRootShelfIdsRequestSchema,
+  DeleteMySubShelfByIdRequestSchema,
+  DeleteMySubShelvesByIdsRequest,
+  DeleteMySubShelvesByIdsRequestSchema,
+  MoveMySubShelfRequestSchema,
+  MoveMySubShelvesRequestSchema,
+  RestoreMySubShelfByIdRequestSchema,
+  RestoreMySubShelvesByIdsRequest,
+  RestoreMySubShelvesByIdsRequestSchema,
+  UpdateMySubShelfByIdRequestSchema,
+  UpdateMySubShelvesByIdsRequest,
+  UpdateMySubShelvesByIdsRequestSchema,
+} from "@shared/api/interfaces/subShelf.interface";
+import { Transaction } from "@shared/api/local/schemas";
+import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
+import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
+import { InferSelectModel } from "drizzle-orm";
+import {
+  dropEntityPendingOperations,
+  EntityState,
+  getMergedSequences,
+  mergeSet,
+  SyncBuildResult,
+  SyncHeader,
+  SyncJob,
+  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+
+interface SubShelfMutators {
+  createSubShelvesMutator: {
+    mutateAsync: (
+      request: CreateSubShelvesByRootShelfIdsRequest
+    ) => Promise<unknown>;
+  };
+  updateSubShelvesMutator: {
+    mutateAsync: (request: UpdateMySubShelvesByIdsRequest) => Promise<unknown>;
+  };
+  moveSubShelvesMutator: {
+    mutateAsync: (request: BatchMoveMySubShelvesRequest) => Promise<unknown>;
+  };
+  restoreSubShelvesMutator: {
+    mutateAsync: (request: RestoreMySubShelvesByIdsRequest) => Promise<unknown>;
+  };
+  deleteSubShelvesMutator: {
+    mutateAsync: (request: DeleteMySubShelvesByIdsRequest) => Promise<unknown>;
+  };
+}
+
+interface BuildSubShelfSyncResultOptions extends SyncProgressReporter {
+  transactions: InferSelectModel<typeof Transaction>[];
+  header: SyncHeader;
+  mutators: SubShelfMutators;
+}
+
+export const buildSubShelfSyncResult = ({
+  transactions,
+  header,
+  mutators,
+  onParsed,
+}: BuildSubShelfSyncResultOptions): SyncBuildResult => {
+  const createSubShelvesMap = new Map<
+    string,
+    EntityState<{
+      id?: string;
+      rootShelfId: string;
+      prevSubShelfId: string | null;
+      name: string;
+    }>
+  >();
+  const updateSubShelvesMap = new Map<
+    string,
+    EntityState<{
+      subShelfId: string;
+      values: { name?: string };
+      setNull?: Record<string, boolean>;
+      rootShelfId: string;
+      prevSubShelfId: string | null;
+    }>
+  >();
+  const moveSubShelvesMap = new Map<
+    string,
+    EntityState<{
+      sourceRootShelfId: string;
+      sourceSubShelfId: string;
+      destinationRootShelfId: string;
+      destinationSubShelfId: string | null;
+    }>
+  >();
+  const restoreSubShelvesMap = new Map<
+    string,
+    EntityState<{
+      subShelfId: string;
+      rootShelfId: string;
+      prevSubShelfId: string | null;
+    }>
+  >();
+  const deleteSubShelvesMap = new Map<
+    string,
+    EntityState<{
+      subShelfId: string;
+      rootShelfId: string;
+      prevSubShelfId: string | null;
+    }>
+  >();
+
+  const parseFailedSequences = new Set<number>();
+  const noopSequences = new Set<number>();
+  const syncJobs: SyncJob[] = [];
+
+  for (const transaction of transactions) {
+    onParsed?.();
+    const payload = transaction.payload as unknown;
+
+    if (transaction.entityType !== TransactionEntityType.SubShelf) {
+      parseFailedSequences.add(transaction.sequence);
+      continue;
+    }
+
+    switch (transaction.actionType) {
+      case TransactionActionType.CREATE: {
+        const one = CreateSubShelfByRootShelfIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = (one.data.body.id ?? transaction.entityId) as string;
+          createSubShelvesMap.set(id, {
+            body: {
+              id,
+              rootShelfId: one.data.body.rootShelfId,
+              prevSubShelfId: one.data.body.prevSubShelfId,
+              name: one.data.body.name,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many =
+          CreateSubShelvesByRootShelfIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const created of many.data.body.createdSubShelves) {
+            if (!created.id) continue;
+            createSubShelvesMap.set(created.id, {
+              body: {
+                id: created.id,
+                rootShelfId: created.rootShelfId,
+                prevSubShelfId: created.prevSubShelfId,
+                name: created.name,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.UPDATE: {
+        const one = UpdateMySubShelfByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.subShelfId;
+          const createState = createSubShelvesMap.get(id);
+          if (createState) {
+            if (one.data.body.values.name !== undefined) {
+              createState.body.name = one.data.body.values.name;
+            }
+            createState.sequences.add(transaction.sequence);
+            break;
+          }
+
+          const existing = updateSubShelvesMap.get(id);
+          if (existing) {
+            existing.body.values = {
+              ...existing.body.values,
+              ...one.data.body.values,
+            };
+            existing.body.setNull = {
+              ...(existing.body.setNull ?? {}),
+              ...(one.data.body.setNull ?? {}),
+            };
+            existing.sequences.add(transaction.sequence);
+          } else {
+            updateSubShelvesMap.set(id, {
+              body: {
+                subShelfId: id,
+                values: one.data.body.values,
+                setNull: one.data.body.setNull,
+                rootShelfId: one.data.affected.rootShelfId,
+                prevSubShelfId: one.data.affected.prevSubShelfId,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        const many = UpdateMySubShelvesByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const updated of many.data.body.updatedSubShelves) {
+            const id = updated.subShelfId;
+            const createState = createSubShelvesMap.get(id);
+            if (createState) {
+              if (updated.values.name !== undefined) {
+                createState.body.name = updated.values.name;
+              }
+              createState.sequences.add(transaction.sequence);
+              continue;
+            }
+
+            const existing = updateSubShelvesMap.get(id);
+            if (existing) {
+              existing.body.values = {
+                ...existing.body.values,
+                ...updated.values,
+              };
+              existing.body.setNull = {
+                ...(existing.body.setNull ?? {}),
+                ...(updated.setNull ?? {}),
+              };
+              existing.sequences.add(transaction.sequence);
+            } else {
+              updateSubShelvesMap.set(id, {
+                body: {
+                  subShelfId: id,
+                  values: updated.values,
+                  setNull: updated.setNull,
+                  rootShelfId: many.data.affected.rootShelfIds[0] as string,
+                  prevSubShelfId: many.data.affected
+                    .prevSubShelfIds[0] as string,
+                },
+                sequences: new Set([transaction.sequence]),
+              });
+            }
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.MOVE: {
+        const oneByOne = MoveMySubShelfRequestSchema.safeParse(payload);
+        if (oneByOne.success) {
+          const id = oneByOne.data.body.sourceSubShelfId;
+          const createState = createSubShelvesMap.get(id);
+          if (createState) {
+            createState.body.rootShelfId =
+              oneByOne.data.body.destinationRootShelfId;
+            createState.body.prevSubShelfId =
+              oneByOne.data.body.destinationSubShelfId;
+            createState.sequences.add(transaction.sequence);
+            break;
+          }
+
+          moveSubShelvesMap.set(id, {
+            body: {
+              sourceRootShelfId: oneByOne.data.body.sourceRootShelfId,
+              sourceSubShelfId: id,
+              destinationRootShelfId: oneByOne.data.body.destinationRootShelfId,
+              destinationSubShelfId: oneByOne.data.body.destinationSubShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const oneToOne = MoveMySubShelvesRequestSchema.safeParse(payload);
+        if (oneToOne.success) {
+          for (const id of oneToOne.data.body.sourceSubShelfIds) {
+            const createState = createSubShelvesMap.get(id);
+            if (createState) {
+              createState.body.rootShelfId =
+                oneToOne.data.body.destinationRootShelfId;
+              createState.body.prevSubShelfId =
+                oneToOne.data.body.destinationSubShelfId;
+              createState.sequences.add(transaction.sequence);
+              continue;
+            }
+
+            moveSubShelvesMap.set(id, {
+              body: {
+                sourceRootShelfId: oneToOne.data.body.sourceRootShelfId,
+                sourceSubShelfId: id,
+                destinationRootShelfId:
+                  oneToOne.data.body.destinationRootShelfId,
+                destinationSubShelfId: oneToOne.data.body.destinationSubShelfId,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        const many = BatchMoveMySubShelvesRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const moved of many.data.body.movedSubShelves) {
+            for (const id of moved.sourceSubShelfIds) {
+              const createState = createSubShelvesMap.get(id);
+              if (createState) {
+                createState.body.rootShelfId = moved.destinationRootShelfId;
+                createState.body.prevSubShelfId = moved.destinationSubShelfId;
+                createState.sequences.add(transaction.sequence);
+                continue;
+              }
+
+              moveSubShelvesMap.set(id, {
+                body: {
+                  sourceRootShelfId: moved.sourceRootShelfId,
+                  sourceSubShelfId: id,
+                  destinationRootShelfId: moved.destinationRootShelfId,
+                  destinationSubShelfId: moved.destinationSubShelfId,
+                },
+                sequences: new Set([transaction.sequence]),
+              });
+            }
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.RESTORE: {
+        const one = RestoreMySubShelfByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.subShelfId;
+          const deleted = deleteSubShelvesMap.get(id);
+          if (deleted) {
+            mergeSet(noopSequences, deleted.sequences);
+            noopSequences.add(transaction.sequence);
+            deleteSubShelvesMap.delete(id);
+            break;
+          }
+
+          restoreSubShelvesMap.set(id, {
+            body: {
+              subShelfId: id,
+              rootShelfId: one.data.affected.rootShelfId,
+              prevSubShelfId: one.data.affected.prevSubShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many = RestoreMySubShelvesByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const id of many.data.body.subShelfIds) {
+            const deleted = deleteSubShelvesMap.get(id);
+            if (deleted) {
+              mergeSet(noopSequences, deleted.sequences);
+              noopSequences.add(transaction.sequence);
+              deleteSubShelvesMap.delete(id);
+              continue;
+            }
+
+            restoreSubShelvesMap.set(id, {
+              body: {
+                subShelfId: id,
+                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+                prevSubShelfId: many.data.affected.prevSubShelfIds[0] as string,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.DELETE: {
+        const one = DeleteMySubShelfByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.subShelfId;
+          if (createSubShelvesMap.has(id)) {
+            mergeSet(noopSequences, createSubShelvesMap.get(id)!.sequences);
+            noopSequences.add(transaction.sequence);
+            createSubShelvesMap.delete(id);
+            updateSubShelvesMap.delete(id);
+            moveSubShelvesMap.delete(id);
+            restoreSubShelvesMap.delete(id);
+            deleteSubShelvesMap.delete(id);
+            break;
+          }
+
+          dropEntityPendingOperations(
+            id,
+            [updateSubShelvesMap, moveSubShelvesMap, restoreSubShelvesMap],
+            noopSequences
+          );
+          deleteSubShelvesMap.set(id, {
+            body: {
+              subShelfId: id,
+              rootShelfId: one.data.affected.rootShelfId,
+              prevSubShelfId: one.data.affected.prevSubShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many = DeleteMySubShelvesByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const id of many.data.body.subShelfIds) {
+            if (createSubShelvesMap.has(id)) {
+              mergeSet(noopSequences, createSubShelvesMap.get(id)!.sequences);
+              noopSequences.add(transaction.sequence);
+              createSubShelvesMap.delete(id);
+              updateSubShelvesMap.delete(id);
+              moveSubShelvesMap.delete(id);
+              restoreSubShelvesMap.delete(id);
+              deleteSubShelvesMap.delete(id);
+              continue;
+            }
+
+            dropEntityPendingOperations(
+              id,
+              [updateSubShelvesMap, moveSubShelvesMap, restoreSubShelvesMap],
+              noopSequences
+            );
+            deleteSubShelvesMap.set(id, {
+              body: {
+                subShelfId: id,
+                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+                prevSubShelfId: many.data.affected.prevSubShelfIds[0] as string,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      default: {
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+    }
+  }
+
+  if (createSubShelvesMap.size > 0) {
+    const states = Array.from(createSubShelvesMap.values());
+    const request: CreateSubShelvesByRootShelfIdsRequest = {
+      header,
+      body: {
+        createdSubShelves: states.map(state => state.body),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        prevSubShelfIds: states.map(state => state.body.prevSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.createSubShelvesMutator.mutateAsync(request),
+    });
+  }
+
+  if (updateSubShelvesMap.size > 0) {
+    const states = Array.from(updateSubShelvesMap.values());
+    const request: UpdateMySubShelvesByIdsRequest = {
+      header,
+      body: {
+        updatedSubShelves: states.map(state => ({
+          subShelfId: state.body.subShelfId,
+          values: state.body.values,
+          setNull: state.body.setNull,
+        })),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        prevSubShelfIds: states.map(state => state.body.prevSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.updateSubShelvesMutator.mutateAsync(request),
+    });
+  }
+
+  if (moveSubShelvesMap.size > 0) {
+    const states = Array.from(moveSubShelvesMap.values());
+    const request: BatchMoveMySubShelvesRequest = {
+      header,
+      body: {
+        movedSubShelves: states.map(state => ({
+          sourceRootShelfId: state.body.sourceRootShelfId,
+          sourceSubShelfIds: [state.body.sourceSubShelfId],
+          destinationRootShelfId: state.body.destinationRootShelfId,
+          destinationSubShelfId: state.body.destinationSubShelfId as string,
+        })),
+      },
+      affected: {
+        rootShelfIds: Array.from(
+          new Set(
+            states.flatMap(state => [
+              state.body.sourceRootShelfId,
+              state.body.destinationRootShelfId,
+            ])
+          )
+        ),
+        childSubShelfIds: states.map(state => state.body.sourceSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.moveSubShelvesMutator.mutateAsync(request),
+    });
+  }
+
+  if (restoreSubShelvesMap.size > 0) {
+    const states = Array.from(restoreSubShelvesMap.values());
+    const request: RestoreMySubShelvesByIdsRequest = {
+      header,
+      body: {
+        subShelfIds: states.map(state => state.body.subShelfId),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        prevSubShelfIds: states
+          .map(state => state.body.prevSubShelfId)
+          .filter((id): id is string => id !== null),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.restoreSubShelvesMutator.mutateAsync(request),
+    });
+  }
+
+  if (deleteSubShelvesMap.size > 0) {
+    const states = Array.from(deleteSubShelvesMap.values());
+    const request: DeleteMySubShelvesByIdsRequest = {
+      header,
+      body: {
+        subShelfIds: states.map(state => state.body.subShelfId),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        prevSubShelfIds: states
+          .map(state => state.body.prevSubShelfId)
+          .filter((id): id is string => id !== null),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.deleteSubShelvesMutator.mutateAsync(request),
+    });
+  }
+
+  return {
+    syncJobs,
+    noopSequences,
+    parseFailedSequences,
+  };
+};
