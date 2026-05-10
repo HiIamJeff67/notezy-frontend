@@ -1,16 +1,15 @@
-"use client";
-
-import { LanguageKeyMap, Languages } from "@shared/constants";
+import { NotezyError } from "@shared/api/errors";
+import { AllLanguageData, LanguageKeyMap } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey, translations } from "@shared/translations/index";
-import { Language } from "@shared/types/language.type";
+import { LanguageData } from "@shared/types/languageData.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { createContext, useEffect, useState } from "react";
 
 interface LanguageContextType {
-  currentLanguage: Language;
-  setCurrentLanguage: (lang: Language) => void;
-  availableLanguages: Language[];
+  currentLanguage: LanguageData;
+  setCurrentLanguage: (lang: LanguageData) => void;
+  availableLanguages: LanguageData[];
   t: (key: string) => string;
   tError: (error: unknown) => string;
 }
@@ -24,7 +23,7 @@ export const LanguageProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>(
+  const [currentLanguage, setCurrentLanguage] = useState<LanguageData>(
     LanguageKeyMap["English"]
   );
 
@@ -57,7 +56,23 @@ export const LanguageProvider = ({
 
   // translating error function
   const tError = (error: unknown): string => {
-    if (error instanceof Error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.error(error);
+      return "";
+    }
+
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes("operation was aborted")
+    ) {
+      console.error(error);
+      return "";
+    }
+
+    if (error instanceof NotezyError) {
+      // return empty string so the toast won't log which is only available if we use the toast from @shared/lib/toast
+      return error.getPresentation;
+    } else if (error instanceof Error) {
       return t(error.message ?? tKey.error.encounterUnknownError);
     } else if (typeof error === "string") {
       return t(error);
@@ -68,7 +83,7 @@ export const LanguageProvider = ({
   const contextValue: LanguageContextType = {
     currentLanguage: currentLanguage,
     setCurrentLanguage: setCurrentLanguage,
-    availableLanguages: Languages,
+    availableLanguages: AllLanguageData,
     t: t,
     tError: tError,
   };

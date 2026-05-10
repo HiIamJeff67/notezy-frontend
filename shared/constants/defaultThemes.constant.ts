@@ -1,5 +1,5 @@
-import { tKey } from "../translations";
-import { Theme } from "../types/theme.type";
+import { tKey } from "@shared/translations";
+import { ThemeData } from "@shared/types/theme.type";
 
 // export const DefaultDarkTheme: Theme = {
 //   id: "ae29bb37-d4ba-4826-bf56-9074e23ea65b",
@@ -29,7 +29,7 @@ import { Theme } from "../types/theme.type";
 //   createdAt: new Date("2025-06-09T08:26:27.347Z"),
 // };
 
-export const DefaultStandardTheme: Theme = {
+export const DefaultStandardTheme: ThemeData = {
   id: "2a377bf8-6101-4237-9293-e23594529cdd",
   name: "Default Standard",
   isDark: true,
@@ -44,7 +44,7 @@ export const DefaultStandardTheme: Theme = {
   createdAt: new Date("2025-06-09T08:26:27.347Z"),
 };
 
-export const DefaultNeonTheme: Theme = {
+export const DefaultNeonTheme: ThemeData = {
   id: "a9fc704e-f3c8-47ad-b761-967def87d2db",
   name: "Default Neon",
   isDark: true,
@@ -59,7 +59,7 @@ export const DefaultNeonTheme: Theme = {
   createdAt: new Date("2025-06-09T08:26:27.347Z"),
 };
 
-export const DefaultOceanTheme: Theme = {
+export const DefaultOceanTheme: ThemeData = {
   id: "d8aa6503-8449-46fb-8528-9a18782a630a",
   name: "Default Ocean",
   isDark: false,

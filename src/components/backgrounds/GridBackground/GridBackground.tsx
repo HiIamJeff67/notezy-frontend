@@ -11,7 +11,7 @@ const GridBackground = ({ className, children }: GridBackgroundProps) => {
 
   return (
     <div
-      className={`w-full min-h-full relative overflow-hidden ${className}`}
+      className={`w-full h-full relative overflow-hidden ${className}`}
       style={{
         background: themeManager.currentTheme.isDark ? "black" : "white",
       }}

@@ -1,5 +1,3 @@
-"use client";
-
 import { IndexedDBItem, IndexedDBKey } from "@shared/types/indexedDB.type";
 import {
   clear,
@@ -15,7 +13,10 @@ import {
 export class IndexedDBManipulator {
   private static readonly IndexedDBPrefix = "notezy_";
 
-  private static getIndexedDBKey(key: IndexedDBKey): string {
+  private static getIndexedDBKey(key: IndexedDBKey, publicId?: string): string {
+    if (publicId !== undefined) {
+      return this.IndexedDBPrefix + publicId.toString() + "_" + key;
+    }
     return this.IndexedDBPrefix + key;
   }
 
@@ -32,11 +33,13 @@ export class IndexedDBManipulator {
   };
 
   static getItemByKey = async <K extends IndexedDBKey>(
-    key: K
+    key: K,
+    publicId?: string
   ): Promise<IndexedDBItem[K] | null> => {
+    if (!this.isIndexedDBAvailable()) return null;
+
     try {
-      if (!this.isIndexedDBAvailable()) return null;
-      const indexedDBKey = this.getIndexedDBKey(key);
+      const indexedDBKey = this.getIndexedDBKey(key, publicId);
       const result = await get(indexedDBKey);
       return result === undefined ? null : (result as IndexedDBItem[K] | null);
     } catch (error) {
@@ -49,11 +52,15 @@ export class IndexedDBManipulator {
   };
 
   static getItemsByKeys = async <K extends IndexedDBKey>(
-    keys: K[]
+    keys: K[],
+    publicId?: string
   ): Promise<IndexedDBItem[K][] | null> => {
+    if (!this.isIndexedDBAvailable()) return null;
+
     try {
-      if (!this.isIndexedDBAvailable()) return null;
-      const indexedDBKeys = keys.map(key => this.getIndexedDBKey(key));
+      const indexedDBKeys = keys.map(key =>
+        this.getIndexedDBKey(key, publicId)
+      );
       const result = await getMany(indexedDBKeys);
       return result === undefined
         ? null
@@ -67,8 +74,9 @@ export class IndexedDBManipulator {
     }
   };
 
-  static async getAllItems(): Promise<Partial<IndexedDBItem>> {
+  static getAllItems = async (): Promise<Partial<IndexedDBItem>> => {
     if (!this.isIndexedDBAvailable()) return {} as Partial<IndexedDBItem>;
+
     const result = {} as Partial<IndexedDBItem>;
     try {
       const allEntries = await entries();
@@ -85,21 +93,27 @@ export class IndexedDBManipulator {
       console.error("Failed to get all indexedDB items:", error);
     }
     return result;
-  }
+  };
 
-  static async hasItem<K extends IndexedDBKey>(key: K): Promise<boolean> {
-    if (!this.isIndexedDBAvailable()) return false;
-    const item = await this.getItemByKey(key);
-    return item !== null && item !== undefined;
-  }
-
-  static async setItem<K extends IndexedDBKey>(
+  static hasItem = async <K extends IndexedDBKey>(
     key: K,
-    value: IndexedDBItem[K]
-  ): Promise<boolean> {
+    publicId?: string
+  ): Promise<boolean> => {
     if (!this.isIndexedDBAvailable()) return false;
+
+    const item = await this.getItemByKey(key, publicId);
+    return item !== null && item !== undefined;
+  };
+
+  static setItem = async <K extends IndexedDBKey>(
+    key: K,
+    value: IndexedDBItem[K],
+    publicId?: string
+  ): Promise<boolean> => {
+    if (!this.isIndexedDBAvailable()) return false;
+
     try {
-      const indexedDBKey = this.getIndexedDBKey(key);
+      const indexedDBKey = this.getIndexedDBKey(key, publicId);
       await set(indexedDBKey, value);
       return true;
     } catch (error) {
@@ -109,15 +123,19 @@ export class IndexedDBManipulator {
       );
       return false;
     }
-  }
+  };
 
-  static async setItems(items: Partial<IndexedDBItem>): Promise<boolean> {
+  static setItems = async (
+    items: Partial<IndexedDBItem>,
+    publicId?: string
+  ): Promise<boolean> => {
     if (!this.isIndexedDBAvailable()) return false;
+
     try {
       const entriesArr: [string, any][] = Object.entries(items)
         .filter(([_, value]) => value !== undefined)
         .map(([key, value]) => [
-          this.getIndexedDBKey(key as IndexedDBKey),
+          this.getIndexedDBKey(key as IndexedDBKey, publicId),
           value,
         ]);
       await setMany(entriesArr);
@@ -126,12 +144,16 @@ export class IndexedDBManipulator {
       console.error("Failed to set multiple indexedDB items:", error);
       return false;
     }
-  }
+  };
 
-  static async removeItem<K extends IndexedDBKey>(key: K): Promise<boolean> {
+  static removeItem = async <K extends IndexedDBKey>(
+    key: K,
+    publicId?: string
+  ): Promise<boolean> => {
     if (!this.isIndexedDBAvailable()) return false;
+
     try {
-      const indexedDBKey = this.getIndexedDBKey(key);
+      const indexedDBKey = this.getIndexedDBKey(key, publicId);
       await del(indexedDBKey);
       return true;
     } catch (error) {
@@ -141,24 +163,64 @@ export class IndexedDBManipulator {
       );
       return false;
     }
-  }
+  };
 
-  static async removeItems<K extends IndexedDBKey>(
-    keysArr: K[]
-  ): Promise<boolean> {
+  static removeItems = async <K extends IndexedDBKey>(
+    keysArr: K[],
+    publicId?: string
+  ): Promise<boolean> => {
     if (!this.isIndexedDBAvailable()) return false;
+
     try {
-      const indexedDBKeys = keysArr.map(key => this.getIndexedDBKey(key));
+      const indexedDBKeys = keysArr.map(key =>
+        this.getIndexedDBKey(key, publicId)
+      );
       await delMany(indexedDBKeys);
       return true;
     } catch (error) {
       console.error("Failed to remove indexedDB items:", error);
       return false;
     }
-  }
+  };
 
-  static async clearAllItems(): Promise<boolean> {
+  static ensureItem = async <K extends IndexedDBKey>(
+    key: K,
+    value: IndexedDBItem[K] | null | undefined,
+    publicId?: string
+  ): Promise<boolean> => {
     if (!this.isIndexedDBAvailable()) return false;
+    else if (!value) return false;
+
+    try {
+      this.removeItem(key, publicId);
+      this.setItem(key, value, publicId);
+      return true;
+    } catch (error) {
+      console.log(`Failed to ensure indexedDB item "${key}":`, error);
+      return false;
+    }
+  };
+
+  static ensureItems = async (
+    items: Partial<IndexedDBItem>,
+    publicId?: string
+  ): Promise<number> => {
+    if (!this.isIndexedDBAvailable()) return 0;
+
+    let count = 0;
+    Object.entries(items).forEach(async ([key, value]) => {
+      if (value !== undefined) {
+        count += (await this.ensureItem(key as IndexedDBKey, value, publicId))
+          ? 1
+          : 0;
+      }
+    });
+    return count;
+  };
+
+  static clearAllItems = async (): Promise<boolean> => {
+    if (!this.isIndexedDBAvailable()) return false;
+
     try {
       await clear();
       return true;
@@ -166,5 +228,5 @@ export class IndexedDBManipulator {
       console.error("Failed to clear all indexedDB items:", error);
       return false;
     }
-  }
+  };
 }

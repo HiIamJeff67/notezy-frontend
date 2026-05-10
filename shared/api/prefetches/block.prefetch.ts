@@ -1,12 +1,4 @@
 import {
-  queryFnGetAllMyBlocks,
-  queryFnGetMyBlockById,
-  queryFnGetMyBlocksByBlockGroupId,
-  queryFnGetMyBlocksByBlockGroupIds,
-  queryFnGetMyBlocksByBlockPackId,
-  queryFnGetMyBlocksByIds,
-} from "@shared/api/functions/block.function";
-import {
   GetAllMyBlocksRequest,
   GetMyBlockByIdRequest,
   GetMyBlocksByBlockGroupIdRequest,
@@ -15,11 +7,19 @@ import {
   GetMyBlocksByIdsRequest,
 } from "@shared/api/interfaces/block.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
+import {
+  queryFnGetAllMyBlocks,
+  queryFnGetMyBlockById,
+  queryFnGetMyBlocksByBlockGroupId,
+  queryFnGetMyBlocksByBlockGroupIds,
+  queryFnGetMyBlocksByBlockPackId,
+  queryFnGetMyBlocksByIds,
+} from "@shared/api/invokers/block.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export const prefetchGetMyBlockById = (initialQueryClient?: QueryClient) => {
   const queryClient = initialQueryClient ?? getQueryClient();
@@ -29,7 +29,7 @@ export const prefetchGetMyBlockById = (initialQueryClient?: QueryClient) => {
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.block.oneById(prefetchRequest.param.blockId as UUID),
-      queryFn: async () => await queryFnGetMyBlockById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyBlockById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -52,7 +52,7 @@ export const prefetchGetMyBlocksByIds = (initialQueryClient?: QueryClient) => {
         prefetchRequest.param.blockIds as UUID[]
       ),
       queryFn: async () => {
-        const response = await queryFnGetMyBlocksByIds(prefetchRequest, true);
+        const response = await queryFnGetMyBlocksByIds(prefetchRequest);
 
         response.data.forEach(block => {
           queryClient.setQueriesData(
@@ -89,7 +89,7 @@ export const prefetchGetMyBlocksByBlockGroupId = (
         prefetchRequest.param.blockGroupId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlocksByBlockGroupId(prefetchRequest, true),
+        await queryFnGetMyBlocksByBlockGroupId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -114,10 +114,8 @@ export const prefetchGetMyBlocksByBlockGroupIds = (
         prefetchRequest.param.blockGroupIds as UUID[]
       ),
       queryFn: async () => {
-        const response = await queryFnGetMyBlocksByBlockGroupIds(
-          prefetchRequest,
-          true
-        );
+        const response =
+          await queryFnGetMyBlocksByBlockGroupIds(prefetchRequest);
 
         prefetchRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
           queryClient.setQueriesData(
@@ -155,7 +153,7 @@ export const prefetchGetMyBlocksByBlockPackId = (
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlocksByBlockPackId(prefetchRequest, true),
+        await queryFnGetMyBlocksByBlockPackId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -176,7 +174,7 @@ export const prefetchGetAllMyBlocks = (initialQueryClient?: QueryClient) => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.block.all(),
       queryFn: async () => {
-        const response = await queryFnGetAllMyBlocks(prefetchRequest, true);
+        const response = await queryFnGetAllMyBlocks(prefetchRequest);
 
         response.data.forEach(block => {
           queryClient.setQueriesData(

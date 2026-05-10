@@ -1,334 +1,299 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  CreateRootShelfRequest,
-  CreateRootShelfResponse,
-  CreateRootShelvesRequest,
-  CreateRootShelvesResponse,
-  DeleteMyRootShelfByIdRequest,
-  DeleteMyRootShelfByIdResponse,
-  DeleteMyRootShelvesByIdsRequest,
-  DeleteMyRootShelvesByIdsResponse,
-  GetMyRootShelfByIdRequest,
-  GetMyRootShelfByIdResponse,
-  RestoreMyRootShelfByIdRequest,
-  RestoreMyRootShelfByIdResponse,
-  RestoreMyRootShelvesByIdsRequest,
-  RestoreMyRootShelvesByIdsResponse,
-  SearchRecentRootShelvesRequest,
-  SearchRecentRootShelvesResponse,
-  UpdateMyRootShelfByIdRequest,
-  UpdateMyRootShelfByIdResponse,
-  UpdateMyRootShelvesByIdsRequest,
-  UpdateMyRootShelvesByIdsResponse,
+  CreateRootShelf,
+  CreateRootShelves,
+  DeleteMyRootShelfById,
+  DeleteMyRootShelvesByIds,
+  GetMyRootShelfById,
+  RestoreMyRootShelfById,
+  RestoreMyRootShelvesByIds,
+  UpdateMyRootShelfById,
+  UpdateMyRootShelvesByIds,
+} from "@shared/api/functions/rootShelf.serverFn";
+import {
+  type CreateRootShelfRequest,
+  CreateRootShelfRequestSchema,
+  type CreateRootShelfResponse,
+  CreateRootShelfResponseSchema,
+  type CreateRootShelvesRequest,
+  CreateRootShelvesRequestSchema,
+  type CreateRootShelvesResponse,
+  CreateRootShelvesResponseSchema,
+  type DeleteMyRootShelfByIdRequest,
+  DeleteMyRootShelfByIdRequestSchema,
+  type DeleteMyRootShelfByIdResponse,
+  DeleteMyRootShelfByIdResponseSchema,
+  type DeleteMyRootShelvesByIdsRequest,
+  DeleteMyRootShelvesByIdsRequestSchema,
+  type DeleteMyRootShelvesByIdsResponse,
+  DeleteMyRootShelvesByIdsResponseSchema,
+  type GetMyRootShelfByIdRequest,
+  GetMyRootShelfByIdRequestSchema,
+  type GetMyRootShelfByIdResponse,
+  GetMyRootShelfByIdResponseSchema,
+  type RestoreMyRootShelfByIdRequest,
+  RestoreMyRootShelfByIdRequestSchema,
+  type RestoreMyRootShelfByIdResponse,
+  RestoreMyRootShelfByIdResponseSchema,
+  type RestoreMyRootShelvesByIdsRequest,
+  RestoreMyRootShelvesByIdsRequestSchema,
+  type RestoreMyRootShelvesByIdsResponse,
+  RestoreMyRootShelvesByIdsResponseSchema,
+  type UpdateMyRootShelfByIdRequest,
+  UpdateMyRootShelfByIdRequestSchema,
+  type UpdateMyRootShelfByIdResponse,
+  UpdateMyRootShelfByIdResponseSchema,
+  type UpdateMyRootShelvesByIdsRequest,
+  UpdateMyRootShelvesByIdsRequestSchema,
+  type UpdateMyRootShelvesByIdsResponse,
+  UpdateMyRootShelvesByIdsResponseSchema,
 } from "@shared/api/interfaces/rootShelf.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyRootShelfById(
+export const queryFnGetMyRootShelfById = async (
   request: GetMyRootShelfByIdRequest
-): Promise<GetMyRootShelfByIdResponse> {
-  const { rootShelfId } = request.param;
-  const params = new URLSearchParams({
-    rootShelfId: rootShelfId,
-  }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+): Promise<GetMyRootShelfByIdResponse> => {
+  try {
+    const validatedRequest = GetMyRootShelfByIdRequestSchema.parse(request);
+    const response = await GetMyRootShelfById({
+      data: validatedRequest,
+    });
+    return GetMyRootShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(
+        FetchClientExceptions.MissingNetwork()
+      ).removePresentation();
+    }
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as GetMyRootShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-// for testing
-export async function SearchRecentRootShelves(
-  request: SearchRecentRootShelvesRequest
-): Promise<SearchRecentRootShelvesResponse> {
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}`;
-  if (request.param) {
-    const { query, limit, offset } = request.param;
-    const params = new URLSearchParams({
-      ...(query !== undefined && { query: query }),
-      ...(limit !== undefined && { limit: String(limit) }),
-      ...(offset !== undefined && { offset: String(offset) }),
-    }).toString();
-    url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.searchRecentRootShelves}?${params}`;
-  }
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-  const formattedResponse =
-    (await response.json()) as SearchRecentRootShelvesResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function CreateRootShelf(
+export const mutationFnCreateRootShelf = async (
   request: CreateRootShelfRequest
-): Promise<CreateRootShelfResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelf}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateRootShelfResponse> => {
+  try {
+    const validatedRequest = CreateRootShelfRequestSchema.parse(request);
+    const response = await CreateRootShelf({ data: validatedRequest });
+    return CreateRootShelfResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse = (await response.json()) as CreateRootShelfResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function CreateRootShelves(
+export const mutationFnCreateRootShelves = async (
   request: CreateRootShelvesRequest
-): Promise<CreateRootShelvesResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.createRootShelves}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<CreateRootShelvesResponse> => {
+  try {
+    const validatedRequest = CreateRootShelvesRequestSchema.parse(request);
+    const response = await CreateRootShelves({
+      data: validatedRequest,
+    });
+    return CreateRootShelvesResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as CreateRootShelvesResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function UpdateMyRootShelfById(
+export const mutationFnUpdateMyRootShelfById = async (
   request: UpdateMyRootShelfByIdRequest
-): Promise<UpdateMyRootShelfByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyRootShelfByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyRootShelfByIdRequestSchema.parse(request);
+    const response = await UpdateMyRootShelfById({
+      data: validatedRequest,
+    });
+    return UpdateMyRootShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as UpdateMyRootShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function UpdateMyRootShelvesByIds(
+export const mutationFnUpdateMyRootShelvesByIds = async (
   request: UpdateMyRootShelvesByIdsRequest
-): Promise<UpdateMyRootShelvesByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelvesByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyRootShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      UpdateMyRootShelvesByIdsRequestSchema.parse(request);
+    const response = await UpdateMyRootShelvesByIds({
+      data: validatedRequest,
+    });
+    return UpdateMyRootShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as UpdateMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function RestoreMyRootShelfById(
+export const mutationFnRestoreMyRootShelfById = async (
   request: RestoreMyRootShelfByIdRequest
-): Promise<RestoreMyRootShelfByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyRootShelfByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyRootShelfByIdRequestSchema.parse(request);
+    const response = await RestoreMyRootShelfById({
+      data: validatedRequest,
+    });
+    return RestoreMyRootShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as RestoreMyRootShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function RestoreMyRootShelvesByIds(
+export const mutationFnRestoreMyRootShelvesByIds = async (
   request: RestoreMyRootShelvesByIdsRequest
-): Promise<RestoreMyRootShelvesByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelvesByIds}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyRootShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMyRootShelvesByIdsRequestSchema.parse(request);
+    const response = await RestoreMyRootShelvesByIds({
+      data: validatedRequest,
+    });
+    return RestoreMyRootShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as RestoreMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function DeleteMyRootShelfById(
+export const mutationFnDeleteMyRootShelfById = async (
   request: DeleteMyRootShelfByIdRequest
-): Promise<DeleteMyRootShelfByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyRootShelfByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyRootShelfByIdRequestSchema.parse(request);
+    const response = await DeleteMyRootShelfById({
+      data: validatedRequest,
+    });
+    return DeleteMyRootShelfByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as DeleteMyRootShelfByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};
 
-export async function DeleteMyRootShelvesByIds(
+export const mutationFnDeleteMyRootShelvesByIds = async (
   request: DeleteMyRootShelvesByIdsRequest
-): Promise<DeleteMyRootShelvesByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelvesByIds}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyRootShelvesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      DeleteMyRootShelvesByIdsRequestSchema.parse(request);
+    const response = await DeleteMyRootShelvesByIds({
+      data: validatedRequest,
+    });
+    return DeleteMyRootShelvesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-  const formattedResponse =
-    (await response.json()) as DeleteMyRootShelvesByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

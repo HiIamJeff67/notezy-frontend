@@ -1,7 +1,7 @@
+import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
-import toast from "react-hot-toast";
 import BlockPackMenuItem from "@/components/menus/BlockPackMenu/BlockPackMenuItem";
 import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
@@ -37,7 +37,7 @@ const BlockPackMenu = ({ parent }: BlockPackMenuProps) => {
               {shelfItemManager.isItemNodeEditing(blockPackNode.id) ? (
                 <SidebarMenuItem
                   key={blockPackId}
-                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
+                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
                 >
                   <input
                     ref={shelfItemManager.inputRef}

@@ -1,8 +1,8 @@
 import { MaxTriggerValue } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
 import { Widget } from "@/components/widgets/widget";
 import { useLanguage, useUser } from "@/hooks";
@@ -156,7 +156,6 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
 
       widgetsRef.current = sortedWidgets;
-      console.log("userData", userManager.userData?.publicId);
 
       LocalStorageManipulator.setItem(
         LocalStorageKey.dashboardWidgets,

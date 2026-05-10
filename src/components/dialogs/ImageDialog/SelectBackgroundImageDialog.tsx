@@ -1,16 +1,18 @@
-import { UUID } from "crypto";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import toast from "@shared/lib/toast";
+import type { UUID } from "crypto";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useLanguage, useLoading } from "@/hooks";
+import { useLanguage } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
+import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 import { ModalProps } from "@/providers/ModalProvider";
 import CropImageDialog from "./CropImageDialog";
 import UploadImageDialog from "./UploadImageDialog";
@@ -25,7 +27,6 @@ const SelectBackgroundImageDialog = ({
   cropperAspectRatio,
 }: SelectBackgroundImageDialogProps) => {
   const languageManager = useLanguage();
-  const loadingManager = useLoading();
 
   const backgroundImagesManager = useBackgroundImages();
 
@@ -41,6 +42,111 @@ const SelectBackgroundImageDialog = ({
     useState<boolean>(false);
   const [cropImageDialogOpen, setCropImageDialogOpen] =
     useState<boolean>(false);
+
+  const [isCropImageCompleting, startCompletingCropImageTransition] =
+    useTransition();
+  const [isCropImageSelecting, startSelectingCropImageTransition] =
+    useTransition();
+
+  useRegisterLoadingDependencies(
+    () => isCropImageCompleting,
+    () => isCropImageSelecting
+  );
+
+  useEffect(() => {
+    const currentId = backgroundImagesManager.currentBackgroundImage?.id ?? null;
+    if (currentId && thumbnails.some(thumb => thumb.id === currentId)) {
+      setSelectedBackgroundImageId(currentId);
+      return;
+    }
+
+    if (thumbnails.length === 0) {
+      setSelectedBackgroundImageId(null);
+    } else if (selectedBackgroundImageId === null) {
+      setSelectedBackgroundImageId(thumbnails[thumbnails.length - 1].id);
+    }
+  }, [
+    backgroundImagesManager.currentBackgroundImage?.id,
+    thumbnails,
+    selectedBackgroundImageId,
+  ]);
+
+  const handleCropImageOnComplete = useCallback(
+    async (croppedBlob: Blob) =>
+      startCompletingCropImageTransition(async () => {
+        try {
+          if (croppedBackgroundImagePack === null) {
+            throw new Error("failed to crop null image");
+          }
+
+          const croppedFile = new File(
+            [croppedBlob],
+            `cropped-image-${Date.now()}.png`,
+            {
+              type: "image/png",
+            }
+          );
+          await backgroundImagesManager.setCurrentBackgroundImageByFile(
+            croppedFile
+          );
+          URL.revokeObjectURL(croppedBackgroundImagePack.url);
+          setCroppedBackgroundImagePack(null);
+          setCropImageDialogOpen(false);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [croppedBackgroundImagePack, backgroundImagesManager, languageManager]
+  );
+
+  const handleCropImageOnSelect = useCallback(
+    () =>
+      startSelectingCropImageTransition(async () => {
+        try {
+          if (!selectedBackgroundImageId) return;
+
+          const imagePack = await backgroundImagesManager.getFullImageURL(
+            selectedBackgroundImageId
+          );
+          setCroppedBackgroundImagePack(imagePack);
+          setCropImageDialogOpen(true);
+        } catch (error) {
+          toast.error(languageManager.tError(error));
+        }
+      }),
+    [selectedBackgroundImageId, backgroundImagesManager, languageManager]
+  );
+
+  const handleThumbnailOnSelect = useCallback(
+    async (id: UUID) => {
+      setSelectedBackgroundImageId(id);
+      try {
+        await backgroundImagesManager.setCurrentBackgroundImageById(id);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    },
+    [backgroundImagesManager, languageManager]
+  );
+
+  const handleThumbnailOnRemove = useCallback(
+    async (id: UUID) => {
+      try {
+        const remainingIds = thumbnails
+          .filter(thumb => thumb.id !== id)
+          .map(thumb => thumb.id);
+        const fallbackId =
+          remainingIds.length > 0 ? remainingIds[remainingIds.length - 1] : null;
+
+        await backgroundImagesManager.remove([id]);
+        setSelectedBackgroundImageId(fallbackId);
+        await backgroundImagesManager.setCurrentBackgroundImageById(fallbackId);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    },
+    [backgroundImagesManager, languageManager, thumbnails]
+  );
 
   return (
     <Dialog
@@ -61,13 +167,23 @@ const SelectBackgroundImageDialog = ({
         <DialogHeader>
           <DialogTitle>Select Background Images</DialogTitle>
         </DialogHeader>
-
+        <DialogDescription className="px-4">
+          Select a image to display on the background. There's only one image
+          available to display at the same time.
+        </DialogDescription>
         <UploadImageDialog
           open={uploadImageDialogOpen}
           onOpenChange={setUploadImageDialogOpen}
           title="Upload Background Images"
           onUpload={async (files: File[]) => {
-            await backgroundImagesManager.upload(files);
+            const uploadedIds = await backgroundImagesManager.upload(files);
+            if (uploadedIds.length > 0) {
+              const lastUploadedId = uploadedIds[uploadedIds.length - 1];
+              setSelectedBackgroundImageId(lastUploadedId);
+              await backgroundImagesManager.setCurrentBackgroundImageById(
+                lastUploadedId
+              );
+            }
           }}
           onCancel={() => setUploadImageDialogOpen(false)}
         />
@@ -77,35 +193,7 @@ const SelectBackgroundImageDialog = ({
             onOpenChange={setCropImageDialogOpen}
             imageURL={croppedBackgroundImagePack.url}
             aspectRatio={cropperAspectRatio}
-            onComplete={async croppedBlob =>
-              await loadingManager.startAsyncTransactionLoading(async () => {
-                try {
-                  const croppedFile = new File(
-                    [croppedBlob],
-                    `cropped-image-${Date.now()}.png`,
-                    {
-                      type: "image/png",
-                    }
-                  );
-                  const uploadedIds = await backgroundImagesManager.upload([
-                    croppedFile,
-                  ]); // this should be at most one files
-                  if (uploadedIds.length > 0) {
-                    if (selectedBackgroundImageId) {
-                      await backgroundImagesManager.remove([
-                        selectedBackgroundImageId,
-                      ]);
-                    }
-                    setSelectedBackgroundImageId(uploadedIds[0]);
-                  }
-                  URL.revokeObjectURL(croppedBackgroundImagePack.url);
-                  setCroppedBackgroundImagePack(null);
-                  setCropImageDialogOpen(false);
-                } catch (error) {
-                  toast.error(languageManager.tError(error));
-                }
-              })
-            }
+            onComplete={handleCropImageOnComplete}
             onCancel={() => {
               croppedBackgroundImagePack.revoke();
               setCroppedBackgroundImagePack(null);
@@ -123,7 +211,7 @@ const SelectBackgroundImageDialog = ({
             thumbnails.map(thumb => (
               <div
                 key={thumb.id}
-                onClick={() => setSelectedBackgroundImageId(thumb.id)}
+                onClick={() => handleThumbnailOnSelect(thumb.id)}
                 className={`
                     cursor-pointer relative aspect-video rounded-lg overflow-hidden border-2 transition-all
                     ${
@@ -134,9 +222,10 @@ const SelectBackgroundImageDialog = ({
                     `}
               >
                 <Closeable
-                  onClose={() => backgroundImagesManager.remove([thumb.id])}
+                  onClose={() => handleThumbnailOnRemove(thumb.id)}
                   hasParent
                 >
+                  {/* leave the client images to use the original react img component */}
                   <img
                     src={thumb.thumbnailURL}
                     alt="Background thumbnail"
@@ -152,22 +241,7 @@ const SelectBackgroundImageDialog = ({
             variant="secondary"
             className="w-20"
             disabled={selectedBackgroundImageId === null}
-            onClick={async () =>
-              await loadingManager.startAsyncTransactionLoading(async () => {
-                try {
-                  if (!selectedBackgroundImageId) return;
-
-                  const imagePack =
-                    await backgroundImagesManager.getFullImageURL(
-                      selectedBackgroundImageId
-                    );
-                  setCroppedBackgroundImagePack(imagePack);
-                  setCropImageDialogOpen(true);
-                } catch (error) {
-                  toast.error(languageManager.tError(error));
-                }
-              })
-            }
+            onClick={handleCropImageOnSelect}
           >
             Crop
           </Button>
@@ -181,12 +255,8 @@ const SelectBackgroundImageDialog = ({
           <Button
             variant="default"
             className="w-20"
-            onClick={async () => {
-              await backgroundImagesManager.setCurrentBackgroundImageId(
-                selectedBackgroundImageId
-              );
-              onClose();
-            }}
+            disabled={selectedBackgroundImageId === null}
+            onClick={() => onClose()}
           >
             Confirm
           </Button>

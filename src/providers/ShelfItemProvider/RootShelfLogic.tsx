@@ -3,20 +3,19 @@ import {
   useDeleteMyRootShelfById,
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
-import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
-import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
+import { queryFnGetAllMySubShelvesByRootShelfId } from "@shared/api/invokers/subShelf.invoker";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
+import toast from "@shared/lib/toast";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
-import { RefObject, useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import type { UUID } from "crypto";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import {
   PrivateRootShelf,
   SearchRootShelfEdge,
@@ -46,7 +45,6 @@ export const useRootShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseRootShelfLogicProps) => {
-  const getAllMySubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
@@ -66,6 +64,7 @@ export const useRootShelfLogic = ({
     useState<string>("");
   const [originalRootShelfNodeName, setOriginalRootShelfNodeName] =
     useState<string>("");
+  const searchRequestIdRef = useRef(0);
 
   const [executeSearch, { data, loading, fetchMore }] =
     useSearchRootShelvesLazyQuery();
@@ -156,7 +155,7 @@ export const useRootShelfLogic = ({
           sortOrder: SearchSortOrder.Asc,
         },
       },
-    });
+    }).retain();
   }, [executeSearch, searchInput]);
 
   const loadMoreRootShelves = useCallback(async (): Promise<void> => {
@@ -197,7 +196,7 @@ export const useRootShelfLogic = ({
       LocalStorageKey.accessToken
     );
     const responseOfGettingAllSubShelves =
-      (await getAllMySubShelvesQuerier.queryAsync({
+      await queryFnGetAllMySubShelvesByRootShelfId({
         header: {
           userAgent: userAgent,
           authorization: getAuthorization(accessToken),
@@ -205,7 +204,7 @@ export const useRootShelfLogic = ({
         param: {
           rootShelfId: rootShelf.id,
         },
-      })) as GetAllMySubShelvesByRootShelfIdResponse;
+      });
 
     const newRootShelfNode =
       RootShelfManipulator.initializeSubShelfNodeTreeByResponse(

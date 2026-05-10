@@ -1,17 +1,20 @@
-import {
-  mutationFnUpdateMyInfo,
-  queryFnGetMyInfo,
-} from "@shared/api/functions/userInfo.function";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetMyInfoRequest,
   GetMyInfoResponse,
 } from "@shared/api/interfaces/userInfo.interface";
-import { getQueryClient } from "@shared/api/queryClient";
 import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+  mutationFnUpdateMyInfo,
+  queryFnGetMyInfo,
+} from "@shared/api/invokers/userInfo.invoker";
+import { getQueryClient } from "@shared/api/queryClient";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
   type UseQueryOptions,
   useMutation,
@@ -20,35 +23,59 @@ import {
 
 export const useGetMyInfo = (
   hookRequest?: GetMyInfoRequest,
-  options?: UseQueryOptions
+  options?: Partial<UseQueryOptions<GetMyInfoResponse, Error>>
 ) => {
   const queryClient = getQueryClient();
 
-  const query = useQuery({
+  const perform = async (
+    request?: GetMyInfoRequest
+  ): Promise<GetMyInfoResponse> => {
+    try {
+      if (!request) {
+        throw new NotezyValidationError(
+          ValidationClientException.ReceivedUndefinedRequest()
+        );
+      }
+
+      const response = await queryFnGetMyInfo(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetMyInfoResponse, Error>({
     queryKey: queryKeys.userInfo.my(),
-    queryFn: async () => await queryFnGetMyInfo(hookRequest),
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
-  const queryAsync = async (
+  const fetch = async (
     callbackRequest: GetMyInfoRequest
   ): Promise<GetMyInfoResponse> => {
-    return await queryClient.fetchQuery({
+    return queryClient.fetchQuery({
       queryKey: queryKeys.userInfo.my(),
-      queryFn: async () => await queryFnGetMyInfo(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime as number,
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
     });
   };
 
-  return {
-    ...query,
-    queryAsync,
-    name: "GET_MY_INFO_HOOK" as const,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useUpdateMyInfo = () => {
@@ -56,16 +83,21 @@ export const useUpdateMyInfo = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyInfo,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userInfo.my() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UPDATE_MY_INFO_HOOK" as const,
-  };
+  return mutation;
 };

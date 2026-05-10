@@ -1,8 +1,8 @@
+import toast from "@shared/lib/toast";
 import { RootShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
-import toast from "react-hot-toast";
 import SubShelfMenuItem from "@/components/menus/SubShelfMenu/SubShelfMenuItem";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
@@ -37,7 +37,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
           return (
             <Suspense fallback={<SubShelfMenuItemSkeleton />} key={subShelfId}>
               {shelfItemManager.isSubShelfNodeEditing(subShelfNode.id) ? (
-                <SidebarMenuItem className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative">
+                <SidebarMenuItem className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative">
                   <input
                     ref={shelfItemManager.inputRef}
                     type="text"

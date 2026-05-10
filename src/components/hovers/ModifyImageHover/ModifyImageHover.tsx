@@ -1,3 +1,5 @@
+import { Image } from "@unpic/react";
+
 interface ModifyImageHoverProps {
   imageSrc?: string;
   imageAlt?: string;
@@ -20,7 +22,15 @@ const ModifyImageHover = ({
       className={`w-full h-full inset-0 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition ${className}`}
       onClick={onClick}
     >
-      {imageSrc && <img src={`select-none ${imageSrc}`} alt={imageAlt} />}
+      {imageSrc && (
+        <Image
+          src={`select-none ${imageSrc}`}
+          alt={imageAlt}
+          width={240}
+          height={240}
+          className="w-full h-full"
+        />
+      )}
       <span className={hoverTextClassName}>{hoverText}</span>
     </div>
   );

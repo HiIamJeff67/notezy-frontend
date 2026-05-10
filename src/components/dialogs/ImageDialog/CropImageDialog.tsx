@@ -2,6 +2,7 @@ import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -29,6 +30,11 @@ const CropImageDialog = ({
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="px-8">
+          Drag the zone display in the screen to fit and crop the image. The
+          size of the zone is decided based on the current width and height of
+          your screen.
+        </DialogDescription>
         <ImageCropper
           imageURL={imageURL}
           aspectRatio={aspectRatio}

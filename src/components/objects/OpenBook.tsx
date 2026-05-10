@@ -1,5 +1,4 @@
 // components/objects/OpenBook.tsx
-"use client";
 
 import { Float } from "@react-three/drei";
 import { useRef } from "react";

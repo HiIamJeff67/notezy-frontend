@@ -1,7 +1,7 @@
-import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
+import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export interface BlockPackMeta {
   id: UUID;
@@ -10,7 +10,7 @@ export interface BlockPackMeta {
   name: string;
   icon: SupportedBlockPackIcon | null;
   headerBackgroundURL: string | null;
-  blockCount: bigint;
+  blockCount: number;
   path: UUID[];
   deletedAt: Date | null;
   updatedAt: Date;
@@ -30,7 +30,7 @@ export const getDefaultBlockPackMeta = (
     name: "Untitled",
     icon: null,
     headerBackgroundURL: null,
-    blockCount: BigInt(0),
+    blockCount: 0,
     path: [],
     deletedAt: new Date(),
     updatedAt: new Date(),

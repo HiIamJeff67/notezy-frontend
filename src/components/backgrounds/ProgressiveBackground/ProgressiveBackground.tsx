@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 
 interface ProgressiveBackgroundProps
@@ -20,44 +18,53 @@ export const ProgressiveBackground = React.forwardRef<
   >(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const loadingTaskTokenRef = useRef(0);
+
   const thumbnailURL = useMemo(() => {
-    const currentId = backgroundImagesManager.currentBackgroundImageId;
+    const currentId = backgroundImagesManager.currentBackgroundImage?.id;
     if (!currentId || !backgroundImagesManager.thumbnails) return "";
     return (
       backgroundImagesManager.thumbnails.contents.find(t => t.id === currentId)
         ?.thumbnailURL || ""
     );
-  }, [backgroundImagesManager]);
+  }, [
+    backgroundImagesManager.thumbnails,
+    backgroundImagesManager.currentBackgroundImage?.id,
+  ]);
 
   useEffect(() => {
-    const currentId = backgroundImagesManager.currentBackgroundImageId;
-    if (currentId === null) return;
-
-    let hasMounted = true;
-    let imagePack: { url: string; revoke: () => void } | null = null; // fallback to be null
-
-    const loadHighResolutionImage = async () => {
+    if (backgroundImagesManager.currentBackgroundImage === null) {
+      setHeightResolutionImageURL(null);
       setIsLoaded(false);
-      imagePack = await backgroundImagesManager.getFullImageURL(currentId);
-      if (imagePack !== null && hasMounted) {
-        const img = new Image();
-        img.src = imagePack.url;
-        img.onload = () => {
-          if (imagePack !== null && hasMounted) {
-            setHeightResolutionImageURL(imagePack.url);
-            setIsLoaded(true);
-          }
-        };
-      }
-    };
+      return;
+    }
 
-    loadHighResolutionImage();
+    const currentToken = loadingTaskTokenRef.current + 1;
+    loadingTaskTokenRef.current = currentToken;
+
+    const nextObjectURL = URL.createObjectURL(
+      backgroundImagesManager.currentBackgroundImage.file
+    );
+
+    setIsLoaded(false);
+    const preloadImage = new Image();
+    preloadImage.onload = () => {
+      if (loadingTaskTokenRef.current !== currentToken) return;
+      setHeightResolutionImageURL(nextObjectURL);
+      setIsLoaded(true);
+    };
+    preloadImage.onerror = () => {
+      if (loadingTaskTokenRef.current !== currentToken) return;
+      setHeightResolutionImageURL(null);
+      setIsLoaded(false);
+    };
+    preloadImage.src = nextObjectURL;
 
     return () => {
-      hasMounted = false;
-      imagePack?.revoke();
+      preloadImage.onload = null;
+      preloadImage.onerror = null;
     };
-  }, [backgroundImagesManager]);
+  }, [backgroundImagesManager.currentBackgroundImage]);
 
   return (
     <div

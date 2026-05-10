@@ -13,7 +13,7 @@ export type NotezyRequest = z.infer<typeof NotezyRequestSchema>;
 
 export const NotezyResponseSchema = z.object({
   success: z.boolean(),
-  data: z.any(),
+  data: z.any().nullable(),
   refreshableTokens: z
     .object({
       newAccessToken: z.string().optional(), // exist if the API route is under the refresh access token middleware
@@ -22,7 +22,7 @@ export const NotezyResponseSchema = z.object({
     .optional(),
   embedded: z
     .object({
-      embeddedPublicId: z.string().optional(),
+      publicId: z.string().optional(),
     })
     .optional(),
   exception: NotezyExceptionSchema.nullable(),

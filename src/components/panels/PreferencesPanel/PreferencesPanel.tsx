@@ -1,5 +1,3 @@
-"use client";
-
 import { Bell, Database, Info, Palette, Shield, Users } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

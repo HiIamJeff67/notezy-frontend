@@ -1,16 +1,16 @@
-import { UUID } from "crypto";
-import { ImageInfo, ImageThumbnailInfo } from "./imageInfo.type";
+import type { UUID } from "crypto";
+import { ImageContent, ImageInfo, ImageThumbnailInfo } from "./imageInfo.type";
 
 export enum IndexedDBKey {
   backgroundImageThumbnails = "backgroundImageThumbnails",
   backgroundImages = "backgroundImages",
-  currentBackgroundImageId = "currentBackgroundImageId",
+  currentBackgroundImage = "currentBackgroundImage",
   currentProfileCoverBackgroundImageId = "currentProfileCoverBackgroundImageId",
 }
 
 export interface IndexedDBItem {
   [IndexedDBKey.backgroundImageThumbnails]: ImageThumbnailInfo | null;
   [IndexedDBKey.backgroundImages]: ImageInfo | null;
-  [IndexedDBKey.currentBackgroundImageId]: UUID | null;
+  [IndexedDBKey.currentBackgroundImage]: ImageContent | null;
   [IndexedDBKey.currentProfileCoverBackgroundImageId]: UUID | null;
 }

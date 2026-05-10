@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6919c7cb-8222-4089-bd40-ddfb81ceba13",
+  "id": "964a71b9-81af-43c0-890b-492a0e2064e6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "BlockTable": {
@@ -65,7 +65,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.694Z\"'"
+          "default": "'\"2026-05-07T14:46:40.159Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -73,11 +73,38 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.694Z\"'"
+          "default": "'\"2026-05-07T14:46:40.159Z\"'"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "BlockTable_block_group_id_BlockGroupTable_id_fk": {
+          "name": "BlockTable_block_group_id_BlockGroupTable_id_fk",
+          "tableFrom": "BlockTable",
+          "tableTo": "BlockGroupTable",
+          "columnsFrom": [
+            "block_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "block_fk_parent_block_id": {
+          "name": "block_fk_parent_block_id",
+          "tableFrom": "BlockTable",
+          "tableTo": "BlockTable",
+          "columnsFrom": [
+            "parent_block_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -89,6 +116,13 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_public_id": {
+          "name": "owner_public_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -134,7 +168,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.700Z\"'"
+          "default": "'\"2026-05-07T14:46:40.157Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -142,17 +176,61 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.700Z\"'"
+          "default": "'\"2026-05-07T14:46:40.157Z\"'"
         }
       },
       "indexes": {
         "block_group_unique_idx_block_pack_id_prev_block_group_id": {
           "name": "block_group_unique_idx_block_pack_id_prev_block_group_id",
-          "columns": ["block_pack_id", "prev_block_group_id"],
-          "isUnique": true
+          "columns": [
+            "block_pack_id",
+            "prev_block_group_id"
+          ],
+          "isUnique": true,
+          "where": "\"BlockGroupTable\".\"deleted_at\" is not null"
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "BlockGroupTable_owner_public_id_UserTable_public_id_fk": {
+          "name": "BlockGroupTable_owner_public_id_UserTable_public_id_fk",
+          "tableFrom": "BlockGroupTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "owner_public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "BlockGroupTable_block_pack_id_BlockPackTable_id_fk": {
+          "name": "BlockGroupTable_block_pack_id_BlockPackTable_id_fk",
+          "tableFrom": "BlockGroupTable",
+          "tableTo": "BlockPackTable",
+          "columnsFrom": [
+            "block_pack_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "block_group_fk_prev_block_group_id": {
+          "name": "block_group_fk_prev_block_group_id",
+          "tableFrom": "BlockGroupTable",
+          "tableTo": "BlockGroupTable",
+          "columnsFrom": [
+            "prev_block_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -217,7 +295,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.706Z\"'"
+          "default": "'\"2026-05-07T14:46:40.156Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -225,17 +303,35 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.706Z\"'"
+          "default": "'\"2026-05-07T14:46:40.156Z\"'"
         }
       },
       "indexes": {
         "block_pack_unique_idx_parent_sub_shelf_id_name": {
           "name": "block_pack_unique_idx_parent_sub_shelf_id_name",
-          "columns": ["parent_sub_shelf_id", "name"],
-          "isUnique": true
+          "columns": [
+            "parent_sub_shelf_id",
+            "name"
+          ],
+          "isUnique": true,
+          "where": "\"BlockPackTable\".\"deleted_at\" is not null"
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "BlockPackTable_parent_sub_shelf_id_SubShelfTable_id_fk": {
+          "name": "BlockPackTable_parent_sub_shelf_id_SubShelfTable_id_fk",
+          "tableFrom": "BlockPackTable",
+          "tableTo": "SubShelfTable",
+          "columnsFrom": [
+            "parent_sub_shelf_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -247,6 +343,13 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_public_id": {
+          "name": "owner_public_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -280,15 +383,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-07T14:46:40.151Z\"'"
         },
         "deleted_at": {
           "name": "deleted_at",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -296,7 +398,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-07T14:46:40.151Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -304,17 +406,35 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.714Z\"'"
+          "default": "'\"2026-05-07T14:46:40.151Z\"'"
         }
       },
       "indexes": {
-        "root_shelf_unique_idx_owner_id_name": {
-          "name": "root_shelf_unique_idx_owner_id_name",
-          "columns": ["name"],
-          "isUnique": true
+        "root_shelf_unique_idx_name_owner_id": {
+          "name": "root_shelf_unique_idx_name_owner_id",
+          "columns": [
+            "name",
+            "owner_public_id"
+          ],
+          "isUnique": true,
+          "where": "\"RootShelfTable\".\"deleted_at\" is not null"
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "RootShelfTable_owner_public_id_UserTable_public_id_fk": {
+          "name": "RootShelfTable_owner_public_id_UserTable_public_id_fk",
+          "tableFrom": "RootShelfTable",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "owner_public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -348,7 +468,7 @@
           "name": "prev_sub_shelf_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "path": {
@@ -372,7 +492,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.718Z\"'"
+          "default": "'\"2026-05-07T14:46:40.154Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -380,17 +500,49 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.718Z\"'"
+          "default": "'\"2026-05-07T14:46:40.154Z\"'"
         }
       },
       "indexes": {
         "sub_shelf_unique_idx_name_root_shelf_id_path": {
           "name": "sub_shelf_unique_idx_name_root_shelf_id_path",
-          "columns": ["name", "root_shelf_id", "path"],
-          "isUnique": true
+          "columns": [
+            "name",
+            "root_shelf_id",
+            "path"
+          ],
+          "isUnique": true,
+          "where": "\"SubShelfTable\".\"deleted_at\" is not null"
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "SubShelfTable_root_shelf_id_RootShelfTable_id_fk": {
+          "name": "SubShelfTable_root_shelf_id_RootShelfTable_id_fk",
+          "tableFrom": "SubShelfTable",
+          "tableTo": "RootShelfTable",
+          "columnsFrom": [
+            "root_shelf_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "sub_shelf_fk_prev_sub_shelf_id": {
+          "name": "sub_shelf_fk_prev_sub_shelf_id",
+          "tableFrom": "SubShelfTable",
+          "tableTo": "SubShelfTable",
+          "columnsFrom": [
+            "prev_sub_shelf_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -398,19 +550,12 @@
     "TransactionTable": {
       "name": "TransactionTable",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
+        "sequence": {
+          "name": "sequence",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
-        },
-        "entity_id": {
-          "name": "entity_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "entity_type": {
           "name": "entity_type",
@@ -425,6 +570,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "is_batch_action": {
+          "name": "is_batch_action",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "payload": {
           "name": "payload",
@@ -454,14 +607,101 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-04-12T13:07:01.724Z\"'"
+          "default": "'\"2026-05-07T14:46:40.161Z\"'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "UserTable": {
+      "name": "UserTable",
+      "columns": {
+        "public_id": {
+          "name": "public_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Online'"
+        },
+        "is_logged_in": {
+          "name": "is_logged_in",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-07T14:46:40.149Z\"'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'\"2026-05-07T14:46:40.149Z\"'"
         }
       },
       "indexes": {
-        "transaction_unique_idx_entity_id_entity_type_action_type": {
-          "name": "transaction_unique_idx_entity_id_entity_type_action_type",
-          "columns": ["entity_id", "entity_type", "action_type"],
+        "UserTable_name_unique": {
+          "name": "UserTable_name_unique",
+          "columns": [
+            "name"
+          ],
           "isUnique": true
+        },
+        "UserTable_email_unique": {
+          "name": "UserTable_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "user_unique_idx_is_logged_in": {
+          "name": "user_unique_idx_is_logged_in",
+          "columns": [
+            "is_logged_in"
+          ],
+          "isUnique": true,
+          "where": "\"UserTable\".\"is_logged_in\" = ?"
         }
       },
       "foreignKeys": {},

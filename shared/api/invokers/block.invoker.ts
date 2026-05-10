@@ -1,472 +1,465 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  DeleteMyBlockByIdRequest,
-  DeleteMyBlockByIdResponse,
-  DeleteMyBlocksByIdsRequest,
-  DeleteMyBlocksByIdsResponse,
-  GetAllMyBlocksRequest,
+  DeleteMyBlockById,
+  DeleteMyBlocksByIds,
+  GetAllMyBlocks,
+  GetMyBlockById,
+  GetMyBlocksByBlockGroupId,
+  GetMyBlocksByBlockGroupIds,
+  GetMyBlocksByBlockPackId,
+  GetMyBlocksByIds,
+  InsertBlock,
+  InsertBlocks,
+  RestoreMyBlockById,
+  RestoreMyBlocksByIds,
+  UpdateMyBlockById,
+  UpdateMyBlocksByIds,
+} from "@shared/api/functions/block.serverFn";
+import {
+  type DeleteMyBlockByIdRequest,
+  DeleteMyBlockByIdRequestSchema,
+  type DeleteMyBlockByIdResponse,
+  DeleteMyBlockByIdResponseSchema,
+  type DeleteMyBlocksByIdsRequest,
+  DeleteMyBlocksByIdsRequestSchema,
+  type DeleteMyBlocksByIdsResponse,
+  DeleteMyBlocksByIdsResponseSchema,
+  type GetAllMyBlocksRequest,
+  GetAllMyBlocksRequestSchema,
   GetAllMyBlocksResponse,
-  GetMyBlockByIdRequest,
+  GetAllMyBlocksResponseSchema,
+  type GetMyBlockByIdRequest,
+  GetMyBlockByIdRequestSchema,
   GetMyBlockByIdResponse,
-  GetMyBlocksByBlockGroupIdRequest,
+  GetMyBlockByIdResponseSchema,
+  type GetMyBlocksByBlockGroupIdRequest,
+  GetMyBlocksByBlockGroupIdRequestSchema,
   GetMyBlocksByBlockGroupIdResponse,
-  GetMyBlocksByBlockGroupIdsRequest,
+  GetMyBlocksByBlockGroupIdResponseSchema,
+  type GetMyBlocksByBlockGroupIdsRequest,
+  GetMyBlocksByBlockGroupIdsRequestSchema,
   GetMyBlocksByBlockGroupIdsResponse,
-  GetMyBlocksByBlockPackIdRequest,
+  GetMyBlocksByBlockGroupIdsResponseSchema,
+  type GetMyBlocksByBlockPackIdRequest,
+  GetMyBlocksByBlockPackIdRequestSchema,
   GetMyBlocksByBlockPackIdResponse,
-  GetMyBlocksByIdsRequest,
+  GetMyBlocksByBlockPackIdResponseSchema,
+  type GetMyBlocksByIdsRequest,
+  GetMyBlocksByIdsRequestSchema,
   GetMyBlocksByIdsResponse,
-  InsertBlockRequest,
-  InsertBlockResponse,
-  InsertBlocksRequest,
-  InsertBlocksResponse,
-  RestoreMyBlockByIdRequest,
-  RestoreMyBlockByIdResponse,
-  RestoreMyBlocksByIdsRequest,
-  RestoreMyBlocksByIdsResponse,
-  UpdateMyBlockByIdRequest,
-  UpdateMyBlockByIdResponse,
-  UpdateMyBlocksByIdsRequest,
-  UpdateMyBlocksByIdsResponse,
+  GetMyBlocksByIdsResponseSchema,
+  type InsertBlockRequest,
+  InsertBlockRequestSchema,
+  type InsertBlockResponse,
+  InsertBlockResponseSchema,
+  type InsertBlocksRequest,
+  InsertBlocksRequestSchema,
+  type InsertBlocksResponse,
+  InsertBlocksResponseSchema,
+  type RestoreMyBlockByIdRequest,
+  RestoreMyBlockByIdRequestSchema,
+  type RestoreMyBlockByIdResponse,
+  RestoreMyBlockByIdResponseSchema,
+  type RestoreMyBlocksByIdsRequest,
+  RestoreMyBlocksByIdsRequestSchema,
+  type RestoreMyBlocksByIdsResponse,
+  RestoreMyBlocksByIdsResponseSchema,
+  type UpdateMyBlockByIdRequest,
+  UpdateMyBlockByIdRequestSchema,
+  type UpdateMyBlockByIdResponse,
+  UpdateMyBlockByIdResponseSchema,
+  type UpdateMyBlocksByIdsRequest,
+  UpdateMyBlocksByIdsRequestSchema,
+  type UpdateMyBlocksByIdsResponse,
+  UpdateMyBlocksByIdsResponseSchema,
 } from "@shared/api/interfaces/block.interface";
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyBlockById(
+export const queryFnGetMyBlockById = async (
   request: GetMyBlockByIdRequest
-): Promise<GetMyBlockByIdResponse> {
-  const { blockId } = request.param;
-  const params = new URLSearchParams({ blockId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById}?${params}`;
+): Promise<GetMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = GetMyBlockByIdRequestSchema.parse(request);
+    const response = await GetMyBlockById({ data: validatedRequest });
+    return GetMyBlockByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetMyBlockByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlocksByIds(
+export const queryFnGetMyBlocksByIds = async (
   request: GetMyBlocksByIdsRequest
-): Promise<GetMyBlocksByIdsResponse> {
-  const { blockIds } = request.param;
-  const params = new URLSearchParams();
-  blockIds.forEach(id => params.append("blockIds", id));
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByIds}?${params.toString()}`;
+): Promise<GetMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = GetMyBlocksByIdsRequestSchema.parse(request);
+    const response = await GetMyBlocksByIds({ data: validatedRequest });
+    return GetMyBlocksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetMyBlocksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlocksByBlockGroupId(
+export const queryFnGetMyBlocksByBlockGroupId = async (
   request: GetMyBlocksByBlockGroupIdRequest
-): Promise<GetMyBlocksByBlockGroupIdResponse> {
-  const { blockGroupId } = request.param;
-  const params = new URLSearchParams({ blockGroupId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupId}?${params}`;
+): Promise<GetMyBlocksByBlockGroupIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlocksByBlockGroupIdRequestSchema.parse(request);
+    const response = await GetMyBlocksByBlockGroupId({
+      data: validatedRequest,
+    });
+    return GetMyBlocksByBlockGroupIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlocksByBlockGroupIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlocksByBlockGroupIds(
+export const queryFnGetMyBlocksByBlockGroupIds = async (
   request: GetMyBlocksByBlockGroupIdsRequest
-): Promise<GetMyBlocksByBlockGroupIdsResponse> {
-  const { blockGroupIds } = request.param;
-  const params = new URLSearchParams();
-  blockGroupIds.forEach(id => params.append("blockGroupIds", id));
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupIds}?${params.toString()}`;
+): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlocksByBlockGroupIdsRequestSchema.parse(request);
+    const response = await GetMyBlocksByBlockGroupIds({
+      data: validatedRequest,
+    });
+    return GetMyBlocksByBlockGroupIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlocksByBlockGroupIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlocksByBlockPackId(
+export const queryFnGetMyBlocksByBlockPackId = async (
   request: GetMyBlocksByBlockPackIdRequest
-): Promise<GetMyBlocksByBlockPackIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({ blockPackId }).toString();
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId}?${params}`;
+): Promise<GetMyBlocksByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlocksByBlockPackIdRequestSchema.parse(request);
+    const response = await GetMyBlocksByBlockPackId({
+      data: validatedRequest,
+    });
+    return GetMyBlocksByBlockPackIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as GetMyBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetAllMyBlocks(
+export const queryFnGetAllMyBlocks = async (
   request: GetAllMyBlocksRequest
-): Promise<GetAllMyBlocksResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
+): Promise<GetAllMyBlocksResponse> => {
+  try {
+    const validatedRequest = GetAllMyBlocksRequestSchema.parse(request);
+    const response = await GetAllMyBlocks({ data: validatedRequest });
+    return GetAllMyBlocksResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetAllMyBlocksResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlock(
+export const mutationFnInsertBlock = async (
   request: InsertBlockRequest
-): Promise<InsertBlockResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlock}`;
+): Promise<InsertBlockResponse> => {
+  try {
+    const validatedRequest = InsertBlockRequestSchema.parse(request);
+    const response = await InsertBlock({ data: validatedRequest });
+    return InsertBlockResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as InsertBlockResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlocks(
+export const mutationFnInsertBlocks = async (
   request: InsertBlocksRequest
-): Promise<InsertBlocksResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.insertBlocks}`;
+): Promise<InsertBlocksResponse> => {
+  try {
+    const validatedRequest = InsertBlocksRequestSchema.parse(request);
+    const response = await InsertBlocks({ data: validatedRequest });
+    return InsertBlocksResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as InsertBlocksResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function UpdateMyBlockById(
+export const mutationFnUpdateMyBlockById = async (
   request: UpdateMyBlockByIdRequest
-): Promise<UpdateMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlockById}`;
+): Promise<UpdateMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyBlockByIdRequestSchema.parse(request);
+    const response = await UpdateMyBlockById({
+      data: validatedRequest,
+    });
+    return UpdateMyBlockByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as UpdateMyBlockByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function UpdateMyBlocksByIds(
+export const mutationFnUpdateMyBlocksByIds = async (
   request: UpdateMyBlocksByIdsRequest
-): Promise<UpdateMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.updateMyBlocksByIds}`;
+): Promise<UpdateMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = UpdateMyBlocksByIdsRequestSchema.parse(request);
+    const response = await UpdateMyBlocksByIds({
+      data: validatedRequest,
+    });
+    return UpdateMyBlocksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as UpdateMyBlocksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlockById(
+export const mutationFnRestoreMyBlockById = async (
   request: RestoreMyBlockByIdRequest
-): Promise<RestoreMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlockById}`;
+): Promise<RestoreMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyBlockByIdRequestSchema.parse(request);
+    const response = await RestoreMyBlockById({
+      data: validatedRequest,
+    });
+    return RestoreMyBlockByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlockByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlocksByIds(
+export const mutationFnRestoreMyBlocksByIds = async (
   request: RestoreMyBlocksByIdsRequest
-): Promise<RestoreMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.restoreMyBlocksByIds}`;
+): Promise<RestoreMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = RestoreMyBlocksByIdsRequestSchema.parse(request);
+    const response = await RestoreMyBlocksByIds({
+      data: validatedRequest,
+    });
+    return RestoreMyBlocksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlocksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlockById(
+export const mutationFnDeleteMyBlockById = async (
   request: DeleteMyBlockByIdRequest
-): Promise<DeleteMyBlockByIdResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlockById}`;
+): Promise<DeleteMyBlockByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlockByIdRequestSchema.parse(request);
+    const response = await DeleteMyBlockById({
+      data: validatedRequest,
+    });
+    return DeleteMyBlockByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlockByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlocksByIds(
+export const mutationFnDeleteMyBlocksByIds = async (
   request: DeleteMyBlocksByIdsRequest
-): Promise<DeleteMyBlocksByIdsResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.deleteMyBlocksByIds}`;
+): Promise<DeleteMyBlocksByIdsResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlocksByIdsRequestSchema.parse(request);
+    const response = await DeleteMyBlocksByIds({
+      data: validatedRequest,
+    });
+    return DeleteMyBlocksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
 
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    body: JSON.stringify(request.body),
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlocksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
+};

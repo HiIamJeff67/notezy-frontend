@@ -1,11 +1,11 @@
 import {
-  queryFnGetMe,
-  queryFnGetUserData,
-} from "@shared/api/functions/user.function";
-import {
   GetMeRequest,
   GetUserDataRequest,
 } from "@shared/api/interfaces/user.interface";
+import {
+  queryFnGetMe,
+  queryFnGetUserData,
+} from "@shared/api/invokers/user.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -18,8 +18,8 @@ export const prefetchGetUserData = (initialQueryClient?: QueryClient) => {
     prefetchRequest: GetUserDataRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.user.data(),
-      queryFn: async () => await queryFnGetUserData(prefetchRequest, true),
+      queryKey: queryKeys.user.data(true),
+      queryFn: async () => await queryFnGetUserData(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -38,8 +38,8 @@ export const prefetchGetMe = (initialQueryClient?: QueryClient) => {
     prefetchRequest: GetMeRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.user.me(),
-      queryFn: async () => await queryFnGetMe(prefetchRequest, true),
+      queryKey: queryKeys.user.me(true),
+      queryFn: async () => await queryFnGetMe(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

@@ -1,10 +1,10 @@
+import { GetMyRootShelfByIdRequest } from "@shared/api/interfaces/rootShelf.interface";
+import { queryFnGetMyRootShelfById } from "@shared/api/invokers/rootShelf.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
+import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
+import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
-import { UUID } from "crypto";
-import { queryFnGetMyRootShelfById } from "../functions/rootShelf.function";
-import { GetMyRootShelfByIdRequest } from "../interfaces/rootShelf.interface";
-import { PrefetchQueryDefaultOptions } from "../queryHookOptions";
-import { queryKeys } from "../queryKeys";
+import type { UUID } from "crypto";
 
 export const prefetchGetMyRootShelfById = (
   initialQueryClient?: QueryClient
@@ -18,8 +18,7 @@ export const prefetchGetMyRootShelfById = (
       queryKey: queryKeys.rootShelf.oneById(
         prefetchRequest?.param.rootShelfId as UUID | undefined
       ),
-      queryFn: async () =>
-        await queryFnGetMyRootShelfById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyRootShelfById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

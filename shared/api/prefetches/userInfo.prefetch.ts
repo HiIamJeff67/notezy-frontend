@@ -1,5 +1,5 @@
-import { queryFnGetMyInfo } from "@shared/api/functions/userInfo.function";
 import { GetMyInfoRequest } from "@shared/api/interfaces/userInfo.interface";
+import { queryFnGetMyInfo } from "@shared/api/invokers/userInfo.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -13,7 +13,7 @@ export const prefetchGetMyInfo = (initialQueryClient?: QueryClient) => {
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.userInfo.my(),
-      queryFn: async () => await queryFnGetMyInfo(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyInfo(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

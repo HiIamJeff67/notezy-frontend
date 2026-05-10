@@ -2,16 +2,18 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { CountryCode } from "@shared/enums";
+import { CountryCode } from "@shared/api/interfaces/enums";
 import z from "zod";
 
 /* ============================== GetMyAccount Context ============================== */
 
 export const GetMyAccountRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type GetMyAccountRequest = z.infer<typeof GetMyAccountRequestSchema>;
@@ -30,6 +32,9 @@ export const GetMyAccountResponseSchema = NotezyResponseSchema.extend({
     additionalItemCount: z.int32().min(0),
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type GetMyAccountResponse = z.infer<typeof GetMyAccountResponseSchema>;
@@ -38,7 +43,7 @@ export type GetMyAccountResponse = z.infer<typeof GetMyAccountResponseSchema>;
 
 export const UpdateMyAccountRequestSchema = NotezyRequestSchema.extend({
   header: z.object({
-    userAgent: z.string().min(1),
+    userAgent: z.string().min(1).optional(),
     authorization: z.string().optional(),
     csrfToken: z.string(),
   }),
@@ -63,6 +68,9 @@ export const UpdateMyAccountResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type UpdateMyAccountResponse = z.infer<
@@ -72,10 +80,12 @@ export type UpdateMyAccountResponse = z.infer<
 /* ============================== BindGoogleAccount Context ============================== */
 
 export const BindGoogleAccountRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     authorizationCode: z.string(),
   }),
@@ -89,6 +99,9 @@ export const BindGoogleAccountResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type BindGoogleAccountResponse = z.infer<
@@ -98,10 +111,12 @@ export type BindGoogleAccountResponse = z.infer<
 /* ============================== UnbindGoogleAccount Context ============================== */
 
 export const UnbindGoogleAccountRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     authorizationCode: z.string(),
   }),
@@ -114,6 +129,9 @@ export type UnbindGoogleAccountRequest = z.infer<
 export const UnbindGoogleAccountResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
   }),
 });
 

@@ -1,0 +1,597 @@
+import {
+  BatchMoveMyBlockPacksByIdsRequest,
+  BatchMoveMyBlockPacksByIdsRequestSchema,
+  CreateBlockPackRequestSchema,
+  CreateBlockPacksRequest,
+  CreateBlockPacksRequestSchema,
+  DeleteMyBlockPackByIdRequestSchema,
+  DeleteMyBlockPacksByIdsRequest,
+  DeleteMyBlockPacksByIdsRequestSchema,
+  MoveMyBlockPackByIdRequestSchema,
+  MoveMyBlockPacksByIdsRequestSchema,
+  RestoreMyBlockPackByIdRequestSchema,
+  RestoreMyBlockPacksByIdsRequest,
+  RestoreMyBlockPacksByIdsRequestSchema,
+  UpdateMyBlockPackByIdRequestSchema,
+  UpdateMyBlockPacksByIdsRequest,
+  UpdateMyBlockPacksByIdsRequestSchema,
+} from "@shared/api/interfaces/blockPack.interface";
+import { Transaction } from "@shared/api/local/schemas";
+import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
+import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
+import { InferSelectModel } from "drizzle-orm";
+import {
+  dropEntityPendingOperations,
+  EntityState,
+  getMergedSequences,
+  mergeSet,
+  SyncBuildResult,
+  SyncHeader,
+  SyncJob,
+  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+
+interface BlockPackMutators {
+  createBlockPacksMutator: {
+    mutateAsync: (request: CreateBlockPacksRequest) => Promise<unknown>;
+  };
+  updateBlockPacksMutator: {
+    mutateAsync: (request: UpdateMyBlockPacksByIdsRequest) => Promise<unknown>;
+  };
+  moveBlockPacksMutator: {
+    mutateAsync: (
+      request: BatchMoveMyBlockPacksByIdsRequest
+    ) => Promise<unknown>;
+  };
+  restoreBlockPacksMutator: {
+    mutateAsync: (request: RestoreMyBlockPacksByIdsRequest) => Promise<unknown>;
+  };
+  deleteBlockPacksMutator: {
+    mutateAsync: (request: DeleteMyBlockPacksByIdsRequest) => Promise<unknown>;
+  };
+}
+
+interface BuildBlockPackSyncResultOptions extends SyncProgressReporter {
+  transactions: InferSelectModel<typeof Transaction>[];
+  header: SyncHeader;
+  mutators: BlockPackMutators;
+}
+
+export const buildBlockPackSyncResult = ({
+  transactions,
+  header,
+  mutators,
+  onParsed,
+}: BuildBlockPackSyncResultOptions): SyncBuildResult => {
+  const createBlockPacksMap = new Map<
+    string,
+    EntityState<{
+      id?: string;
+      parentSubShelfId: string;
+      name: string;
+      icon: string | null;
+      headerBackgroundURL: string | null;
+      rootShelfId?: string;
+    }>
+  >();
+  const updateBlockPacksMap = new Map<
+    string,
+    EntityState<{
+      blockPackId: string;
+      values: {
+        name?: string;
+        icon?: string;
+        headerBackgroundURL?: string;
+      };
+      setNull?: Record<string, boolean>;
+      parentSubShelfId: string;
+      rootShelfId?: string;
+    }>
+  >();
+  const moveBlockPacksMap = new Map<
+    string,
+    EntityState<{
+      blockPackId: string;
+      destinationParentSubShelfId: string;
+      sourceParentSubShelfId?: string;
+      rootShelfId?: string;
+    }>
+  >();
+  const restoreBlockPacksMap = new Map<
+    string,
+    EntityState<{
+      blockPackId: string;
+      parentSubShelfId: string;
+      rootShelfId: string;
+    }>
+  >();
+  const deleteBlockPacksMap = new Map<
+    string,
+    EntityState<{
+      blockPackId: string;
+      parentSubShelfId: string;
+      rootShelfId: string;
+    }>
+  >();
+
+  const parseFailedSequences = new Set<number>();
+  const noopSequences = new Set<number>();
+  const syncJobs: SyncJob[] = [];
+
+  for (const transaction of transactions) {
+    onParsed?.();
+    const payload = transaction.payload as unknown;
+
+    if (transaction.entityType !== TransactionEntityType.BlockPack) {
+      parseFailedSequences.add(transaction.sequence);
+      continue;
+    }
+
+    switch (transaction.actionType) {
+      case TransactionActionType.CREATE: {
+        const one = CreateBlockPackRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = (one.data.body.id ?? transaction.entityId) as string;
+          createBlockPacksMap.set(id, {
+            body: {
+              id,
+              parentSubShelfId: one.data.body.parentSubShelfId,
+              name: one.data.body.name,
+              icon: one.data.body.icon,
+              headerBackgroundURL: one.data.body.headerBackgroundURL,
+              rootShelfId: one.data.affected.rootShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many = CreateBlockPacksRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const created of many.data.body.createdBlockPacks) {
+            if (!created.id) continue;
+            createBlockPacksMap.set(created.id, {
+              body: {
+                id: created.id,
+                parentSubShelfId: created.parentSubShelfId,
+                name: created.name,
+                icon: created.icon,
+                headerBackgroundURL: created.headerBackgroundURL,
+                rootShelfId: many.data.affected.rootShelfIds[0],
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.UPDATE: {
+        const one = UpdateMyBlockPackByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.blockPackId;
+          const createState = createBlockPacksMap.get(id);
+          if (createState) {
+            createState.body.name =
+              one.data.body.values.name ?? createState.body.name;
+            createState.body.icon =
+              (one.data.body.values.icon as string | undefined) ??
+              createState.body.icon;
+            createState.body.headerBackgroundURL =
+              one.data.body.values.headerBackgroundURL ??
+              createState.body.headerBackgroundURL;
+            createState.sequences.add(transaction.sequence);
+            break;
+          }
+
+          const existing = updateBlockPacksMap.get(id);
+          if (existing) {
+            existing.body.values = {
+              ...existing.body.values,
+              ...one.data.body.values,
+            };
+            existing.body.setNull = {
+              ...(existing.body.setNull ?? {}),
+              ...(one.data.body.setNull ?? {}),
+            };
+            existing.sequences.add(transaction.sequence);
+          } else {
+            updateBlockPacksMap.set(id, {
+              body: {
+                blockPackId: id,
+                values: one.data.body.values,
+                setNull: one.data.body.setNull,
+                parentSubShelfId: one.data.affected.parentSubShelfId,
+                rootShelfId: one.data.affected.rootShelfId,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        const many = UpdateMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const updated of many.data.body.updatedBlockPacks) {
+            const id = updated.blockPackId;
+            const createState = createBlockPacksMap.get(id);
+            if (createState) {
+              createState.body.name =
+                updated.values.name ?? createState.body.name;
+              createState.body.icon =
+                (updated.values.icon as string | undefined) ??
+                createState.body.icon;
+              createState.body.headerBackgroundURL =
+                updated.values.headerBackgroundURL ??
+                createState.body.headerBackgroundURL;
+              createState.sequences.add(transaction.sequence);
+              continue;
+            }
+
+            const existing = updateBlockPacksMap.get(id);
+            if (existing) {
+              existing.body.values = {
+                ...existing.body.values,
+                ...updated.values,
+              };
+              existing.body.setNull = {
+                ...(existing.body.setNull ?? {}),
+                ...(updated.setNull ?? {}),
+              };
+              existing.sequences.add(transaction.sequence);
+            } else {
+              updateBlockPacksMap.set(id, {
+                body: {
+                  blockPackId: id,
+                  values: updated.values,
+                  setNull: updated.setNull,
+                  parentSubShelfId: many.data.affected
+                    .parentSubShelfIds[0] as string,
+                  rootShelfId: many.data.affected.rootShelfIds[0] as string,
+                },
+                sequences: new Set([transaction.sequence]),
+              });
+            }
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.MOVE: {
+        const one = MoveMyBlockPackByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.blockPackId;
+          const createState = createBlockPacksMap.get(id);
+          if (createState) {
+            createState.body.parentSubShelfId =
+              one.data.body.destinationParentSubShelfId;
+            createState.sequences.add(transaction.sequence);
+            break;
+          }
+
+          moveBlockPacksMap.set(id, {
+            body: {
+              blockPackId: id,
+              destinationParentSubShelfId:
+                one.data.body.destinationParentSubShelfId,
+              sourceParentSubShelfId: one.data.affected.sourceParentSubShelfId,
+              rootShelfId: one.data.affected.rootShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const manyOneDestination =
+          MoveMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        if (manyOneDestination.success) {
+          for (const id of manyOneDestination.data.body.blockPackIds) {
+            const createState = createBlockPacksMap.get(id);
+            if (createState) {
+              createState.body.parentSubShelfId =
+                manyOneDestination.data.body.destinationParentSubShelfId;
+              createState.sequences.add(transaction.sequence);
+              continue;
+            }
+
+            moveBlockPacksMap.set(id, {
+              body: {
+                blockPackId: id,
+                destinationParentSubShelfId:
+                  manyOneDestination.data.body.destinationParentSubShelfId,
+                sourceParentSubShelfId:
+                  manyOneDestination.data.affected.sourceParentSubShelfIds[0],
+                rootShelfId: manyOneDestination.data.affected.rootShelfId,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        const many = BatchMoveMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const moved of many.data.body.movedBlockPacks) {
+            for (const id of moved.blockPackIds) {
+              const createState = createBlockPacksMap.get(id);
+              if (createState) {
+                createState.body.parentSubShelfId =
+                  moved.destinationParentSubShelfId;
+                createState.sequences.add(transaction.sequence);
+                continue;
+              }
+
+              moveBlockPacksMap.set(id, {
+                body: {
+                  blockPackId: id,
+                  destinationParentSubShelfId:
+                    moved.destinationParentSubShelfId,
+                  sourceParentSubShelfId:
+                    many.data.affected.sourceParentSubShelfIds[0],
+                  rootShelfId: many.data.affected.rootShelfIds[0],
+                },
+                sequences: new Set([transaction.sequence]),
+              });
+            }
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.RESTORE: {
+        const one = RestoreMyBlockPackByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.blockPackId;
+          const deleted = deleteBlockPacksMap.get(id);
+          if (deleted) {
+            mergeSet(noopSequences, deleted.sequences);
+            noopSequences.add(transaction.sequence);
+            deleteBlockPacksMap.delete(id);
+            break;
+          }
+
+          restoreBlockPacksMap.set(id, {
+            body: {
+              blockPackId: id,
+              parentSubShelfId: one.data.affected.parentSubShelfId,
+              rootShelfId: one.data.affected.rootShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many = RestoreMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const id of many.data.body.blockPackIds) {
+            const deleted = deleteBlockPacksMap.get(id);
+            if (deleted) {
+              mergeSet(noopSequences, deleted.sequences);
+              noopSequences.add(transaction.sequence);
+              deleteBlockPacksMap.delete(id);
+              continue;
+            }
+
+            restoreBlockPacksMap.set(id, {
+              body: {
+                blockPackId: id,
+                parentSubShelfId: many.data.affected
+                  .parentSubShelfIds[0] as string,
+                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      case TransactionActionType.DELETE: {
+        const one = DeleteMyBlockPackByIdRequestSchema.safeParse(payload);
+        if (one.success) {
+          const id = one.data.body.blockPackId;
+          if (createBlockPacksMap.has(id)) {
+            mergeSet(noopSequences, createBlockPacksMap.get(id)!.sequences);
+            noopSequences.add(transaction.sequence);
+            createBlockPacksMap.delete(id);
+            updateBlockPacksMap.delete(id);
+            moveBlockPacksMap.delete(id);
+            restoreBlockPacksMap.delete(id);
+            deleteBlockPacksMap.delete(id);
+            break;
+          }
+
+          dropEntityPendingOperations(
+            id,
+            [updateBlockPacksMap, moveBlockPacksMap, restoreBlockPacksMap],
+            noopSequences
+          );
+          deleteBlockPacksMap.set(id, {
+            body: {
+              blockPackId: id,
+              parentSubShelfId: one.data.affected.parentSubShelfId,
+              rootShelfId: one.data.affected.rootShelfId,
+            },
+            sequences: new Set([transaction.sequence]),
+          });
+          break;
+        }
+
+        const many = DeleteMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        if (many.success) {
+          for (const id of many.data.body.blockPackIds) {
+            if (createBlockPacksMap.has(id)) {
+              mergeSet(noopSequences, createBlockPacksMap.get(id)!.sequences);
+              noopSequences.add(transaction.sequence);
+              createBlockPacksMap.delete(id);
+              updateBlockPacksMap.delete(id);
+              moveBlockPacksMap.delete(id);
+              restoreBlockPacksMap.delete(id);
+              deleteBlockPacksMap.delete(id);
+              continue;
+            }
+
+            dropEntityPendingOperations(
+              id,
+              [updateBlockPacksMap, moveBlockPacksMap, restoreBlockPacksMap],
+              noopSequences
+            );
+            deleteBlockPacksMap.set(id, {
+              body: {
+                blockPackId: id,
+                parentSubShelfId: many.data.affected
+                  .parentSubShelfIds[0] as string,
+                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+              },
+              sequences: new Set([transaction.sequence]),
+            });
+          }
+          break;
+        }
+
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+      default: {
+        parseFailedSequences.add(transaction.sequence);
+        break;
+      }
+    }
+  }
+
+  if (createBlockPacksMap.size > 0) {
+    const states = Array.from(createBlockPacksMap.values());
+    const request: CreateBlockPacksRequest = {
+      header,
+      body: {
+        createdBlockPacks: states.map(state => ({
+          id: state.body.id,
+          parentSubShelfId: state.body.parentSubShelfId,
+          name: state.body.name,
+          icon: state.body.icon as any,
+          headerBackgroundURL: state.body.headerBackgroundURL,
+        })),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.createBlockPacksMutator.mutateAsync(request),
+    });
+  }
+
+  if (updateBlockPacksMap.size > 0) {
+    const states = Array.from(updateBlockPacksMap.values());
+    const request: UpdateMyBlockPacksByIdsRequest = {
+      header,
+      body: {
+        updatedBlockPacks: states.map(state => ({
+          blockPackId: state.body.blockPackId,
+          values: state.body.values as any,
+          setNull: state.body.setNull,
+        })),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId as string),
+        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.updateBlockPacksMutator.mutateAsync(request),
+    });
+  }
+
+  if (moveBlockPacksMap.size > 0) {
+    const states = Array.from(moveBlockPacksMap.values());
+    const request: BatchMoveMyBlockPacksByIdsRequest = {
+      header,
+      body: {
+        movedBlockPacks: states.map(state => ({
+          blockPackIds: [state.body.blockPackId],
+          destinationParentSubShelfId: state.body.destinationParentSubShelfId,
+        })),
+      },
+      affected: {
+        rootShelfIds: states
+          .map(state => state.body.rootShelfId)
+          .filter((id): id is string => !!id),
+        sourceParentSubShelfIds: states
+          .map(state => state.body.sourceParentSubShelfId)
+          .filter((id): id is string => !!id),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.moveBlockPacksMutator.mutateAsync(request),
+    });
+  }
+
+  if (restoreBlockPacksMap.size > 0) {
+    const states = Array.from(restoreBlockPacksMap.values());
+    const request: RestoreMyBlockPacksByIdsRequest = {
+      header,
+      body: {
+        blockPackIds: states.map(state => state.body.blockPackId),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.restoreBlockPacksMutator.mutateAsync(request),
+    });
+  }
+
+  if (deleteBlockPacksMap.size > 0) {
+    const states = Array.from(deleteBlockPacksMap.values());
+    const request: DeleteMyBlockPacksByIdsRequest = {
+      header,
+      body: {
+        blockPackIds: states.map(state => state.body.blockPackId),
+      },
+      affected: {
+        rootShelfIds: states.map(state => state.body.rootShelfId),
+        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+      },
+    };
+    const sequences = getMergedSequences(
+      ...states.map(state => state.sequences)
+    );
+    syncJobs.push({
+      sequences,
+      run: () => mutators.deleteBlockPacksMutator.mutateAsync(request),
+    });
+  }
+
+  return {
+    syncJobs,
+    noopSequences,
+    parseFailedSequences,
+  };
+};

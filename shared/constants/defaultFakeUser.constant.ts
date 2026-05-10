@@ -1,5 +1,10 @@
-import { UserGender, UserPlan, UserRole, UserStatus } from "../enums";
-import { User, UserInfo } from "../types/user.type";
+import {
+  UserGender,
+  UserPlan,
+  UserRole,
+  UserStatus,
+} from "@shared/api/interfaces/enums";
+import { User, UserInfo } from "@shared/types/user.type";
 
 export const FakeUser: User = {
   publicId: "FAKE_PUBLIC_ID",

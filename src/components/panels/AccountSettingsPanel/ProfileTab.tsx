@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateMyInfo } from "@shared/api/hooks/userInfo.hook";
-import { DefaultAvatar1URL } from "@shared/api/invokers/static.invoker";
+import { AllCountries, AllUserGenders } from "@shared/api/interfaces/enums";
 import { FakeUserInfo } from "@shared/constants";
-import { AllCountries, AllUserGenders } from "@shared/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UserInfo, UserInfoSchema } from "@shared/types/user.type";
+import { Image } from "@unpic/react";
 import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import SettingMenuItem from "@/components/menus/SettingMenu/SettingMenuItem";
 import { Button } from "@/components/ui/button";
@@ -56,10 +56,12 @@ const ProfileTab = memo(() => {
   const [birthDateDialogOpen, setBirthDateDialogOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUserInfo = async () =>
+    const fetchUserInfo = async () => {
+      if (userManager.userInfo) return;
       await userManager.fetchUserInfo(
         LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
       );
+    };
 
     fetchUserInfo();
   }, []);
@@ -86,7 +88,10 @@ const ProfileTab = memo(() => {
     [coverBackgroundURL]
   );
 
-  const avatarSrc = useMemo(() => avatarURL || DefaultAvatar1URL, [avatarURL]);
+  const avatarSrc = useMemo(
+    () => avatarURL || `${import.meta.env.BASE_URL}avatars/userAvatar1.png`,
+    [avatarURL]
+  );
 
   const genderOptions = useMemo(
     () =>
@@ -175,7 +180,7 @@ const ProfileTab = memo(() => {
         <div
           className="
           flex flex-col bg-muted gap-6 w-full h-full
-          overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
+          overflow-y-scroll [scrollbar-color:var(--muted-foreground)_var(--secondary)]!"
         >
           <div className="relative w-full group" style={backgroundStyle}>
             <ModifyImageHover
@@ -187,9 +192,11 @@ const ProfileTab = memo(() => {
                 className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer"
                 onClick={() => {}}
               >
-                <img
+                <Image
                   src={avatarSrc}
                   alt="Avatar"
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover bg-gray-100"
                   loading="lazy"
                 />

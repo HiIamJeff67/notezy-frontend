@@ -1,4 +1,5 @@
 import { IconProps } from "@shared/types/iconProps.type";
+import { Image } from "@unpic/react";
 
 interface AvatarIconProps extends IconProps {
   avatarURL: string;
@@ -25,9 +26,11 @@ export const AvatarIcon = ({
       }}
     >
       {avatarURL ? (
-        <img
+        <Image
           src={avatarURL}
           alt={alt}
+          width={80}
+          height={80}
           className="w-full h-full object-cover"
           onError={e => {
             const target = e.target as HTMLImageElement;

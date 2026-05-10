@@ -1,8 +1,8 @@
-import { MaterialType } from "@shared/enums";
+import { MaterialType } from "@shared/api/interfaces/enums";
+import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
-import toast from "react-hot-toast";
 import MaterialMenuItem from "@/components/menus/MaterialMenu/MaterialMenuItem";
 import MaterialMenuItemSkeleton from "@/components/menus/MaterialMenu/MaterialMenuItemSkeleton";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
@@ -37,7 +37,7 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
               {shelfItemManager.isItemNodeEditing(materialNode.id) ? (
                 <SidebarMenuItem
                   key={materialId}
-                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
+                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
                 >
                   <input
                     ref={shelfItemManager.inputRef}

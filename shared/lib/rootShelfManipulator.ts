@@ -13,7 +13,7 @@ import { AnalysisStatus } from "@shared/enums";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export class RootShelfManipulator {
   private static maxTraverseCount: number =

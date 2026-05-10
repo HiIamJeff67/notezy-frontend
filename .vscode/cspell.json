@@ -48,10 +48,15 @@
     "dndable",
     "pomodoro",
     "sqlocal",
-    "localdb",
+    "localDB",
     "refreshable",
     "infantilize",
-    "infantilized"
+    "infantilized",
+    "unpic",
+    "fallbackable",
+    "unfallbackable",
+    "renderable",
+    "unsynchronized"
   ],
   "ignorePaths": [
     "node_modules/**",

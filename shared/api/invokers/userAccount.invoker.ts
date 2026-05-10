@@ -1,124 +1,134 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BindGoogleAccountRequest,
-  BindGoogleAccountResponse,
-  GetMyAccountRequest,
-  GetMyAccountResponse,
-  UnbindGoogleAccountRequest,
-  UnbindGoogleAccountResponse,
-  UpdateMyAccountRequest,
-  UpdateMyAccountResponse,
+  BindGoogleAccount,
+  GetMyAccount,
+  UnbindGoogleAccount,
+  UpdateMyAccount,
+} from "@shared/api/functions/userAccount.serverFn";
+import {
+  type BindGoogleAccountRequest,
+  BindGoogleAccountRequestSchema,
+  type BindGoogleAccountResponse,
+  BindGoogleAccountResponseSchema,
+  type GetMyAccountRequest,
+  GetMyAccountRequestSchema,
+  type GetMyAccountResponse,
+  GetMyAccountResponseSchema,
+  type UnbindGoogleAccountRequest,
+  UnbindGoogleAccountRequestSchema,
+  type UnbindGoogleAccountResponse,
+  UnbindGoogleAccountResponseSchema,
+  type UpdateMyAccountRequest,
+  UpdateMyAccountRequestSchema,
+  type UpdateMyAccountResponse,
+  UpdateMyAccountResponseSchema,
 } from "@shared/api/interfaces/userAccount.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyAccount(
+export const queryFnGetMyAccount = async (
   request: GetMyAccountRequest
-): Promise<GetMyAccountResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.getMyAccount}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      credentials: "include",
+): Promise<GetMyAccountResponse> => {
+  try {
+    const validatedRequest = GetMyAccountRequestSchema.parse(request);
+    const response = await GetMyAccount({ data: validatedRequest });
+    return GetMyAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as GetMyAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function UpdateMyAccount(
+export const mutationFnUpdateMyAccount = async (
   request: UpdateMyAccountRequest
-): Promise<UpdateMyAccountResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.updatedMyAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UpdateMyAccountResponse> => {
+  try {
+    const validatedRequest = UpdateMyAccountRequestSchema.parse(request);
+    const response = await UpdateMyAccount({ data: validatedRequest });
+    return UpdateMyAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as UpdateMyAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function BindGoogleAccount(
+export const mutationFnBindGoogleAccount = async (
   request: BindGoogleAccountRequest
-): Promise<BindGoogleAccountResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.bindGoogleAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<BindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = BindGoogleAccountRequestSchema.parse(request);
+    const response = await BindGoogleAccount({
+      data: validatedRequest,
+    });
+    return BindGoogleAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as BindGoogleAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function UnbindGoogleAccount(
+export const mutationFnUnbindGoogleAccount = async (
   request: UnbindGoogleAccountRequest
-): Promise<UnbindGoogleAccountResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.userAccount.unbindGoogleAccount}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<UnbindGoogleAccountResponse> => {
+  try {
+    const validatedRequest = UnbindGoogleAccountRequestSchema.parse(request);
+    const response = await UnbindGoogleAccount({
+      data: validatedRequest,
+    });
+    return UnbindGoogleAccountResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as UnbindGoogleAccountResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

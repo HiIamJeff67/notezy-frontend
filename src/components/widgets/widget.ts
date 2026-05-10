@@ -5,7 +5,7 @@ import {
   Size,
 } from "@shared/types/cord";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { CSSProperties } from "react";
 
 export interface WidgetProps {

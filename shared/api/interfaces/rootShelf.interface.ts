@@ -4,10 +4,12 @@ import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 /* ============================== GetMyRootShelfById ============================== */
 
 export const GetMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   param: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -28,6 +30,9 @@ export const GetMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type GetMyRootShelfByIdResponse = z.infer<
@@ -37,10 +42,12 @@ export type GetMyRootShelfByIdResponse = z.infer<
 /* ============================== SearchRecentRootShelves ============================== */
 
 export const SearchRecentRootShelvesRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   param: z.object({
     query: z.string().max(256).optional(),
     limit: z.int32().min(1).optional(),
@@ -66,6 +73,9 @@ export const SearchRecentRootShelvesResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
   });
 
 export type SearchRecentRootShelvesResponse = z.infer<
@@ -75,11 +85,14 @@ export type SearchRecentRootShelvesResponse = z.infer<
 /* ============================== CreateRootShelf ============================== */
 
 export const CreateRootShelfRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
+    id: z.uuidv4().optional(),
     name: z.string().min(1).max(128),
   }),
 });
@@ -94,6 +107,9 @@ export const CreateRootShelfResponseSchema = NotezyResponseSchema.extend({
     lastAnalyzedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type CreateRootShelfResponse = z.infer<
@@ -103,13 +119,16 @@ export type CreateRootShelfResponse = z.infer<
 /* ============================== CreateRootShelvesRequest ============================== */
 
 export const CreateRootShelvesRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     createdRootShelves: z.array(
       z.object({
+        id: z.uuidv4().optional(),
         name: z.string().min(1).max(128),
       })
     ),
@@ -126,6 +145,9 @@ export const CreateRootShelvesResponseSchema = NotezyResponseSchema.extend({
     lastAnalyzedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type CreateRootShelvesResponse = z.infer<
@@ -135,10 +157,12 @@ export type CreateRootShelvesResponse = z.infer<
 /* ============================== UpdateMyRootShelfById ============================== */
 
 export const UpdateMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
     values: z
@@ -158,6 +182,9 @@ export const UpdateMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type UpdateMyRootShelfByIdResponse = z.infer<
@@ -168,10 +195,12 @@ export type UpdateMyRootShelfByIdResponse = z.infer<
 
 export const UpdateMyRootShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
   {
-    header: z.object({
-      userAgent: z.string().min(1),
-      authorization: z.string().optional(),
-    }),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
       updatedRootShelves: z.array(
         z.object({
@@ -197,6 +226,9 @@ export const UpdateMyRootShelvesByIdsResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
   });
 
 export type UpdateMyRootShelvesByIdsResponse = z.infer<
@@ -206,10 +238,12 @@ export type UpdateMyRootShelvesByIdsResponse = z.infer<
 /* ============================== RestoreMyRootShelfById ============================== */
 
 export const RestoreMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -231,6 +265,9 @@ export const RestoreMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend(
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
     }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
   }
 );
 
@@ -242,10 +279,12 @@ export type RestoreMyRootShelfByIdResponse = z.infer<
 
 export const RestoreMyRootShelvesByIdsRequestSchema =
   NotezyRequestSchema.extend({
-    header: z.object({
-      userAgent: z.string().min(1),
-      authorization: z.string().optional(),
-    }),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
       rootShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
@@ -269,6 +308,9 @@ export const RestoreMyRootShelvesByIdsResponseSchema =
         createdAt: z.coerce.date(),
       })
     ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
   });
 
 export type RestoreMyRootShelvesByIdsResponse = z.infer<
@@ -278,10 +320,12 @@ export type RestoreMyRootShelvesByIdsResponse = z.infer<
 /* ============================== DeleteMyRootShelfById ============================== */
 
 export const DeleteMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z.object({
-    userAgent: z.string().min(1),
-    authorization: z.string().optional(),
-  }),
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     rootShelfId: z.uuidv4(),
   }),
@@ -299,6 +343,9 @@ export const DeleteMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     deletedAt: z.coerce.date(),
   }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
 });
 
 export type DeleteMyRootShelfByIdResponse = z.infer<
@@ -309,10 +356,12 @@ export type DeleteMyRootShelfByIdResponse = z.infer<
 
 export const DeleteMyRootShelvesByIdsRequestSchema = NotezyRequestSchema.extend(
   {
-    header: z.object({
-      userAgent: z.string().min(1),
-      authorization: z.string().optional(),
-    }),
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     body: z.object({
       rootShelfIds: z.array(z.uuidv4()).min(1).max(128),
     }),
@@ -331,6 +380,9 @@ export const DeleteMyRootShelvesByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
     }),
   });
 

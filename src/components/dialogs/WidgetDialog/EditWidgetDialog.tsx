@@ -21,7 +21,7 @@ export const EditWidgetDialog = ({
 }: EditWidgetDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-muted border-1 border-border">
+      <DialogContent className="bg-muted border border-border">
         {children}
       </DialogContent>
     </Dialog>

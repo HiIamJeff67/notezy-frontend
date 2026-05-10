@@ -1,5 +1,3 @@
-"use client";
-
 import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import {
   useDeleteMyBlocksByIds,
@@ -23,15 +21,16 @@ import {
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertBlockGroupsByBlockPackIdRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
+import { BlockType } from "@shared/api/interfaces/enums";
 import {
   MergingDebounceTimeout,
   MinForcedMergedEvents,
   MinRequestEvents,
 } from "@shared/constants/blockEventLimitations.constant";
-import { BlockType } from "@shared/enums/blockType.enum";
 import { HybridDisjointSet } from "@shared/lib/disjointSet";
 import { LinkedList, LinkedListNode } from "@shared/lib/linkedList";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { BlockEvent } from "@shared/types/blockEvent.type";
 import {
   BlockGroupMeta,
@@ -40,7 +39,7 @@ import {
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import {
   createContext,
   useCallback,
@@ -49,7 +48,6 @@ import {
   useRef,
   useState,
 } from "react";
-import toast from "react-hot-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getAuthorization } from "@/util/getAuthorization";
 
@@ -65,13 +63,11 @@ export const BlockEditorContext = createContext<
 interface BlockEditorProviderProps {
   children: React.ReactNode;
   blockPackMeta: BlockPackMeta;
-  isBlockPackMetaInitialized: boolean;
 }
 
 export const BlockEditorProvider = ({
   children,
   blockPackMeta,
-  isBlockPackMetaInitialized,
 }: BlockEditorProviderProps) => {
   const languageManager = useLanguage();
 
@@ -156,20 +152,17 @@ export const BlockEditorProvider = ({
         );
       }
 
-      const isNewBlockPack =
-        isBlockPackMetaInitialized && initialContent.length === 0;
-      if (isNewBlockPack) {
-        initialContent = [
-          {
-            id: generateUUID(),
-            type: "paragraph",
-            content: [],
-          },
-        ];
-      }
-
       const editor = BlockNoteEditor.create({
-        initialContent: initialContent,
+        initialContent:
+          initialContent.length === 0
+            ? [
+                {
+                  id: generateUUID(),
+                  type: "paragraph",
+                  content: [],
+                },
+              ]
+            : initialContent,
         trailingBlock: false,
       });
 
@@ -177,11 +170,11 @@ export const BlockEditorProvider = ({
 
       return {
         editor: editor,
-        initialContent: initialContent,
-        isNewBlockPack: isNewBlockPack,
+        initialContent: editor.document,
+        isNewBlockPack: initialContent.length === 0,
       };
     },
-    [isBlockPackMetaInitialized]
+    []
   );
 
   const { editor, initialContent, isNewBlockPack } = useMemo(
@@ -258,7 +251,7 @@ export const BlockEditorProvider = ({
         insertedBlocks: [],
       },
       affected: {
-        blockPackId: blockPackMeta.id,
+        blockPackIds: [blockPackMeta.id],
       },
     };
     const insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest =
@@ -759,7 +752,7 @@ export const BlockEditorProvider = ({
       newBlockGroupId,
       1
     );
-    const request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest = {
+    await insertBlockGroupsAndBlocksMutator.mutateAsync({
       header: {
         userAgent: userAgent,
         authorization: getAuthorization(accessToken),
@@ -776,9 +769,7 @@ export const BlockEditorProvider = ({
           },
         ],
       },
-    };
-    console.log(request);
-    await insertBlockGroupsAndBlocksMutator.mutateAsync(request);
+    });
   }, [insertBlockGroupsAndBlocksMutator, initialContent]);
 
   useEffect(() => {

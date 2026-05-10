@@ -1,11 +1,10 @@
-"use client";
-
 import React, { Suspense, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,6 +13,7 @@ import { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteShelfItemDialogProps extends ModalProps {
   dialogHeader: React.ReactNode;
+  dialogDescription: React.ReactNode;
   confirmKeyword?: string;
   inputPlaceholder?: string;
   onDelete: () => void | Promise<void>;
@@ -24,6 +24,7 @@ const DeleteShelfItemDialog = ({
   isOpen,
   onClose,
   dialogHeader,
+  dialogDescription,
   confirmKeyword,
   inputPlaceholder,
   onDelete,
@@ -38,6 +39,7 @@ const DeleteShelfItemDialog = ({
           <DialogHeader>
             <DialogTitle>{dialogHeader}</DialogTitle>
           </DialogHeader>
+          <DialogDescription>{dialogDescription}</DialogDescription>
           {confirmKeyword !== undefined && (
             <Input
               placeholder={inputPlaceholder}

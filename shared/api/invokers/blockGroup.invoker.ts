@@ -1,704 +1,700 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import {
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  BatchInsertBlockGroupsByBlockPackIds,
+  BatchMoveMyBlockGroupsByIds,
+  DeleteMyBlockGroupById,
+  DeleteMyBlockGroupsByIds,
+  GetAllMyBlockGroupsByBlockPackId,
+  GetMyBlockGroupAndItsBlocksById,
+  GetMyBlockGroupById,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackId,
+  GetMyBlockGroupsAndTheirBlocksByIds,
+  GetMyBlockGroupsByPrevBlockGroupId,
+  InsertBlockGroupAndItsBlocksByBlockPackId,
+  InsertBlockGroupByBlockPackId,
+  InsertBlockGroupsAndTheirBlocksByBlockPackId,
+  InsertBlockGroupsByBlockPackId,
+  InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
+  MoveMyBlockGroupById,
+  MoveMyBlockGroupsByIds,
+  RestoreMyBlockGroupById,
+  RestoreMyBlockGroupsByIds,
+} from "@shared/api/functions/blockGroup.serverFn";
 import {
   BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
   BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema,
   BatchInsertBlockGroupsByBlockPackIdsRequest,
+  BatchInsertBlockGroupsByBlockPackIdsRequestSchema,
   BatchInsertBlockGroupsByBlockPackIdsResponse,
-  BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsResponse,
-  DeleteMyBlockGroupByIdRequest,
-  DeleteMyBlockGroupByIdResponse,
-  DeleteMyBlockGroupsByIdsRequest,
-  DeleteMyBlockGroupsByIdsResponse,
-  GetAllMyBlockGroupsByBlockPackIdRequest,
+  BatchInsertBlockGroupsByBlockPackIdsResponseSchema,
+  type BatchMoveMyBlockGroupsByIdsRequest,
+  BatchMoveMyBlockGroupsByIdsRequestSchema,
+  type BatchMoveMyBlockGroupsByIdsResponse,
+  BatchMoveMyBlockGroupsByIdsResponseSchema,
+  type DeleteMyBlockGroupByIdRequest,
+  DeleteMyBlockGroupByIdRequestSchema,
+  type DeleteMyBlockGroupByIdResponse,
+  DeleteMyBlockGroupByIdResponseSchema,
+  type DeleteMyBlockGroupsByIdsRequest,
+  DeleteMyBlockGroupsByIdsRequestSchema,
+  type DeleteMyBlockGroupsByIdsResponse,
+  DeleteMyBlockGroupsByIdsResponseSchema,
+  type GetAllMyBlockGroupsByBlockPackIdRequest,
+  GetAllMyBlockGroupsByBlockPackIdRequestSchema,
   GetAllMyBlockGroupsByBlockPackIdResponse,
-  GetMyBlockGroupAndItsBlocksByIdRequest,
+  GetAllMyBlockGroupsByBlockPackIdResponseSchema,
+  type GetMyBlockGroupAndItsBlocksByIdRequest,
+  GetMyBlockGroupAndItsBlocksByIdRequestSchema,
   GetMyBlockGroupAndItsBlocksByIdResponse,
-  GetMyBlockGroupByIdRequest,
+  GetMyBlockGroupAndItsBlocksByIdResponseSchema,
+  type GetMyBlockGroupByIdRequest,
+  GetMyBlockGroupByIdRequestSchema,
   GetMyBlockGroupByIdResponse,
-  GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  GetMyBlockGroupByIdResponseSchema,
+  type GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
   GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse,
-  GetMyBlockGroupsAndTheirBlocksByIdsRequest,
+  GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema,
+  type GetMyBlockGroupsAndTheirBlocksByIdsRequest,
+  GetMyBlockGroupsAndTheirBlocksByIdsRequestSchema,
   GetMyBlockGroupsAndTheirBlocksByIdsResponse,
-  GetMyBlockGroupsByPrevBlockGroupIdRequest,
+  GetMyBlockGroupsAndTheirBlocksByIdsResponseSchema,
+  type GetMyBlockGroupsByPrevBlockGroupIdRequest,
+  GetMyBlockGroupsByPrevBlockGroupIdRequestSchema,
   GetMyBlockGroupsByPrevBlockGroupIdResponse,
-  InsertBlockGroupAndItsBlocksByBlockPackIdRequest,
-  InsertBlockGroupAndItsBlocksByBlockPackIdResponse,
-  InsertBlockGroupByBlockPackIdRequest,
-  InsertBlockGroupByBlockPackIdResponse,
-  InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
-  InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  GetMyBlockGroupsByPrevBlockGroupIdResponseSchema,
+  type InsertBlockGroupAndItsBlocksByBlockPackIdRequest,
+  InsertBlockGroupAndItsBlocksByBlockPackIdRequestSchema,
+  type InsertBlockGroupAndItsBlocksByBlockPackIdResponse,
+  InsertBlockGroupAndItsBlocksByBlockPackIdResponseSchema,
+  type InsertBlockGroupByBlockPackIdRequest,
+  InsertBlockGroupByBlockPackIdRequestSchema,
+  type InsertBlockGroupByBlockPackIdResponse,
+  InsertBlockGroupByBlockPackIdResponseSchema,
+  type InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
+  type InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema,
   InsertBlockGroupsByBlockPackIdRequest,
+  InsertBlockGroupsByBlockPackIdRequestSchema,
   InsertBlockGroupsByBlockPackIdResponse,
-  InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
-  InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
-  MoveMyBlockGroupByIdRequest,
-  MoveMyBlockGroupByIdResponse,
-  MoveMyBlockGroupsByIdsRequest,
-  MoveMyBlockGroupsByIdsResponse,
-  RestoreMyBlockGroupByIdRequest,
-  RestoreMyBlockGroupByIdResponse,
-  RestoreMyBlockGroupsByIdsRequest,
-  RestoreMyBlockGroupsByIdsResponse,
+  InsertBlockGroupsByBlockPackIdResponseSchema,
+  type InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
+  InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
+  type InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
+  InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema,
+  type MoveMyBlockGroupByIdRequest,
+  MoveMyBlockGroupByIdRequestSchema,
+  type MoveMyBlockGroupByIdResponse,
+  MoveMyBlockGroupByIdResponseSchema,
+  type MoveMyBlockGroupsByIdsRequest,
+  MoveMyBlockGroupsByIdsRequestSchema,
+  type MoveMyBlockGroupsByIdsResponse,
+  MoveMyBlockGroupsByIdsResponseSchema,
+  type RestoreMyBlockGroupByIdRequest,
+  RestoreMyBlockGroupByIdRequestSchema,
+  type RestoreMyBlockGroupByIdResponse,
+  RestoreMyBlockGroupByIdResponseSchema,
+  type RestoreMyBlockGroupsByIdsRequest,
+  RestoreMyBlockGroupsByIdsRequestSchema,
+  type RestoreMyBlockGroupsByIdsResponse,
+  RestoreMyBlockGroupsByIdsResponseSchema,
 } from "@shared/api/interfaces/blockGroup.interface";
-import {
-  APIURLPathDictionary,
-  CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
 
-export async function GetMyBlockGroupById(
+export const queryFnGetMyBlockGroupById = async (
   request: GetMyBlockGroupByIdRequest
-): Promise<GetMyBlockGroupByIdResponse> {
-  const { blockGroupId } = request.param;
-  const params = new URLSearchParams({ blockGroupId: blockGroupId }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockGroupByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockGroupAndItsBlocksById(
-  request: GetMyBlockGroupAndItsBlocksByIdRequest
-): Promise<GetMyBlockGroupAndItsBlocksByIdResponse> {
-  const { blockGroupId } = request.param;
-  const params = new URLSearchParams({
-    blockGroupId: blockGroupId,
-  }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockGroupAndItsBlocksByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockGroupsAndTheirBlocksByIds(
-  request: GetMyBlockGroupsAndTheirBlocksByIdsRequest
-): Promise<GetMyBlockGroupsAndTheirBlocksByIdsResponse> {
-  const { blockGroupIds } = request.param;
-  const params = new URLSearchParams();
-  blockGroupIds.forEach(blockGroupId => {
-    params.append("blockGroupIds", blockGroupId);
-  });
-  params.toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupAndItsBlocksById}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockGroupsAndTheirBlocksByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockGroupsAndTheirBlocksByBlockPackId(
-  request: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest
-): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({
-    blockPackId: blockPackId,
-  }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsAndTheirBlocksByBlockPackId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetMyBlockGroupsByPrevBlockGroupId(
-  request: GetMyBlockGroupsByPrevBlockGroupIdRequest
-): Promise<GetMyBlockGroupsByPrevBlockGroupIdResponse> {
-  const { prevBlockGroupId } = request.param;
-  const params = new URLSearchParams({
-    prevBlockGroupId: prevBlockGroupId,
-  }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getMyBlockGroupsByPrevBlockGroupId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetMyBlockGroupsByPrevBlockGroupIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function GetAllMyBlockGroupsByBlockPackId(
-  request: GetAllMyBlockGroupsByBlockPackIdRequest
-): Promise<GetAllMyBlockGroupsByBlockPackIdResponse> {
-  const { blockPackId } = request.param;
-  const params = new URLSearchParams({
-    blockPackId: blockPackId,
-  }).toString();
-  let url = `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.getAllMyBlockGroupsByBlockPackId}?${params}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.header.userAgent,
-      ...(request.header.authorization
-        ? { Authorization: request.header.authorization }
-        : {}),
-    },
-    credentials: "include",
-  });
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as GetAllMyBlockGroupsByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlockGroupByBlockPackId(
-  request: InsertBlockGroupByBlockPackIdRequest
-): Promise<InsertBlockGroupByBlockPackIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupByBlockPackId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as InsertBlockGroupByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlockGroupsByBlockPackId(
-  request: InsertBlockGroupsByBlockPackIdRequest
-): Promise<InsertBlockGroupsByBlockPackIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as InsertBlockGroupsByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function BatchInsertBlockGroupsByBlockPackIds(
-  request: BatchInsertBlockGroupsByBlockPackIdsRequest
-): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as BatchInsertBlockGroupsByBlockPackIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlockGroupAndItsBlocksByBlockPackId(
-  request: InsertBlockGroupAndItsBlocksByBlockPackIdRequest
-): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupAndItsBlocksByBlockPackId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as InsertBlockGroupAndItsBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function InsertBlockGroupsAndTheirBlocksByBlockPackId(
-  request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest
-): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
-  request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
-): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsAndTheirBlocksByBlockPackIds}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
-    }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
-  }
-
-  const formattedResponse =
-    (await response.json()) as BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export const InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
-  async function (
-    request: InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest
-  ): Promise<InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse> {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertSequentialBlockGroupsAndTheirBlocksByBlockPackId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": request.header.userAgent,
-          ...(request.header.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-        },
-        body: JSON.stringify(request.body),
-        credentials: "include",
+): Promise<GetMyBlockGroupByIdResponse> => {
+  try {
+    const validatedRequest = GetMyBlockGroupByIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupById({
+      data: validatedRequest,
+    });
+    return GetMyBlockGroupByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
       }
-    );
-
-    if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    const formattedResponse =
-      (await response.json()) as InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse;
-    if (formattedResponse.exception != null) {
-      throw new NotezyAPIError(
-        new NotezyException(formattedResponse.exception)
+    throw error;
+  }
+};
+
+export const queryFnGetMyBlockGroupAndItsBlocksById = async (
+  request: GetMyBlockGroupAndItsBlocksByIdRequest
+): Promise<GetMyBlockGroupAndItsBlocksByIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockGroupAndItsBlocksByIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupAndItsBlocksById({
+      data: validatedRequest,
+    });
+    return GetMyBlockGroupAndItsBlocksByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const queryFnGetMyBlockGroupsAndTheirBlocksByIds = async (
+  request: GetMyBlockGroupsAndTheirBlocksByIdsRequest
+): Promise<GetMyBlockGroupsAndTheirBlocksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockGroupsAndTheirBlocksByIdsRequestSchema.parse(request);
+    const response = await GetMyBlockGroupsAndTheirBlocksByIds({
+      data: validatedRequest,
+    });
+    return GetMyBlockGroupsAndTheirBlocksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
       );
     }
+    if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    }
+    throw error;
+  }
+};
 
-    return formattedResponse;
+export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
+  request: GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequest
+): Promise<GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupsAndTheirBlocksByBlockPackId({
+      data: validatedRequest,
+    });
+    return GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema.parse(
+      response
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const queryFnGetMyBlockGroupsByPrevBlockGroupId = async (
+  request: GetMyBlockGroupsByPrevBlockGroupIdRequest
+): Promise<GetMyBlockGroupsByPrevBlockGroupIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyBlockGroupsByPrevBlockGroupIdRequestSchema.parse(request);
+    const response = await GetMyBlockGroupsByPrevBlockGroupId({
+      data: validatedRequest,
+    });
+    return GetMyBlockGroupsByPrevBlockGroupIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
+  request: GetAllMyBlockGroupsByBlockPackIdRequest
+): Promise<GetAllMyBlockGroupsByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      GetAllMyBlockGroupsByBlockPackIdRequestSchema.parse(request);
+    const response = await GetAllMyBlockGroupsByBlockPackId({
+      data: validatedRequest,
+    });
+    return GetAllMyBlockGroupsByBlockPackIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlockGroupByBlockPackId = async (
+  request: InsertBlockGroupByBlockPackIdRequest
+): Promise<InsertBlockGroupByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      InsertBlockGroupByBlockPackIdRequestSchema.parse(request);
+    const response = await InsertBlockGroupByBlockPackId({
+      data: validatedRequest,
+    });
+    return InsertBlockGroupByBlockPackIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlockGroupsByBlockPackId = async (
+  request: InsertBlockGroupsByBlockPackIdRequest
+): Promise<InsertBlockGroupsByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      InsertBlockGroupsByBlockPackIdRequestSchema.parse(request);
+    const response = await InsertBlockGroupsByBlockPackId({
+      data: validatedRequest,
+    });
+    return InsertBlockGroupsByBlockPackIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnBatchInsertBlockGroupsByBlockPackIds = async (
+  request: BatchInsertBlockGroupsByBlockPackIdsRequest
+): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
+  try {
+    const validatedRequest =
+      BatchInsertBlockGroupsByBlockPackIdsRequestSchema.parse(request);
+    const response = await BatchInsertBlockGroupsByBlockPackIds({
+      data: validatedRequest,
+    });
+    return BatchInsertBlockGroupsByBlockPackIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlockGroupAndItsBlocksByBlockPackId = async (
+  request: InsertBlockGroupAndItsBlocksByBlockPackIdRequest
+): Promise<InsertBlockGroupAndItsBlocksByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      InsertBlockGroupAndItsBlocksByBlockPackIdRequestSchema.parse(request);
+    const response = await InsertBlockGroupAndItsBlocksByBlockPackId({
+      data: validatedRequest,
+    });
+    return InsertBlockGroupAndItsBlocksByBlockPackIdResponseSchema.parse(
+      response
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId = async (
+  request: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest
+): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
+  try {
+    const validatedRequest =
+      InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema.parse(request);
+    const response = await InsertBlockGroupsAndTheirBlocksByBlockPackId({
+      data: validatedRequest,
+    });
+    return InsertBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema.parse(
+      response
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
+  async (
+    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+  ): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
+    try {
+      const validatedRequest =
+        BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.parse(
+          request
+        );
+      const response = await BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+        {
+          data: validatedRequest,
+        }
+      );
+      return BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema.parse(
+        response
+      );
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      } else if (error instanceof TypeError) {
+        // network error
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      throw error;
+    }
   };
 
-export async function MoveMyBlockGroupById(
+export const mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
+  async (
+    request: InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest
+  ): Promise<InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse> => {
+    try {
+      const validatedRequest =
+        InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema.parse(
+          request
+        );
+      const response =
+        await InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId({
+          data: validatedRequest,
+        });
+      return InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema.parse(
+        response
+      );
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = error.issues
+          .map(issue => issue.message)
+          .join(", ");
+        throw new Error(`validation failed : ${errorMessage}`);
+      } else if (error instanceof NotezyAPIError) {
+        switch (error.unWrap.reason) {
+          default:
+            throw new Error(error.unWrap.message);
+        }
+      } else if (error instanceof TypeError) {
+        // network error
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      throw error;
+    }
+  };
+
+export const mutationFnMoveMyBlockGroupById = async (
   request: MoveMyBlockGroupByIdRequest
-): Promise<MoveMyBlockGroupByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupById}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMyBlockGroupByIdResponse> => {
+  try {
+    const validatedRequest = MoveMyBlockGroupsByIdsRequestSchema.parse(request);
+    const response = await MoveMyBlockGroupsByIds({
+      data: validatedRequest,
+    });
+    return MoveMyBlockGroupByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as MoveMyBlockGroupByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function MoveMyBlockGroupsByIds(
+export const mutationFnMoveMyBlockGroupsByIds = async (
   request: MoveMyBlockGroupsByIdsRequest
-): Promise<MoveMyBlockGroupsByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<MoveMyBlockGroupsByIdsResponse> => {
+  try {
+    const validatedRequest = MoveMyBlockGroupByIdRequestSchema.parse(request);
+    const response = await MoveMyBlockGroupById({
+      data: validatedRequest,
+    });
+    return MoveMyBlockGroupsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as MoveMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function BatchMoveMyBlockGroupsByIds(
+export const mutationFnBatchMoveMyBlockGroupsByIds = async (
   request: BatchMoveMyBlockGroupsByIdsRequest
-): Promise<BatchMoveMyBlockGroupsByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      BatchMoveMyBlockGroupsByIdsRequestSchema.parse(request);
+    const response = await BatchMoveMyBlockGroupsByIds({
+      data: validatedRequest,
+    });
+    return BatchMoveMyBlockGroupsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as BatchMoveMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlockGroupById(
+export const mutationFnRestoreMyBlockGroupById = async (
   request: RestoreMyBlockGroupByIdRequest
-): Promise<RestoreMyBlockGroupByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupById}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyBlockGroupByIdResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMyBlockGroupByIdRequestSchema.parse(request);
+    const response = await RestoreMyBlockGroupById({
+      data: validatedRequest,
+    });
+    return RestoreMyBlockGroupByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlockGroupByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function RestoreMyBlockGroupsByIds(
+export const mutationFnRestoreMyBlockGroupsByIds = async (
   request: RestoreMyBlockGroupsByIdsRequest
-): Promise<RestoreMyBlockGroupsByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.restoreMyBlockGroupsByIds}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RestoreMyBlockGroupsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      RestoreMyBlockGroupsByIdsRequestSchema.parse(request);
+    const response = await RestoreMyBlockGroupsByIds({
+      data: validatedRequest,
+    });
+    return RestoreMyBlockGroupsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RestoreMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlockGroupById(
+export const mutationFnDeleteMyBlockGroupById = async (
   request: DeleteMyBlockGroupByIdRequest
-): Promise<DeleteMyBlockGroupByIdResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupById}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyBlockGroupByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyBlockGroupByIdRequestSchema.parse(request);
+    const response = await DeleteMyBlockGroupById({
+      data: validatedRequest,
+    });
+    return DeleteMyBlockGroupByIdResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlockGroupByIdResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
-
-export async function DeleteMyBlockGroupsByIds(
+export const mutationFnDeleteMyBlockGroupsByIds = async (
   request: DeleteMyBlockGroupsByIdsRequest
-): Promise<DeleteMyBlockGroupsByIdsResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.deleteMyBlockGroupsByIds}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMyBlockGroupsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      DeleteMyBlockGroupsByIdsRequestSchema.parse(request);
+    const response = await DeleteMyBlockGroupsByIds({
+      data: validatedRequest,
+    });
+    return DeleteMyBlockGroupsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse =
-    (await response.json()) as DeleteMyBlockGroupsByIdsResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-
-  return formattedResponse;
-}
+};

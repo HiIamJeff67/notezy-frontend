@@ -10,19 +10,6 @@ import {
   TypeExceptionReasons,
 } from ".";
 
-// Note: The definitions of structures and types are in the "src/shared/types/apiException.type.ts"
-
-/* ============================== Exception Field Type Definitions ============================== */
-export const ExceptionSubDomainCodeShiftAmount = 100000;
-export const MaxExceptionCode = 99999999;
-export const MinExceptionCode = 0;
-export const ReservedExceptionCode = 100;
-
-/* ============================== Helper Functions of Exceptions ============================== */
-export function IsExceptionCode(exceptionCode: ExceptionCode): boolean {
-  return exceptionCode >= MinExceptionCode && exceptionCode <= MaxExceptionCode;
-}
-
 /* ============================== General Exceptions Definitions ============================== */
 export class DatabaseException {
   static BaseCode: ExceptionCode;

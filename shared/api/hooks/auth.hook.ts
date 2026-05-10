@@ -1,4 +1,5 @@
 import { useApolloClient } from "@apollo/client/react";
+import { AuthLocalAdaptor } from "@shared/api/adaptors/auth.adaptor";
 import {
   mutationFnDeleteMe,
   mutationFnForgetPassword,
@@ -11,9 +12,13 @@ import {
   mutationFnResetMe,
   mutationFnSendAuthCode,
   mutationFnValidateEmail,
-} from "@shared/api/functions/auth.function";
+} from "@shared/api/invokers/auth.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import { type QueryKey, useMutation } from "@tanstack/react-query";
 
 export const useRegister = () => {
@@ -21,19 +26,26 @@ export const useRegister = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRegister,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.publicId
+      );
+      await AuthLocalAdaptor.syncRegister(request, response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "REGISTER_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useRegisterViaGoogle = () => {
@@ -41,19 +53,26 @@ export const useRegisterViaGoogle = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRegisterViaGoogle,
-    onSuccess: (_, __) => {
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.publicId
+      );
+      await AuthLocalAdaptor.syncRegisterViaGoogle(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "REGISTER_VIA_GOOGLE_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useLogin = () => {
@@ -61,19 +80,26 @@ export const useLogin = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLogin,
-    onSuccess: (_response, _) => {
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.publicId
+      );
+      await AuthLocalAdaptor.syncLogin(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "LOGIN_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useLoginViaGoogle = () => {
@@ -81,19 +107,26 @@ export const useLoginViaGoogle = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLoginViaGoogle,
-    onSuccess: (_, __) => {
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.data?.accessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ?? response.data?.csrfToken,
+        response.embedded?.publicId
+      );
+      await AuthLocalAdaptor.syncLoginViaGoogle(response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "LOGIN_VIA_GOOGLE_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useLogout = () => {
@@ -102,49 +135,72 @@ export const useLogout = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLogout,
-    onSuccess: _ => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.removeItem(
+        LocalStorageKey.accessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.removeItem(
+        SessionStorageKey.csrfToken,
+        response.embedded.publicId
+      );
+      await AuthLocalAdaptor.syncLogout(response);
       queryClient.removeQueries();
       apolloClient.clearStore();
     },
-    onError: error => {
-      throw error;
+    onError: (error, request) => {
+      console.log("WTF: ", error);
+      console.log("WTF2: ", request);
     },
   });
 
-  return {
-    ...mutation,
-    name: "LOGOUT_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useSendAuthCode = () => {
   const mutation = useMutation({
     mutationFn: mutationFnSendAuthCode,
-    onSuccess: (_, __) => {},
-    onError: error => {
-      throw error;
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
     },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "SEND_AUTH_CODE_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useValidateEmail = () => {
   const mutation = useMutation({
     mutationFn: mutationFnValidateEmail,
-    onSuccess: (_, __) => {},
-    onError: error => {
-      throw error;
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
     },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "VALIDATE_EMAIL_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useResetEmail = () => {
@@ -152,19 +208,27 @@ export const useResetEmail = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnResetEmail,
-    onSuccess: (_, __) => {
+    onSuccess: async (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await AuthLocalAdaptor.syncResetEmail(request, response);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "RESET_EMAIL_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useForgetPassword = () => {
@@ -172,19 +236,26 @@ export const useForgetPassword = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnForgetPassword,
-    onSuccess: (_, __) => {
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.data() });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "FORGET_PASSWORD_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useResetMe = () => {
@@ -193,7 +264,20 @@ export const useResetMe = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnResetMe,
-    onSuccess: (_, __) => {
+    onSuccess: async response => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken ??
+          response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken ??
+          response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await AuthLocalAdaptor.syncResetMe(response);
       apolloClient.cache.evict({ fieldName: "searchRootShelves" });
       const targetKeys: QueryKey[] = [
         queryKeys.user.data(),
@@ -213,15 +297,10 @@ export const useResetMe = () => {
         )
       );
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "RESET_ME_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useDeleteMe = () => {
@@ -229,16 +308,20 @@ export const useDeleteMe = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMe,
-    onSuccess: _ => {
+    onSuccess: async response => {
+      await AuthLocalAdaptor.syncDeleteMe(response);
+      LocalStorageManipulator.removeItem(
+        LocalStorageKey.accessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.removeItem(
+        SessionStorageKey.csrfToken,
+        response.embedded.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "DELETE_ME_HOOK" as const,
-  };
+  return mutation;
 };

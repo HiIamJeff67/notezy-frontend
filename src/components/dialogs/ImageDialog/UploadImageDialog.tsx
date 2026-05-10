@@ -1,5 +1,4 @@
-"use client";
-
+import { Image } from "@unpic/react";
 import { useState } from "react";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -59,6 +59,9 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="px-2">
+          {`Upload your images below ( You can only upload max to ${maxCount} images at the same time )`}
+        </DialogDescription>
         <DropFileZone
           accept={{ "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"] }}
           multiple={maxCount > 1}
@@ -72,7 +75,6 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
             <p className="text-sm text-muted-foreground">
               Drop Files or Click Here to Select Uploaded Images
             </p>
-            <p className="text-sm text-muted-foreground">{`(You can only upload max to ${maxCount} images at the same time)`}</p>
           </div>
         </DropFileZone>
         {uploadedImages.length > 0 && (
@@ -90,10 +92,12 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
                     );
                   }}
                 >
-                  <img
+                  <Image
                     src={URL.createObjectURL(image)}
+                    width={160}
+                    height={160}
                     alt={image.name}
-                    className="object-cover w-16 h-16"
+                    className="object-cover w-full h-full"
                   />
                 </Closeable>
               </div>

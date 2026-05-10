@@ -1,346 +1,409 @@
-import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  DeleteMeRequest,
-  DeleteMeResponse,
-  ForgetPasswordRequest,
-  ForgetPasswordResponse,
-  LoginRequest,
-  LoginResponse,
-  LoginViaGoogleRequest,
-  LoginViaGoogleResponse,
-  LogoutRequest,
-  LogoutResponse,
-  RegisterRequest,
-  RegisterResponse,
-  RegisterViaGoogleRequest,
-  RegisterViaGoogleResponse,
-  ResetEmailRequest,
-  ResetEmailResponse,
-  ResetMeRequest,
-  ResetMeResponse,
-  SendAuthCodeRequest,
-  SendAuthCodeResponse,
-  ValidateEmailRequest,
-  ValidateEmailResponse,
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
+import {
+  DeleteMe,
+  ForgetPassword,
+  Login,
+  LoginViaGoogle,
+  Logout,
+  Register,
+  RegisterViaGoogle,
+  ResetEmail,
+  ResetMe,
+  SendAuthCode,
+  ValidateEmail,
+} from "@shared/api/functions/auth.serverFn";
+import {
+  type DeleteMeRequest,
+  DeleteMeRequestSchema,
+  type DeleteMeResponse,
+  DeleteMeResponseSchema,
+  type ForgetPasswordRequest,
+  ForgetPasswordRequestSchema,
+  type ForgetPasswordResponse,
+  ForgetPasswordResponseSchema,
+  type LoginRequest,
+  LoginRequestSchema,
+  type LoginResponse,
+  LoginResponseSchema,
+  type LoginViaGoogleRequest,
+  LoginViaGoogleRequestSchema,
+  type LoginViaGoogleResponse,
+  LoginViaGoogleResponseSchema,
+  type LogoutRequest,
+  LogoutRequestSchema,
+  type LogoutResponse,
+  LogoutResponseSchema,
+  type RegisterRequest,
+  RegisterRequestSchema,
+  type RegisterResponse,
+  RegisterResponseSchema,
+  type RegisterViaGoogleRequest,
+  RegisterViaGoogleRequestSchema,
+  type RegisterViaGoogleResponse,
+  RegisterViaGoogleResponseSchema,
+  type ResetEmailRequest,
+  ResetEmailRequestSchema,
+  type ResetEmailResponse,
+  ResetEmailResponseSchema,
+  type ResetMeRequest,
+  ResetMeRequestSchema,
+  type ResetMeResponse,
+  ResetMeResponseSchema,
+  type SendAuthCodeRequest,
+  SendAuthCodeRequestSchema,
+  type SendAuthCodeResponse,
+  SendAuthCodeResponseSchema,
+  type ValidateEmailRequest,
+  ValidateEmailRequestSchema,
+  type ValidateEmailResponse,
+  ValidateEmailResponseSchema,
 } from "@shared/api/interfaces/auth.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { ZodError } from "zod";
+import { NotezyFetchError } from "../errors/fetch.error";
+import { NotezyValidationError } from "../errors/validation.error";
+import { FetchClientExceptions } from "../exceptions/client/fetch.exception";
+import { ValidationClientException } from "../exceptions/client/validation.exception";
 
-export async function Register(
+export const mutationFnRegister = async (
   request: RegisterRequest
-): Promise<RegisterResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.register}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RegisterResponse> => {
+  try {
+    const validatedRequest = RegisterRequestSchema.parse(request);
+    const response = await Register({ data: validatedRequest });
+    return RegisterResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.duplicateName:
+          throw error.setPresentation(
+            tKey.error.apiError.register.duplicateName
+          );
+
+        case ExceptionReasonDictionary.user.duplicateEmail:
+          throw error.setPresentation(
+            tKey.error.apiError.register.duplicateEmail
+          );
+
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
-
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as RegisterResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function RegisterViaGoogle(
+export const mutationFnRegisterViaGoogle = async (
   request: RegisterViaGoogleRequest
-): Promise<RegisterViaGoogleResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.registerViaGoogle}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<RegisterViaGoogleResponse> => {
+  try {
+    const validatedRequest = RegisterViaGoogleRequestSchema.parse(request);
+    const response = await RegisterViaGoogle({
+      data: validatedRequest,
+    });
+    return RegisterViaGoogleResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse =
-    (await response.json()) as RegisterViaGoogleResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function Login(request: LoginRequest): Promise<LoginResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.login}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+export const mutationFnLogin = async (
+  request: LoginRequest
+): Promise<LoginResponse> => {
+  try {
+    const validatedRequest = LoginRequestSchema.parse(request);
+    const response = await Login({ data: validatedRequest });
+    return LoginResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as LoginResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function LoginViaGoogle(
+export const mutationFnLoginViaGoogle = async (
   request: LoginViaGoogleRequest
-): Promise<LoginViaGoogleResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.loginViaGoogle}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<LoginViaGoogleResponse> => {
+  try {
+    const validatedRequest = LoginViaGoogleRequestSchema.parse(request);
+    const response = await LoginViaGoogle({ data: validatedRequest });
+    return LoginViaGoogleResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      const errorMessage = error.issues.map(issue => issue.message).join(", ");
+      throw new Error(`validation failed: ${errorMessage}`);
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as LoginViaGoogleResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+export const mutationFnLogout = async (
+  request: LogoutRequest
+): Promise<LogoutResponse> => {
+  try {
+    const validatedRequest = LogoutRequestSchema.parse(request);
+    const response = await Logout({ data: validatedRequest });
+    return LogoutResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
 
-export async function Logout(request: LogoutRequest): Promise<LogoutResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.logout}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      credentials: "include",
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as LogoutResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function SendAuthCode(
+export const mutationFnSendAuthCode = async (
   request: SendAuthCodeRequest
-): Promise<SendAuthCodeResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.sendAuthCode}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<SendAuthCodeResponse> => {
+  try {
+    const validatedRequest = SendAuthCodeRequestSchema.parse(request);
+    const response = await SendAuthCode({ data: validatedRequest });
+    return SendAuthCodeResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as SendAuthCodeResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function ValidateEmail(
+export const mutationFnValidateEmail = async (
   request: ValidateEmailRequest
-): Promise<ValidateEmailResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.validateEmail}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<ValidateEmailResponse> => {
+  try {
+    const validatedRequest = ValidateEmailRequestSchema.parse(request);
+    const response = await ValidateEmail({ data: validatedRequest });
+    return ValidateEmailResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as ValidateEmailResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function ResetEmail(
+export const mutationFnResetEmail = async (
   request: ResetEmailRequest
-): Promise<ResetEmailResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetEmail}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<ResetEmailResponse> => {
+  try {
+    const validatedRequest = ResetEmailRequestSchema.parse(request);
+    const response = await ResetEmail({ data: validatedRequest });
+    return ResetEmailResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as ResetEmailResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function ForgetPassword(
+export const mutationFnForgetPassword = async (
   request: ForgetPasswordRequest
-): Promise<ForgetPasswordResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.forgetPassword}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<ForgetPasswordResponse> => {
+  try {
+    const validatedRequest = ForgetPasswordRequestSchema.parse(request);
+    const response = await ForgetPassword({ data: validatedRequest });
+    return ForgetPasswordResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as ForgetPasswordResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function ResetMe(
+export const mutationFnResetMe = async (
   request: ResetMeRequest
-): Promise<ResetMeResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.resetMe}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<ResetMeResponse> => {
+  try {
+    const validatedRequest = ResetMeRequestSchema.parse(request);
+    const response = await ResetMe({ data: validatedRequest });
+    return ResetMeResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      throw new Error(error.unWrap.message);
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
+};
 
-  const formattedResponse = (await response.json()) as ResetMeResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
-
-export async function DeleteMe(
+export const mutationFnDeleteMe = async (
   request: DeleteMeRequest
-): Promise<DeleteMeResponse> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.auth.deleteMe}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": request.header.userAgent,
-        ...(request.header.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-        "X-CSRF-Token": request.header.csrfToken,
-      },
-      body: JSON.stringify(request.body),
-      credentials: "include",
+): Promise<DeleteMeResponse> => {
+  try {
+    const validatedRequest = DeleteMeRequestSchema.parse(request);
+    const response = await DeleteMe({ data: validatedRequest });
+    return DeleteMeResponseSchema.parse(response);
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
-  );
 
-  if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw error;
   }
-
-  const formattedResponse = (await response.json()) as DeleteMeResponse;
-  if (formattedResponse.exception != null) {
-    throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
-  }
-  return formattedResponse;
-}
+};

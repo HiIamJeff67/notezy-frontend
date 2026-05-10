@@ -1,9 +1,19 @@
 import { z } from "zod";
+import { NotezyError } from "../errors";
 
 /* ============================== Exception Definition ============================== */
 
 export type ExceptionCode = number;
 export type ExceptionPrefix = string;
+
+export const ExceptionSubDomainCodeShiftAmount = 100000;
+export const MaxExceptionCode = 99999999;
+export const MinExceptionCode = 0;
+export const ReservedExceptionCode = 100;
+
+export function IsExceptionCode(exceptionCode: ExceptionCode): boolean {
+  return exceptionCode >= MinExceptionCode && exceptionCode <= MaxExceptionCode;
+}
 
 export const NotezyExceptionSchema = z.object({
   code: z.number().int().positive(),
@@ -53,7 +63,7 @@ export class NotezyException {
       message: this.message,
       status: this.status,
       details: this.details,
-      // error: this.error
+      origin: this.origin,
     };
   }
 
@@ -102,11 +112,11 @@ export class NotezyException {
 
 /* ============================== Error Instance with Exception ============================== */
 
-export class NotezyAPIError extends Error {
+export class NotezyAPIError extends NotezyError {
   private readonly exception: NotezyException;
 
   constructor(exception: NotezyException) {
-    super(exception.reason);
+    super(exception.reason, true, exception.message);
     this.name = "APIError";
     this.exception = exception;
   }
@@ -138,13 +148,21 @@ export const TypeExceptionReasons = {
 export const CommonExceptionReasons = {};
 
 export const ExceptionReasonDictionary = {
-  localDatabase: {
-    localDatabaseUnavailable: "LocalDatabaseUnavailable",
-    failedInQueryFunction: "FailedInQueryFunction",
-    failedInMutationFunction: "FailedInMutationFunction",
-  },
-  clientCommon: {
-    networkRequired: "NetworkRequired",
+  client: {
+    fetch: {
+      networkRequired: "NetworkRequired",
+      missingNetwork: "MissingNetwork",
+      undefinedError: "undefinedError",
+    },
+    validation: {
+      zodParsingFailed: "ZodParsingFailed",
+      receivedUndefinedRequest: "ReceivedUndefinedRequest",
+      inconsistentTokens: "InconsistentTokens",
+    },
+    localDatabase: {
+      localDatabaseUnavailable: "LocalDatabaseUnavailable",
+      invalidLoggedInUser: "InvalidLoggedInUser",
+    },
   },
   auth: {
     ...APIExceptionReasons,

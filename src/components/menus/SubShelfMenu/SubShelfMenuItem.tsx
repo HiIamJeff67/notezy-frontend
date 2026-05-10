@@ -1,12 +1,12 @@
 import { MaxShelfDepth } from "@shared/constants";
-import { DNDType } from "@shared/enums/dndType.enum";
+import { DNDType } from "@shared/enums";
 import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
+import toast from "@shared/lib/toast";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import toast from "react-hot-toast";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
 import MaterialMenu from "@/components/menus/MaterialMenu/MaterialMenu";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -239,8 +239,10 @@ const SubShelfMenuItem = ({
             <ContextMenuItem
               onClick={() =>
                 modalManager.open("DeleteShelfItemDialog", {
-                  dialogHeader:
-                    "Are you sure you want to delete this sub shelf ?",
+                  dialogHeader: "Delete a sub shelf",
+                  dialogDescription: `Are you sure about deleting the sub shelf of "${current.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
+                  confirmKeyword: "DELETE",
+                  inputPlaceholder: `Type "DELETE" here`,
                   onDelete: async () =>
                     await loadingManager.startAsyncTransactionLoading(
                       async () => {
@@ -276,7 +278,7 @@ const SubShelfMenuItem = ({
                         ) ? (
                           <SidebarMenuItem
                             key={subShelfId}
-                            className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-1 border-foreground relative"
+                            className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
                           >
                             <input
                               ref={shelfItemManager.inputRef}

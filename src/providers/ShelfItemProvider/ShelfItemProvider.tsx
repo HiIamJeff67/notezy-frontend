@@ -1,14 +1,14 @@
+import { MaterialType } from "@shared/api/interfaces/enums";
 import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
   MaxTriggerValue,
 } from "@shared/constants";
-import { MaterialType } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { createContext, RefObject, useCallback, useRef, useState } from "react";
 import {
   PrivateRootShelf,

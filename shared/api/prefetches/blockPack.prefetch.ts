@@ -1,20 +1,20 @@
 import {
-  queryFnGetAllMyBlockPacksByRootShelfId,
-  queryFnGetMyBlockPackAndItsParentById,
-  queryFnGetMyBlockPackById,
-  queryFnGetMyBlockPacksByParentSubShelfId,
-} from "@shared/api/functions/blockPack.function";
-import {
   GetAllMyBlockPacksByRootShelfIdRequest,
   GetMyBlockPackAndItsParentByIdRequest,
   GetMyBlockPackByIdRequest,
   GetMyBlockPacksByParentSubShelfIdRequest,
 } from "@shared/api/interfaces/blockPack.interface";
+import {
+  queryFnGetAllMyBlockPacksByRootShelfId,
+  queryFnGetMyBlockPackAndItsParentById,
+  queryFnGetMyBlockPackById,
+  queryFnGetMyBlockPacksByParentSubShelfId,
+} from "@shared/api/invokers/blockPack.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
 import { PrefetchQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { QueryClient } from "@tanstack/react-query";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 export const prefetchGetMyBlockPackById = (
   initialQueryClient?: QueryClient
@@ -28,8 +28,7 @@ export const prefetchGetMyBlockPackById = (
       queryKey: queryKeys.blockPack.oneById(
         prefetchRequest.param.blockPackId as UUID
       ),
-      queryFn: async () =>
-        await queryFnGetMyBlockPackById(prefetchRequest, true),
+      queryFn: async () => await queryFnGetMyBlockPackById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -54,7 +53,7 @@ export const prefetchGetMyBlockPackAndItsParentById = (
         prefetchRequest.param.blockPackId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlockPackAndItsParentById(prefetchRequest, true),
+        await queryFnGetMyBlockPackAndItsParentById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -79,7 +78,7 @@ export const prefetchGetMyBlockPacksByParentSubShelfId = (
         prefetchRequest.param.parentSubShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest, true),
+        await queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };
@@ -104,7 +103,7 @@ export const prefetchGetAllMyBlockPacksByRootShelfId = (
         prefetchRequest.param.rootShelfId as UUID
       ),
       queryFn: async () =>
-        await queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest, true),
+        await queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
   };

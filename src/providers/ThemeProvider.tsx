@@ -1,18 +1,16 @@
-"use client";
-
 import { DefaultStandardTheme } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { Theme } from "@shared/types/theme.type";
+import { ThemeData } from "@shared/types/theme.type";
 import React, { createContext, useEffect, useState } from "react";
 import { useThemeStore } from "@/hooks/useThemeStore";
 
 interface ThemeContextType {
-  currentTheme: Theme;
+  currentTheme: ThemeData;
   switchCurrentTheme: (themeId: string) => Promise<boolean>;
-  availableThemes: Theme[];
+  availableThemes: ThemeData[];
   loadingThemes: Set<string>;
-  addThemeFromStore: (theme: Theme) => void;
+  addThemeFromStore: (theme: ThemeData) => void;
   removeThemeFromStore: (themeId: string) => void;
   isThemeLoading: (themeId: string) => boolean;
 }
@@ -22,8 +20,9 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 );
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(DefaultStandardTheme);
-  const [prevTheme, setPrevTheme] = useState<Theme | null>(null);
+  const [currentTheme, setCurrentTheme] =
+    useState<ThemeData>(DefaultStandardTheme);
+  const [prevTheme, setPrevTheme] = useState<ThemeData | null>(null);
   const themeStore = useThemeStore();
 
   // initialize the default theme

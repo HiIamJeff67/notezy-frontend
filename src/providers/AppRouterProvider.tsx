@@ -1,12 +1,9 @@
-"use client";
-
-import { Params } from "next/dist/server/request/params";
 import {
+  useLocation,
+  useNavigate,
   useParams,
-  usePathname,
   useRouter,
-  useSearchParams,
-} from "next/navigation";
+} from "@tanstack/react-router";
 import {
   createContext,
   useCallback,
@@ -18,7 +15,7 @@ import {
 
 interface AppRouterContextType {
   isNavigating: boolean;
-  params: Params;
+  params: Record<string, string>;
   isSamePath: (a: string, b: string) => boolean;
   getCurrentPath: () => string;
   getPrevPaths: () => string[];
@@ -40,9 +37,9 @@ export const AppRouterProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const params = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams({ strict: false });
 
   const [isOptimisticNavigating, setIsOptimisticNavigating] =
     useState<boolean>(false);
@@ -58,10 +55,11 @@ export const AppRouterProvider = ({
   }, []);
 
   const getCurrentPath = useCallback((): string => {
-    return (
-      pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
-    );
-  }, [pathname, searchParams]);
+    const searchParamsString = Object.keys(location.search).length
+      ? "?" + new URLSearchParams(location.search).toString()
+      : "";
+    return location.pathname + searchParamsString;
+  }, [location.pathname, location.search]);
 
   const getPrevPaths = useCallback((): string[] => {
     return [...prevPathsRef.current];
@@ -82,11 +80,11 @@ export const AppRouterProvider = ({
       if (!isSamePath(getCurrentPath(), path)) {
         setIsOptimisticNavigating(true);
         _startRouteTransition(() => {
-          router.push(path.startsWith("/") ? path : "/" + path);
+          navigate({ to: path.startsWith("/") ? path : `/${path}` });
         });
       }
     },
-    [getCurrentPath, isSamePath, router]
+    [getCurrentPath, isSamePath, navigate]
   );
 
   const forceNavigate = useCallback(
@@ -98,7 +96,7 @@ export const AppRouterProvider = ({
         });
       }
     },
-    [getCurrentPath, isSamePath, router]
+    [getCurrentPath, isSamePath]
   );
 
   const replace = useCallback(
@@ -106,43 +104,40 @@ export const AppRouterProvider = ({
       if (!isSamePath(getCurrentPath(), path)) {
         setIsOptimisticNavigating(true);
         _startRouteTransition(() => {
-          router.replace(path.startsWith("/") ? path : "/" + path);
+          navigate({
+            to: path.startsWith("/") ? path : `/${path}`,
+            replace: true,
+          });
         });
       }
     },
-    [getCurrentPath, isSamePath, router]
+    [getCurrentPath, isSamePath, navigate]
   );
 
-  const back = useCallback(
-    (steps: number = 1): void => {
-      setIsOptimisticNavigating(true);
-      _startRouteTransition(() => {
-        while (steps-- > 0) router.back();
-      });
-    },
-    [router]
-  );
+  const back = useCallback((steps: number = 1): void => {
+    setIsOptimisticNavigating(true);
+    _startRouteTransition(() => {
+      while (steps-- > 0) window.history.back();
+    });
+  }, []);
 
-  const forward = useCallback(
-    (steps: number = 1): void => {
-      setIsOptimisticNavigating(true);
-      _startRouteTransition(() => {
-        while (steps-- > 0) router.forward();
-      });
-    },
-    [router]
-  );
+  const forward = useCallback((steps: number = 1): void => {
+    setIsOptimisticNavigating(true);
+    _startRouteTransition(() => {
+      while (steps-- > 0) window.history.forward();
+    });
+  }, []);
 
   const refresh = useCallback((): void => {
     setIsOptimisticNavigating(true);
     _startRouteTransition(() => {
-      router.refresh();
+      void router.invalidate();
     });
   }, [router]);
 
   const contextValue: AppRouterContextType = {
     isNavigating: isNavigating,
-    params: params,
+    params: params as Record<string, string>,
     isSamePath: isSamePath,
     getCurrentPath: getCurrentPath,
     getPrevPaths: getPrevPaths,

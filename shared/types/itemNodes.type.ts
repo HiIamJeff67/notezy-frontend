@@ -1,6 +1,8 @@
-import { MaterialType } from "@shared/enums/materialType.enum";
-import { SupportedBlockPackIcon } from "@shared/enums/supportedBlockPackIcon.enum";
-import { UUID } from "crypto";
+import {
+  MaterialType,
+  SupportedBlockPackIcon,
+} from "@shared/api/interfaces/enums";
+import type { UUID } from "crypto";
 
 export type ItemType = "BlockPack" | "Material";
 

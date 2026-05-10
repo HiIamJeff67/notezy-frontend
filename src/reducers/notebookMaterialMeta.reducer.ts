@@ -1,5 +1,5 @@
 import { PartialBlock } from "@blocknote/core";
-import { MaterialType } from "@shared/enums";
+import { MaterialType } from "@shared/api/interfaces/enums";
 import { NotebookMaterialMeta } from "@shared/types/notebookMaterialMeta.type";
 
 export type NotebookMaterialMetaAction =

@@ -1,10 +1,7 @@
-"use client";
-
 import React, { createContext, useRef, useState } from "react";
 
 interface LoadingContextType {
   isStrictLoading: boolean;
-  setIsStrictLoading: (state: boolean) => void;
   isLaxLoading: boolean;
   setIsLaxLoading: (state: boolean) => void;
   startSyncTransactionLoading: <T>(fn: () => T) => T;
@@ -13,7 +10,7 @@ interface LoadingContextType {
     loadingTimeout?: number,
     errorTimeout?: number
   ) => Promise<T>;
-  isAnyLoading: boolean;
+  registerLoadingDependencies: (...getters: Array<() => boolean>) => () => void;
 }
 
 export const LoadingContext = createContext<LoadingContextType | undefined>(
@@ -25,22 +22,10 @@ export const LoadingProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isStrictLoading, _setIsStrictLoading] = useState<boolean>(false); // the strict loading states
-  const [isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
-  const strictLoadingCounterRef = useRef<number>(0);
-  const laxLoadingCounterRef = useRef<number>(0);
+  const [_isLaxLoading, _setIsLaxLoading] = useState<boolean>(false);
 
-  const setIsStrictLoading = (state: boolean) => {
-    if (state) {
-      _setIsStrictLoading(true);
-      strictLoadingCounterRef.current++;
-    } else {
-      strictLoadingCounterRef.current--;
-      if (strictLoadingCounterRef.current === 0) {
-        _setIsStrictLoading(false);
-      }
-    }
-  };
+  const laxLoadingCounterRef = useRef<number>(0);
+  const loadingDependenciesRef = useRef<Set<() => boolean>>(new Set());
 
   const setIsLaxLoading = (state: boolean) => {
     if (state) {
@@ -55,17 +40,17 @@ export const LoadingProvider = ({
   };
 
   const startSyncTransactionLoading = <T,>(fn: () => T) => {
-    _setIsStrictLoading(true);
-    strictLoadingCounterRef.current++;
+    _setIsLaxLoading(true);
+    laxLoadingCounterRef.current++;
     try {
       return fn();
     } finally {
-      strictLoadingCounterRef.current = Math.min(
+      laxLoadingCounterRef.current = Math.max(
         0,
-        strictLoadingCounterRef.current - 1
+        laxLoadingCounterRef.current - 1
       );
-      if (strictLoadingCounterRef.current === 0) {
-        _setIsStrictLoading(false);
+      if (laxLoadingCounterRef.current === 0) {
+        _setIsLaxLoading(false);
       }
     }
   };
@@ -75,8 +60,8 @@ export const LoadingProvider = ({
     loadingTimeout: number = Infinity,
     errorTimeout: number = Infinity
   ) => {
-    _setIsStrictLoading(true);
-    strictLoadingCounterRef.current++;
+    _setIsLaxLoading(true);
+    laxLoadingCounterRef.current++;
 
     let isLoadingActive: boolean = true;
     let loadingTimer: NodeJS.Timeout | null = null;
@@ -85,15 +70,15 @@ export const LoadingProvider = ({
     const stopLoading = () => {
       if (isLoadingActive) {
         isLoadingActive = false;
-        strictLoadingCounterRef.current = Math.max(
+        laxLoadingCounterRef.current = Math.max(
           0,
-          strictLoadingCounterRef.current - 1
+          laxLoadingCounterRef.current - 1
         );
-        if (strictLoadingCounterRef.current === 0) {
-          _setIsStrictLoading(false);
+        if (laxLoadingCounterRef.current === 0) {
+          _setIsLaxLoading(false);
         }
-        if (loadingTimer) clearTimeout(loadingTimeout);
-        if (errorTimeout) clearTimeout(errorTimeout);
+        if (loadingTimer) clearTimeout(loadingTimer);
+        if (errorTimer) clearTimeout(errorTimer);
       }
     };
 
@@ -138,14 +123,21 @@ export const LoadingProvider = ({
     }
   };
 
+  const registerLoadingDependencies = (...getters: Array<() => boolean>) => {
+    getters.forEach(getter => loadingDependenciesRef.current.add(getter));
+    return () => {
+      // return a clean up function
+      getters.forEach(getter => loadingDependenciesRef.current.delete(getter));
+    };
+  };
+
   const contextValue: LoadingContextType = {
-    isStrictLoading: isStrictLoading,
-    setIsStrictLoading: setIsStrictLoading,
-    isLaxLoading: isLaxLoading,
+    isStrictLoading: _isLaxLoading,
+    isLaxLoading: _isLaxLoading,
     setIsLaxLoading: setIsLaxLoading,
     startSyncTransactionLoading: startSyncTransactionLoading,
     startAsyncTransactionLoading: startAsyncTransactionLoading,
-    isAnyLoading: isStrictLoading || isLaxLoading,
+    registerLoadingDependencies: registerLoadingDependencies,
   };
 
   return (

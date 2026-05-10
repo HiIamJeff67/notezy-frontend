@@ -1,4 +1,3 @@
-// src/hooks/useDeferredMount.ts
 import { useEffect, useState, useTransition } from "react";
 
 export const useDeferredMount = (

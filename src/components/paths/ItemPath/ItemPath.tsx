@@ -1,9 +1,7 @@
-"use client";
-
 import { ItemType } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { ChevronRightIcon } from "lucide-react";
 import { useCallback } from "react";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";

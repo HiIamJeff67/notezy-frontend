@@ -1,5 +1,5 @@
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
 type ShelfType = "RootShelf" | "SubShelf";
 

@@ -1,21 +1,23 @@
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import type {
+  GetMyAccountRequest,
+  GetMyAccountResponse,
+} from "@shared/api/interfaces/userAccount.interface";
 import {
   mutationFnBindGoogleAccount,
   mutationFnUnbindGoogleAccount,
   mutationFnUpdateMyAccount,
   queryFnGetMyAccount,
-} from "@shared/api/functions/userAccount.function";
-import type {
-  GetMyAccountRequest,
-  GetMyAccountResponse,
-} from "@shared/api/interfaces/userAccount.interface";
+} from "@shared/api/invokers/userAccount.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
-import {
-  QueryAsyncDefaultOptions,
-  UseQueryDefaultOptions,
-} from "@shared/api/queryHookOptions";
+import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
-  type FetchQueryOptions,
   type UseQueryOptions,
   useMutation,
   useQuery,
@@ -23,38 +25,59 @@ import {
 
 export const useGetMyAccount = (
   hookRequest?: GetMyAccountRequest,
-  options?: Partial<UseQueryOptions>
+  options?: Partial<UseQueryOptions<GetMyAccountResponse, Error>>
 ) => {
   const queryClient = getQueryClient();
 
-  const query = useQuery({
+  const perform = async (
+    request?: GetMyAccountRequest
+  ): Promise<GetMyAccountResponse> => {
+    try {
+      if (!request) {
+        throw new NotezyValidationError(
+          ValidationClientException.ReceivedUndefinedRequest()
+        );
+      }
+
+      const response = await queryFnGetMyAccount(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetMyAccountResponse, Error>({
     queryKey: queryKeys.userAccount.my(),
-    queryFn: async () => await queryFnGetMyAccount(hookRequest),
+    queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
-  const queryAsync = async (
-    callbackRequest: GetMyAccountRequest,
-    options?: Partial<FetchQueryOptions>
+  const fetch = async (
+    callbackRequest: GetMyAccountRequest
   ): Promise<GetMyAccountResponse> => {
-    const response = await queryClient.fetchQuery({
+    return queryClient.fetchQuery({
       queryKey: queryKeys.userAccount.my(),
-      queryFn: async () => await queryFnGetMyAccount(callbackRequest),
-      staleTime: QueryAsyncDefaultOptions.staleTime,
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
       ...options,
     });
-    return response as GetMyAccountResponse;
   };
 
-  return {
-    ...query,
-    queryAsync,
-    name: "GET_MY_ACCOUNT_HOOK" as const,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useUpdateMyAccount = () => {
@@ -62,18 +85,23 @@ export const useUpdateMyAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UPDATE_MY_ACCOUNT_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useBindGoogleAccount = () => {
@@ -81,18 +109,23 @@ export const useBindGoogleAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBindGoogleAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "BIND_GOOGLE_ACCOUNT_HOOK" as const,
-  };
+  return mutation;
 };
 
 export const useUnbindGoogleAccount = () => {
@@ -100,16 +133,21 @@ export const useUnbindGoogleAccount = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUnbindGoogleAccount,
-    onSuccess: (_, __) => {
+    onSuccess: (response, request) => {
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.userAccount.my() });
     },
-    onError: error => {
-      throw error;
-    },
+    onError: error => {},
   });
 
-  return {
-    ...mutation,
-    name: "UNBIND_GOOGLE_ACCOUNT_HOOK" as const,
-  };
+  return mutation;
 };

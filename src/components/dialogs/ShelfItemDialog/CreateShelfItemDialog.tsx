@@ -1,11 +1,10 @@
-"use client";
-
-import { Suspense, useState } from "react";
+import React, { Suspense, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,6 +13,7 @@ import { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateShelfItemDialogProps extends ModalProps {
   dialogHeader: React.ReactNode;
+  dialogDescription: React.ReactNode;
   disableInput?: boolean;
   inputPlaceholder?: string;
   onCreate: (value: string) => void | Promise<void>;
@@ -24,6 +24,7 @@ const CreateShelfItemDialog = ({
   isOpen,
   onClose,
   dialogHeader,
+  dialogDescription,
   disableInput = false,
   inputPlaceholder,
   onCreate,
@@ -38,6 +39,7 @@ const CreateShelfItemDialog = ({
           <DialogHeader className="w-full">
             <DialogTitle>{dialogHeader}</DialogTitle>
           </DialogHeader>
+          <DialogDescription>{dialogDescription}</DialogDescription>
           {!disableInput && (
             <Input
               placeholder={inputPlaceholder}

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import React from "react";
 import Notezy from "@/assets/logo/Notezy.png";
 
@@ -12,7 +11,7 @@ export const NotezyIcon: React.FC<NotezyIconProps> = ({
   className,
 }) => {
   return (
-    <Image
+    <img
       src={Notezy}
       alt="Notezy"
       width={size}

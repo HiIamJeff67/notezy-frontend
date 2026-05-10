@@ -1,6 +1,5 @@
-"use client";
-
 import { WebURLPathDictionary } from "@shared/constants";
+import toast from "@shared/lib/toast";
 import { tKey } from "@shared/translations";
 import {
   BellIcon,
@@ -11,7 +10,6 @@ import {
   SettingsIcon,
 } from "lucide-react";
 import { useEffect } from "react";
-import toast from "react-hot-toast";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import ShelfCaseIcon from "@/components/icons/ShelfCaseIcon";
@@ -74,13 +72,10 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const shelfItemManager = useShelfItem();
 
   useEffect(() => {
-    const initialSearchRootShelves = async () => {
-      try {
-        await shelfItemManager.searchRootShelves();
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
+    const initialSearchRootShelves = async () =>
+      await shelfItemManager
+        .searchRootShelves()
+        .catch(error => toast.error(languageManager.tError(error)));
     initialSearchRootShelves();
   }, []);
 
@@ -160,11 +155,11 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                   <SidebarMenuAction
                     onClick={() =>
                       modalManager.open("CreateShelfItemDialog", {
-                        dialogHeader:
-                          "Create a root shelf by typing an new name",
+                        dialogHeader: "Create a root shelf",
+                        dialogDescription:
+                          "Typing an new name of the created root shelf. Note that duplicate root shelf name is not allowed.",
                         disableInput: false,
-                        inputPlaceholder:
-                          "type your new and unique shelf name here",
+                        inputPlaceholder: "Type new name here",
                         onCreate: async (newRootShelfName: string) =>
                           await loadingManager.startAsyncTransactionLoading(
                             async () => {
