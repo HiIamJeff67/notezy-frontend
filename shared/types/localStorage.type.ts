@@ -8,7 +8,7 @@ export enum LocalStorageKey {
   lastVisitedAt = "last_visited_at",
   sidebarWidth = "sidebar_width",
   dashboardWidgets = "dashboard_widgets",
-  currentLocalDBVersion = "currentLocalDBVersion",
+  currentLocalDBVersion = "current_local_db_version",
 }
 
 export interface LocalStorageItem {

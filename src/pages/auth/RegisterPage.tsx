@@ -21,7 +21,7 @@ const RegisterPage = () => {
   const userManager = useUser();
 
   const registerMutator = useRegister();
-  const { fetch: fetchUserData } = useGetUserData();
+  const getUserDataQuerier = useGetUserData();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,7 +54,7 @@ const RegisterPage = () => {
         },
       });
 
-      const responseOfGettingUserData = await fetchUserData({
+      const responseOfGettingUserData = await getUserDataQuerier.fetch({
         header: { userAgent: navigator.userAgent },
         body: {},
       });

@@ -156,8 +156,8 @@ export const ExceptionReasonDictionary = {
     },
     validation: {
       zodParsingFailed: "ZodParsingFailed",
-      receivedUndefinedRequest: "receivedUndefinedRequest",
-      inconsistentTokens: "inconsistentTokens",
+      receivedUndefinedRequest: "ReceivedUndefinedRequest",
+      inconsistentTokens: "InconsistentTokens",
     },
     localDatabase: {
       localDatabaseUnavailable: "LocalDatabaseUnavailable",

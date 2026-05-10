@@ -64,24 +64,21 @@ export const useGetUserData = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
     callbackRequest: GetUserDataRequest
   ): Promise<GetUserDataResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.user.data(),
+      queryKey: queryKeys.user.data(true),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       ...options,
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMe = (
@@ -122,24 +119,21 @@ export const useGetMe = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
     callbackRequest: GetMeRequest
   ): Promise<GetMeResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.user.me(),
+      queryKey: queryKeys.user.me(true),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       ...options,
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useUpdateMe = () => {

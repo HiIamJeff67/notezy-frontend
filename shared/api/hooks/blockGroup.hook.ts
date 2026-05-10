@@ -89,7 +89,7 @@ export const useGetMyBlockGroupById = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -105,10 +105,7 @@ export const useGetMyBlockGroupById = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockGroupAndItsBlocksById = (
@@ -151,7 +148,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -167,10 +164,7 @@ export const useGetMyBlockGroupAndItsBlocksById = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockGroupsAndTheirBlocksByIds = (
@@ -225,7 +219,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByIds = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -241,10 +235,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByIds = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
@@ -315,7 +306,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -331,10 +322,7 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockGroupsByPrevBlockGroupId = (
@@ -377,7 +365,7 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -393,10 +381,7 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetAllMyBlockGroupsByBlockPackId = (
@@ -439,7 +424,7 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -455,10 +440,7 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useInsertBlockGroupByBlockPackId = () => {

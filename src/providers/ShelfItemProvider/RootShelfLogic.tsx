@@ -15,7 +15,7 @@ import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import type { UUID } from "crypto";
-import { RefObject, useCallback, useEffect, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import {
   PrivateRootShelf,
   SearchRootShelfEdge,
@@ -64,6 +64,7 @@ export const useRootShelfLogic = ({
     useState<string>("");
   const [originalRootShelfNodeName, setOriginalRootShelfNodeName] =
     useState<string>("");
+  const searchRequestIdRef = useRef(0);
 
   const [executeSearch, { data, loading, fetchMore }] =
     useSearchRootShelvesLazyQuery();
@@ -154,7 +155,7 @@ export const useRootShelfLogic = ({
           sortOrder: SearchSortOrder.Asc,
         },
       },
-    });
+    }).retain();
   }, [executeSearch, searchInput]);
 
   const loadMoreRootShelves = useCallback(async (): Promise<void> => {

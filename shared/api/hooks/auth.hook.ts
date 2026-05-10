@@ -135,8 +135,7 @@ export const useLogout = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnLogout,
-    onSuccess: async response => {
-      await AuthLocalAdaptor.syncLogout(response);
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.removeItem(
         LocalStorageKey.accessToken,
         response.embedded.publicId
@@ -145,10 +144,14 @@ export const useLogout = () => {
         SessionStorageKey.csrfToken,
         response.embedded.publicId
       );
+      await AuthLocalAdaptor.syncLogout(response);
       queryClient.removeQueries();
       apolloClient.clearStore();
     },
-    onError: error => {},
+    onError: (error, request) => {
+      console.log("WTF: ", error);
+      console.log("WTF2: ", request);
+    },
   });
 
   return mutation;

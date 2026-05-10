@@ -64,8 +64,8 @@ export class RootShelfLocalAdaptor {
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,
         entityId: id,
-        entityType: "RootShelf",
-        actionType: "CREATE",
+        entityType: TransactionEntityType.RootShelf,
+        actionType: TransactionActionType.CREATE,
         payload: request,
       });
     });

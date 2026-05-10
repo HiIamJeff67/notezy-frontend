@@ -1,7 +1,7 @@
-import { Mode } from "@shared/constants/projectManagement.constant";
+import { CurrentEnvironment } from "@shared/constants/project";
 import { ExpirationTimeOfAccessToken } from "@shared/constants/token.constant";
 import { CookieKeys } from "@shared/types/cookieKey.type";
-import { ModeType } from "@shared/types/modeType.type";
+import { Environment } from "@shared/types/environment.type";
 import { setCookie } from "@tanstack/react-start/server";
 
 export class AccessTokenCookieHandler {
@@ -9,7 +9,7 @@ export class AccessTokenCookieHandler {
     if (accessToken) {
       setCookie(CookieKeys.AccessToken, accessToken, {
         httpOnly: true,
-        secure: Mode === ModeType.Production,
+        secure: CurrentEnvironment === Environment.Production,
         sameSite: "lax",
         path: "/",
         maxAge: ExpirationTimeOfAccessToken,
@@ -20,7 +20,7 @@ export class AccessTokenCookieHandler {
   public static set(accessToken: string) {
     setCookie(CookieKeys.AccessToken, accessToken, {
       httpOnly: true,
-      secure: Mode === ModeType.Production,
+      secure: CurrentEnvironment === Environment.Production,
       sameSite: "lax",
       path: "/",
       maxAge: ExpirationTimeOfAccessToken,

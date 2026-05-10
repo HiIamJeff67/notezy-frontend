@@ -5,7 +5,7 @@ import LoginPage from "@/pages/auth/LoginPage";
 export const Route = createFileRoute("/_auth/login")({
   loader: async () => {
     try {
-      const response = await fetchGetUserData({});
+      const response = await fetchGetUserData({}); // try to get the user on SSR
       if (response && response.success) {
         throw redirect({ to: "/dashboard", replace: true });
       }

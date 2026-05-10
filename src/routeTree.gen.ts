@@ -17,6 +17,7 @@ import { Route as RootPlaygroundRouteImport } from './routes/_root.playground'
 import { Route as RootMaterialEditorRouteImport } from './routes/_root.material-editor'
 import { Route as RootIntroductionRouteImport } from './routes/_root.introduction'
 import { Route as RootDashboardRouteImport } from './routes/_root.dashboard'
+import { Route as RootAdminRouteImport } from './routes/_root.admin'
 import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as AuthForgetPasswordRouteImport } from './routes/_auth.forgetPassword'
@@ -65,6 +66,11 @@ const RootIntroductionRoute = RootIntroductionRouteImport.update({
 const RootDashboardRoute = RootDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => RootRoute,
+} as any)
+const RootAdminRoute = RootAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => RootRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/forgetPassword': typeof AuthForgetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin': typeof RootAdminRoute
   '/dashboard': typeof RootDashboardRouteWithChildren
   '/introduction': typeof RootIntroductionRoute
   '/material-editor': typeof RootMaterialEditorRouteWithChildren
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/forgetPassword': typeof AuthForgetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin': typeof RootAdminRoute
   '/introduction': typeof RootIntroductionRoute
   '/playground': typeof RootPlaygroundRoute
   '/privacy-policy': typeof RootPrivacyPolicyRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_auth/forgetPassword': typeof AuthForgetPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/_root/admin': typeof RootAdminRoute
   '/_root/dashboard': typeof RootDashboardRouteWithChildren
   '/_root/introduction': typeof RootIntroductionRoute
   '/_root/material-editor': typeof RootMaterialEditorRouteWithChildren
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/forgetPassword'
     | '/login'
     | '/register'
+    | '/admin'
     | '/dashboard'
     | '/introduction'
     | '/material-editor'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/forgetPassword'
     | '/login'
     | '/register'
+    | '/admin'
     | '/introduction'
     | '/playground'
     | '/privacy-policy'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/_auth/forgetPassword'
     | '/_auth/login'
     | '/_auth/register'
+    | '/_root/admin'
     | '/_root/dashboard'
     | '/_root/introduction'
     | '/_root/material-editor'
@@ -306,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof RootDashboardRouteImport
+      parentRoute: typeof RootRoute
+    }
+    '/_root/admin': {
+      id: '/_root/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof RootAdminRouteImport
       parentRoute: typeof RootRoute
     }
     '/_auth/register': {
@@ -438,6 +457,7 @@ const RootMaterialEditorRouteWithChildren =
   RootMaterialEditorRoute._addFileChildren(RootMaterialEditorRouteChildren)
 
 interface RootRouteChildren {
+  RootAdminRoute: typeof RootAdminRoute
   RootDashboardRoute: typeof RootDashboardRouteWithChildren
   RootIntroductionRoute: typeof RootIntroductionRoute
   RootMaterialEditorRoute: typeof RootMaterialEditorRouteWithChildren
@@ -447,6 +467,7 @@ interface RootRouteChildren {
 }
 
 const RootRouteChildren: RootRouteChildren = {
+  RootAdminRoute: RootAdminRoute,
   RootDashboardRoute: RootDashboardRouteWithChildren,
   RootIntroductionRoute: RootIntroductionRoute,
   RootMaterialEditorRoute: RootMaterialEditorRouteWithChildren,

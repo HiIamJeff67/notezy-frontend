@@ -80,7 +80,7 @@ export const useGetMySubShelfById = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -96,10 +96,7 @@ export const useGetMySubShelfById = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMySubShelvesByPrevSubShelfId = (
@@ -142,7 +139,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -158,10 +155,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetAllMySubShelvesByRootShelfId = (
@@ -204,7 +198,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && (!options || options.enabled !== false),
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -220,10 +214,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
@@ -270,7 +261,7 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -286,10 +277,7 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useCreateSubShelfByRootShelfId = () => {

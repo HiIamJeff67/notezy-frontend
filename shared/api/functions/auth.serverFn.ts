@@ -197,7 +197,12 @@ export const Logout = createServerFn({ method: "POST" })
     if (!isJsonResponse(response)) {
       throw new Error(tKey.error.encounterUnknownError);
     }
-    const formattedResponse = (await response.json()) as LogoutResponse;
+    forwardUpstreamSetCookies(response);
+    const rawResponse = (await response.json()) as Partial<LogoutResponse>;
+    const formattedResponse = {
+      ...rawResponse,
+      exception: rawResponse.exception ?? null,
+    } as LogoutResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)

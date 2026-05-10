@@ -206,7 +206,18 @@ export const mutationFnLogout = async (
         ValidationClientException.ZodParsingFailed(error)
       );
     } else if (error instanceof NotezyAPIError) {
-      throw new Error(error.unWrap.message);
+      switch (error.unWrap.reason) {
+        case ExceptionReasonDictionary.user.notFound:
+          throw error.setPresentation(
+            tKey.error.apiError.getUser.failedToGetUser
+          );
+
+        default:
+          throw new Error(error.unWrap.message);
+      }
+    } else if (error instanceof TypeError) {
+      // network error
+      throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
     throw error;

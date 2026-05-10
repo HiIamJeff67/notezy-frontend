@@ -80,7 +80,7 @@ export const useGetMyBlockPackById = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -96,10 +96,7 @@ export const useGetMyBlockPackById = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockPackAndItsParentById = (
@@ -143,7 +140,7 @@ export const useGetMyBlockPackAndItsParentById = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -160,10 +157,7 @@ export const useGetMyBlockPackAndItsParentById = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetMyBlockPacksByParentSubShelfId = (
@@ -206,7 +200,7 @@ export const useGetMyBlockPacksByParentSubShelfId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -222,10 +216,7 @@ export const useGetMyBlockPacksByParentSubShelfId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useGetAllMyBlockPacksByRootShelfId = (
@@ -268,7 +259,7 @@ export const useGetAllMyBlockPacksByRootShelfId = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -284,10 +275,7 @@ export const useGetAllMyBlockPacksByRootShelfId = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useCreateBlockPack = () => {

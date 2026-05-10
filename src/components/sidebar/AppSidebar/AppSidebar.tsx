@@ -72,13 +72,10 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const shelfItemManager = useShelfItem();
 
   useEffect(() => {
-    const initialSearchRootShelves = async () => {
-      try {
-        await shelfItemManager.searchRootShelves();
-      } catch (error) {
-        toast.error(languageManager.tError(error));
-      }
-    };
+    const initialSearchRootShelves = async () =>
+      await shelfItemManager
+        .searchRootShelves()
+        .catch(error => toast.error(languageManager.tError(error)));
     initialSearchRootShelves();
   }, []);
 

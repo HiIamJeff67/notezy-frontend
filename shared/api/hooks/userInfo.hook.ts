@@ -61,7 +61,7 @@ export const useGetMyInfo = (
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
     refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
     ...options,
-    enabled: !!hookRequest && options && options.enabled,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
   });
 
   const fetch = async (
@@ -75,10 +75,7 @@ export const useGetMyInfo = (
     });
   };
 
-  return {
-    ...query,
-    fetch,
-  };
+  return { ...(hookRequest ? query : {}), fetch };
 };
 
 export const useUpdateMyInfo = () => {

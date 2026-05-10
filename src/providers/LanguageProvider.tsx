@@ -56,6 +56,19 @@ export const LanguageProvider = ({
 
   // translating error function
   const tError = (error: unknown): string => {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.error(error);
+      return "";
+    }
+
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes("operation was aborted")
+    ) {
+      console.error(error);
+      return "";
+    }
+
     if (error instanceof NotezyError) {
       // return empty string so the toast won't log which is only available if we use the toast from @shared/lib/toast
       return error.getPresentation;

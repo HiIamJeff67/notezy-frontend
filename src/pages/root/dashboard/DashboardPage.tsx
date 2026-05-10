@@ -133,7 +133,7 @@ const DashboardPage = () => {
         headerBackgroundImageRef.current.getBoundingClientRect();
       if (width && height) setCropperAspectRatio(width / height);
     }
-  }, [backgroundImagesManager.currentBackgroundImageId]);
+  }, [backgroundImagesManager.currentBackgroundImage]);
 
   const handleCreateWidgetOnClick = useCallback(
     (previewWidget: PreviewWidget) => {
@@ -445,7 +445,7 @@ const DashboardPage = () => {
         onOpenChange={setCreateWidgetDialogOpen}
         onCreate={handleCreateWidgetOnClick}
       />
-      {backgroundImagesManager.currentBackgroundImageId === null ? (
+      {backgroundImagesManager.currentBackgroundImage === null ? (
         <GridBackground
           className={`!w-full !h-60 relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
@@ -483,7 +483,7 @@ const DashboardPage = () => {
         </ProgressiveBackground>
       )}
       <PlaceableBackground
-        className="overflow-x-hidden overflow-y-auto relative bg-background top-[-12px] border border-foreground/30 rounded-t-lg"
+        className="overflow-x-hidden overflow-y-auto relative !bg-popover top-[-12px] border border-foreground/30 rounded-t-lg"
         // height: (heightTotalFrameCount + 「 2 」) * frameSize => remain 2 for extra spaces at the bottom area
         style={{ height: (heightTotalFrameCount + 2) * frameSize }}
         zIndex={DashboardElementZIndexes.placeableBackground}

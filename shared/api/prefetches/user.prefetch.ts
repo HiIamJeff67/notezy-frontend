@@ -18,7 +18,7 @@ export const prefetchGetUserData = (initialQueryClient?: QueryClient) => {
     prefetchRequest: GetUserDataRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.user.data(),
+      queryKey: queryKeys.user.data(true),
       queryFn: async () => await queryFnGetUserData(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });
@@ -38,7 +38,7 @@ export const prefetchGetMe = (initialQueryClient?: QueryClient) => {
     prefetchRequest: GetMeRequest
   ): Promise<void> => {
     await queryClient.prefetchQuery({
-      queryKey: queryKeys.user.me(),
+      queryKey: queryKeys.user.me(true),
       queryFn: async () => await queryFnGetMe(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
     });

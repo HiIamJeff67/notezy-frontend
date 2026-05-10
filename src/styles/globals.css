@@ -54,6 +54,8 @@
 :root {
   --radius: 0.625rem;
   --switch-thumb: var(--background);
+  --loading-wave-brown: oklch(0.49 0.07 58);
+  --loading-wave-brown-muted: oklch(0.49 0.07 58 / 40%);
 }
 
 /* ============================== Main Themes ============================== */
@@ -67,7 +69,7 @@ since both of them offer some default colors in ShadCN component
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -96,6 +98,8 @@ since both of them offer some default colors in ShadCN component
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --switch-thumb: oklch(0.985 0 0);
+  --loading-wave-brown: oklch(0.72 0.09 64);
+  --loading-wave-brown-muted: oklch(0.72 0.09 64 / 42%);
   /* don't add a field of caret here, since it will cause the other sub theme broken */
 }
 
@@ -133,6 +137,8 @@ since both of them offer some default colors in ShadCN component
   --sidebar-border: oklch(0.9 0 0);
   --sidebar-ring: oklch(0.556 0 0);
   --switch-thumb: oklch(0.15 0 0);
+  --loading-wave-brown: oklch(0.49 0.07 58);
+  --loading-wave-brown-muted: oklch(0.49 0.07 58 / 40%);
   /* don't add a field of caret here, since it will cause the other sub theme broken */
 }
 

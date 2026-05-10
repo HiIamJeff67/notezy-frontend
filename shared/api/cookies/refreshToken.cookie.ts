@@ -1,7 +1,7 @@
-import { Mode } from "@shared/constants/projectManagement.constant";
+import { CurrentEnvironment } from "@shared/constants/project";
 import { ExpirationTimeOfRefreshToken } from "@shared/constants/token.constant";
 import { CookieKeys } from "@shared/types/cookieKey.type";
-import { ModeType } from "@shared/types/modeType.type";
+import { Environment } from "@shared/types/environment.type";
 import { setCookie } from "@tanstack/react-start/server";
 
 export class RefreshTokenCookieHandler {
@@ -9,7 +9,7 @@ export class RefreshTokenCookieHandler {
     if (refreshToken) {
       setCookie(CookieKeys.RefreshToken, refreshToken, {
         httpOnly: true,
-        secure: Mode === ModeType.Production,
+        secure: CurrentEnvironment === Environment.Production,
         sameSite: "strict",
         path: "/",
         maxAge: ExpirationTimeOfRefreshToken,
@@ -20,7 +20,7 @@ export class RefreshTokenCookieHandler {
   public static set(refreshToken: string) {
     setCookie(CookieKeys.RefreshToken, refreshToken, {
       httpOnly: true,
-      secure: Mode === ModeType.Production,
+      secure: CurrentEnvironment === Environment.Production,
       sameSite: "strict",
       path: "/",
       maxAge: ExpirationTimeOfRefreshToken,

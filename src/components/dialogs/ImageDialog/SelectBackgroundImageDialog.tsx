@@ -1,6 +1,6 @@
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useLanguage, useLoading } from "@/hooks";
+import { useLanguage } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 import { ModalProps } from "@/providers/ModalProvider";
@@ -27,7 +27,6 @@ const SelectBackgroundImageDialog = ({
   cropperAspectRatio,
 }: SelectBackgroundImageDialogProps) => {
   const languageManager = useLanguage();
-  const loadingManager = useLoading();
 
   const backgroundImagesManager = useBackgroundImages();
 
@@ -54,6 +53,24 @@ const SelectBackgroundImageDialog = ({
     () => isCropImageSelecting
   );
 
+  useEffect(() => {
+    const currentId = backgroundImagesManager.currentBackgroundImage?.id ?? null;
+    if (currentId && thumbnails.some(thumb => thumb.id === currentId)) {
+      setSelectedBackgroundImageId(currentId);
+      return;
+    }
+
+    if (thumbnails.length === 0) {
+      setSelectedBackgroundImageId(null);
+    } else if (selectedBackgroundImageId === null) {
+      setSelectedBackgroundImageId(thumbnails[thumbnails.length - 1].id);
+    }
+  }, [
+    backgroundImagesManager.currentBackgroundImage?.id,
+    thumbnails,
+    selectedBackgroundImageId,
+  ]);
+
   const handleCropImageOnComplete = useCallback(
     async (croppedBlob: Blob) =>
       startCompletingCropImageTransition(async () => {
@@ -69,15 +86,9 @@ const SelectBackgroundImageDialog = ({
               type: "image/png",
             }
           );
-          const uploadedIds = await backgroundImagesManager.upload([
-            croppedFile,
-          ]); // this should be at most one files
-          if (uploadedIds.length > 0) {
-            if (selectedBackgroundImageId) {
-              await backgroundImagesManager.remove([selectedBackgroundImageId]);
-            }
-            setSelectedBackgroundImageId(uploadedIds[0]);
-          }
+          await backgroundImagesManager.setCurrentBackgroundImageByFile(
+            croppedFile
+          );
           URL.revokeObjectURL(croppedBackgroundImagePack.url);
           setCroppedBackgroundImagePack(null);
           setCropImageDialogOpen(false);
@@ -85,12 +96,7 @@ const SelectBackgroundImageDialog = ({
           toast.error(languageManager.tError(error));
         }
       }),
-    [
-      croppedBackgroundImagePack,
-      selectedBackgroundImageId,
-      backgroundImagesManager,
-      languageManager,
-    ]
+    [croppedBackgroundImagePack, backgroundImagesManager, languageManager]
   );
 
   const handleCropImageOnSelect = useCallback(
@@ -109,6 +115,37 @@ const SelectBackgroundImageDialog = ({
         }
       }),
     [selectedBackgroundImageId, backgroundImagesManager, languageManager]
+  );
+
+  const handleThumbnailOnSelect = useCallback(
+    async (id: UUID) => {
+      setSelectedBackgroundImageId(id);
+      try {
+        await backgroundImagesManager.setCurrentBackgroundImageById(id);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    },
+    [backgroundImagesManager, languageManager]
+  );
+
+  const handleThumbnailOnRemove = useCallback(
+    async (id: UUID) => {
+      try {
+        const remainingIds = thumbnails
+          .filter(thumb => thumb.id !== id)
+          .map(thumb => thumb.id);
+        const fallbackId =
+          remainingIds.length > 0 ? remainingIds[remainingIds.length - 1] : null;
+
+        await backgroundImagesManager.remove([id]);
+        setSelectedBackgroundImageId(fallbackId);
+        await backgroundImagesManager.setCurrentBackgroundImageById(fallbackId);
+      } catch (error) {
+        toast.error(languageManager.tError(error));
+      }
+    },
+    [backgroundImagesManager, languageManager, thumbnails]
   );
 
   return (
@@ -139,7 +176,14 @@ const SelectBackgroundImageDialog = ({
           onOpenChange={setUploadImageDialogOpen}
           title="Upload Background Images"
           onUpload={async (files: File[]) => {
-            await backgroundImagesManager.upload(files);
+            const uploadedIds = await backgroundImagesManager.upload(files);
+            if (uploadedIds.length > 0) {
+              const lastUploadedId = uploadedIds[uploadedIds.length - 1];
+              setSelectedBackgroundImageId(lastUploadedId);
+              await backgroundImagesManager.setCurrentBackgroundImageById(
+                lastUploadedId
+              );
+            }
           }}
           onCancel={() => setUploadImageDialogOpen(false)}
         />
@@ -167,7 +211,7 @@ const SelectBackgroundImageDialog = ({
             thumbnails.map(thumb => (
               <div
                 key={thumb.id}
-                onClick={() => setSelectedBackgroundImageId(thumb.id)}
+                onClick={() => handleThumbnailOnSelect(thumb.id)}
                 className={`
                     cursor-pointer relative aspect-video rounded-lg overflow-hidden border-2 transition-all
                     ${
@@ -178,7 +222,7 @@ const SelectBackgroundImageDialog = ({
                     `}
               >
                 <Closeable
-                  onClose={() => backgroundImagesManager.remove([thumb.id])}
+                  onClose={() => handleThumbnailOnRemove(thumb.id)}
                   hasParent
                 >
                   {/* leave the client images to use the original react img component */}
@@ -211,12 +255,8 @@ const SelectBackgroundImageDialog = ({
           <Button
             variant="default"
             className="w-20"
-            onClick={async () => {
-              await backgroundImagesManager.setCurrentBackgroundImageId(
-                selectedBackgroundImageId
-              );
-              onClose();
-            }}
+            disabled={selectedBackgroundImageId === null}
+            onClick={() => onClose()}
           >
             Confirm
           </Button>

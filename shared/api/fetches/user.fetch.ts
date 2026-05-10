@@ -21,7 +21,7 @@ export const fetchGetUserData = async (
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const response = await queryClient.fetchQuery({
-    queryKey: queryKeys.user.data(),
+    queryKey: queryKeys.user.data(true),
     queryFn: async () => await queryFnGetUserData(fetchRequest),
     staleTime: QueryAsyncDefaultOptions.staleTime as number,
     ...options,
@@ -38,7 +38,7 @@ export const fetchGetMe = async (
   const queryClient = initialQueryClient ?? getQueryClient();
 
   const response = await queryClient.fetchQuery({
-    queryKey: queryKeys.user.me(),
+    queryKey: queryKeys.user.me(true),
     queryFn: async () => await queryFnGetMe(fetchRequest),
     staleTime: QueryAsyncDefaultOptions.staleTime as number,
     ...options,

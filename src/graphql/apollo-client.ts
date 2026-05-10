@@ -41,7 +41,7 @@ export const createApolloClient = () => {
 
   const errorLink = new ErrorLink(({ error, forward, operation }) => {
     if (error.name === "AbortError") {
-      return forward(operation);
+      return undefined;
     }
 
     if (error) {

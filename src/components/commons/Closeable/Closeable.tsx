@@ -33,7 +33,10 @@ const Closeable = ({
             rounded-full bg-(--destructive) transition
             ${className}
           `}
-            onClick={onClose}
+            onClick={event => {
+              event.stopPropagation();
+              void onClose();
+            }}
             type="button"
           >
             <XIcon size={size ?? 8} />
@@ -62,7 +65,10 @@ const Closeable = ({
             rounded-full bg-(--destructive) transition
             ${className}
           `}
-          onClick={onClose}
+          onClick={event => {
+            event.stopPropagation();
+            void onClose();
+          }}
           type="button"
         >
           <XIcon size={size ?? 8} />

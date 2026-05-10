@@ -6,8 +6,8 @@ export type TimerSetting = {
 
 export const getDefaultTimerSetting = (): TimerSetting => {
   return {
-    counterFontSize: 24,
-    buttonSize: 16,
+    counterFontSize: 16,
+    buttonSize: 12,
     isSilence: false,
   };
 };

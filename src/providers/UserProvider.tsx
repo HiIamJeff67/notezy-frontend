@@ -1,22 +1,28 @@
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
-import { fetchGetMe, fetchGetUserData } from "@shared/api/fetches/user.fetch";
-import { fetchGetMyAccount } from "@shared/api/fetches/userAccount.fetch";
-import { fetchGetMyInfo } from "@shared/api/fetches/userInfo.fetch";
 import { useLogout } from "@shared/api/hooks/auth.hook";
+import { useGetMe, useGetUserData } from "@shared/api/hooks/user.hook";
+import { useGetMyAccount } from "@shared/api/hooks/userAccount.hook";
+import { useGetMyInfo } from "@shared/api/hooks/userInfo.hook";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
-import React, { createContext, useCallback, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useAppRouter, useLoading, useNetwork } from "@/hooks";
 import { useTransactionSynchronizer } from "@/hooks/useTransactionSynchronizer";
 import { getAuthorization } from "@/util/getAuthorization";
 
 interface UserContextType {
-  enableAutoFetching: boolean;
-  setEnableAutoFetching: (state: boolean) => void;
+  enableInitialFetching: boolean;
+  setEnableInitialFetching: (state: boolean) => void;
 
   userData: UserData | null;
   setUserData: (userData: UserData | null) => void;
@@ -53,13 +59,27 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     useTransactionSynchronizer();
   const isLocalDBReady = transactionSynchronizerStatus === "synchronized";
 
+  const getUserDataQuerier = useGetUserData();
+  const getMeQuerier = useGetMe();
+  const getMyInfoQuerier = useGetMyInfo();
+  const getMyAccountQuerier = useGetMyAccount();
   const logoutMutator = useLogout();
 
-  const [enableAutoFetching, setEnableAutoFetching] = useState<boolean>(true);
+  const [enableInitialFetching, setEnableInitialFetching] =
+    useState<boolean>(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
+
+  const isAutoFetchingUserDataRef = useRef(false);
+  const logoutInFlightRef = useRef<Promise<void> | null>(null);
+  const fetchUserDataRef = useRef<
+    (accessToken: string | null) => Promise<void>
+  >(async () => {});
+  const accessToken = LocalStorageManipulator.getItemByKey(
+    LocalStorageKey.accessToken
+  );
 
   const fetchUserData = useCallback(
     async (accessToken: string | null) =>
@@ -69,7 +89,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await fetchGetUserData({
+          const response = await getUserDataQuerier.fetch({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -79,11 +99,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUserData(response.data);
         } catch (error) {
+          console.error(error);
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
               FetchClientExceptions.NetworkRequired().reason
           ) {
+            setEnableInitialFetching(false);
             if (
               !router.isSamePath(
                 router.getCurrentPath(),
@@ -99,29 +121,24 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
       }),
-    [router, loadingManager, isLocalDBReady]
+    [getUserDataQuerier, isOnline, loadingManager, router]
   );
+
+  useEffect(() => {
+    fetchUserDataRef.current = fetchUserData;
+  }, [fetchUserData]);
 
   // For maintaining the basic user data in the context
   useEffect(() => {
-    if (!isLocalDBReady) return;
+    if (!isLocalDBReady || !enableInitialFetching || userData !== null) return;
+    if (!accessToken || isAutoFetchingUserDataRef.current) return;
 
-    const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKey.accessToken
-    );
-    if (userData === null && accessToken && enableAutoFetching) {
-      console.log("fetching user automatically...");
-      void fetchUserData(accessToken);
-    }
-  }, [enableAutoFetching, fetchUserData, isLocalDBReady, userData]);
+    isAutoFetchingUserDataRef.current = true;
+    void fetchUserDataRef.current(accessToken).finally(() => {
+      isAutoFetchingUserDataRef.current = false;
+    });
+  }, [accessToken, enableInitialFetching, isLocalDBReady, userData, isOnline]);
 
-  /**
-   * A method within useUser() to update the user data of the current user
-   * @param fields Partial<UserData>
-   * @returns a boolean value to indicate if the update operation is success or not
-   * @description since if the previous user data is null, we can set it using a partial fields,
-   * in this case it will just return false to indicate the update operation is failed.
-   */
   const updateUserData = (fields: Partial<UserData>): boolean => {
     if (!isOnline) return false;
     if (userData === null) return false;
@@ -137,7 +154,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await fetchGetMe({
+          const response = await getMeQuerier.fetch({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -146,6 +163,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUser(response.data);
         } catch (error) {
+          console.error(error);
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
@@ -184,7 +202,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await fetchGetMyInfo({
+          const response = await getMyInfoQuerier.fetch({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -193,6 +211,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUserInfo(response.data);
         } catch (error) {
+          console.error(error);
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
@@ -231,7 +250,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
 
           const userAgent = navigator.userAgent;
-          const response = await fetchGetMyAccount({
+          const response = await getMyAccountQuerier.fetch({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -240,6 +259,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
           setUserAccount(response.data);
         } catch (error) {
+          console.error(error);
           if (
             !(error instanceof NotezyAPIError) ||
             error.unWrap.reason !==
@@ -271,22 +291,45 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = useCallback(async () => {
-    setUserData(null);
-    setUser(null);
-    setUserInfo(null);
-    setUserAccount(null);
-    const userAgent = navigator.userAgent;
-    // logout without showing error if there is one
-    if (isOnline) {
-      await logoutMutator.mutateAsync({
-        header: { userAgent: userAgent },
-      });
+    if (logoutInFlightRef.current) {
+      await logoutInFlightRef.current;
+      return;
     }
-  }, []);
+
+    // to make sure the logout procedure is only done once
+    const task = (async () => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+
+      setEnableInitialFetching(false);
+      setUserData(null);
+      setUser(null);
+      setUserInfo(null);
+      setUserAccount(null);
+
+      const userAgent = navigator.userAgent;
+      if (isOnline) {
+        await logoutMutator.mutateAsync({
+          header: {
+            userAgent: userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+        });
+      }
+    })();
+
+    logoutInFlightRef.current = task;
+    try {
+      await task;
+    } finally {
+      logoutInFlightRef.current = null;
+    }
+  }, [logoutMutator]);
 
   const contextValue: UserContextType = {
-    enableAutoFetching: enableAutoFetching,
-    setEnableAutoFetching: setEnableAutoFetching,
+    enableInitialFetching: enableInitialFetching,
+    setEnableInitialFetching: setEnableInitialFetching,
 
     userData: userData,
     setUserData: setUserData,
