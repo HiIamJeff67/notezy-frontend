@@ -299,8 +299,17 @@ export const useUpdateMyRootShelfById = () => {
           }),
         },
       });
+      RootShelfLocalAdaptor.syncUpdateMyRootShelfById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalAdaptor.simulateUpdateMyRootShelfById(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;

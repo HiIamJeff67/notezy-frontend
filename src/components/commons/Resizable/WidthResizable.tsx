@@ -1,5 +1,5 @@
+import { clamp } from "@shared/util/math";
 import { MouseEvent as ReactMouseEvent, useCallback, useState } from "react";
-import { clamp } from "@/util/math";
 
 interface WidthResizableProps {
   children?: React.ReactNode;

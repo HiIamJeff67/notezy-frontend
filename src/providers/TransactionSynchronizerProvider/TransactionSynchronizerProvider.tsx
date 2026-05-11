@@ -30,16 +30,12 @@ import {
   useUpdateMySubShelvesByIds,
 } from "@shared/api/hooks/subShelf.hook";
 import { localDB } from "@shared/api/local/db";
-import {
-  ensureLocalDBMigrated,
-  getLatestLocalDBMigrationVersion,
-} from "@shared/api/local/migrator";
 import { Transaction, User } from "@shared/api/local/schemas";
 import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
-import { LocalDBVersion } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import {
   asc,
   eq,
@@ -49,7 +45,6 @@ import {
 } from "drizzle-orm";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNetwork } from "@/hooks";
-import { getAuthorization } from "@/util/getAuthorization";
 import { buildBlockGroupSyncResult } from "./blockGroupSyncLogic";
 import { buildBlockPackSyncResult } from "./blockPackSyncLogic";
 import { buildBlockSyncResult } from "./blockSyncLogic";
@@ -319,112 +314,113 @@ export const TransactionSynchronizerProvider = ({
       return;
     }
 
-    const rootShelfTransactions = transactions.filter(
-      transaction => transaction.entityType === TransactionEntityType.RootShelf
-    );
-    const subShelfTransactions = transactions.filter(
-      transaction => transaction.entityType === TransactionEntityType.SubShelf
-    );
-    const blockPackTransactions = transactions.filter(
-      transaction => transaction.entityType === TransactionEntityType.BlockPack
-    );
-    const blockGroupTransactions = transactions.filter(
-      transaction => transaction.entityType === TransactionEntityType.BlockGroup
-    );
-    const blockTransactions = transactions.filter(
-      transaction => transaction.entityType === TransactionEntityType.Block
-    );
+    const rootShelfTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const subShelfTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const blockPackTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const blockGroupTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const blockTransactions: InferSelectModel<typeof Transaction>[] = [];
+    for (const transaction of transactions) {
+      switch (transaction.entityType) {
+        case TransactionEntityType.RootShelf:
+          rootShelfTransactions.push(transaction);
+          break;
+        case TransactionEntityType.SubShelf:
+          subShelfTransactions.push(transaction);
+          break;
+        case TransactionEntityType.BlockPack:
+          blockPackTransactions.push(transaction);
+          break;
+        case TransactionEntityType.BlockGroup:
+          blockGroupTransactions.push(transaction);
+          break;
+        case TransactionEntityType.Block:
+          blockTransactions.push(transaction);
+          break;
+        default:
+          throw new Error("undefined transaction entity type");
+      }
+    }
 
     const parseUnits = transactions.length;
     let parsedUnits = 0;
 
-    const reportParsed = () => {
+    const handleOnParsed = () => {
       parsedUnits += 1;
       if (parseUnits === 0) return;
       setSynchronizationProgress((parsedUnits / parseUnits) * 0.5);
     };
 
-    const rootShelfResult = buildRootShelfSyncResult({
-      transactions: rootShelfTransactions,
-      header,
-      mutators: {
-        createRootShelvesMutator,
-        updateRootShelvesMutator,
-        restoreRootShelvesMutator,
-        deleteRootShelvesMutator,
-      },
-      onParsed: reportParsed,
-    });
-
-    const subShelfResult = buildSubShelfSyncResult({
-      transactions: subShelfTransactions,
-      header,
-      mutators: {
-        createSubShelvesMutator,
-        updateSubShelvesMutator,
-        moveSubShelvesMutator,
-        restoreSubShelvesMutator,
-        deleteSubShelvesMutator,
-      },
-      onParsed: reportParsed,
-    });
-
-    const blockPackResult = buildBlockPackSyncResult({
-      transactions: blockPackTransactions,
-      header,
-      mutators: {
-        createBlockPacksMutator,
-        updateBlockPacksMutator,
-        moveBlockPacksMutator,
-        restoreBlockPacksMutator,
-        deleteBlockPacksMutator,
-      },
-      onParsed: reportParsed,
-    });
-
-    const blockGroupResult = buildBlockGroupSyncResult({
-      transactions: blockGroupTransactions,
-      header,
-      mutators: {
-        batchInsertBlockGroupsAndBlocksMutator,
-        batchInsertBlockGroupsMutator,
-        batchMoveBlockGroupsMutator,
-        deleteBlockGroupsMutator,
-      },
-      onParsed: reportParsed,
-    });
-
-    const blockResult = buildBlockSyncResult({
-      transactions: blockTransactions,
-      header,
-      mutators: {
-        insertBlocksMutator,
-        updateBlocksMutator,
-        deleteBlocksMutator,
-      },
-      onParsed: reportParsed,
-    });
-
     const allResults = [
       {
         transactions: rootShelfTransactions,
-        result: rootShelfResult,
+        result: buildRootShelfSyncResult({
+          transactions: rootShelfTransactions,
+          header,
+          mutators: {
+            createRootShelvesMutator,
+            updateRootShelvesMutator,
+            restoreRootShelvesMutator,
+            deleteRootShelvesMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
       },
       {
         transactions: subShelfTransactions,
-        result: subShelfResult,
+        result: buildSubShelfSyncResult({
+          transactions: subShelfTransactions,
+          header,
+          mutators: {
+            createSubShelvesMutator,
+            updateSubShelvesMutator,
+            moveSubShelvesMutator,
+            restoreSubShelvesMutator,
+            deleteSubShelvesMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
       },
       {
         transactions: blockPackTransactions,
-        result: blockPackResult,
+        result: buildBlockPackSyncResult({
+          transactions: blockPackTransactions,
+          header,
+          mutators: {
+            createBlockPacksMutator,
+            updateBlockPacksMutator,
+            moveBlockPacksMutator,
+            restoreBlockPacksMutator,
+            deleteBlockPacksMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
       },
       {
         transactions: blockGroupTransactions,
-        result: blockGroupResult,
+        result: buildBlockGroupSyncResult({
+          transactions: blockGroupTransactions,
+          header,
+          mutators: {
+            batchInsertBlockGroupsAndBlocksMutator,
+            batchInsertBlockGroupsMutator,
+            batchMoveBlockGroupsMutator,
+            deleteBlockGroupsMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
       },
       {
         transactions: blockTransactions,
-        result: blockResult,
+        result: buildBlockSyncResult({
+          transactions: blockTransactions,
+          header,
+          mutators: {
+            insertBlocksMutator,
+            updateBlocksMutator,
+            deleteBlocksMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
       },
     ];
 
@@ -434,7 +430,7 @@ export const TransactionSynchronizerProvider = ({
     );
     let completedJobs = 0;
 
-    const reportJobFinished = () => {
+    const handleJobOnFinished = () => {
       completedJobs += 1;
       if (totalJobs === 0) return;
       setSynchronizationProgress(0.5 + (completedJobs / totalJobs) * 0.5);
@@ -444,7 +440,7 @@ export const TransactionSynchronizerProvider = ({
       await persistSyncResult(
         item.transactions,
         item.result,
-        reportJobFinished
+        handleJobOnFinished
       );
     }
 
@@ -495,21 +491,16 @@ export const TransactionSynchronizerProvider = ({
       try {
         safelySetStatus("analyzing");
 
-        const latestMigrationVersion = getLatestLocalDBMigrationVersion();
-        let currentStoredVersion =
-          LocalStorageManipulator.getItemByKey(
-            LocalStorageKey.currentLocalDBVersion
-          ) ?? "-1";
+        const latestMigrationVersion = localDB.getLatestMigrationVersion();
+        let currentStoredVersion = await localDB.getVersion();
 
-        if (
-          LocalStorageManipulator.getItemByKey(
-            LocalStorageKey.currentLocalDBVersion
-          ) === null
-        ) {
-          LocalStorageManipulator.setItem(
-            LocalStorageKey.currentLocalDBVersion,
-            "-1"
-          );
+        if (currentStoredVersion === 0 && latestMigrationVersion > 0) {
+          safelySetStatus("migrating");
+          await localDB.ensureMigrated({
+            currentVersion: 0,
+            targetVersion: latestMigrationVersion,
+          });
+          currentStoredVersion = await localDB.getVersion();
         }
 
         let missingTablesDetected = false;
@@ -518,11 +509,7 @@ export const TransactionSynchronizerProvider = ({
             return await getTransactionCount();
           } catch {
             missingTablesDetected = true;
-            currentStoredVersion = "-1";
-            LocalStorageManipulator.setItem(
-              LocalStorageKey.currentLocalDBVersion,
-              "-1"
-            );
+            currentStoredVersion = 0;
             return 0;
           }
         };
@@ -547,14 +534,10 @@ export const TransactionSynchronizerProvider = ({
           }
 
           safelySetStatus("migrating");
-          await ensureLocalDBMigrated({
+          await localDB.ensureMigrated({
             currentVersion: currentStoredVersion,
             targetVersion: latestMigrationVersion,
           });
-          LocalStorageManipulator.setItem(
-            LocalStorageKey.currentLocalDBVersion,
-            latestMigrationVersion || LocalDBVersion
-          );
         } else {
           if (transactionCountBeforeMigration > 0) {
             safelySetStatus("synchronizing");

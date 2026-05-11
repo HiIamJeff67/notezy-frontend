@@ -1,4 +1,4 @@
-import { exportLocalDBFile, localDB } from "@shared/api/local/db";
+import { localDB } from "@shared/api/local/db";
 import { User } from "@shared/api/local/schemas";
 import { useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
@@ -16,7 +16,7 @@ const AdminPage = () => {
     <>
       <div className="p-4 flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={exportLocalDBFile}>
+          <Button variant="secondary" onClick={localDB.download}>
             Download Local DB File
           </Button>
           <Button variant="secondary" onClick={logAllExistingUsers}>
@@ -46,7 +46,10 @@ const AdminPage = () => {
       <StrictLoadingCover condition={isLoadingPreviewOpen} />
       {isLoadingPreviewOpen ? (
         <div className="fixed top-4 right-4 z-[10000]">
-          <Button variant="destructive" onClick={() => setIsLoadingPreviewOpen(false)}>
+          <Button
+            variant="destructive"
+            onClick={() => setIsLoadingPreviewOpen(false)}
+          >
             Close Loading
           </Button>
         </div>

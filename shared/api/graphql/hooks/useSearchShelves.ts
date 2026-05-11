@@ -3,7 +3,7 @@ import {
   SearchRootShelvesDocument,
   type SearchRootShelvesQuery,
   type SearchRootShelvesQueryVariables,
-} from "@/graphql/generated/graphql";
+} from "@shared/api/graphql/generated/graphql";
 
 export const useSearchRootShelvesLazyQuery = () => {
   return useLazyQuery<SearchRootShelvesQuery, SearchRootShelvesQueryVariables>(

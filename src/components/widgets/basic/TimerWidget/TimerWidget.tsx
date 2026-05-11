@@ -1,3 +1,4 @@
+import { clamp } from "@shared/util/math";
 import {
   getDefaultTimerData,
   TimerData,
@@ -11,7 +12,6 @@ import { WidgetProps } from "@widgets/widget";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
-import { clamp } from "@/util/math";
 import EditTimerWidgetDialog from "./EditTimerWidgetDialog";
 
 const getDurationMs = (duration: TimerRecord["duration"]) => {

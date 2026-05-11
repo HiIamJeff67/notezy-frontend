@@ -5,6 +5,7 @@ import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import {
   createFileRoute,
   notFound,
@@ -13,7 +14,6 @@ import {
 import type { UUID } from "crypto";
 import BlockPackEditorNotFoundPage from "@/pages/root/block-pack-editor/BlockPackEditorNotFoundPage";
 import BlockPackEditorPage from "@/pages/root/block-pack-editor/BlockPackEditorPage";
-import { getAuthorization } from "@/util/getAuthorization";
 
 export const Route = createFileRoute("/_root/block-pack-editor/$blockPackId")({
   ssr: false, // since the blocknote editor view is a client side component

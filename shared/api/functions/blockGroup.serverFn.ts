@@ -48,9 +48,9 @@ import {
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import { isJsonResponse } from "@/util/isJsonContext";
 
 export const GetMyBlockGroupById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockGroupByIdRequest) => data)

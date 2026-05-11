@@ -5,8 +5,8 @@ import {
   OAuthMetaIcon,
 } from "@/components/icons/OAuthIcon";
 import "@/global/styles/panel.css";
+import { toCamelCase } from "@shared/util/stringCaseConversions";
 import { useTheme } from "@/hooks/useTheme";
-import { toCamelCase } from "@/util/stringCaseConversions";
 
 const OAuthIcons = {
   google: (className: string) => <OAuthGoogleIcon className={className} />,

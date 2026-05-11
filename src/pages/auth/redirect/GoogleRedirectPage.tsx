@@ -9,11 +9,11 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { RedirectState } from "@shared/types/redirectState.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import { useLocation } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
-import { getAuthorization } from "@/util/getAuthorization";
 
 function GoogleRedirectPage() {
   const location = useLocation();

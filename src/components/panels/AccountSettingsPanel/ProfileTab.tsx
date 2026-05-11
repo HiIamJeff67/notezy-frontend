@@ -6,6 +6,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { UserInfo, UserInfoSchema } from "@shared/types/user.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import { Image } from "@unpic/react";
 import { format } from "date-fns";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -44,7 +45,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUser } from "@/hooks/useUser";
-import { getAuthorization } from "@/util/getAuthorization";
 
 const ProfileTab = memo(() => {
   const loadingManager = useLoading();

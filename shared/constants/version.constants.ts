@@ -9,4 +9,3 @@ export const APITestVersion = "v1";
 export const WebDevelopmentVersion = "v1";
 export const WebProductionVersion = "v1";
 export const WebTestVersion = "v1";
-export const LocalDBVersion = "0001";

@@ -1,3 +1,4 @@
+import { SearchRootShelfEdge } from "@shared/api/graphql/generated/graphql";
 import { DNDType } from "@shared/enums";
 import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
@@ -28,7 +29,6 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import { SearchRootShelfEdge } from "@/graphql/generated/graphql";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 

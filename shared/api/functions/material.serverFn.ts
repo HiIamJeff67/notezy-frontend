@@ -31,9 +31,9 @@ import {
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import { isJsonResponse } from "@/util/isJsonContext";
 
 export const GetMyMaterialById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyMaterialByIdRequest) => data)

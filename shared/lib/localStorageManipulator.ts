@@ -17,13 +17,18 @@ export class LocalStorageManipulator {
   }
 
   static isLocalStorageAvailable = (): boolean => {
+    if (typeof window === "undefined" || typeof localStorage === "undefined") {
+      return false;
+    }
+
     try {
       const testKey = "__test__";
       localStorage.setItem(testKey, "test");
       localStorage.removeItem(testKey);
       return true;
-    } catch {
-      console.error(`The localStorage is not available`);
+    } catch (error) {
+      // In some browser/privacy modes localStorage exists but is not writable.
+      console.warn("localStorage exists but is not available.", error);
       return false;
     }
   };

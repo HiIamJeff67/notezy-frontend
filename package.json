@@ -12,6 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "generate-local-migrations": "npx drizzle-kit generate --config shared/api/local/drizzle.config.ts",
+    "clear-local-migrations": "rm -rf shared/api/local/migrations/**",
     "codegen": "graphql-codegen --config codegen.ts",
     "codegen:watch": "graphql-codegen --config codegen.ts --watch",
     "recodegen:mac": "rm -rf src/graphql/generated && npm run codegen",

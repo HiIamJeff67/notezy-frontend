@@ -34,5 +34,6 @@
     "*/.git/subtree-cache/**": true,
     "*/.hg/store/**": true,
     "**/.dart_tool": true
-  }
+  },
+  "editor.lineNumbers": "relative"
 }

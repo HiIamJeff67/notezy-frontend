@@ -1,4 +1,12 @@
 import { PartialBlock } from "@blocknote/core";
+import {
+  convertBlocksToDOCX,
+  convertBlocksToHTML,
+  convertBlocksToJSON,
+  convertBlocksToMarkdown,
+  convertBlocksToPDF,
+  convertBlocksToPlainText,
+} from "@shared/util/convertBlocksToFiles";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
@@ -21,14 +29,6 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { useBlockEditor } from "@/hooks/useBlockEditor";
-import {
-  convertBlocksToDOCX,
-  convertBlocksToHTML,
-  convertBlocksToJSON,
-  convertBlocksToMarkdown,
-  convertBlocksToPDF,
-  convertBlocksToPlainText,
-} from "@/util/convertBlocksToFiles";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";

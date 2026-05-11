@@ -1,5 +1,6 @@
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { clamp } from "@shared/util/math";
 import {
   CSSProperties,
   createContext,
@@ -10,7 +11,6 @@ import {
   useState,
 } from "react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { clamp } from "@/util/math";
 
 export type ResizeSidebarOptions = {
   side?: "left" | "right";

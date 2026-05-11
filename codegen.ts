@@ -11,7 +11,7 @@ const config: CodegenConfig = {
     // "shared/graphql/mutations/*.graphql"
   ],
   generates: {
-    "src/graphql/generated/": {
+    "shared/api/graphql/generated/": {
       preset: "client-preset",
       config: {
         plugins: [

@@ -1,4 +1,15 @@
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import {
+  convertBlocksToDOCX,
+  convertBlocksToHTML,
+  convertBlocksToJSON,
+  convertBlocksToMarkdown,
+  convertBlocksToPDF,
+  convertBlocksToPlainText,
+} from "@shared/util/convertBlocksToFiles";
+import { getAuthorization } from "@shared/util/getAuthorization";
+import { loadFileFromDownloadURL } from "@shared/util/loadFiles";
+import { choiceRandom } from "@shared/util/random";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
@@ -21,17 +32,6 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
 import { notebookMaterialMetaReducer } from "@/reducers/notebookMaterialMeta.reducer";
-import {
-  convertBlocksToDOCX,
-  convertBlocksToHTML,
-  convertBlocksToJSON,
-  convertBlocksToMarkdown,
-  convertBlocksToPDF,
-  convertBlocksToPlainText,
-} from "@/util/convertBlocksToFiles";
-import { getAuthorization } from "@/util/getAuthorization";
-import { loadFileFromDownloadURL } from "@/util/loadFiles";
-import { choiceRandom } from "@/util/random";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";

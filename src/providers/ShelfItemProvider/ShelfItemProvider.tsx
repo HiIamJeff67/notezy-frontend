@@ -1,3 +1,7 @@
+import {
+  PrivateRootShelf,
+  SearchRootShelfEdge,
+} from "@shared/api/graphql/generated/graphql";
 import { MaterialType } from "@shared/api/interfaces/enums";
 import {
   MaxMaterialsOfRootShelf,
@@ -10,10 +14,6 @@ import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import type { UUID } from "crypto";
 import { createContext, RefObject, useCallback, useRef, useState } from "react";
-import {
-  PrivateRootShelf,
-  SearchRootShelfEdge,
-} from "@/graphql/generated/graphql";
 import { useItemLogic } from "./ItemLogic";
 import { useRootShelfLogic } from "./RootShelfLogic";
 import { useSubShelfLogic } from "./SubShelfLogic";

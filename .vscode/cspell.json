@@ -56,7 +56,9 @@
     "fallbackable",
     "unfallbackable",
     "renderable",
-    "unsynchronized"
+    "unsynchronized",
+    "opfs",
+    "reloadable"
   ],
   "ignorePaths": [
     "node_modules/**",

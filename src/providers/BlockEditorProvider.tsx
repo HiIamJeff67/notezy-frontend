@@ -39,6 +39,7 @@ import {
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import {
   createContext,
@@ -49,7 +50,6 @@ import {
   useState,
 } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { getAuthorization } from "@/util/getAuthorization";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor;

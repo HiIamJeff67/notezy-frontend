@@ -5,6 +5,10 @@ import {
   CreateRootShelvesResponse,
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
+  UpdateMyRootShelfByIdRequest,
+  UpdateMyRootShelfByIdResponse,
+  UpdateMyRootShelvesByIdsRequest,
+  UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { localDB } from "@shared/api/local/db";
 import { RootShelf, Transaction, User } from "@shared/api/local/schemas";
@@ -12,21 +16,23 @@ import { TransactionActionType } from "@shared/api/local/schemas/enums/transacti
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";
-import { eq, InferSelectModel } from "drizzle-orm";
+import { and, eq, InferSelectModel, sql } from "drizzle-orm";
 
 export class RootShelfLocalAdaptor {
-  static async simulateGetMyRootShelfById(
+  static simulateGetMyRootShelfById = async (
     request: GetMyRootShelfByIdRequest
-  ): Promise<InferSelectModel<typeof RootShelf> | null> {
+  ): Promise<InferSelectModel<typeof RootShelf> | null> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     const existingRootShelf = await localDB.query.RootShelf.findFirst({
       where: eq(RootShelf.id, request.param.rootShelfId),
     });
     return existingRootShelf ?? null;
-  }
+  };
 
-  static async syncGetMyRootShelfById(
+  static syncGetMyRootShelfById = async (
     response: GetMyRootShelfByIdResponse
-  ): Promise<void> {
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB
       .insert(RootShelf)
       .values({
@@ -41,14 +47,15 @@ export class RootShelfLocalAdaptor {
         createdAt: response.data.createdAt,
       })
       .onConflictDoNothing({ target: RootShelf.id });
-  }
+  };
 
   // sync mutation data should available while user is offline
   // please to make sure avoiding syncing mutation data for invalid user operation,
   //  ex. unauthorized operations, malicious operations
-  static async simulateCreateRootShelf(
+  static simulateCreateRootShelf = async (
     request: CreateRootShelfRequest
-  ): Promise<void> {
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
@@ -69,22 +76,24 @@ export class RootShelfLocalAdaptor {
         payload: request,
       });
     });
-  }
+  };
 
-  static async syncCreateRootShelf(
+  static syncCreateRootShelf = async (
     request: CreateRootShelfRequest,
     response: CreateRootShelfResponse
-  ): Promise<void> {
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.insert(RootShelf).values({
       id: response.data.id,
       ownerPublicId: response.embedded.publicId,
       name: request.body.name,
     });
-  }
+  };
 
-  static async simulateCreateRootShelves(
+  static simulateCreateRootShelves = async (
     request: CreateRootShelvesRequest
-  ): Promise<void> {
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
@@ -110,22 +119,17 @@ export class RootShelfLocalAdaptor {
           entityId: createdRootShelf.id,
           entityType: TransactionEntityType.RootShelf,
           actionType: TransactionActionType.CREATE,
-          payload: {
-            header: request.header,
-            body: {
-              id: createdRootShelf.id,
-              name: createdRootShelf.name,
-            },
-          } satisfies CreateRootShelfRequest,
+          payload: request,
         }))
       );
     });
-  }
+  };
 
-  static async syncCreateRootShelves(
+  static syncCreateRootShelves = async (
     request: CreateRootShelvesRequest,
     response: CreateRootShelvesResponse
-  ): Promise<void> {
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     const createdRootShelves = request.body.createdRootShelves.map(
       createdRootShelf => ({
         id: createdRootShelf.id ?? generateUUID(),
@@ -134,5 +138,68 @@ export class RootShelfLocalAdaptor {
       })
     );
     await localDB.insert(RootShelf).values(createdRootShelves);
-  }
+  };
+
+  static simulateUpdateMyRootShelfById = async (
+    request: UpdateMyRootShelfByIdRequest
+  ): Promise<void> => {
+    if (request.body.values.name) {
+      if (!localDB.isReady) await localDB.ensureReady();
+      await localDB.transaction(async tx => {
+        const loggedInUser = await tx.query.User.findFirst({
+          where: eq(User.isLoggedIn, true),
+        });
+        if (loggedInUser === undefined) return;
+        await tx.update(RootShelf).set({
+          name: request.body.values.name,
+        });
+        await tx.insert(Transaction).values({
+          ownerPublicId: loggedInUser.publicId,
+          entityId: request.body.rootShelfId,
+          entityType: TransactionEntityType.RootShelf,
+          actionType: TransactionActionType.UPDATE,
+          payload: request,
+        });
+      });
+    }
+  };
+
+  static syncUpdateMyRootShelfById = async (
+    request: UpdateMyRootShelfByIdRequest,
+    response: UpdateMyRootShelfByIdResponse
+  ): Promise<void> => {
+    if (request.body.values.name) {
+      if (!localDB.isReady) await localDB.ensureReady();
+      await localDB
+        .update(RootShelf)
+        .set({
+          name: request.body.values.name,
+        })
+        .where(
+          and(
+            eq(RootShelf.id, request.body.rootShelfId),
+            eq(RootShelf.ownerPublicId, response.embedded.publicId)
+          )
+        );
+    }
+  };
+
+  static syncUpdateMyRootShelvesByIds = async (
+    request: UpdateMyRootShelvesByIdsRequest,
+    response: UpdateMyRootShelvesByIdsResponse
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    const valueSQL = sql.join(
+      request.body.updatedRootShelves.map(
+        valueArg => sql`(${valueArg.rootShelfId}, ${valueArg.values.name})`
+      )
+    );
+    // await localDB.execute(sql`
+    //   UPDATE ${RootShelf} as r
+    //   SET
+    //     name = v.name
+    //   FROM (values ${valueSQL}) AS v(id, name)
+    //   WHERE r.id = v.id
+    // `);
+  };
 }

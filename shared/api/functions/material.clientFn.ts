@@ -5,7 +5,7 @@ import {
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
-import { isJsonResponse } from "@/util/isJsonContext";
+import { isJsonResponse } from "@shared/util/isJsonContext";
 
 export async function SaveMyNotebookMaterialById(
   request: SaveMyNotebookMaterialByIdRequest

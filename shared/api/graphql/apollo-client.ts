@@ -7,7 +7,7 @@ import {
 import { CurrentAPIBaseURL } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { getAuthorization } from "@/util/getAuthorization";
+import { getAuthorization } from "@shared/util/getAuthorization";
 
 export const createApolloClient = () => {
   const apiDomainURL = import.meta.env.VITE_API_DOMAIN_URL || "";

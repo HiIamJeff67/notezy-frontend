@@ -1,6 +1,6 @@
 import { routerWithApolloClient } from "@apollo/client-integration-tanstack-start";
+import { createApolloClient } from "@shared/api/graphql/apollo-client";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
-import { createApolloClient } from "@/graphql/apollo-client";
 import { routeTree } from "./routeTree.gen";
 
 const rawBasePath = import.meta.env.VITE_APP_BASE_PATH || "/development/v1";

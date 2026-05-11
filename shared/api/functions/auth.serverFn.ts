@@ -27,9 +27,9 @@ import {
 } from "@shared/api/interfaces/auth.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
+import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import { isJsonResponse } from "@/util/isJsonContext";
 
 export const Register = createServerFn({ method: "POST" })
   .inputValidator((data: RegisterRequest) => data)

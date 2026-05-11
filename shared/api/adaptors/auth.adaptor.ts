@@ -12,38 +12,16 @@ import type {
 } from "@shared/api/interfaces/auth.interface";
 import { UserStatus } from "@shared/api/interfaces/enums";
 import { localDB } from "@shared/api/local/db";
-import {
-  ensureLocalDBReadyForWrites,
-  getLatestLocalDBMigrationVersion,
-} from "@shared/api/local/migrator";
 import { RootShelf } from "@shared/api/local/schemas";
 import { User } from "@shared/api/local/schemas/user.schema";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { eq } from "drizzle-orm";
 
 export class AuthLocalAdaptor {
-  private static async ensureLocalDBReady(): Promise<void> {
-    const currentVersion =
-      LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.currentLocalDBVersion
-      ) ?? "-1";
-    const targetVersion = getLatestLocalDBMigrationVersion();
-    const result = await ensureLocalDBReadyForWrites({
-      currentVersion,
-      targetVersion,
-    });
-    LocalStorageManipulator.setItem(
-      LocalStorageKey.currentLocalDBVersion,
-      result.finalVersion
-    );
-  }
-
   static async syncRegister(
     request: RegisterRequest,
     response: RegisterResponse
   ): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx.update(User).set({ isLoggedIn: false });
       await tx
@@ -64,7 +42,7 @@ export class AuthLocalAdaptor {
   static async syncRegisterViaGoogle(
     response: RegisterViaGoogleResponse
   ): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx.update(User).set({ isLoggedIn: false });
       await tx
@@ -83,7 +61,7 @@ export class AuthLocalAdaptor {
   }
 
   static async syncLogin(response: LoginResponse): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx.update(User).set({ isLoggedIn: false });
       await tx
@@ -104,7 +82,7 @@ export class AuthLocalAdaptor {
   static async syncLoginViaGoogle(
     response: LoginViaGoogleResponse
   ): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx.update(User).set({ isLoggedIn: false });
       await tx
@@ -123,7 +101,7 @@ export class AuthLocalAdaptor {
   }
 
   static async syncLogout(response: LogoutResponse): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx
         .update(User)
@@ -140,7 +118,7 @@ export class AuthLocalAdaptor {
     request: ResetEmailRequest,
     response: ResetEmailResponse
   ): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB
       .update(User)
       .set({
@@ -150,14 +128,14 @@ export class AuthLocalAdaptor {
   }
 
   static async syncResetMe(response: ResetMeResponse): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB
       .delete(RootShelf)
       .where(eq(RootShelf.ownerPublicId, response.embedded.publicId));
   }
 
   static async syncDeleteMe(response: DeleteMeResponse): Promise<void> {
-    await this.ensureLocalDBReady();
+    if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
       await tx
         .delete(User)

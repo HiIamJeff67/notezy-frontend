@@ -9,6 +9,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { User, UserAccount, UserData, UserInfo } from "@shared/types/user.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import React, {
   createContext,
   useCallback,
@@ -18,7 +19,6 @@ import React, {
 } from "react";
 import { useAppRouter, useLoading, useNetwork } from "@/hooks";
 import { useTransactionSynchronizer } from "@/hooks/useTransactionSynchronizer";
-import { getAuthorization } from "@/util/getAuthorization";
 
 interface UserContextType {
   enableInitialFetching: boolean;
