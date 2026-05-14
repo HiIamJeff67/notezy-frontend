@@ -1,5 +1,9 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
+import { AllAccessControlPermissions } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import z from "zod";
-import { NotezyRequestSchema, NotezyResponseSchema } from "./context.interface";
 
 /* ============================== GetMyRootShelfById ============================== */
 
@@ -23,6 +27,7 @@ export const GetMyRootShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     name: z.string(),
+    permission: z.enum(AllAccessControlPermissions),
     subShelfCount: z.int32(),
     itemCount: z.int32(),
     lastAnalyzedAt: z.coerce.date(),

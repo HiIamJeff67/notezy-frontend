@@ -65,53 +65,78 @@ export const buildBlockPackSyncResult = ({
 }: BuildBlockPackSyncResultOptions): SyncBuildResult => {
   const createBlockPacksMap = new Map<
     string,
-    EntityState<{
-      id?: string;
-      parentSubShelfId: string;
-      name: string;
-      icon: string | null;
-      headerBackgroundURL: string | null;
-      rootShelfId?: string;
-    }>
+    {
+      body: {
+        id?: string;
+        parentSubShelfId: string;
+        name: string;
+        icon: string | null;
+        headerBackgroundURL: string | null;
+      };
+      affected: {
+        rootShelfId?: string;
+      };
+      sequences: Set<number>;
+    }
   >();
   const updateBlockPacksMap = new Map<
     string,
-    EntityState<{
-      blockPackId: string;
-      values: {
-        name?: string;
-        icon?: string;
-        headerBackgroundURL?: string;
+    {
+      body: {
+        blockPackId: string;
+        values: {
+          name?: string;
+          icon?: string;
+          headerBackgroundURL?: string;
+        };
+        setNull?: Record<string, boolean>;
       };
-      setNull?: Record<string, boolean>;
-      parentSubShelfId: string;
-      rootShelfId?: string;
-    }>
+      affected: {
+        parentSubShelfId: string;
+        rootShelfId?: string;
+      };
+      sequences: Set<number>;
+    }
   >();
   const moveBlockPacksMap = new Map<
     string,
-    EntityState<{
-      blockPackId: string;
-      destinationParentSubShelfId: string;
-      sourceParentSubShelfId?: string;
-      rootShelfId?: string;
-    }>
+    {
+      body: {
+        blockPackId: string;
+        destinationParentSubShelfId: string;
+      };
+      affected: {
+        sourceParentSubShelfId?: string;
+        rootShelfId?: string;
+      };
+      sequences: Set<number>;
+    }
   >();
   const restoreBlockPacksMap = new Map<
     string,
-    EntityState<{
-      blockPackId: string;
-      parentSubShelfId: string;
-      rootShelfId: string;
-    }>
+    {
+      body: {
+        blockPackId: string;
+      };
+      affected: {
+        parentSubShelfId: string;
+        rootShelfId: string;
+      };
+      sequences: Set<number>;
+    }
   >();
   const deleteBlockPacksMap = new Map<
     string,
-    EntityState<{
-      blockPackId: string;
-      parentSubShelfId: string;
-      rootShelfId: string;
-    }>
+    {
+      body: {
+        blockPackId: string;
+      };
+      affected: {
+        parentSubShelfId: string;
+        rootShelfId: string;
+      };
+      sequences: Set<number>;
+    }
   >();
 
   const parseFailedSequences = new Set<number>();
@@ -120,7 +145,10 @@ export const buildBlockPackSyncResult = ({
 
   for (const transaction of transactions) {
     onParsed?.();
-    const payload = transaction.payload as unknown;
+    const request = {
+      body: transaction.body as unknown,
+      affected: transaction.affected as unknown,
+    };
 
     if (transaction.entityType !== TransactionEntityType.BlockPack) {
       parseFailedSequences.add(transaction.sequence);
@@ -129,9 +157,13 @@ export const buildBlockPackSyncResult = ({
 
     switch (transaction.actionType) {
       case TransactionActionType.CREATE: {
-        const one = CreateBlockPackRequestSchema.safeParse(payload);
+        const one = CreateBlockPackRequestSchema.safeParse(request);
         if (one.success) {
-          const id = (one.data.body.id ?? transaction.entityId) as string;
+          const id = one.data.body.id;
+          if (!id) {
+            parseFailedSequences.add(transaction.sequence);
+            break;
+          }
           createBlockPacksMap.set(id, {
             body: {
               id,
@@ -139,6 +171,8 @@ export const buildBlockPackSyncResult = ({
               name: one.data.body.name,
               icon: one.data.body.icon,
               headerBackgroundURL: one.data.body.headerBackgroundURL,
+            },
+            affected: {
               rootShelfId: one.data.affected.rootShelfId,
             },
             sequences: new Set([transaction.sequence]),
@@ -146,9 +180,9 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = CreateBlockPacksRequestSchema.safeParse(payload);
+        const many = CreateBlockPacksRequestSchema.safeParse(request);
         if (many.success) {
-          for (const created of many.data.body.createdBlockPacks) {
+          for (const [index, created] of many.data.body.createdBlockPacks.entries()) {
             if (!created.id) continue;
             createBlockPacksMap.set(created.id, {
               body: {
@@ -157,7 +191,11 @@ export const buildBlockPackSyncResult = ({
                 name: created.name,
                 icon: created.icon,
                 headerBackgroundURL: created.headerBackgroundURL,
-                rootShelfId: many.data.affected.rootShelfIds[0],
+              },
+              affected: {
+                rootShelfId:
+                  many.data.affected.rootShelfIds[index] ??
+                  many.data.affected.rootShelfIds[0],
               },
               sequences: new Set([transaction.sequence]),
             });
@@ -169,7 +207,7 @@ export const buildBlockPackSyncResult = ({
         break;
       }
       case TransactionActionType.UPDATE: {
-        const one = UpdateMyBlockPackByIdRequestSchema.safeParse(payload);
+        const one = UpdateMyBlockPackByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.blockPackId;
           const createState = createBlockPacksMap.get(id);
@@ -203,6 +241,8 @@ export const buildBlockPackSyncResult = ({
                 blockPackId: id,
                 values: one.data.body.values,
                 setNull: one.data.body.setNull,
+              },
+              affected: {
                 parentSubShelfId: one.data.affected.parentSubShelfId,
                 rootShelfId: one.data.affected.rootShelfId,
               },
@@ -212,9 +252,9 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = UpdateMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        const many = UpdateMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const updated of many.data.body.updatedBlockPacks) {
+          for (const [index, updated] of many.data.body.updatedBlockPacks.entries()) {
             const id = updated.blockPackId;
             const createState = createBlockPacksMap.get(id);
             if (createState) {
@@ -240,6 +280,12 @@ export const buildBlockPackSyncResult = ({
                 ...(existing.body.setNull ?? {}),
                 ...(updated.setNull ?? {}),
               };
+              existing.affected.parentSubShelfId =
+                many.data.affected.parentSubShelfIds[index] ??
+                many.data.affected.parentSubShelfIds[0];
+              existing.affected.rootShelfId =
+                many.data.affected.rootShelfIds[index] ??
+                many.data.affected.rootShelfIds[0];
               existing.sequences.add(transaction.sequence);
             } else {
               updateBlockPacksMap.set(id, {
@@ -247,9 +293,14 @@ export const buildBlockPackSyncResult = ({
                   blockPackId: id,
                   values: updated.values,
                   setNull: updated.setNull,
-                  parentSubShelfId: many.data.affected
-                    .parentSubShelfIds[0] as string,
-                  rootShelfId: many.data.affected.rootShelfIds[0] as string,
+                },
+                affected: {
+                  parentSubShelfId:
+                    many.data.affected.parentSubShelfIds[index] ??
+                    many.data.affected.parentSubShelfIds[0],
+                  rootShelfId:
+                    many.data.affected.rootShelfIds[index] ??
+                    many.data.affected.rootShelfIds[0],
                 },
                 sequences: new Set([transaction.sequence]),
               });
@@ -262,7 +313,7 @@ export const buildBlockPackSyncResult = ({
         break;
       }
       case TransactionActionType.MOVE: {
-        const one = MoveMyBlockPackByIdRequestSchema.safeParse(payload);
+        const one = MoveMyBlockPackByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.blockPackId;
           const createState = createBlockPacksMap.get(id);
@@ -278,6 +329,8 @@ export const buildBlockPackSyncResult = ({
               blockPackId: id,
               destinationParentSubShelfId:
                 one.data.body.destinationParentSubShelfId,
+            },
+            affected: {
               sourceParentSubShelfId: one.data.affected.sourceParentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
@@ -287,9 +340,9 @@ export const buildBlockPackSyncResult = ({
         }
 
         const manyOneDestination =
-          MoveMyBlockPacksByIdsRequestSchema.safeParse(payload);
+          MoveMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (manyOneDestination.success) {
-          for (const id of manyOneDestination.data.body.blockPackIds) {
+          for (const [index, id] of manyOneDestination.data.body.blockPackIds.entries()) {
             const createState = createBlockPacksMap.get(id);
             if (createState) {
               createState.body.parentSubShelfId =
@@ -303,7 +356,10 @@ export const buildBlockPackSyncResult = ({
                 blockPackId: id,
                 destinationParentSubShelfId:
                   manyOneDestination.data.body.destinationParentSubShelfId,
+              },
+              affected: {
                 sourceParentSubShelfId:
+                  manyOneDestination.data.affected.sourceParentSubShelfIds[index] ??
                   manyOneDestination.data.affected.sourceParentSubShelfIds[0],
                 rootShelfId: manyOneDestination.data.affected.rootShelfId,
               },
@@ -313,9 +369,9 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = BatchMoveMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        const many = BatchMoveMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const moved of many.data.body.movedBlockPacks) {
+          for (const [movedIndex, moved] of many.data.body.movedBlockPacks.entries()) {
             for (const id of moved.blockPackIds) {
               const createState = createBlockPacksMap.get(id);
               if (createState) {
@@ -330,9 +386,14 @@ export const buildBlockPackSyncResult = ({
                   blockPackId: id,
                   destinationParentSubShelfId:
                     moved.destinationParentSubShelfId,
+                },
+                affected: {
                   sourceParentSubShelfId:
+                    many.data.affected.sourceParentSubShelfIds[movedIndex] ??
                     many.data.affected.sourceParentSubShelfIds[0],
-                  rootShelfId: many.data.affected.rootShelfIds[0],
+                  rootShelfId:
+                    many.data.affected.rootShelfIds[movedIndex] ??
+                    many.data.affected.rootShelfIds[0],
                 },
                 sequences: new Set([transaction.sequence]),
               });
@@ -345,7 +406,7 @@ export const buildBlockPackSyncResult = ({
         break;
       }
       case TransactionActionType.RESTORE: {
-        const one = RestoreMyBlockPackByIdRequestSchema.safeParse(payload);
+        const one = RestoreMyBlockPackByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.blockPackId;
           const deleted = deleteBlockPacksMap.get(id);
@@ -359,6 +420,8 @@ export const buildBlockPackSyncResult = ({
           restoreBlockPacksMap.set(id, {
             body: {
               blockPackId: id,
+            },
+            affected: {
               parentSubShelfId: one.data.affected.parentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
@@ -367,9 +430,9 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = RestoreMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        const many = RestoreMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const id of many.data.body.blockPackIds) {
+          for (const [index, id] of many.data.body.blockPackIds.entries()) {
             const deleted = deleteBlockPacksMap.get(id);
             if (deleted) {
               mergeSet(noopSequences, deleted.sequences);
@@ -381,9 +444,14 @@ export const buildBlockPackSyncResult = ({
             restoreBlockPacksMap.set(id, {
               body: {
                 blockPackId: id,
-                parentSubShelfId: many.data.affected
-                  .parentSubShelfIds[0] as string,
-                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+              },
+              affected: {
+                parentSubShelfId:
+                  many.data.affected.parentSubShelfIds[index] ??
+                  many.data.affected.parentSubShelfIds[0],
+                rootShelfId:
+                  many.data.affected.rootShelfIds[index] ??
+                  many.data.affected.rootShelfIds[0],
               },
               sequences: new Set([transaction.sequence]),
             });
@@ -395,7 +463,7 @@ export const buildBlockPackSyncResult = ({
         break;
       }
       case TransactionActionType.DELETE: {
-        const one = DeleteMyBlockPackByIdRequestSchema.safeParse(payload);
+        const one = DeleteMyBlockPackByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.blockPackId;
           if (createBlockPacksMap.has(id)) {
@@ -417,6 +485,8 @@ export const buildBlockPackSyncResult = ({
           deleteBlockPacksMap.set(id, {
             body: {
               blockPackId: id,
+            },
+            affected: {
               parentSubShelfId: one.data.affected.parentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
@@ -425,9 +495,9 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = DeleteMyBlockPacksByIdsRequestSchema.safeParse(payload);
+        const many = DeleteMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const id of many.data.body.blockPackIds) {
+          for (const [index, id] of many.data.body.blockPackIds.entries()) {
             if (createBlockPacksMap.has(id)) {
               mergeSet(noopSequences, createBlockPacksMap.get(id)!.sequences);
               noopSequences.add(transaction.sequence);
@@ -447,9 +517,14 @@ export const buildBlockPackSyncResult = ({
             deleteBlockPacksMap.set(id, {
               body: {
                 blockPackId: id,
-                parentSubShelfId: many.data.affected
-                  .parentSubShelfIds[0] as string,
-                rootShelfId: many.data.affected.rootShelfIds[0] as string,
+              },
+              affected: {
+                parentSubShelfId:
+                  many.data.affected.parentSubShelfIds[index] ??
+                  many.data.affected.parentSubShelfIds[0],
+                rootShelfId:
+                  many.data.affected.rootShelfIds[index] ??
+                  many.data.affected.rootShelfIds[0],
               },
               sequences: new Set([transaction.sequence]),
             });
@@ -481,7 +556,7 @@ export const buildBlockPackSyncResult = ({
         })),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
         parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
       },
     };
@@ -506,8 +581,10 @@ export const buildBlockPackSyncResult = ({
         })),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId as string),
-        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId as string),
+        parentSubShelfIds: states.map(
+          state => state.affected.parentSubShelfId
+        ),
       },
     };
     const sequences = getMergedSequences(
@@ -531,10 +608,10 @@ export const buildBlockPackSyncResult = ({
       },
       affected: {
         rootShelfIds: states
-          .map(state => state.body.rootShelfId)
+          .map(state => state.affected.rootShelfId)
           .filter((id): id is string => !!id),
         sourceParentSubShelfIds: states
-          .map(state => state.body.sourceParentSubShelfId)
+          .map(state => state.affected.sourceParentSubShelfId)
           .filter((id): id is string => !!id),
       },
     };
@@ -555,8 +632,10 @@ export const buildBlockPackSyncResult = ({
         blockPackIds: states.map(state => state.body.blockPackId),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
-        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
+        parentSubShelfIds: states.map(
+          state => state.affected.parentSubShelfId
+        ),
       },
     };
     const sequences = getMergedSequences(
@@ -576,8 +655,10 @@ export const buildBlockPackSyncResult = ({
         blockPackIds: states.map(state => state.body.blockPackId),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
-        parentSubShelfIds: states.map(state => state.body.parentSubShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
+        parentSubShelfIds: states.map(
+          state => state.affected.parentSubShelfId
+        ),
       },
     };
     const sequences = getMergedSequences(

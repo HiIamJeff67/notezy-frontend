@@ -74,13 +74,18 @@ export const buildSubShelfSyncResult = ({
   >();
   const updateSubShelvesMap = new Map<
     string,
-    EntityState<{
-      subShelfId: string;
-      values: { name?: string };
-      setNull?: Record<string, boolean>;
-      rootShelfId: string;
-      prevSubShelfId: string | null;
-    }>
+    {
+      body: {
+        subShelfId: string;
+        values: { name?: string };
+        setNull?: Record<string, boolean>;
+      };
+      affected: {
+        rootShelfId: string;
+        prevSubShelfId: string | null;
+      };
+      sequences: Set<number>;
+    }
   >();
   const moveSubShelvesMap = new Map<
     string,
@@ -93,19 +98,29 @@ export const buildSubShelfSyncResult = ({
   >();
   const restoreSubShelvesMap = new Map<
     string,
-    EntityState<{
-      subShelfId: string;
-      rootShelfId: string;
-      prevSubShelfId: string | null;
-    }>
+    {
+      body: {
+        subShelfId: string;
+      };
+      affected: {
+        rootShelfId: string;
+        prevSubShelfId: string | null;
+      };
+      sequences: Set<number>;
+    }
   >();
   const deleteSubShelvesMap = new Map<
     string,
-    EntityState<{
-      subShelfId: string;
-      rootShelfId: string;
-      prevSubShelfId: string | null;
-    }>
+    {
+      body: {
+        subShelfId: string;
+      };
+      affected: {
+        rootShelfId: string;
+        prevSubShelfId: string | null;
+      };
+      sequences: Set<number>;
+    }
   >();
 
   const parseFailedSequences = new Set<number>();
@@ -114,7 +129,10 @@ export const buildSubShelfSyncResult = ({
 
   for (const transaction of transactions) {
     onParsed?.();
-    const payload = transaction.payload as unknown;
+    const request = {
+      body: transaction.body as unknown,
+      affected: transaction.affected as unknown,
+    };
 
     if (transaction.entityType !== TransactionEntityType.SubShelf) {
       parseFailedSequences.add(transaction.sequence);
@@ -123,9 +141,13 @@ export const buildSubShelfSyncResult = ({
 
     switch (transaction.actionType) {
       case TransactionActionType.CREATE: {
-        const one = CreateSubShelfByRootShelfIdRequestSchema.safeParse(payload);
+        const one = CreateSubShelfByRootShelfIdRequestSchema.safeParse(request);
         if (one.success) {
-          const id = (one.data.body.id ?? transaction.entityId) as string;
+          const id = one.data.body.id;
+          if (!id) {
+            parseFailedSequences.add(transaction.sequence);
+            break;
+          }
           createSubShelvesMap.set(id, {
             body: {
               id,
@@ -139,7 +161,7 @@ export const buildSubShelfSyncResult = ({
         }
 
         const many =
-          CreateSubShelvesByRootShelfIdsRequestSchema.safeParse(payload);
+          CreateSubShelvesByRootShelfIdsRequestSchema.safeParse(request);
         if (many.success) {
           for (const created of many.data.body.createdSubShelves) {
             if (!created.id) continue;
@@ -160,7 +182,7 @@ export const buildSubShelfSyncResult = ({
         break;
       }
       case TransactionActionType.UPDATE: {
-        const one = UpdateMySubShelfByIdRequestSchema.safeParse(payload);
+        const one = UpdateMySubShelfByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.subShelfId;
           const createState = createSubShelvesMap.get(id);
@@ -189,6 +211,8 @@ export const buildSubShelfSyncResult = ({
                 subShelfId: id,
                 values: one.data.body.values,
                 setNull: one.data.body.setNull,
+              },
+              affected: {
                 rootShelfId: one.data.affected.rootShelfId,
                 prevSubShelfId: one.data.affected.prevSubShelfId,
               },
@@ -198,9 +222,9 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const many = UpdateMySubShelvesByIdsRequestSchema.safeParse(payload);
+        const many = UpdateMySubShelvesByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const updated of many.data.body.updatedSubShelves) {
+          for (const [index, updated] of many.data.body.updatedSubShelves.entries()) {
             const id = updated.subShelfId;
             const createState = createSubShelvesMap.get(id);
             if (createState) {
@@ -221,6 +245,13 @@ export const buildSubShelfSyncResult = ({
                 ...(existing.body.setNull ?? {}),
                 ...(updated.setNull ?? {}),
               };
+              existing.affected.rootShelfId =
+                many.data.affected.rootShelfIds[index] ??
+                many.data.affected.rootShelfIds[0];
+              existing.affected.prevSubShelfId =
+                many.data.affected.prevSubShelfIds[index] ??
+                many.data.affected.prevSubShelfIds[0] ??
+                null;
               existing.sequences.add(transaction.sequence);
             } else {
               updateSubShelvesMap.set(id, {
@@ -228,9 +259,15 @@ export const buildSubShelfSyncResult = ({
                   subShelfId: id,
                   values: updated.values,
                   setNull: updated.setNull,
-                  rootShelfId: many.data.affected.rootShelfIds[0] as string,
-                  prevSubShelfId: many.data.affected
-                    .prevSubShelfIds[0] as string,
+                },
+                affected: {
+                  rootShelfId:
+                    many.data.affected.rootShelfIds[index] ??
+                    many.data.affected.rootShelfIds[0],
+                  prevSubShelfId:
+                    many.data.affected.prevSubShelfIds[index] ??
+                    many.data.affected.prevSubShelfIds[0] ??
+                    null,
                 },
                 sequences: new Set([transaction.sequence]),
               });
@@ -243,7 +280,7 @@ export const buildSubShelfSyncResult = ({
         break;
       }
       case TransactionActionType.MOVE: {
-        const oneByOne = MoveMySubShelfRequestSchema.safeParse(payload);
+        const oneByOne = MoveMySubShelfRequestSchema.safeParse(request);
         if (oneByOne.success) {
           const id = oneByOne.data.body.sourceSubShelfId;
           const createState = createSubShelvesMap.get(id);
@@ -268,7 +305,7 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const oneToOne = MoveMySubShelvesRequestSchema.safeParse(payload);
+        const oneToOne = MoveMySubShelvesRequestSchema.safeParse(request);
         if (oneToOne.success) {
           for (const id of oneToOne.data.body.sourceSubShelfIds) {
             const createState = createSubShelvesMap.get(id);
@@ -295,7 +332,7 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const many = BatchMoveMySubShelvesRequestSchema.safeParse(payload);
+        const many = BatchMoveMySubShelvesRequestSchema.safeParse(request);
         if (many.success) {
           for (const moved of many.data.body.movedSubShelves) {
             for (const id of moved.sourceSubShelfIds) {
@@ -325,7 +362,7 @@ export const buildSubShelfSyncResult = ({
         break;
       }
       case TransactionActionType.RESTORE: {
-        const one = RestoreMySubShelfByIdRequestSchema.safeParse(payload);
+        const one = RestoreMySubShelfByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.subShelfId;
           const deleted = deleteSubShelvesMap.get(id);
@@ -339,6 +376,8 @@ export const buildSubShelfSyncResult = ({
           restoreSubShelvesMap.set(id, {
             body: {
               subShelfId: id,
+            },
+            affected: {
               rootShelfId: one.data.affected.rootShelfId,
               prevSubShelfId: one.data.affected.prevSubShelfId,
             },
@@ -347,9 +386,9 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const many = RestoreMySubShelvesByIdsRequestSchema.safeParse(payload);
+        const many = RestoreMySubShelvesByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const id of many.data.body.subShelfIds) {
+          for (const [index, id] of many.data.body.subShelfIds.entries()) {
             const deleted = deleteSubShelvesMap.get(id);
             if (deleted) {
               mergeSet(noopSequences, deleted.sequences);
@@ -361,8 +400,15 @@ export const buildSubShelfSyncResult = ({
             restoreSubShelvesMap.set(id, {
               body: {
                 subShelfId: id,
-                rootShelfId: many.data.affected.rootShelfIds[0] as string,
-                prevSubShelfId: many.data.affected.prevSubShelfIds[0] as string,
+              },
+              affected: {
+                rootShelfId:
+                  many.data.affected.rootShelfIds[index] ??
+                  many.data.affected.rootShelfIds[0],
+                prevSubShelfId:
+                  many.data.affected.prevSubShelfIds[index] ??
+                  many.data.affected.prevSubShelfIds[0] ??
+                  null,
               },
               sequences: new Set([transaction.sequence]),
             });
@@ -374,7 +420,7 @@ export const buildSubShelfSyncResult = ({
         break;
       }
       case TransactionActionType.DELETE: {
-        const one = DeleteMySubShelfByIdRequestSchema.safeParse(payload);
+        const one = DeleteMySubShelfByIdRequestSchema.safeParse(request);
         if (one.success) {
           const id = one.data.body.subShelfId;
           if (createSubShelvesMap.has(id)) {
@@ -396,6 +442,8 @@ export const buildSubShelfSyncResult = ({
           deleteSubShelvesMap.set(id, {
             body: {
               subShelfId: id,
+            },
+            affected: {
               rootShelfId: one.data.affected.rootShelfId,
               prevSubShelfId: one.data.affected.prevSubShelfId,
             },
@@ -404,9 +452,9 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const many = DeleteMySubShelvesByIdsRequestSchema.safeParse(payload);
+        const many = DeleteMySubShelvesByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const id of many.data.body.subShelfIds) {
+          for (const [index, id] of many.data.body.subShelfIds.entries()) {
             if (createSubShelvesMap.has(id)) {
               mergeSet(noopSequences, createSubShelvesMap.get(id)!.sequences);
               noopSequences.add(transaction.sequence);
@@ -426,8 +474,15 @@ export const buildSubShelfSyncResult = ({
             deleteSubShelvesMap.set(id, {
               body: {
                 subShelfId: id,
-                rootShelfId: many.data.affected.rootShelfIds[0] as string,
-                prevSubShelfId: many.data.affected.prevSubShelfIds[0] as string,
+              },
+              affected: {
+                rootShelfId:
+                  many.data.affected.rootShelfIds[index] ??
+                  many.data.affected.rootShelfIds[0],
+                prevSubShelfId:
+                  many.data.affected.prevSubShelfIds[index] ??
+                  many.data.affected.prevSubShelfIds[0] ??
+                  null,
               },
               sequences: new Set([transaction.sequence]),
             });
@@ -478,8 +533,8 @@ export const buildSubShelfSyncResult = ({
         })),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
-        prevSubShelfIds: states.map(state => state.body.prevSubShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
+        prevSubShelfIds: states.map(state => state.affected.prevSubShelfId),
       },
     };
     const sequences = getMergedSequences(
@@ -532,9 +587,9 @@ export const buildSubShelfSyncResult = ({
         subShelfIds: states.map(state => state.body.subShelfId),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
         prevSubShelfIds: states
-          .map(state => state.body.prevSubShelfId)
+          .map(state => state.affected.prevSubShelfId)
           .filter((id): id is string => id !== null),
       },
     };
@@ -555,9 +610,9 @@ export const buildSubShelfSyncResult = ({
         subShelfIds: states.map(state => state.body.subShelfId),
       },
       affected: {
-        rootShelfIds: states.map(state => state.body.rootShelfId),
+        rootShelfIds: states.map(state => state.affected.rootShelfId),
         prevSubShelfIds: states
-          .map(state => state.body.prevSubShelfId)
+          .map(state => state.affected.prevSubShelfId)
           .filter((id): id is string => id !== null),
       },
     };

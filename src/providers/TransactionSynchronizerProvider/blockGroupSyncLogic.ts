@@ -96,7 +96,10 @@ export const buildBlockGroupSyncResult = ({
 
   for (const transaction of transactions) {
     onParsed?.();
-    const payload = transaction.payload as unknown;
+    const request = {
+      body: transaction.body as unknown,
+      affected: transaction.affected as unknown,
+    };
 
     if (transaction.entityType !== TransactionEntityType.BlockGroup) {
       parseFailedSequences.add(transaction.sequence);
@@ -107,7 +110,7 @@ export const buildBlockGroupSyncResult = ({
       case TransactionActionType.CREATE: {
         const oneWithBlocks =
           InsertBlockGroupAndItsBlocksByBlockPackIdRequestSchema.safeParse(
-            payload
+            request
           );
         if (oneWithBlocks.success) {
           insertBlockGroupsWithBlocksState.body.push({
@@ -123,7 +126,7 @@ export const buildBlockGroupSyncResult = ({
 
         const manyWithBlocks =
           InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema.safeParse(
-            payload
+            request
           );
         if (manyWithBlocks.success) {
           insertBlockGroupsWithBlocksState.body.push(
@@ -138,7 +141,7 @@ export const buildBlockGroupSyncResult = ({
 
         const batchWithBlocks =
           BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.safeParse(
-            payload
+            request
           );
         if (batchWithBlocks.success) {
           insertBlockGroupsWithBlocksState.body.push(
@@ -149,7 +152,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const oneWithoutBlocks =
-          InsertBlockGroupByBlockPackIdRequestSchema.safeParse(payload);
+          InsertBlockGroupByBlockPackIdRequestSchema.safeParse(request);
         if (oneWithoutBlocks.success) {
           insertBlockGroupsState.body.push({
             blockPackId: oneWithoutBlocks.data.body.blockPackId,
@@ -161,7 +164,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const manyWithoutBlocks =
-          InsertBlockGroupsByBlockPackIdRequestSchema.safeParse(payload);
+          InsertBlockGroupsByBlockPackIdRequestSchema.safeParse(request);
         if (manyWithoutBlocks.success) {
           insertBlockGroupsState.body.push(
             ...manyWithoutBlocks.data.body.blockPackContents.map(content => ({
@@ -174,7 +177,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const batchWithoutBlocks =
-          BatchInsertBlockGroupsByBlockPackIdsRequestSchema.safeParse(payload);
+          BatchInsertBlockGroupsByBlockPackIdsRequestSchema.safeParse(request);
         if (batchWithoutBlocks.success) {
           insertBlockGroupsState.body.push(
             ...batchWithoutBlocks.data.body.blockPackContents
@@ -187,7 +190,7 @@ export const buildBlockGroupSyncResult = ({
         break;
       }
       case TransactionActionType.MOVE: {
-        const one = MoveMyBlockGroupByIdRequestSchema.safeParse(payload);
+        const one = MoveMyBlockGroupByIdRequestSchema.safeParse(request);
         if (one.success) {
           moveBlockGroupsState.body.push({
             blockPackId: one.data.body.blockPackId,
@@ -200,7 +203,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const oneToMany =
-          MoveMyBlockGroupsByIdsRequestSchema.safeParse(payload);
+          MoveMyBlockGroupsByIdsRequestSchema.safeParse(request);
         if (oneToMany.success) {
           oneToMany.data.body.movableBlockGroupIds.forEach((id, index) => {
             moveBlockGroupsState.body.push({
@@ -217,7 +220,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const many =
-          BatchMoveMyBlockGroupsByIdsRequestSchema.safeParse(payload);
+          BatchMoveMyBlockGroupsByIdsRequestSchema.safeParse(request);
         if (many.success) {
           moveBlockGroupsState.body.push(...many.data.body.movedBlockGroups);
           moveBlockGroupsState.sequences.add(transaction.sequence);
@@ -228,7 +231,7 @@ export const buildBlockGroupSyncResult = ({
         break;
       }
       case TransactionActionType.DELETE: {
-        const one = DeleteMyBlockGroupByIdRequestSchema.safeParse(payload);
+        const one = DeleteMyBlockGroupByIdRequestSchema.safeParse(request);
         if (one.success) {
           deleteBlockGroupsState.body.push(one.data.body.blockGroupId);
           deleteBlockGroupPackIds.add(one.data.affected.blockPackId);
@@ -239,7 +242,7 @@ export const buildBlockGroupSyncResult = ({
           break;
         }
 
-        const many = DeleteMyBlockGroupsByIdsRequestSchema.safeParse(payload);
+        const many = DeleteMyBlockGroupsByIdsRequestSchema.safeParse(request);
         if (many.success) {
           deleteBlockGroupsState.body.push(...many.data.body.blockGroupIds);
           mergeSet(deleteBlockGroupPackIds, many.data.affected.blockPackIds);

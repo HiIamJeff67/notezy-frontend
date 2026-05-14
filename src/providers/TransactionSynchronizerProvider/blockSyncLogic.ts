@@ -75,7 +75,10 @@ export const buildBlockSyncResult = ({
   const syncJobs: SyncJob[] = [];
   for (const transaction of transactions) {
     onParsed?.();
-    const payload = transaction.payload as unknown;
+    const request = {
+      body: transaction.body as unknown,
+      affected: transaction.affected as unknown,
+    };
 
     if (transaction.entityType !== TransactionEntityType.Block) {
       parseFailedSequences.add(transaction.sequence);
@@ -84,7 +87,7 @@ export const buildBlockSyncResult = ({
 
     switch (transaction.actionType) {
       case TransactionActionType.CREATE: {
-        const one = InsertBlockRequestSchema.safeParse(payload);
+        const one = InsertBlockRequestSchema.safeParse(request);
         if (one.success) {
           insertBlocksState.body.push({
             parentBlockId: one.data.body.parentBlockId,
@@ -96,7 +99,7 @@ export const buildBlockSyncResult = ({
           break;
         }
 
-        const many = InsertBlocksRequestSchema.safeParse(payload);
+        const many = InsertBlocksRequestSchema.safeParse(request);
         if (many.success) {
           insertBlocksState.body.push(...many.data.body.insertedBlocks);
           mergeSet(insertBlockPackIds, many.data.affected.blockPackIds);
@@ -108,7 +111,7 @@ export const buildBlockSyncResult = ({
         break;
       }
       case TransactionActionType.UPDATE: {
-        const one = UpdateMyBlockByIdRequestSchema.safeParse(payload);
+        const one = UpdateMyBlockByIdRequestSchema.safeParse(request);
         if (one.success) {
           updateBlocksState.body.push({
             blockId: one.data.body.blockId,
@@ -120,7 +123,7 @@ export const buildBlockSyncResult = ({
           break;
         }
 
-        const many = UpdateMyBlocksByIdsRequestSchema.safeParse(payload);
+        const many = UpdateMyBlocksByIdsRequestSchema.safeParse(request);
         if (many.success) {
           updateBlocksState.body.push(...many.data.body.updatedBlocks);
           mergeSet(updateBlockPackIds, many.data.affected.blockPackIds);
@@ -132,7 +135,7 @@ export const buildBlockSyncResult = ({
         break;
       }
       case TransactionActionType.DELETE: {
-        const one = DeleteMyBlockByIdRequestSchema.safeParse(payload);
+        const one = DeleteMyBlockByIdRequestSchema.safeParse(request);
         if (one.success) {
           deleteBlocksState.body.push(one.data.body.blockId);
           deleteBlockGroupIds.add(one.data.affected.blockGroupId);
@@ -141,7 +144,7 @@ export const buildBlockSyncResult = ({
           break;
         }
 
-        const many = DeleteMyBlocksByIdsRequestSchema.safeParse(payload);
+        const many = DeleteMyBlocksByIdsRequestSchema.safeParse(request);
         if (many.success) {
           deleteBlocksState.body.push(...many.data.body.blockIds);
           mergeSet(deleteBlockGroupIds, many.data.affected.blockGroupIds);

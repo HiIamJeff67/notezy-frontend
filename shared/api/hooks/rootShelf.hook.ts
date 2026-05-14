@@ -1,6 +1,5 @@
 import type { UUID } from "node:crypto";
 import { useApolloClient } from "@apollo/client/react";
-import { RootShelfLocalAdaptor } from "@shared/api/adaptors/rootShelf.adaptor";
 import type {
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
@@ -16,6 +15,8 @@ import {
   mutationFnUpdateMyRootShelvesByIds,
   queryFnGetMyRootShelfById,
 } from "@shared/api/invokers/rootShelf.invoker";
+import { RootShelfLocalSimulator } from "@shared/api/local/simulators/rootShelf.simulator";
+import { RootShelfLocalSynchronizer } from "@shared/api/local/synchronizers/rootShelf.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -30,7 +31,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { useLanguage, useUser } from "@/hooks";
+import { useLanguage } from "@/hooks";
 import { NotezyFetchError } from "../errors/fetch.error";
 import { NotezyValidationError } from "../errors/validation.error";
 import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
@@ -65,7 +66,7 @@ export const useGetMyRootShelfById = (
         response.refreshableTokens?.newCSRFToken,
         response.embedded.publicId
       );
-      RootShelfLocalAdaptor.syncGetMyRootShelfById(response);
+      await RootShelfLocalSynchronizer.syncGetMyRootShelfById(response);
       return response;
     } catch (error) {
       if (
@@ -73,13 +74,13 @@ export const useGetMyRootShelfById = (
         error instanceof NotezyFetchError
       ) {
         const existingRootShelf =
-          await RootShelfLocalAdaptor.simulateGetMyRootShelfById(request);
+          await RootShelfLocalSimulator.simulateGetMyRootShelfById(request);
         toast.error(languageManager.tError(error.getPresentation));
         return {
           success: false,
           data: existingRootShelf ? { ...existingRootShelf } : null,
           exception: error.unWrap,
-          embedded: { publicId: existingRootShelf?.ownerPublicId ?? "" },
+          embedded: { publicId: "" },
         } as GetMyRootShelfByIdResponse;
       } else if (error instanceof NotezyValidationError) {
         toast.error(languageManager.tError(error.getPresentation));
@@ -92,12 +93,12 @@ export const useGetMyRootShelfById = (
       }
 
       const existingRootShelf =
-        await RootShelfLocalAdaptor.simulateGetMyRootShelfById(request);
+        await RootShelfLocalSimulator.simulateGetMyRootShelfById(request);
       return {
         success: false,
         data: existingRootShelf ? { ...existingRootShelf } : null,
         exception: FetchClientExceptions.UndefinedError(),
-        embedded: { publicId: existingRootShelf?.ownerPublicId ?? "" },
+        embedded: { publicId: "" },
       } as GetMyRootShelfByIdResponse;
     }
   };
@@ -135,7 +136,7 @@ export const useCreateRootShelf = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateRootShelf,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -177,13 +178,13 @@ export const useCreateRootShelf = () => {
           },
         },
       });
-      RootShelfLocalAdaptor.syncCreateRootShelf(request, response);
+      await RootShelfLocalSynchronizer.syncCreateRootShelf(request, response);
     },
     onError: async (error, request) => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await RootShelfLocalAdaptor.simulateCreateRootShelf(request);
+            await RootShelfLocalSimulator.simulateCreateRootShelf(request);
             break;
         }
       }
@@ -198,7 +199,7 @@ export const useCreateRootShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateRootShelves,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -251,13 +252,13 @@ export const useCreateRootShelves = () => {
           },
         },
       });
-      RootShelfLocalAdaptor.syncCreateRootShelves(request, response);
+      await RootShelfLocalSynchronizer.syncCreateRootShelves(request, response);
     },
     onError: async (error, request) => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await RootShelfLocalAdaptor.simulateCreateRootShelves(request);
+            await RootShelfLocalSimulator.simulateCreateRootShelves(request);
             break;
         }
       }
@@ -273,7 +274,7 @@ export const useUpdateMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyRootShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -299,13 +300,18 @@ export const useUpdateMyRootShelfById = () => {
           }),
         },
       });
-      RootShelfLocalAdaptor.syncUpdateMyRootShelfById(request, response);
+      await RootShelfLocalSynchronizer.syncUpdateMyRootShelfById(
+        request,
+        response
+      );
     },
     onError: async (error, request) => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await RootShelfLocalAdaptor.simulateUpdateMyRootShelfById(request);
+            await RootShelfLocalSimulator.simulateUpdateMyRootShelfById(
+              request
+            );
             break;
         }
       }
@@ -320,7 +326,7 @@ export const useUpdateMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyRootShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -349,8 +355,22 @@ export const useUpdateMyRootShelvesByIds = () => {
           },
         });
       }
+      await RootShelfLocalSynchronizer.syncUpdateMyRootShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalSimulator.simulateUpdateMyRootShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -362,7 +382,7 @@ export const useRestoreMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyRootShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -423,8 +443,22 @@ export const useRestoreMyRootShelfById = () => {
           },
         },
       });
+      await RootShelfLocalSynchronizer.syncRestoreMyRootShelfById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalSimulator.simulateRestoreMyRootShelfById(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -436,7 +470,7 @@ export const useRestoreMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyRootShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -502,8 +536,22 @@ export const useRestoreMyRootShelvesByIds = () => {
           },
         },
       });
+      await RootShelfLocalSynchronizer.syncRestoreMyRootShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalSimulator.simulateRestoreMyRootShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -515,7 +563,7 @@ export const useDeleteMyRootShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyRootShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -554,8 +602,22 @@ export const useDeleteMyRootShelfById = () => {
           },
         },
       });
+      await RootShelfLocalSynchronizer.syncDeleteMyRootShelfById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalSimulator.simulateDeleteMyRootShelfById(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -566,7 +628,7 @@ export const useDeleteMyRootShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyRootShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -593,8 +655,22 @@ export const useDeleteMyRootShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await RootShelfLocalSynchronizer.syncDeleteMyRootShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await RootShelfLocalSimulator.simulateDeleteMyRootShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;

@@ -1,3 +1,4 @@
+import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import { RootShelf } from "@shared/api/local/schemas/rootShelf.schema";
 import { User } from "@shared/api/local/schemas/user.schema";
 import { eq, relations } from "drizzle-orm";
@@ -12,13 +13,13 @@ import {
 export const UsersToShelves = sqliteTable(
   "UsersToShelvesTable",
   {
-    ownerPublicId: text("owner_public_id")
+    userPublicId: text("user_public_id")
       .notNull()
       .references(() => User.publicId),
     rootShelfId: text("root_shelf_id")
       .notNull()
       .references(() => RootShelf.id),
-    permission: text("permission"),
+    permission: text("permission").$type<AccessControlPermission>().notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .default(new Date()),
@@ -27,16 +28,16 @@ export const UsersToShelves = sqliteTable(
       .default(new Date()),
   },
   table => [
-    primaryKey({ columns: [table.ownerPublicId, table.rootShelfId] }),
+    primaryKey({ columns: [table.userPublicId, table.rootShelfId] }),
     uniqueIndex("users_to_shelves_unique_idx_root_shelf_owner")
       .on(table.rootShelfId)
-      .where(eq(table.permission, "Owner")),
+      .where(eq(table.permission, AccessControlPermission.Owner)),
   ]
 );
 
 export const UsersToShelvesRelations = relations(UsersToShelves, ({ one }) => ({
   user: one(User, {
-    fields: [UsersToShelves.ownerPublicId],
+    fields: [UsersToShelves.userPublicId],
     references: [User.publicId],
   }),
   rootShelf: one(RootShelf, {

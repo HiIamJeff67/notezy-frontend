@@ -11,12 +11,13 @@ import type {
   ResetMeResponse,
 } from "@shared/api/interfaces/auth.interface";
 import { UserStatus } from "@shared/api/interfaces/enums";
+import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import { localDB } from "@shared/api/local/db";
-import { RootShelf } from "@shared/api/local/schemas";
+import { RootShelf, UsersToShelves } from "@shared/api/local/schemas";
 import { User } from "@shared/api/local/schemas/user.schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
-export class AuthLocalAdaptor {
+export class AuthLocalSynchronizer {
   static async syncRegister(
     request: RegisterRequest,
     response: RegisterResponse
@@ -129,9 +130,13 @@ export class AuthLocalAdaptor {
 
   static async syncResetMe(response: ResetMeResponse): Promise<void> {
     if (!localDB.isReady) await localDB.ensureReady();
-    await localDB
-      .delete(RootShelf)
-      .where(eq(RootShelf.ownerPublicId, response.embedded.publicId));
+    await localDB.delete(RootShelf).where(sql`EXISTS (
+        SELECT 1
+        FROM ${UsersToShelves}
+        WHERE ${UsersToShelves.userPublicId} = ${response.embedded.publicId}
+          AND ${UsersToShelves.rootShelfId} = ${RootShelf.id}
+          AND ${UsersToShelves.permission} = ${AccessControlPermission.Owner}
+      )`);
   }
 
   static async syncDeleteMe(response: DeleteMeResponse): Promise<void> {

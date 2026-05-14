@@ -43,6 +43,7 @@ if (import.meta.hot) {
 
 const { driver: rawDriver, batchDriver: rawBatchDriver } = sqlocalDrizzle;
 let _SQLOperationChain: Promise<void> = Promise.resolve(); // the chain that make sure the sql operations are executed in sequences
+let markLocalDBNotReady = () => {};
 
 // run with OPFS error handling
 const recoverableRun = async <T>(operation: () => Promise<T>) => {
@@ -50,6 +51,7 @@ const recoverableRun = async <T>(operation: () => Promise<T>) => {
     return await operation();
   } catch (error) {
     if (!isOPFSMissingFileError(error)) throw error;
+    markLocalDBNotReady();
 
     console.warn(
       "OPFS local database file is missing during lock. Rebuilding local database and retrying once.",
@@ -108,6 +110,21 @@ const localDBMigrator = new LocalDBMigrator({
 
 let isMigrated = false;
 let isReady = false;
+
+// automatically reset the isReady signal to false every 60 seconds
+const LOCAL_DB_READY_REVALIDATE_MS = 60_000;
+const isLocalDBReadyInvalidationInterval = setInterval(() => {
+  isReady = false;
+}, LOCAL_DB_READY_REVALIDATE_MS);
+markLocalDBNotReady = () => {
+  isReady = false;
+};
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    clearInterval(isLocalDBReadyInvalidationInterval);
+  });
+}
 
 type LocalDB = typeof drizzleDB & {
   transaction: typeof rawTransaction;

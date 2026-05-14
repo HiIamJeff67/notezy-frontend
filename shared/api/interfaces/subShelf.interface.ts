@@ -30,7 +30,7 @@ export const GetMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     name: z.string(),
-    rooShelfId: z.uuidv4(),
+    rootShelfId: z.uuidv4(),
     prevSubShelfId: z.uuidv4().nullable(),
     path: z.array(z.uuidv4()),
     deletedAt: z.coerce.date().nullable(),
@@ -518,7 +518,7 @@ export const RestoreMySubShelfByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     name: z.string(),
-    rooShelfId: z.uuidv4(),
+    rootShelfId: z.uuidv4(),
     prevSubShelfId: z.uuidv4().nullable(),
     path: z.array(z.uuidv4()),
     deletedAt: z.coerce.date().nullable(),
@@ -564,7 +564,7 @@ export const RestoreMySubShelvesByIdsResponseSchema =
       z.object({
         id: z.uuidv4(),
         name: z.string(),
-        rooShelfId: z.uuidv4(),
+        rootShelfId: z.uuidv4(),
         prevSubShelfId: z.uuidv4().nullable(),
         path: z.array(z.uuidv4()),
         deletedAt: z.coerce.date().nullable(),

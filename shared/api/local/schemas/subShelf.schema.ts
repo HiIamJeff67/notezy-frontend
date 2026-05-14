@@ -1,4 +1,5 @@
 import { BlockPack, RootShelf } from "@shared/api/local/schemas";
+import { UUID } from "crypto";
 import { isNotNull, relations } from "drizzle-orm";
 import {
   foreignKey,
@@ -21,7 +22,7 @@ export const SubShelf = sqliteTable(
         onDelete: "cascade",
       }),
     prevSubShelfId: text("prev_sub_shelf_id"),
-    path: text("path").notNull().default("[]"), // JSON string, but formed by uuid array
+    path: text("path", { mode: "json" }).$type<UUID[]>().notNull().default([]), // JSON string, but formed by uuid array
     deletedAt: integer("deleted_at", { mode: "timestamp" }),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()

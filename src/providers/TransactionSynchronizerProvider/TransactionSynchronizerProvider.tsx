@@ -114,10 +114,10 @@ interface TransactionSynchronizerContextType {
   getTransactionCount: () => Promise<number>;
   appendTransactions: (
     transactions: {
-      entityId: string;
       entityType: TransactionEntityType;
       actionType: TransactionActionType;
-      payload: JSON;
+      body: JSON;
+      affected: JSON | undefined;
       retryCount: number;
       lastError: string | undefined;
     }[]
