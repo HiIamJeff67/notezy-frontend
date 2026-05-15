@@ -1,11 +1,12 @@
 import { BlockGroup } from "@shared/api/local/schemas";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   foreignKey,
   integer,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
+import { JSONType } from "zod";
 
 export const Block = sqliteTable(
   "BlockTable",
@@ -19,8 +20,14 @@ export const Block = sqliteTable(
         onDelete: "cascade",
       }),
     type: text("type").notNull().default("paragraph"),
-    props: text("props").notNull().default("{}"),
-    content: text("content").notNull().default("[]"),
+    props: text("props", { mode: "json" })
+      .$type<JSONType>()
+      .notNull()
+      .default(sql`'{}'`),
+    content: text("content", { mode: "json" })
+      .$type<JSONType[]>()
+      .notNull()
+      .default(sql`'[]'`),
     deletedAt: integer("deleted_at", { mode: "timestamp" }),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()

@@ -444,31 +444,36 @@ export class BlockGroupLocalSimulator {
       const blockGroupId = request.body.blockGroupId ?? generateUUID();
       request.body.blockGroupId = blockGroupId;
 
-      const rows = EditableBlockManipulator.flattenToRows(
-        request.body.arborizedEditableBlock,
-        {
-          blockGroupId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
+      const flattenedBlocks = EditableBlockManipulator.flatten(
+        request.body.arborizedEditableBlock
       );
+      const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+        id: flattenedBlock.id,
+        parentBlockId: flattenedBlock.parentBlockId,
+        blockGroupId,
+        type: flattenedBlock.type,
+        props: flattenedBlock.props,
+        content: flattenedBlock.content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
 
       await tx.insert(BlockGroup).values({
         id: blockGroupId,
         ownerPublicId: loggedInUser.publicId,
         blockPackId: request.body.blockPackId,
         prevBlockGroupId: request.body.prevBlockGroupId,
-        size: rows.length,
+        size: blockRecords.length,
       });
 
-      if (rows.length > 0) {
-        await tx.insert(Block).values(rows);
+      if (blockRecords.length > 0) {
+        await tx.insert(Block).values(blockRecords);
       }
 
       await tx
         .update(BlockPack)
         .set({
-          blockCount: sql`${BlockPack.blockCount} + ${rows.length}`,
+          blockCount: sql`${BlockPack.blockCount} + ${blockRecords.length}`,
           updatedAt: new Date(),
         })
         .where(eq(BlockPack.id, request.body.blockPackId));
@@ -499,26 +504,31 @@ export class BlockGroupLocalSimulator {
         const blockGroupId = content.blockGroupId ?? generateUUID();
         content.blockGroupId = blockGroupId;
 
-        const rows = EditableBlockManipulator.flattenToRows(
-          content.arborizedEditableBlock,
-          {
-            blockGroupId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
+        const flattenedBlocks = EditableBlockManipulator.flatten(
+          content.arborizedEditableBlock
         );
+        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+          id: flattenedBlock.id,
+          parentBlockId: flattenedBlock.parentBlockId,
+          blockGroupId,
+          type: flattenedBlock.type,
+          props: flattenedBlock.props,
+          content: flattenedBlock.content,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
 
         await tx.insert(BlockGroup).values({
           id: blockGroupId,
           ownerPublicId: loggedInUser.publicId,
           blockPackId: request.body.blockPackId,
           prevBlockGroupId: content.prevBlockGroupId,
-          size: rows.length,
+          size: blockRecords.length,
         });
 
-        if (rows.length > 0) {
-          insertedBlockCount += rows.length;
-          await tx.insert(Block).values(rows);
+        if (blockRecords.length > 0) {
+          insertedBlockCount += blockRecords.length;
+          await tx.insert(Block).values(blockRecords);
         }
       }
 
@@ -558,28 +568,34 @@ export class BlockGroupLocalSimulator {
         const blockGroupId = content.blockGroupId ?? generateUUID();
         content.blockGroupId = blockGroupId;
 
-        const rows = EditableBlockManipulator.flattenToRows(
-          content.arborizedEditableBlock,
-          {
-            blockGroupId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
+        const flattenedBlocks = EditableBlockManipulator.flatten(
+          content.arborizedEditableBlock
         );
+        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+          id: flattenedBlock.id,
+          parentBlockId: flattenedBlock.parentBlockId,
+          blockGroupId,
+          type: flattenedBlock.type,
+          props: flattenedBlock.props,
+          content: flattenedBlock.content,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
 
         await tx.insert(BlockGroup).values({
           id: blockGroupId,
           ownerPublicId: loggedInUser.publicId,
           blockPackId: content.blockPackId,
           prevBlockGroupId: content.prevBlockGroupId,
-          size: rows.length,
+          size: blockRecords.length,
         });
 
-        if (rows.length > 0) {
-          await tx.insert(Block).values(rows);
+        if (blockRecords.length > 0) {
+          await tx.insert(Block).values(blockRecords);
           blockPackIdToCountMap.set(
             content.blockPackId,
-            (blockPackIdToCountMap.get(content.blockPackId) ?? 0) + rows.length
+            (blockPackIdToCountMap.get(content.blockPackId) ?? 0) +
+              blockRecords.length
           );
         }
       }
@@ -620,26 +636,31 @@ export class BlockGroupLocalSimulator {
       for (const arborizedEditableBlock of request.body.arborizedEditableBlocks) {
         const blockGroupId = generateUUID();
 
-        const rows = EditableBlockManipulator.flattenToRows(
-          arborizedEditableBlock,
-          {
-            blockGroupId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
+        const flattenedBlocks = EditableBlockManipulator.flatten(
+          arborizedEditableBlock
         );
+        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+          id: flattenedBlock.id,
+          parentBlockId: flattenedBlock.parentBlockId,
+          blockGroupId,
+          type: flattenedBlock.type,
+          props: flattenedBlock.props,
+          content: flattenedBlock.content,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
 
         await tx.insert(BlockGroup).values({
           id: blockGroupId,
           ownerPublicId: loggedInUser.publicId,
           blockPackId: request.body.blockPackId,
           prevBlockGroupId,
-          size: rows.length,
+          size: blockRecords.length,
         });
 
-        if (rows.length > 0) {
-          insertedBlockCount += rows.length;
-          await tx.insert(Block).values(rows);
+        if (blockRecords.length > 0) {
+          insertedBlockCount += blockRecords.length;
+          await tx.insert(Block).values(blockRecords);
         }
 
         prevBlockGroupId = blockGroupId;

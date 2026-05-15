@@ -1,24 +1,13 @@
 import type { PartialBlock } from "@blocknote/core";
 import { generateUUID } from "@shared/types/uuidv4.type";
+import { JSONType } from "zod";
 
 export type FlattenedEditableBlock = {
   id: string;
   parentBlockId: string | null;
   type: string;
-  props: unknown;
-  content: unknown;
-};
-
-export type LocalBlockRowInput = {
-  id: string;
-  parentBlockId: string | null;
-  blockGroupId: string;
-  type: string;
-  props: string;
-  content: string;
-  deletedAt?: Date | null;
-  updatedAt?: Date;
-  createdAt?: Date;
+  props: JSONType;
+  content: JSONType[];
 };
 
 export class EditableBlockManipulator {
@@ -39,24 +28,17 @@ export class EditableBlockManipulator {
     return id;
   }
 
-  private static parseJSON(value: string, fallback: unknown): unknown {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return fallback;
-    }
-  }
-
   public static flatten(
     root: PartialBlock | null | undefined
   ): FlattenedEditableBlock[] {
     if (!root) return [];
 
-    const queue: Array<{ node: PartialBlock; parentBlockId: string | null }> =
-      [{ node: root, parentBlockId: null }];
+    const queue: Array<{ node: PartialBlock; parentBlockId: string | null }> = [
+      { node: root, parentBlockId: null },
+    ];
     const nodeIdMap = new WeakMap<object, string>();
     const visited = new Set<string>();
-    const rows: FlattenedEditableBlock[] = [];
+    const flattenedBlocks: FlattenedEditableBlock[] = [];
 
     while (queue.length > 0) {
       const current = queue.shift();
@@ -66,12 +48,12 @@ export class EditableBlockManipulator {
       if (visited.has(id)) continue;
       visited.add(id);
 
-      rows.push({
+      flattenedBlocks.push({
         id,
         parentBlockId: current.parentBlockId,
         type: current.node.type ?? EditableBlockManipulator.defaultBlockType,
-        props: current.node.props ?? {},
-        content: current.node.content ?? [],
+        props: (current.node.props ?? {}) as JSONType,
+        content: (current.node.content ?? []) as JSONType[],
       });
 
       const children = current.node.children ?? [];
@@ -83,36 +65,14 @@ export class EditableBlockManipulator {
       }
     }
 
-    return rows;
-  }
-
-  public static flattenToRows(
-    root: PartialBlock | null | undefined,
-    options: {
-      blockGroupId: string;
-      deletedAt?: Date | null;
-      updatedAt?: Date;
-      createdAt?: Date;
-    }
-  ): LocalBlockRowInput[] {
-    return EditableBlockManipulator.flatten(root).map(block => ({
-      id: block.id,
-      parentBlockId: block.parentBlockId,
-      blockGroupId: options.blockGroupId,
-      type: block.type,
-      props: JSON.stringify(block.props ?? {}),
-      content: JSON.stringify(block.content ?? []),
-      deletedAt: options.deletedAt,
-      updatedAt: options.updatedAt,
-      createdAt: options.createdAt,
-    }));
+    return flattenedBlocks;
   }
 
   public static arborize(
     blocks: FlattenedEditableBlock[],
     options?: { rootBlockId?: string }
-  ): PartialBlock | null {
-    if (blocks.length === 0) return null;
+  ): PartialBlock {
+    if (blocks.length === 0) return {};
 
     const blockMap = new Map<string, PartialBlock>();
     const rootCandidates: string[] = [];
@@ -143,31 +103,31 @@ export class EditableBlockManipulator {
     }
 
     if (options?.rootBlockId) {
-      return blockMap.get(options.rootBlockId) ?? null;
+      return blockMap.get(options.rootBlockId) ?? {};
     }
     if (rootCandidates.length > 0) {
-      return blockMap.get(rootCandidates[0]) ?? null;
+      return blockMap.get(rootCandidates[0]) ?? {};
     }
 
-    return blockMap.get(blocks[0].id) ?? null;
+    return blockMap.get(blocks[0].id) ?? {};
   }
 
   public static arborizeRows(
-    rows: Array<{
+    flatBlocks: Array<{
       id: string;
       parentBlockId: string | null;
       type: string;
-      props: string;
-      content: string;
+      props: JSONType;
+      content: JSONType[];
     }>,
     options?: { rootBlockId?: string }
-  ): PartialBlock | null {
-    const flattened: FlattenedEditableBlock[] = rows.map(row => ({
-      id: row.id,
-      parentBlockId: row.parentBlockId,
-      type: row.type,
-      props: EditableBlockManipulator.parseJSON(row.props, {}),
-      content: EditableBlockManipulator.parseJSON(row.content, []),
+  ): PartialBlock {
+    const flattened: FlattenedEditableBlock[] = flatBlocks.map(flatBlock => ({
+      id: flatBlock.id,
+      parentBlockId: flatBlock.parentBlockId,
+      type: flatBlock.type,
+      props: flatBlock.props,
+      content: flatBlock.content,
     }));
 
     return EditableBlockManipulator.arborize(flattened, options);

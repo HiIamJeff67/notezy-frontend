@@ -1,5 +1,10 @@
 import type { UUID } from "node:crypto";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetAllMySubShelvesByRootShelfIdRequest,
@@ -28,6 +33,8 @@ import {
   queryFnGetMySubShelvesAndItemsByPrevSubShelfId,
   queryFnGetMySubShelvesByPrevSubShelfId,
 } from "@shared/api/invokers/subShelf.invoker";
+import { SubShelfLocalSimulator } from "@shared/api/local/simulators/subShelf.simulator";
+import { SubShelfLocalSynchronizer } from "@shared/api/local/synchronizers/subShelf.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -57,18 +64,37 @@ export const useGetMySubShelfById = (
       );
     }
 
-    const response = await queryFnGetMySubShelfById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMySubShelfById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await SubShelfLocalSynchronizer.syncGetMySubShelfById(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingSubShelf =
+          await SubShelfLocalSimulator.simulateGetMySubShelfById(request);
+        return {
+          success: false,
+          data: existingSubShelf,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMySubShelfByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMySubShelfByIdResponse, Error>({
@@ -116,18 +142,41 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       );
     }
 
-    const response = await queryFnGetMySubShelvesByPrevSubShelfId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMySubShelvesByPrevSubShelfId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await SubShelfLocalSynchronizer.syncGetMySubShelvesByPrevSubShelfId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingSubShelves =
+          await SubShelfLocalSimulator.simulateGetMySubShelvesByPrevSubShelfId(
+            request
+          );
+        return {
+          success: false,
+          data: existingSubShelves,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMySubShelvesByPrevSubShelfIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMySubShelvesByPrevSubShelfIdResponse, Error>({
@@ -175,18 +224,41 @@ export const useGetAllMySubShelvesByRootShelfId = (
       );
     }
 
-    const response = await queryFnGetAllMySubShelvesByRootShelfId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetAllMySubShelvesByRootShelfId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await SubShelfLocalSynchronizer.syncGetAllMySubShelvesByRootShelfId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingSubShelves =
+          await SubShelfLocalSimulator.simulateGetAllMySubShelvesByRootShelfId(
+            request
+          );
+        return {
+          success: false,
+          data: existingSubShelves,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetAllMySubShelvesByRootShelfIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetAllMySubShelvesByRootShelfIdResponse, Error>({
@@ -234,19 +306,42 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
       );
     }
 
-    const response =
-      await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      const response =
+        await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await SubShelfLocalSynchronizer.syncGetMySubShelvesAndItemsByPrevSubShelfId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existing =
+          await SubShelfLocalSimulator.simulateGetMySubShelvesAndItemsByPrevSubShelfId(
+            request
+          );
+        return {
+          success: false,
+          data: existing,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMySubShelvesAndItemsByPrevSubShelfIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<
@@ -285,7 +380,7 @@ export const useCreateSubShelfByRootShelfId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateSubShelfByRootShelfId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -308,8 +403,22 @@ export const useCreateSubShelfByRootShelfId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncCreateSubShelfByRootShelfId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateCreateSubShelfByRootShelfId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -320,7 +429,7 @@ export const useCreateSubShelvesByRootShelfIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateSubShelvesByRootShelfIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -348,8 +457,22 @@ export const useCreateSubShelvesByRootShelfIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncCreateSubShelvesByRootShelfIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateCreateSubShelvesByRootShelfIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -360,7 +483,7 @@ export const useUpdateMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMySubShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -383,8 +506,20 @@ export const useUpdateMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncUpdateMySubShelfById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateUpdateMySubShelfById(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -394,7 +529,7 @@ export const useUpdateMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMySubShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -422,8 +557,22 @@ export const useUpdateMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncUpdateMySubShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateUpdateMySubShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -433,7 +582,7 @@ export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
   const mutation = useMutation({
     mutationFn: mutationFnMoveMySubShelf,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -465,8 +614,17 @@ export const useMoveMySubShelf = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncMoveMySubShelf(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateMoveMySubShelf(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -477,7 +635,7 @@ export const useMoveMySubShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMySubShelves,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -516,8 +674,17 @@ export const useMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncMoveMySubShelves(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateMoveMySubShelves(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -528,7 +695,7 @@ export const useBatchMoveMySubShelves = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchMoveMySubShelves,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -573,8 +740,20 @@ export const useBatchMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncBatchMoveMySubShelves(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateBatchMoveMySubShelves(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -585,7 +764,7 @@ export const useRestoreMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMySubShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -611,8 +790,20 @@ export const useRestoreMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncRestoreMySubShelfById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateRestoreMySubShelfById(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -622,7 +813,7 @@ export const useRestoreMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMySubShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -660,8 +851,22 @@ export const useRestoreMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncRestoreMySubShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateRestoreMySubShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -672,7 +877,7 @@ export const useDeleteMySubShelfById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMySubShelfById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -698,8 +903,20 @@ export const useDeleteMySubShelfById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncDeleteMySubShelfById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateDeleteMySubShelfById(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -710,7 +927,7 @@ export const useDeleteMySubShelvesByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMySubShelvesByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -748,8 +965,22 @@ export const useDeleteMySubShelvesByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await SubShelfLocalSynchronizer.syncDeleteMySubShelvesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await SubShelfLocalSimulator.simulateDeleteMySubShelvesByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;

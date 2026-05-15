@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9e8f0f77-9880-41ce-8165-9f87b6cd9e89",
+  "id": "c5877b18-aadc-405f-b06c-5643c29e61ab",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "BlockTable": {
@@ -65,7 +65,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.009Z\"'"
+          "default": "'\"2026-05-15T12:24:52.247Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -73,7 +73,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.009Z\"'"
+          "default": "'\"2026-05-15T12:24:52.247Z\"'"
         }
       },
       "indexes": {},
@@ -168,7 +168,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.015Z\"'"
+          "default": "'\"2026-05-15T12:24:52.256Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -176,7 +176,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.015Z\"'"
+          "default": "'\"2026-05-15T12:24:52.256Z\"'"
         }
       },
       "indexes": {
@@ -295,7 +295,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.021Z\"'"
+          "default": "'\"2026-05-15T12:24:52.265Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -303,7 +303,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.021Z\"'"
+          "default": "'\"2026-05-15T12:24:52.265Z\"'"
         }
       },
       "indexes": {
@@ -346,13 +346,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "owner_public_id": {
-          "name": "owner_public_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -383,7 +376,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.026Z\"'"
+          "default": "'\"2026-05-15T12:24:52.280Z\"'"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -398,7 +391,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.026Z\"'"
+          "default": "'\"2026-05-15T12:24:52.280Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -406,35 +399,11 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.026Z\"'"
+          "default": "'\"2026-05-15T12:24:52.280Z\"'"
         }
       },
-      "indexes": {
-        "root_shelf_unique_idx_name_owner_id": {
-          "name": "root_shelf_unique_idx_name_owner_id",
-          "columns": [
-            "name",
-            "owner_public_id"
-          ],
-          "isUnique": true,
-          "where": "\"RootShelfTable\".\"deleted_at\" is not null"
-        }
-      },
-      "foreignKeys": {
-        "RootShelfTable_owner_public_id_UserTable_public_id_fk": {
-          "name": "RootShelfTable_owner_public_id_UserTable_public_id_fk",
-          "tableFrom": "RootShelfTable",
-          "tableTo": "UserTable",
-          "columnsFrom": [
-            "owner_public_id"
-          ],
-          "columnsTo": [
-            "public_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -492,7 +461,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.030Z\"'"
+          "default": "'\"2026-05-15T12:24:52.300Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -500,7 +469,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.030Z\"'"
+          "default": "'\"2026-05-15T12:24:52.300Z\"'"
         }
       },
       "indexes": {
@@ -578,7 +547,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.033Z\"'"
+          "default": "'\"2026-05-15T12:24:52.309Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -586,7 +555,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.033Z\"'"
+          "default": "'\"2026-05-15T12:24:52.309Z\"'"
         }
       },
       "indexes": {},
@@ -626,11 +595,18 @@
           "notNull": true,
           "autoincrement": false
         },
-        "payload": {
-          "name": "payload",
+        "body": {
+          "name": "body",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "affected": {
+          "name": "affected",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "retry_count": {
@@ -654,7 +630,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.356Z\"'"
+          "default": "'\"2026-05-15T12:24:52.317Z\"'"
         }
       },
       "indexes": {},
@@ -730,7 +706,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.362Z\"'"
+          "default": "'\"2026-05-15T12:24:52.325Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -738,7 +714,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.362Z\"'"
+          "default": "'\"2026-05-15T12:24:52.325Z\"'"
         }
       },
       "indexes": {
@@ -773,8 +749,8 @@
     "UsersToShelvesTable": {
       "name": "UsersToShelvesTable",
       "columns": {
-        "owner_public_id": {
-          "name": "owner_public_id",
+        "user_public_id": {
+          "name": "user_public_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -791,7 +767,7 @@
           "name": "permission",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "updated_at": {
@@ -800,7 +776,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.366Z\"'"
+          "default": "'\"2026-05-15T12:24:52.335Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -808,7 +784,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-05-12T03:04:12.366Z\"'"
+          "default": "'\"2026-05-15T12:24:52.335Z\"'"
         }
       },
       "indexes": {
@@ -822,12 +798,12 @@
         }
       },
       "foreignKeys": {
-        "UsersToShelvesTable_owner_public_id_UserTable_public_id_fk": {
-          "name": "UsersToShelvesTable_owner_public_id_UserTable_public_id_fk",
+        "UsersToShelvesTable_user_public_id_UserTable_public_id_fk": {
+          "name": "UsersToShelvesTable_user_public_id_UserTable_public_id_fk",
           "tableFrom": "UsersToShelvesTable",
           "tableTo": "UserTable",
           "columnsFrom": [
-            "owner_public_id"
+            "user_public_id"
           ],
           "columnsTo": [
             "public_id"
@@ -850,12 +826,12 @@
         }
       },
       "compositePrimaryKeys": {
-        "UsersToShelvesTable_owner_public_id_root_shelf_id_pk": {
+        "UsersToShelvesTable_user_public_id_root_shelf_id_pk": {
           "columns": [
-            "owner_public_id",
+            "user_public_id",
             "root_shelf_id"
           ],
-          "name": "UsersToShelvesTable_owner_public_id_root_shelf_id_pk"
+          "name": "UsersToShelvesTable_user_public_id_root_shelf_id_pk"
         }
       },
       "uniqueConstraints": {},

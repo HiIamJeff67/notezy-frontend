@@ -1,5 +1,12 @@
 import type { UUID } from "node:crypto";
 import { useApolloClient } from "@apollo/client/react";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
@@ -22,7 +29,6 @@ import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
-import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { SessionStorageKey } from "@shared/types/sessionStorage.type";
 import {
@@ -31,19 +37,12 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { useLanguage } from "@/hooks";
-import { NotezyFetchError } from "../errors/fetch.error";
-import { NotezyValidationError } from "../errors/validation.error";
-import { ExceptionReasonDictionary, NotezyAPIError } from "../exceptions";
-import { FetchClientExceptions } from "../exceptions/client/fetch.exception";
-import { ValidationClientException } from "../exceptions/client/validation.exception";
 
 export const useGetMyRootShelfById = (
   hookRequest?: GetMyRootShelfByIdRequest,
   options?: Partial<UseQueryOptions<GetMyRootShelfByIdResponse, Error>>
 ) => {
   const queryClient = getQueryClient();
-  const languageManager = useLanguage();
 
   const perform = async (
     request?: GetMyRootShelfByIdRequest
@@ -75,31 +74,15 @@ export const useGetMyRootShelfById = (
       ) {
         const existingRootShelf =
           await RootShelfLocalSimulator.simulateGetMyRootShelfById(request);
-        toast.error(languageManager.tError(error.getPresentation));
         return {
           success: false,
           data: existingRootShelf ? { ...existingRootShelf } : null,
           exception: error.unWrap,
           embedded: { publicId: "" },
         } as GetMyRootShelfByIdResponse;
-      } else if (error instanceof NotezyValidationError) {
-        toast.error(languageManager.tError(error.getPresentation));
-        return {
-          success: false,
-          data: null,
-          exception: error.unWrap,
-          embedded: { publicId: "" },
-        } as unknown as GetMyRootShelfByIdResponse;
       }
 
-      const existingRootShelf =
-        await RootShelfLocalSimulator.simulateGetMyRootShelfById(request);
-      return {
-        success: false,
-        data: existingRootShelf ? { ...existingRootShelf } : null,
-        exception: FetchClientExceptions.UndefinedError(),
-        embedded: { publicId: "" },
-      } as GetMyRootShelfByIdResponse;
+      throw error;
     }
   };
 

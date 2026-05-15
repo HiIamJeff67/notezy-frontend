@@ -6,8 +6,8 @@ CREATE TABLE `BlockTable` (
 	`props` text DEFAULT '{}' NOT NULL,
 	`content` text DEFAULT '[]' NOT NULL,
 	`deleted_at` integer,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.009Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.009Z"' NOT NULL,
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.247Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.247Z"' NOT NULL,
 	FOREIGN KEY (`block_group_id`) REFERENCES `BlockGroupTable`(`id`) ON UPDATE cascade ON DELETE cascade,
 	FOREIGN KEY (`parent_block_id`) REFERENCES `BlockTable`(`id`) ON UPDATE cascade ON DELETE cascade
 );
@@ -20,8 +20,8 @@ CREATE TABLE `BlockGroupTable` (
 	`sync_block_group_id` text,
 	`size` integer DEFAULT 0 NOT NULL,
 	`deleted_at` integer,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.015Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.015Z"' NOT NULL,
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.256Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.256Z"' NOT NULL,
 	FOREIGN KEY (`owner_public_id`) REFERENCES `UserTable`(`public_id`) ON UPDATE cascade ON DELETE cascade,
 	FOREIGN KEY (`block_pack_id`) REFERENCES `BlockPackTable`(`id`) ON UPDATE cascade ON DELETE cascade,
 	FOREIGN KEY (`prev_block_group_id`) REFERENCES `BlockGroupTable`(`id`) ON UPDATE cascade ON DELETE cascade
@@ -36,26 +36,23 @@ CREATE TABLE `BlockPackTable` (
 	`header_background_url` text,
 	`block_count` integer DEFAULT 0 NOT NULL,
 	`deleted_at` integer,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.021Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.021Z"' NOT NULL,
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.265Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.265Z"' NOT NULL,
 	FOREIGN KEY (`parent_sub_shelf_id`) REFERENCES `SubShelfTable`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `block_pack_unique_idx_parent_sub_shelf_id_name` ON `BlockPackTable` (`parent_sub_shelf_id`,`name`) WHERE "BlockPackTable"."deleted_at" is not null;--> statement-breakpoint
 CREATE TABLE `RootShelfTable` (
 	`id` text PRIMARY KEY NOT NULL,
-	`owner_public_id` text NOT NULL,
 	`name` text DEFAULT 'undefined' NOT NULL,
 	`sub_shelf_count` integer DEFAULT 0 NOT NULL,
 	`item_count` integer DEFAULT 0 NOT NULL,
-	`last_analyzed_count` integer DEFAULT '"2026-05-12T03:04:12.026Z"' NOT NULL,
+	`last_analyzed_count` integer DEFAULT '"2026-05-15T12:24:52.280Z"' NOT NULL,
 	`deleted_at` integer,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.026Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.026Z"' NOT NULL,
-	FOREIGN KEY (`owner_public_id`) REFERENCES `UserTable`(`public_id`) ON UPDATE cascade ON DELETE cascade
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.280Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.280Z"' NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `root_shelf_unique_idx_name_owner_id` ON `RootShelfTable` (`name`,`owner_public_id`) WHERE "RootShelfTable"."deleted_at" is not null;--> statement-breakpoint
 CREATE TABLE `SubShelfTable` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text DEFAULT 'undefined' NOT NULL,
@@ -63,8 +60,8 @@ CREATE TABLE `SubShelfTable` (
 	`prev_sub_shelf_id` text,
 	`path` text DEFAULT '[]' NOT NULL,
 	`deleted_at` integer,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.030Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.030Z"' NOT NULL,
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.300Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.300Z"' NOT NULL,
 	FOREIGN KEY (`root_shelf_id`) REFERENCES `RootShelfTable`(`id`) ON UPDATE cascade ON DELETE cascade,
 	FOREIGN KEY (`prev_sub_shelf_id`) REFERENCES `SubShelfTable`(`id`) ON UPDATE cascade ON DELETE cascade
 );
@@ -74,8 +71,8 @@ CREATE TABLE `TestTable` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text DEFAULT 'unknown' NOT NULL,
 	`content` text,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.033Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.033Z"' NOT NULL
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.309Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.309Z"' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `TransactionTable` (
@@ -83,10 +80,11 @@ CREATE TABLE `TransactionTable` (
 	`owner_public_id` text NOT NULL,
 	`entity_type` text NOT NULL,
 	`action_type` text NOT NULL,
-	`payload` text NOT NULL,
+	`body` text NOT NULL,
+	`affected` text,
 	`retry_count` integer DEFAULT 0 NOT NULL,
 	`last_error` text,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.356Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.317Z"' NOT NULL,
 	FOREIGN KEY (`owner_public_id`) REFERENCES `UserTable`(`public_id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -97,21 +95,21 @@ CREATE TABLE `UserTable` (
 	`email` text NOT NULL,
 	`status` text DEFAULT 'Online' NOT NULL,
 	`is_logged_in` integer DEFAULT true NOT NULL,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.362Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.362Z"' NOT NULL
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.325Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.325Z"' NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `UserTable_name_unique` ON `UserTable` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `UserTable_email_unique` ON `UserTable` (`email`);--> statement-breakpoint
 CREATE UNIQUE INDEX `user_unique_idx_is_logged_in` ON `UserTable` (`is_logged_in`) WHERE "UserTable"."is_logged_in" = ?;--> statement-breakpoint
 CREATE TABLE `UsersToShelvesTable` (
-	`owner_public_id` text NOT NULL,
+	`user_public_id` text NOT NULL,
 	`root_shelf_id` text NOT NULL,
-	`permission` text,
-	`updated_at` integer DEFAULT '"2026-05-12T03:04:12.366Z"' NOT NULL,
-	`created_at` integer DEFAULT '"2026-05-12T03:04:12.366Z"' NOT NULL,
-	PRIMARY KEY(`owner_public_id`, `root_shelf_id`),
-	FOREIGN KEY (`owner_public_id`) REFERENCES `UserTable`(`public_id`) ON UPDATE no action ON DELETE no action,
+	`permission` text NOT NULL,
+	`updated_at` integer DEFAULT '"2026-05-15T12:24:52.335Z"' NOT NULL,
+	`created_at` integer DEFAULT '"2026-05-15T12:24:52.335Z"' NOT NULL,
+	PRIMARY KEY(`user_public_id`, `root_shelf_id`),
+	FOREIGN KEY (`user_public_id`) REFERENCES `UserTable`(`public_id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`root_shelf_id`) REFERENCES `RootShelfTable`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

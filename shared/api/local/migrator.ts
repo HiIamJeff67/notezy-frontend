@@ -19,11 +19,6 @@ type MigrationResult = {
   finalVersion: number;
 };
 
-type EnsureMigrationOptions = {
-  currentVersion?: number | null;
-  targetVersion?: number | null;
-};
-
 type LocalDBMigratorClient = {
   run: (query: string) => Promise<unknown>;
   all: <T = unknown>(query: string) => Promise<T[]>;
@@ -98,9 +93,10 @@ export class LocalDBMigrator {
     return latestMigration.versionNumber + 1;
   };
 
-  public ensureMigrated = async (
-    options?: EnsureMigrationOptions
-  ): Promise<MigrationResult> => {
+  public ensureMigrated = async (options?: {
+    currentVersion?: number | null;
+    targetVersion?: number | null;
+  }): Promise<MigrationResult> => {
     if (this.runningMigrationPromise) return this.runningMigrationPromise;
 
     this.runningMigrationPromise = (async () => {

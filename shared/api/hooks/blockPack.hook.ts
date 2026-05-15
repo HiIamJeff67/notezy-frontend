@@ -1,5 +1,10 @@
 import type { UUID } from "node:crypto";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetAllMyBlockPacksByRootShelfIdRequest,
@@ -28,6 +33,8 @@ import {
   queryFnGetMyBlockPackById,
   queryFnGetMyBlockPacksByParentSubShelfId,
 } from "@shared/api/invokers/blockPack.invoker";
+import { BlockPackLocalSimulator } from "@shared/api/local/simulators/blockPack.simulator";
+import { BlockPackLocalSynchronizer } from "@shared/api/local/synchronizers/blockPack.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -57,18 +64,37 @@ export const useGetMyBlockPackById = (
       );
     }
 
-    const response = await queryFnGetMyBlockPackById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockPackById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockPackLocalSynchronizer.syncGetMyBlockPackById(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockPack =
+          await BlockPackLocalSimulator.simulateGetMyBlockPackById(request);
+        return {
+          success: false,
+          data: existingBlockPack,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyBlockPackByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockPackByIdResponse, Error>({
@@ -116,18 +142,41 @@ export const useGetMyBlockPackAndItsParentById = (
       );
     }
 
-    const response = await queryFnGetMyBlockPackAndItsParentById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockPackAndItsParentById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockPackLocalSynchronizer.syncGetMyBlockPackAndItsParentById(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockPackAndItsParent =
+          await BlockPackLocalSimulator.simulateGetMyBlockPackAndItsParentById(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockPackAndItsParent,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyBlockPackAndItsParentByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockPackAndItsParentByIdResponse, Error>({
@@ -177,18 +226,41 @@ export const useGetMyBlockPacksByParentSubShelfId = (
       );
     }
 
-    const response = await queryFnGetMyBlockPacksByParentSubShelfId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockPacksByParentSubShelfId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockPackLocalSynchronizer.syncGetMyBlockPacksByParentSubShelfId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockPacks =
+          await BlockPackLocalSimulator.simulateGetMyBlockPacksByParentSubShelfId(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockPacks,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyBlockPacksByParentSubShelfIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockPacksByParentSubShelfIdResponse, Error>({
@@ -236,18 +308,41 @@ export const useGetAllMyBlockPacksByRootShelfId = (
       );
     }
 
-    const response = await queryFnGetAllMyBlockPacksByRootShelfId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetAllMyBlockPacksByRootShelfId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockPackLocalSynchronizer.syncGetAllMyBlockPacksByRootShelfId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockPacks =
+          await BlockPackLocalSimulator.simulateGetAllMyBlockPacksByRootShelfId(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockPacks,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetAllMyBlockPacksByRootShelfIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetAllMyBlockPacksByRootShelfIdResponse, Error>({
@@ -283,7 +378,7 @@ export const useCreateBlockPack = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateBlockPack,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -307,8 +402,17 @@ export const useCreateBlockPack = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncCreateBlockPack(variables, response);
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateCreateBlockPack(variables);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -319,7 +423,7 @@ export const useCreateBlockPacks = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnCreateBlockPacks,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -351,8 +455,20 @@ export const useCreateBlockPacks = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncCreateBlockPacks(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateCreateBlockPacks(variables);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -363,7 +479,7 @@ export const useUpdateMyBlockPackById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyBlockPackById,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -388,8 +504,22 @@ export const useUpdateMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncUpdateMyBlockPackById(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateUpdateMyBlockPackById(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -400,7 +530,7 @@ export const useUpdateMyBlockPacksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnUpdateMyBlockPacksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -437,8 +567,22 @@ export const useUpdateMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncUpdateMyBlockPacksByIds(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateUpdateMyBlockPacksByIds(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -449,7 +593,7 @@ export const useMoveMyBlockPackById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMyBlockPackById,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -480,8 +624,22 @@ export const useMoveMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncMoveMyBlockPackById(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateMoveMyBlockPackById(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -492,7 +650,7 @@ export const useMoveMyBlockPacksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMyBlockPacksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -530,8 +688,22 @@ export const useMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncMoveMyBlockPacksByIds(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateMoveMyBlockPacksByIds(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -542,7 +714,7 @@ export const useBatchMoveMyBlockPacksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchMoveMyBlockPacksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -591,8 +763,22 @@ export const useBatchMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncBatchMoveMyBlockPacksByIds(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateBatchMoveMyBlockPacksByIds(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -603,7 +789,7 @@ export const useRestoreMyBlockPackById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlockPackById,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -631,8 +817,22 @@ export const useRestoreMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncRestoreMyBlockPackById(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateRestoreMyBlockPackById(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -643,7 +843,7 @@ export const useRestoreMyBlockPacksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlockPacksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -683,8 +883,22 @@ export const useRestoreMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncRestoreMyBlockPacksByIds(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateRestoreMyBlockPacksByIds(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -695,7 +909,7 @@ export const useDeleteMyBlockPackById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlockPackById,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -723,8 +937,22 @@ export const useDeleteMyBlockPackById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncDeleteMyBlockPackById(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateDeleteMyBlockPackById(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -735,7 +963,7 @@ export const useDeleteMyBlockPacksByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlockPacksByIds,
-    onSuccess: (response, variables) => {
+    onSuccess: async (response, variables) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -775,8 +1003,22 @@ export const useDeleteMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockPackLocalSynchronizer.syncDeleteMyBlockPacksByIds(
+        variables,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, variables) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockPackLocalSimulator.simulateDeleteMyBlockPacksByIds(
+              variables
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;

@@ -1,5 +1,10 @@
 import type { UUID } from "node:crypto";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetAllMyBlockGroupsByBlockPackIdRequest,
@@ -37,6 +42,8 @@ import {
   queryFnGetMyBlockGroupsAndTheirBlocksByIds,
   queryFnGetMyBlockGroupsByPrevBlockGroupId,
 } from "@shared/api/invokers/blockGroup.invoker";
+import { BlockGroupLocalSimulator } from "@shared/api/local/simulators/blockGroup.simulator";
+import { BlockGroupLocalSynchronizer } from "@shared/api/local/synchronizers/blockGroup.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -66,18 +73,37 @@ export const useGetMyBlockGroupById = (
       );
     }
 
-    const response = await queryFnGetMyBlockGroupById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockGroupById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockGroupLocalSynchronizer.syncGetMyBlockGroupById(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroup =
+          await BlockGroupLocalSimulator.simulateGetMyBlockGroupById(request);
+        return {
+          success: false,
+          data: existingBlockGroup,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetMyBlockGroupByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockGroupByIdResponse, Error>({
@@ -125,18 +151,42 @@ export const useGetMyBlockGroupAndItsBlocksById = (
       );
     }
 
-    const response = await queryFnGetMyBlockGroupAndItsBlocksById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockGroupAndItsBlocksById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockGroupLocalSynchronizer.syncGetMyBlockGroupAndItsBlocksById(
+        request,
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroupAndItsBlocks =
+          await BlockGroupLocalSimulator.simulateGetMyBlockGroupAndItsBlocksById(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockGroupAndItsBlocks,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetMyBlockGroupAndItsBlocksByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockGroupAndItsBlocksByIdResponse, Error>({
@@ -184,30 +234,54 @@ export const useGetMyBlockGroupsAndTheirBlocksByIds = (
       );
     }
 
-    const response = await queryFnGetMyBlockGroupsAndTheirBlocksByIds(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    if (response.success && response.data) {
-      response.data.forEach(blockGroupAndItsBlock => {
-        queryClient.setQueriesData(
-          {
-            queryKey: queryKeys.blockGroupWithBlock.oneById(
-              blockGroupAndItsBlock.id as UUID
-            ),
-          },
-          blockGroupAndItsBlock
-        );
-      });
+    try {
+      const response = await queryFnGetMyBlockGroupsAndTheirBlocksByIds(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      if (response.success && response.data) {
+        response.data.forEach(blockGroupAndItsBlock => {
+          queryClient.setQueriesData(
+            {
+              queryKey: queryKeys.blockGroupWithBlock.oneById(
+                blockGroupAndItsBlock.id as UUID
+              ),
+            },
+            blockGroupAndItsBlock
+          );
+        });
+      }
+      await BlockGroupLocalSynchronizer.syncGetMyBlockGroupsAndTheirBlocksByIds(
+        request,
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroups =
+          await BlockGroupLocalSimulator.simulateGetMyBlockGroupsAndTheirBlocksByIds(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockGroups,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetMyBlockGroupsAndTheirBlocksByIdsResponse;
+      }
+
+      throw error;
     }
-    return response;
   };
 
   const query = useQuery<GetMyBlockGroupsAndTheirBlocksByIdsResponse, Error>({
@@ -255,43 +329,67 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
       );
     }
 
-    const response =
-      await queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    queryClient.setQueriesData(
-      {
-        queryKey: queryKeys.blockGroup.manyByBlockPackId(
-          request.param.blockPackId as UUID
-        ),
-      },
-      response
-    );
-    response.data.forEach(blockGroup => {
+    try {
+      const response =
+        await queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
       queryClient.setQueriesData(
         {
-          queryKey: queryKeys.block.manyByBlockGroupId(blockGroup.id as UUID),
+          queryKey: queryKeys.blockGroup.manyByBlockPackId(
+            request.param.blockPackId as UUID
+          ),
         },
         response
       );
-    });
-    queryClient.setQueriesData(
-      {
-        queryKey: queryKeys.block.manyByBlockPackId(
-          request.param.blockPackId as UUID
-        ),
-      },
-      response
-    );
-    return response;
+      response.data.forEach(blockGroup => {
+        queryClient.setQueriesData(
+          {
+            queryKey: queryKeys.block.manyByBlockGroupId(blockGroup.id as UUID),
+          },
+          response
+        );
+      });
+      queryClient.setQueriesData(
+        {
+          queryKey: queryKeys.block.manyByBlockPackId(
+            request.param.blockPackId as UUID
+          ),
+        },
+        response
+      );
+      await BlockGroupLocalSynchronizer.syncGetMyBlockGroupsAndTheirBlocksByBlockPackId(
+        request,
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroups =
+          await BlockGroupLocalSimulator.simulateGetMyBlockGroupsAndTheirBlocksByBlockPackId(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockGroups,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetMyBlockGroupsAndTheirBlocksByBlockPackIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<
@@ -342,18 +440,41 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
       );
     }
 
-    const response = await queryFnGetMyBlockGroupsByPrevBlockGroupId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetMyBlockGroupsByPrevBlockGroupId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockGroupLocalSynchronizer.syncGetMyBlockGroupsByPrevBlockGroupId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroups =
+          await BlockGroupLocalSimulator.simulateGetMyBlockGroupsByPrevBlockGroupId(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockGroups,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetMyBlockGroupsByPrevBlockGroupIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyBlockGroupsByPrevBlockGroupIdResponse, Error>({
@@ -401,18 +522,41 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
       );
     }
 
-    const response = await queryFnGetAllMyBlockGroupsByBlockPackId(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded.publicId
-    );
-    return response;
+    try {
+      const response = await queryFnGetAllMyBlockGroupsByBlockPackId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await BlockGroupLocalSynchronizer.syncGetAllMyBlockGroupsByBlockPackId(
+        response
+      );
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const existingBlockGroups =
+          await BlockGroupLocalSimulator.simulateGetAllMyBlockGroupsByBlockPackId(
+            request
+          );
+        return {
+          success: false,
+          data: existingBlockGroups,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as unknown as GetAllMyBlockGroupsByBlockPackIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetAllMyBlockGroupsByBlockPackIdResponse, Error>({
@@ -448,7 +592,7 @@ export const useInsertBlockGroupByBlockPackId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlockGroupByBlockPackId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -473,8 +617,22 @@ export const useInsertBlockGroupByBlockPackId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupByBlockPackId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupByBlockPackId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -485,7 +643,7 @@ export const useInsertBlockGroupsByBlockPackId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlockGroupsByBlockPackId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -517,8 +675,22 @@ export const useInsertBlockGroupsByBlockPackId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupsByBlockPackId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupsByBlockPackId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -529,7 +701,7 @@ export const useBatchInsertBlockGroupsByBlockPackIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchInsertBlockGroupsByBlockPackIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -564,8 +736,22 @@ export const useBatchInsertBlockGroupsByBlockPackIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncBatchInsertBlockGroupsByBlockPackIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateBatchInsertBlockGroupsByBlockPackIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -576,7 +762,7 @@ export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlockGroupAndItsBlocksByBlockPackId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -601,8 +787,22 @@ export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupAndItsBlocksByBlockPackId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupAndItsBlocksByBlockPackId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -613,7 +813,7 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -641,8 +841,22 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupsAndTheirBlocksByBlockPackId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupsAndTheirBlocksByBlockPackId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -653,7 +867,7 @@ export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -688,8 +902,22 @@ export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -701,7 +929,7 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
   const mutation = useMutation({
     mutationFn:
       mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -726,8 +954,22 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -738,7 +980,7 @@ export const useMoveMyBlockGroupById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMyBlockGroupById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -773,8 +1015,20 @@ export const useMoveMyBlockGroupById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncMoveMyBlockGroupById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupById(request);
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -785,7 +1039,7 @@ export const useMoveMyBlockGroupsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnMoveMyBlockGroupsByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -825,8 +1079,22 @@ export const useMoveMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncMoveMyBlockGroupsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupsByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -837,7 +1105,7 @@ export const useBatchMoveMyBlockGroupsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnBatchMoveMyBlockGroupsByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -889,8 +1157,22 @@ export const useBatchMoveMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncBatchMoveMyBlockGroupsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateBatchMoveMyBlockGroupsByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -901,7 +1183,7 @@ export const useRestoreMyBlockGroupById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlockGroupById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -927,8 +1209,22 @@ export const useRestoreMyBlockGroupById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncRestoreMyBlockGroupById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateRestoreMyBlockGroupById(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -939,7 +1235,7 @@ export const useRestoreMyBlockGroupsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnRestoreMyBlockGroupsByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -969,8 +1265,22 @@ export const useRestoreMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncRestoreMyBlockGroupsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateRestoreMyBlockGroupsByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -981,7 +1291,7 @@ export const useDeleteMyBlockGroupById = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlockGroupById,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1009,8 +1319,22 @@ export const useDeleteMyBlockGroupById = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncDeleteMyBlockGroupById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateDeleteMyBlockGroupById(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;
@@ -1021,7 +1345,7 @@ export const useDeleteMyBlockGroupsByIds = () => {
 
   const mutation = useMutation({
     mutationFn: mutationFnDeleteMyBlockGroupsByIds,
-    onSuccess: (response, request) => {
+    onSuccess: async (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1057,8 +1381,22 @@ export const useDeleteMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
+      await BlockGroupLocalSynchronizer.syncDeleteMyBlockGroupsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (error instanceof NotezyFetchError) {
+        switch (error.unWrap.reason) {
+          case ExceptionReasonDictionary.client.fetch.missingNetwork:
+            await BlockGroupLocalSimulator.simulateDeleteMyBlockGroupsByIds(
+              request
+            );
+            break;
+        }
+      }
+    },
   });
 
   return mutation;

@@ -1,4 +1,3 @@
-import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import {
   BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
   BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
@@ -38,6 +37,7 @@ import {
   RestoreMyBlockGroupsByIdsRequest,
   RestoreMyBlockGroupsByIdsResponse,
 } from "@shared/api/interfaces/blockGroup.interface";
+import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import { localDB } from "@shared/api/local/db";
 import {
   Block,
@@ -60,7 +60,10 @@ export class BlockGroupLocalSynchronizer {
       queryBuilder
         .select({ one: sql`1` })
         .from(UsersToShelves)
-        .innerJoin(SubShelf, eq(SubShelf.rootShelfId, UsersToShelves.rootShelfId))
+        .innerJoin(
+          SubShelf,
+          eq(SubShelf.rootShelfId, UsersToShelves.rootShelfId)
+        )
         .innerJoin(BlockPack, eq(BlockPack.parentSubShelfId, SubShelf.id))
         .where(
           and(
@@ -73,46 +76,59 @@ export class BlockGroupLocalSynchronizer {
         )
     );
 
-  private static upsertBlockRows = async (
+  private static upsertBlocks = async (
     tx: any,
     blockGroupId: string,
-    arborizedEditableBlock: InsertBlockGroupAndItsBlocksByBlockPackIdRequest["body"]["arborizedEditableBlock"] | null,
+    arborizedEditableBlock:
+      | InsertBlockGroupAndItsBlocksByBlockPackIdRequest["body"]["arborizedEditableBlock"]
+      | null,
     createdAt: Date,
     updatedAt: Date
   ): Promise<number> => {
-    const rows = EditableBlockManipulator.flattenToRows(arborizedEditableBlock, {
+    const flattenedBlocks = EditableBlockManipulator.flatten(
+      arborizedEditableBlock
+    );
+    const blocks = flattenedBlocks.map(flattenedBlock => ({
+      id: flattenedBlock.id,
+      parentBlockId: flattenedBlock.parentBlockId,
       blockGroupId,
+      type: flattenedBlock.type,
+      props: flattenedBlock.props,
+      content: flattenedBlock.content,
       createdAt,
       updatedAt,
-    });
+    }));
 
     await tx.delete(Block).where(eq(Block.blockGroupId, blockGroupId));
 
-    if (rows.length > 0) {
-      await tx.insert(Block).values(rows).onConflictDoUpdate({
-        target: Block.id,
-        set: {
-          parentBlockId: sql`excluded.parent_block_id`,
-          blockGroupId: sql`excluded.block_group_id`,
-          type: sql`excluded.type`,
-          props: sql`excluded.props`,
-          content: sql`excluded.content`,
-          deletedAt: sql`excluded.deleted_at`,
-          updatedAt: sql`excluded.updated_at`,
-          createdAt: sql`excluded.created_at`,
-        },
-      });
+    if (blocks.length > 0) {
+      await tx
+        .insert(Block)
+        .values(blocks)
+        .onConflictDoUpdate({
+          target: Block.id,
+          set: {
+            parentBlockId: sql`excluded.parent_block_id`,
+            blockGroupId: sql`excluded.block_group_id`,
+            type: sql`excluded.type`,
+            props: sql`excluded.props`,
+            content: sql`excluded.content`,
+            deletedAt: sql`excluded.deleted_at`,
+            updatedAt: sql`excluded.updated_at`,
+            createdAt: sql`excluded.created_at`,
+          },
+        });
     }
 
     await tx
       .update(BlockGroup)
       .set({
-        size: rows.length,
+        size: blocks.length,
         updatedAt,
       })
       .where(eq(BlockGroup.id, blockGroupId));
 
-    return rows.length;
+    return blocks.length;
   };
 
   static syncGetMyBlockGroupById = async (
@@ -182,7 +198,7 @@ export class BlockGroupLocalSynchronizer {
           },
         });
 
-      await BlockGroupLocalSynchronizer.upsertBlockRows(
+      await BlockGroupLocalSynchronizer.upsertBlocks(
         tx,
         request.param.blockGroupId,
         response.data.rawArborizedEditableBlock,
@@ -227,7 +243,7 @@ export class BlockGroupLocalSynchronizer {
             },
           });
 
-        await BlockGroupLocalSynchronizer.upsertBlockRows(
+        await BlockGroupLocalSynchronizer.upsertBlocks(
           tx,
           blockGroup.id,
           blockGroup.rawArborizedEditableBlock,
@@ -238,7 +254,9 @@ export class BlockGroupLocalSynchronizer {
 
       const requestedIds = request.param.blockGroupIds;
       if (requestedIds.length > 0) {
-        const receivedIdSet = new Set(response.data.map(blockGroup => blockGroup.id));
+        const receivedIdSet = new Set(
+          response.data.map(blockGroup => blockGroup.id)
+        );
         const missingIds = requestedIds.filter(id => !receivedIdSet.has(id));
         if (missingIds.length > 0) {
           await tx.delete(Block).where(inArray(Block.blockGroupId, missingIds));
@@ -286,7 +304,7 @@ export class BlockGroupLocalSynchronizer {
             },
           });
 
-        await BlockGroupLocalSynchronizer.upsertBlockRows(
+        await BlockGroupLocalSynchronizer.upsertBlocks(
           tx,
           blockGroup.id,
           blockGroup.rawArborizedEditableBlock,
@@ -478,13 +496,14 @@ export class BlockGroupLocalSynchronizer {
           },
         });
 
-      const insertedBlockCount = await BlockGroupLocalSynchronizer.upsertBlockRows(
-        tx,
-        blockGroupId,
-        request.body.arborizedEditableBlock,
-        response.data.createdAt,
-        response.data.createdAt
-      );
+      const insertedBlockCount =
+        await BlockGroupLocalSynchronizer.upsertBlocks(
+          tx,
+          blockGroupId,
+          request.body.arborizedEditableBlock,
+          response.data.createdAt,
+          response.data.createdAt
+        );
 
       await tx
         .update(BlockPack)
@@ -522,7 +541,8 @@ export class BlockGroupLocalSynchronizer {
       for (const successIndex of response.data.successIndexes) {
         const content = request.body.blockGroupContents[successIndex];
         const blockGroupId =
-          response.data.successBlockGroupAndBlockIds[successIndex]?.blockGroupId;
+          response.data.successBlockGroupAndBlockIds[successIndex]
+            ?.blockGroupId;
         if (!content || !blockGroupId) continue;
 
         await tx
@@ -550,7 +570,7 @@ export class BlockGroupLocalSynchronizer {
             },
           });
 
-        insertedBlocks += await BlockGroupLocalSynchronizer.upsertBlockRows(
+        insertedBlocks += await BlockGroupLocalSynchronizer.upsertBlocks(
           tx,
           blockGroupId,
           content.arborizedEditableBlock,
@@ -597,7 +617,8 @@ export class BlockGroupLocalSynchronizer {
       for (const success of response.data.successBlockGroupAndBlockIds) {
         const requestContent = request.body.blockGroupContents.find(content => {
           if (content.blockPackId !== success.blockPackId) return false;
-          if (content.blockGroupId) return content.blockGroupId === success.blockGroupId;
+          if (content.blockGroupId)
+            return content.blockGroupId === success.blockGroupId;
           return true;
         });
         if (!requestContent) continue;
@@ -627,7 +648,7 @@ export class BlockGroupLocalSynchronizer {
             },
           });
 
-        const insertedCount = await BlockGroupLocalSynchronizer.upsertBlockRows(
+        const insertedCount = await BlockGroupLocalSynchronizer.upsertBlocks(
           tx,
           success.blockGroupId,
           requestContent.arborizedEditableBlock,
@@ -641,7 +662,10 @@ export class BlockGroupLocalSynchronizer {
         );
       }
 
-      for (const [blockPackId, insertedCount] of blockPackIdToCountMap.entries()) {
+      for (const [
+        blockPackId,
+        insertedCount,
+      ] of blockPackIdToCountMap.entries()) {
         if (insertedCount <= 0) continue;
         await tx
           .update(BlockPack)
@@ -679,8 +703,10 @@ export class BlockGroupLocalSynchronizer {
       let insertedBlocks = 0;
 
       for (const successIndex of response.data.successIndexes) {
-        const arborizedEditableBlock = request.body.arborizedEditableBlocks[successIndex];
-        const success = response.data.successBlockGroupAndBlockIds[successIndex];
+        const arborizedEditableBlock =
+          request.body.arborizedEditableBlocks[successIndex];
+        const success =
+          response.data.successBlockGroupAndBlockIds[successIndex];
         if (!arborizedEditableBlock || !success) continue;
 
         await tx
@@ -708,7 +734,7 @@ export class BlockGroupLocalSynchronizer {
             },
           });
 
-        insertedBlocks += await BlockGroupLocalSynchronizer.upsertBlockRows(
+        insertedBlocks += await BlockGroupLocalSynchronizer.upsertBlocks(
           tx,
           success.blockGroupId,
           arborizedEditableBlock,
