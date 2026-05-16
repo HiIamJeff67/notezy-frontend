@@ -157,21 +157,22 @@ export class BlockPackLocalSynchronizer {
     response: GetMyBlockPacksByParentSubShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockPacks = response.data.map(blockPack => ({
+      id: blockPack.id,
+      parentSubShelfId: blockPack.parentSubShelfId,
+      name: blockPack.name,
+      icon: blockPack.icon,
+      headerBackgroundURL: blockPack.headerBackgroundURL,
+      blockCount: blockPack.blockCount,
+      deletedAt: blockPack.deletedAt,
+      updatedAt: blockPack.updatedAt,
+      createdAt: blockPack.createdAt,
+    }));
+    if (blockPacks.length === 0) return;
+
     await localDB
       .insert(BlockPack)
-      .values(
-        response.data.map(blockPack => ({
-          id: blockPack.id,
-          parentSubShelfId: blockPack.parentSubShelfId,
-          name: blockPack.name,
-          icon: blockPack.icon,
-          headerBackgroundURL: blockPack.headerBackgroundURL,
-          blockCount: blockPack.blockCount,
-          deletedAt: blockPack.deletedAt,
-          updatedAt: blockPack.updatedAt,
-          createdAt: blockPack.createdAt,
-        }))
-      )
+      .values(blockPacks)
       .onConflictDoUpdate({
         target: BlockPack.id,
         set: {
@@ -191,21 +192,22 @@ export class BlockPackLocalSynchronizer {
     response: GetAllMyBlockPacksByRootShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockPacks = response.data.map(blockPack => ({
+      id: blockPack.id,
+      parentSubShelfId: blockPack.parentSubShelfId,
+      name: blockPack.name,
+      icon: blockPack.icon,
+      headerBackgroundURL: blockPack.headerBackgroundURL,
+      blockCount: blockPack.blockCount,
+      deletedAt: blockPack.deletedAt,
+      updatedAt: blockPack.updatedAt,
+      createdAt: blockPack.createdAt,
+    }));
+    if (blockPacks.length === 0) return;
+
     await localDB
       .insert(BlockPack)
-      .values(
-        response.data.map(blockPack => ({
-          id: blockPack.id,
-          parentSubShelfId: blockPack.parentSubShelfId,
-          name: blockPack.name,
-          icon: blockPack.icon,
-          headerBackgroundURL: blockPack.headerBackgroundURL,
-          blockCount: blockPack.blockCount,
-          deletedAt: blockPack.deletedAt,
-          updatedAt: blockPack.updatedAt,
-          createdAt: blockPack.createdAt,
-        }))
-      )
+      .values(blockPacks)
       .onConflictDoUpdate({
         target: BlockPack.id,
         set: {
@@ -257,8 +259,8 @@ export class BlockPackLocalSynchronizer {
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
-      await tx.insert(BlockPack).values(
-        request.body.createdBlockPacks.map((createdBlockPack, index) => ({
+      const createdBlockPacks = request.body.createdBlockPacks.map(
+        (createdBlockPack, index) => ({
           id: response.data.ids[index],
           parentSubShelfId: createdBlockPack.parentSubShelfId,
           name: createdBlockPack.name,
@@ -267,8 +269,11 @@ export class BlockPackLocalSynchronizer {
           blockCount: 0,
           updatedAt: response.data.createdAt,
           createdAt: response.data.createdAt,
-        }))
+        })
       );
+      if (createdBlockPacks.length > 0) {
+        await tx.insert(BlockPack).values(createdBlockPacks);
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const rootShelfId of request.affected.rootShelfIds) {
@@ -529,34 +534,35 @@ export class BlockPackLocalSynchronizer {
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
-      await tx
-        .insert(BlockPack)
-        .values(
-          response.data.map(blockPack => ({
-            id: blockPack.id,
-            parentSubShelfId: blockPack.parentSubShelfId,
-            name: blockPack.name,
-            icon: blockPack.icon,
-            headerBackgroundURL: blockPack.headerBackgroundURL,
-            blockCount: blockPack.blockCount,
-            deletedAt: null,
-            updatedAt: blockPack.updatedAt,
-            createdAt: blockPack.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: BlockPack.id,
-          set: {
-            parentSubShelfId: sql`excluded.parent_sub_shelf_id`,
-            name: sql`excluded.name`,
-            icon: sql`excluded.icon`,
-            headerBackgroundURL: sql`excluded.header_background_url`,
-            blockCount: sql`excluded.block_count`,
-            deletedAt: null,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
+      const restoredBlockPacks = response.data.map(blockPack => ({
+        id: blockPack.id,
+        parentSubShelfId: blockPack.parentSubShelfId,
+        name: blockPack.name,
+        icon: blockPack.icon,
+        headerBackgroundURL: blockPack.headerBackgroundURL,
+        blockCount: blockPack.blockCount,
+        deletedAt: null,
+        updatedAt: blockPack.updatedAt,
+        createdAt: blockPack.createdAt,
+      }));
+      if (restoredBlockPacks.length > 0) {
+        await tx
+          .insert(BlockPack)
+          .values(restoredBlockPacks)
+          .onConflictDoUpdate({
+            target: BlockPack.id,
+            set: {
+              parentSubShelfId: sql`excluded.parent_sub_shelf_id`,
+              name: sql`excluded.name`,
+              icon: sql`excluded.icon`,
+              headerBackgroundURL: sql`excluded.header_background_url`,
+              blockCount: sql`excluded.block_count`,
+              deletedAt: null,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const rootShelfId of request.affected.rootShelfIds) {

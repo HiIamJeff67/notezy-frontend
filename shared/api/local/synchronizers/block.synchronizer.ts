@@ -146,22 +146,22 @@ export class BlockLocalSynchronizer {
     response: GetMyBlocksByIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blocks = response.data.map(block => ({
+      id: block.id,
+      parentBlockId: block.parentBlockId,
+      blockGroupId: block.blockGroupId,
+      type: block.type,
+      props: block.props as any,
+      content: block.content as any,
+      deletedAt: block.deletedAt,
+      updatedAt: block.updatedAt,
+      createdAt: block.createdAt,
+    }));
+    if (blocks.length === 0) return;
 
     await localDB
       .insert(Block)
-      .values(
-        response.data.map(block => ({
-          id: block.id,
-          parentBlockId: block.parentBlockId,
-          blockGroupId: block.blockGroupId,
-          type: block.type,
-          props: block.props as any,
-          content: block.content as any,
-          deletedAt: block.deletedAt,
-          updatedAt: block.updatedAt,
-          createdAt: block.createdAt,
-        }))
-      )
+      .values(blocks)
       .onConflictDoUpdate({
         target: Block.id,
         set: {
@@ -309,22 +309,22 @@ export class BlockLocalSynchronizer {
     response: GetMyBlocksByBlockPackIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blocks = response.data.map(block => ({
+      id: block.id,
+      parentBlockId: block.parentBlockId,
+      blockGroupId: block.blockGroupId,
+      type: block.type,
+      props: block.props as any,
+      content: block.content as any,
+      deletedAt: block.deletedAt,
+      updatedAt: block.updatedAt,
+      createdAt: block.createdAt,
+    }));
+    if (blocks.length === 0) return;
 
     await localDB
       .insert(Block)
-      .values(
-        response.data.map(block => ({
-          id: block.id,
-          parentBlockId: block.parentBlockId,
-          blockGroupId: block.blockGroupId,
-          type: block.type,
-          props: block.props as any,
-          content: block.content as any,
-          deletedAt: block.deletedAt,
-          updatedAt: block.updatedAt,
-          createdAt: block.createdAt,
-        }))
-      )
+      .values(blocks)
       .onConflictDoUpdate({
         target: Block.id,
         set: {
@@ -344,22 +344,22 @@ export class BlockLocalSynchronizer {
     response: GetAllMyBlocksResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blocks = response.data.map(block => ({
+      id: block.id,
+      parentBlockId: block.parentBlockId,
+      blockGroupId: block.blockGroupId,
+      type: block.type,
+      props: block.props as any,
+      content: block.content as any,
+      deletedAt: block.deletedAt,
+      updatedAt: block.updatedAt,
+      createdAt: block.createdAt,
+    }));
+    if (blocks.length === 0) return;
 
     await localDB
       .insert(Block)
-      .values(
-        response.data.map(block => ({
-          id: block.id,
-          parentBlockId: block.parentBlockId,
-          blockGroupId: block.blockGroupId,
-          type: block.type,
-          props: block.props as any,
-          content: block.content as any,
-          deletedAt: block.deletedAt,
-          updatedAt: block.updatedAt,
-          createdAt: block.createdAt,
-        }))
-      )
+      .values(blocks)
       .onConflictDoUpdate({
         target: Block.id,
         set: {
@@ -873,34 +873,35 @@ export class BlockLocalSynchronizer {
     if (!localDB.isReady) await localDB.ensureReady();
 
     await localDB.transaction(async tx => {
-      await tx
-        .insert(Block)
-        .values(
-          response.data.map(block => ({
-            id: block.id,
-            parentBlockId: block.parentBlockId,
-            blockGroupId: block.blockGroupId,
-            type: block.type,
-            props: block.props as any,
-            content: block.content as any,
-            deletedAt: null,
-            updatedAt: block.updatedAt,
-            createdAt: block.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: Block.id,
-          set: {
-            parentBlockId: sql`excluded.parent_block_id`,
-            blockGroupId: sql`excluded.block_group_id`,
-            type: sql`excluded.type`,
-            props: sql`excluded.props`,
-            content: sql`excluded.content`,
-            deletedAt: null,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
+      const restoredBlocks = response.data.map(block => ({
+        id: block.id,
+        parentBlockId: block.parentBlockId,
+        blockGroupId: block.blockGroupId,
+        type: block.type,
+        props: block.props as any,
+        content: block.content as any,
+        deletedAt: null,
+        updatedAt: block.updatedAt,
+        createdAt: block.createdAt,
+      }));
+      if (restoredBlocks.length > 0) {
+        await tx
+          .insert(Block)
+          .values(restoredBlocks)
+          .onConflictDoUpdate({
+            target: Block.id,
+            set: {
+              parentBlockId: sql`excluded.parent_block_id`,
+              blockGroupId: sql`excluded.block_group_id`,
+              type: sql`excluded.type`,
+              props: sql`excluded.props`,
+              content: sql`excluded.content`,
+              deletedAt: null,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
 
       const blockGroupIdToDeltaMap = new Map<string, number>();
       for (const blockGroupId of request.affected.blockGroupIds) {

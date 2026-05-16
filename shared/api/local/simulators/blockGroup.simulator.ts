@@ -385,7 +385,9 @@ export class BlockGroupLocalSimulator {
         };
       });
 
-      await tx.insert(BlockGroup).values(rows);
+      if (rows.length > 0) {
+        await tx.insert(BlockGroup).values(rows);
+      }
 
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,
@@ -419,7 +421,9 @@ export class BlockGroupLocalSimulator {
         };
       });
 
-      await tx.insert(BlockGroup).values(rows);
+      if (rows.length > 0) {
+        await tx.insert(BlockGroup).values(rows);
+      }
 
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,

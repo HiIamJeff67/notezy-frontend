@@ -1,5 +1,5 @@
-import { fetchGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/fetches/blockGroup.fetch";
-import { fetchGetMyBlockPackAndItsParentById } from "@shared/api/fetches/blockPack.fetch";
+import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
+import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
@@ -12,6 +12,8 @@ import {
   useLoaderData,
 } from "@tanstack/react-router";
 import type { UUID } from "crypto";
+import { useEffect, useState } from "react";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import BlockPackEditorNotFoundPage from "@/pages/root/block-pack-editor/BlockPackEditorNotFoundPage";
 import BlockPackEditorPage from "@/pages/root/block-pack-editor/BlockPackEditorPage";
 
@@ -42,59 +44,110 @@ export const Route = createFileRoute("/_root/block-pack-editor/$blockPackId")({
       rootShelfId: rootShelfId as UUID,
     };
   },
-  loader: async ({ params, deps }): Promise<BlockPackMeta> => {
-    // get the user agent and access token from client side utils since the ssr has been turned off in block pack editor
-    const userAgent = navigator.userAgent;
-    const accessToken = LocalStorageManipulator.getItemByKey(
-      LocalStorageKey.accessToken
-    );
-    const responseOfGettingBlockPack =
-      await fetchGetMyBlockPackAndItsParentById({
-        header: {
-          userAgent: userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        param: {
-          blockPackId: params.blockPackId,
-        },
-      });
-    const responseOfGettingBlockGroupsAndTheirBlocks =
-      await fetchGetMyBlockGroupsAndTheirBlocksByBlockPackId({
-        header: {
-          userAgent: userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        param: {
-          blockPackId: params.blockPackId,
-        },
-      });
+  loader: ({ params, deps }) => {
     return {
-      id: responseOfGettingBlockPack.data.id,
-      parentId: deps.parentSubShelfId,
-      rootId: deps.rootShelfId,
-      name: responseOfGettingBlockPack.data.name,
-      icon: responseOfGettingBlockPack.data.icon,
-      headerBackgroundURL: responseOfGettingBlockPack.data.headerBackgroundURL,
-      blockCount: responseOfGettingBlockPack.data.blockCount,
-      path: (responseOfGettingBlockPack.data.parentSubShelfPath ||
-        []) as UUID[],
-      deletedAt: responseOfGettingBlockPack.data.deletedAt
-        ? new Date(responseOfGettingBlockPack.data.deletedAt)
-        : null,
-      updatedAt: new Date(responseOfGettingBlockPack.data.updatedAt),
-      createdAt: new Date(responseOfGettingBlockPack.data.createdAt),
-      blockGroups:
-        responseOfGettingBlockGroupsAndTheirBlocks.data as BlockGroupMeta[],
-    } as BlockPackMeta;
+      blockPackId: params.blockPackId as UUID,
+      ...deps,
+    };
   },
   component: BlockPackEditorIndexRoute,
   notFoundComponent: () => <BlockPackEditorNotFoundPage />,
 });
 
 function BlockPackEditorIndexRoute() {
-  const data = useLoaderData({
+  const loaderData = useLoaderData({
     from: "/_root/block-pack-editor/$blockPackId",
   });
 
-  return <BlockPackEditorPage blockPackMeta={data} />;
+  const blockPackQuerier = useGetMyBlockPackAndItsParentById();
+  const blockGroupQuerier = useGetMyBlockGroupsAndTheirBlocksByBlockPackId();
+  const [blockPackMeta, setBlockPackMeta] = useState<BlockPackMeta | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchBlockPackMeta = async () => {
+      setIsLoading(true);
+      setIsNotFound(false);
+
+      const userAgent = navigator.userAgent;
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+
+      try {
+        const [blockPackResponse, blockGroupResponse] = await Promise.all([
+          blockPackQuerier.fetch({
+            header: {
+              userAgent: userAgent,
+              authorization: getAuthorization(accessToken),
+            },
+            param: {
+              blockPackId: loaderData.blockPackId,
+            },
+          }),
+          blockGroupQuerier.fetch({
+            header: {
+              userAgent: userAgent,
+              authorization: getAuthorization(accessToken),
+            },
+            param: {
+              blockPackId: loaderData.blockPackId,
+            },
+          }),
+        ]);
+
+        if (!isActive) return;
+
+        if (!blockPackResponse?.data) {
+          setIsNotFound(true);
+          setBlockPackMeta(null);
+          return;
+        }
+
+        setBlockPackMeta({
+          id: blockPackResponse.data.id as UUID,
+          parentId: loaderData.parentSubShelfId,
+          rootId: loaderData.rootShelfId,
+          name: blockPackResponse.data.name,
+          icon: blockPackResponse.data.icon,
+          headerBackgroundURL: blockPackResponse.data.headerBackgroundURL,
+          blockCount: blockPackResponse.data.blockCount,
+          path: (blockPackResponse.data.parentSubShelfPath || []) as UUID[],
+          deletedAt: blockPackResponse.data.deletedAt
+            ? new Date(blockPackResponse.data.deletedAt)
+            : null,
+          updatedAt: new Date(blockPackResponse.data.updatedAt),
+          createdAt: new Date(blockPackResponse.data.createdAt),
+          blockGroups: blockGroupResponse.data as BlockGroupMeta[],
+        });
+      } catch {
+        if (!isActive) return;
+        setIsNotFound(true);
+        setBlockPackMeta(null);
+      } finally {
+        if (!isActive) return;
+        setIsLoading(false);
+      }
+    };
+
+    void fetchBlockPackMeta();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    loaderData.blockPackId,
+    loaderData.parentSubShelfId,
+    loaderData.rootShelfId,
+  ]);
+
+  if (isLoading) return <StrictLoadingCover />;
+  if (isNotFound || !blockPackMeta) return <BlockPackEditorNotFoundPage />;
+
+  return <BlockPackEditorPage blockPackMeta={blockPackMeta} />;
 }

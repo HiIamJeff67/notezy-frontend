@@ -332,22 +332,22 @@ export class BlockGroupLocalSynchronizer {
     response: GetMyBlockGroupsByPrevBlockGroupIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockGroups = response.data.map(blockGroup => ({
+      id: blockGroup.id,
+      ownerPublicId: response.embedded.publicId,
+      blockPackId: blockGroup.blockPackId,
+      prevBlockGroupId: blockGroup.prevBlockGroupId,
+      syncBlockGroupId: blockGroup.syncBlockGroupId,
+      size: Number(blockGroup.size),
+      deletedAt: blockGroup.deletedAt,
+      updatedAt: blockGroup.updatedAt,
+      createdAt: blockGroup.createdAt,
+    }));
+    if (blockGroups.length === 0) return;
 
     await localDB
       .insert(BlockGroup)
-      .values(
-        response.data.map(blockGroup => ({
-          id: blockGroup.id,
-          ownerPublicId: response.embedded.publicId,
-          blockPackId: blockGroup.blockPackId,
-          prevBlockGroupId: blockGroup.prevBlockGroupId,
-          syncBlockGroupId: blockGroup.syncBlockGroupId,
-          size: Number(blockGroup.size),
-          deletedAt: blockGroup.deletedAt,
-          updatedAt: blockGroup.updatedAt,
-          createdAt: blockGroup.createdAt,
-        }))
-      )
+      .values(blockGroups)
       .onConflictDoUpdate({
         target: BlockGroup.id,
         set: {
@@ -367,22 +367,22 @@ export class BlockGroupLocalSynchronizer {
     response: GetAllMyBlockGroupsByBlockPackIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockGroups = response.data.map(blockGroup => ({
+      id: blockGroup.id,
+      ownerPublicId: response.embedded.publicId,
+      blockPackId: blockGroup.blockPackId,
+      prevBlockGroupId: blockGroup.prevBlockGroupId,
+      syncBlockGroupId: blockGroup.syncBlockGroupId,
+      size: Number(blockGroup.size),
+      deletedAt: blockGroup.deletedAt,
+      updatedAt: blockGroup.updatedAt,
+      createdAt: blockGroup.createdAt,
+    }));
+    if (blockGroups.length === 0) return;
 
     await localDB
       .insert(BlockGroup)
-      .values(
-        response.data.map(blockGroup => ({
-          id: blockGroup.id,
-          ownerPublicId: response.embedded.publicId,
-          blockPackId: blockGroup.blockPackId,
-          prevBlockGroupId: blockGroup.prevBlockGroupId,
-          syncBlockGroupId: blockGroup.syncBlockGroupId,
-          size: Number(blockGroup.size),
-          deletedAt: blockGroup.deletedAt,
-          updatedAt: blockGroup.updatedAt,
-          createdAt: blockGroup.createdAt,
-        }))
-      )
+      .values(blockGroups)
       .onConflictDoUpdate({
         target: BlockGroup.id,
         set: {
@@ -425,20 +425,20 @@ export class BlockGroupLocalSynchronizer {
     response: InsertBlockGroupsByBlockPackIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockGroups = request.body.blockPackContents.map((content, index) => ({
+      id: response.data.ids[index],
+      ownerPublicId: response.embedded.publicId,
+      blockPackId: request.body.blockPackId,
+      prevBlockGroupId: content.prevBlockGroupId,
+      syncBlockGroupId: null,
+      size: 0,
+      deletedAt: null,
+      updatedAt: response.data.createdAt,
+      createdAt: response.data.createdAt,
+    }));
+    if (blockGroups.length === 0) return;
 
-    await localDB.insert(BlockGroup).values(
-      request.body.blockPackContents.map((content, index) => ({
-        id: response.data.ids[index],
-        ownerPublicId: response.embedded.publicId,
-        blockPackId: request.body.blockPackId,
-        prevBlockGroupId: content.prevBlockGroupId,
-        syncBlockGroupId: null,
-        size: 0,
-        deletedAt: null,
-        updatedAt: response.data.createdAt,
-        createdAt: response.data.createdAt,
-      }))
-    );
+    await localDB.insert(BlockGroup).values(blockGroups);
   };
 
   static syncBatchInsertBlockGroupsByBlockPackIds = async (
@@ -446,20 +446,20 @@ export class BlockGroupLocalSynchronizer {
     response: BatchInsertBlockGroupsByBlockPackIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const blockGroups = request.body.blockPackContents.map((content, index) => ({
+      id: response.data.ids[index],
+      ownerPublicId: response.embedded.publicId,
+      blockPackId: content.blockPackId,
+      prevBlockGroupId: content.prevBlockGroupId,
+      syncBlockGroupId: null,
+      size: 0,
+      deletedAt: null,
+      updatedAt: response.data.createdAt,
+      createdAt: response.data.createdAt,
+    }));
+    if (blockGroups.length === 0) return;
 
-    await localDB.insert(BlockGroup).values(
-      request.body.blockPackContents.map((content, index) => ({
-        id: response.data.ids[index],
-        ownerPublicId: response.embedded.publicId,
-        blockPackId: content.blockPackId,
-        prevBlockGroupId: content.prevBlockGroupId,
-        syncBlockGroupId: null,
-        size: 0,
-        deletedAt: null,
-        updatedAt: response.data.createdAt,
-        createdAt: response.data.createdAt,
-      }))
-    );
+    await localDB.insert(BlockGroup).values(blockGroups);
   };
 
   static syncInsertBlockGroupAndItsBlocksByBlockPackId = async (
@@ -916,34 +916,35 @@ export class BlockGroupLocalSynchronizer {
     if (!localDB.isReady) await localDB.ensureReady();
 
     await localDB.transaction(async tx => {
-      await tx
-        .insert(BlockGroup)
-        .values(
-          response.data.map(blockGroup => ({
-            id: blockGroup.id,
-            ownerPublicId: response.embedded.publicId,
-            blockPackId: blockGroup.blockPackId,
-            prevBlockGroupId: blockGroup.prevBlockGroupId,
-            syncBlockGroupId: blockGroup.syncBlockGroupId,
-            size: Number(blockGroup.size),
-            deletedAt: null,
-            updatedAt: blockGroup.updatedAt,
-            createdAt: blockGroup.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: BlockGroup.id,
-          set: {
-            ownerPublicId: sql`excluded.owner_public_id`,
-            blockPackId: sql`excluded.block_pack_id`,
-            prevBlockGroupId: sql`excluded.prev_block_group_id`,
-            syncBlockGroupId: sql`excluded.sync_block_group_id`,
-            size: sql`excluded.size`,
-            deletedAt: null,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
+      const restoredBlockGroups = response.data.map(blockGroup => ({
+        id: blockGroup.id,
+        ownerPublicId: response.embedded.publicId,
+        blockPackId: blockGroup.blockPackId,
+        prevBlockGroupId: blockGroup.prevBlockGroupId,
+        syncBlockGroupId: blockGroup.syncBlockGroupId,
+        size: Number(blockGroup.size),
+        deletedAt: null,
+        updatedAt: blockGroup.updatedAt,
+        createdAt: blockGroup.createdAt,
+      }));
+      if (restoredBlockGroups.length > 0) {
+        await tx
+          .insert(BlockGroup)
+          .values(restoredBlockGroups)
+          .onConflictDoUpdate({
+            target: BlockGroup.id,
+            set: {
+              ownerPublicId: sql`excluded.owner_public_id`,
+              blockPackId: sql`excluded.block_pack_id`,
+              prevBlockGroupId: sql`excluded.prev_block_group_id`,
+              syncBlockGroupId: sql`excluded.sync_block_group_id`,
+              size: sql`excluded.size`,
+              deletedAt: null,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
 
       const blockPackIdToCountMap = new Map<string, number>();
       for (const blockGroup of response.data) {

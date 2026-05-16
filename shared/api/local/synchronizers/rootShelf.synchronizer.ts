@@ -19,7 +19,7 @@ import {
   UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { localDB } from "@shared/api/local/db";
-import { RootShelf, UsersToShelves } from "@shared/api/local/schemas";
+import { RootShelf, User, UsersToShelves } from "@shared/api/local/schemas";
 import { and, eq, exists, inArray, sql } from "drizzle-orm";
 
 export class RootShelfLocalSynchronizer {
@@ -86,6 +86,76 @@ export class RootShelfLocalSynchronizer {
     });
   };
 
+  static syncSearchRootShelves = async (
+    searchedRootShelves: Array<{
+      id: string;
+      name: string;
+      subShelfCount: number;
+      itemCount: number;
+      lastAnalyzedAt: Date;
+      deletedAt: Date | null;
+      updatedAt: Date;
+      createdAt: Date;
+      ownerPublicId: string;
+      permission: AccessControlPermission;
+    }>
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
+
+    const rootShelves = searchedRootShelves.map(rootShelf => ({
+      id: rootShelf.id,
+      name: rootShelf.name,
+      subShelfCount: rootShelf.subShelfCount,
+      itemCount: rootShelf.itemCount,
+      lastAnalyzedAt: rootShelf.lastAnalyzedAt,
+      deletedAt: rootShelf.deletedAt,
+      updatedAt: rootShelf.updatedAt,
+      createdAt: rootShelf.createdAt,
+    }));
+
+    await localDB.transaction(async tx => {
+      const loggedInUser = await tx.query.User.findFirst({
+        where: eq(User.isLoggedIn, true),
+      });
+      if (loggedInUser === undefined) return;
+      const usersToShelves = searchedRootShelves.map(rootShelf => ({
+        userPublicId: loggedInUser.publicId,
+        rootShelfId: rootShelf.id,
+        permission: rootShelf.permission,
+      }));
+
+      if (rootShelves.length > 0) {
+        await tx
+          .insert(RootShelf)
+          .values(rootShelves)
+          .onConflictDoUpdate({
+            target: RootShelf.id,
+            set: {
+              name: sql`excluded.name`,
+              subShelfCount: sql`excluded.sub_shelf_count`,
+              itemCount: sql`excluded.item_count`,
+              lastAnalyzedAt: sql`excluded.last_analyzed_count`,
+              deletedAt: sql`excluded.deleted_at`,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
+
+      if (usersToShelves.length > 0) {
+        await tx
+          .insert(UsersToShelves)
+          .values(usersToShelves)
+          .onConflictDoUpdate({
+            target: [UsersToShelves.userPublicId, UsersToShelves.rootShelfId],
+            set: {
+              permission: sql`excluded.permission`,
+            },
+          });
+      }
+    });
+  };
+
   static syncCreateRootShelf = async (
     request: CreateRootShelfRequest,
     response: CreateRootShelfResponse
@@ -120,6 +190,9 @@ export class RootShelfLocalSynchronizer {
       rootShelfId: id,
       permission: AccessControlPermission.Owner,
     }));
+    if (createdRootShelves.length === 0 || createdUsersToShelves.length === 0) {
+      return;
+    }
     await localDB.transaction(async tx => {
       await tx.insert(RootShelf).values(createdRootShelves);
       await tx.insert(UsersToShelves).values(createdUsersToShelves);

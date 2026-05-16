@@ -363,7 +363,9 @@ export class SubShelfLocalSimulator {
         };
       });
 
-      await tx.insert(SubShelf).values(createdSubShelves);
+      if (createdSubShelves.length > 0) {
+        await tx.insert(SubShelf).values(createdSubShelves);
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const createdSubShelf of createdSubShelves) {

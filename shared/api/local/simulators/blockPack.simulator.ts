@@ -293,7 +293,9 @@ export class BlockPackLocalSimulator {
         };
       });
 
-      await tx.insert(BlockPack).values(created);
+      if (created.length > 0) {
+        await tx.insert(BlockPack).values(created);
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const rootShelfId of request.affected.rootShelfIds) {

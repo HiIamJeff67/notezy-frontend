@@ -1,4 +1,13 @@
 import {
+  SearchRootShelfInput,
+  SearchRootShelfSortBy,
+  SearchRootShelvesQuery,
+  SearchSortOrder,
+  UserPlan,
+  UserRole,
+  UserStatus,
+} from "@shared/api/graphql/generated/graphql";
+import {
   AccessControlPermission,
   AllAccessControlPermissions,
 } from "@shared/api/interfaces/enums/accessControlPermission.enum";
@@ -44,6 +53,168 @@ export class RootShelfLocalSimulator {
           )
         )
     );
+
+  private static encodeSearchCursor = (rootShelfId: string): string =>
+    btoa(JSON.stringify({ id: rootShelfId }));
+
+  private static decodeSearchCursor = (encodedCursor?: string | null) => {
+    if (!encodedCursor) return null;
+
+    try {
+      const decodedCursor = JSON.parse(atob(encodedCursor)) as { id?: unknown };
+      return typeof decodedCursor.id === "string" ? decodedCursor.id : null;
+    } catch {
+      return null;
+    }
+  };
+
+  static simulateSearchRootShelves = async (
+    input: SearchRootShelfInput
+  ): Promise<SearchRootShelvesQuery["searchRootShelves"]> => {
+    const startedAt = performance.now();
+    if (!localDB.isReady) await localDB.ensureReady();
+    const loggedInUser = await localDB.query.User.findFirst({
+      where: eq(User.isLoggedIn, true),
+    });
+
+    if (loggedInUser === undefined) {
+      return {
+        __typename: "SearchRootShelfConnection",
+        searchEdges: [],
+        searchPageInfo: {
+          __typename: "SearchPageInfo",
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startEncodedSearchCursor: null,
+          endEncodedSearchCursor: null,
+        },
+        totalCount: 0,
+        searchTime: performance.now() - startedAt,
+      };
+    }
+
+    const allAccessibleRootShelves = await localDB
+      .select({
+        id: RootShelf.id,
+        name: RootShelf.name,
+        permission: UsersToShelves.permission,
+        subShelfCount: RootShelf.subShelfCount,
+        itemCount: RootShelf.itemCount,
+        lastAnalyzedAt: RootShelf.lastAnalyzedAt,
+        deletedAt: RootShelf.deletedAt,
+        updatedAt: RootShelf.updatedAt,
+        createdAt: RootShelf.createdAt,
+      })
+      .from(RootShelf)
+      .innerJoin(
+        UsersToShelves,
+        and(
+          eq(UsersToShelves.rootShelfId, RootShelf.id),
+          eq(UsersToShelves.userPublicId, loggedInUser.publicId),
+          inArray(UsersToShelves.permission, AllAccessControlPermissions)
+        )
+      );
+
+    const normalizedQuery = input.query.trim().toLowerCase();
+    const matchedRootShelves = allAccessibleRootShelves.filter(rootShelf => {
+      if (rootShelf.deletedAt !== null) return false;
+      if (normalizedQuery.length === 0) return true;
+      return rootShelf.name.toLowerCase().includes(normalizedQuery);
+    });
+
+    matchedRootShelves.sort((left, right) => {
+      const sortOrder = input.sortOrder ?? SearchSortOrder.Asc;
+      const sortBy = input.sortBy ?? SearchRootShelfSortBy.Relevance;
+
+      const compareResult = (() => {
+        if (sortBy === SearchRootShelfSortBy.CreatedAt) {
+          return left.createdAt.getTime() - right.createdAt.getTime();
+        }
+        if (sortBy === SearchRootShelfSortBy.LastUpdate) {
+          return left.updatedAt.getTime() - right.updatedAt.getTime();
+        }
+        if (sortBy === SearchRootShelfSortBy.Name) {
+          return left.name.localeCompare(right.name);
+        }
+
+        if (normalizedQuery.length === 0) {
+          return left.name.localeCompare(right.name);
+        }
+
+        const leftIndex = left.name.toLowerCase().indexOf(normalizedQuery);
+        const rightIndex = right.name.toLowerCase().indexOf(normalizedQuery);
+        if (leftIndex !== rightIndex) return leftIndex - rightIndex;
+        return left.name.localeCompare(right.name);
+      })();
+
+      return sortOrder === SearchSortOrder.Desc
+        ? -compareResult
+        : compareResult;
+    });
+
+    const first = Math.max(0, input.first ?? matchedRootShelves.length);
+    const afterId = RootShelfLocalSimulator.decodeSearchCursor(input.after);
+    const afterIndex =
+      afterId === null
+        ? -1
+        : matchedRootShelves.findIndex(rootShelf => rootShelf.id === afterId);
+    const startIndex = afterIndex >= 0 ? afterIndex + 1 : 0;
+    const pagedRootShelves = matchedRootShelves.slice(
+      startIndex,
+      startIndex + first
+    );
+
+    return {
+      __typename: "SearchRootShelfConnection",
+      searchEdges: pagedRootShelves.map(rootShelf => ({
+        __typename: "SearchRootShelfEdge",
+        encodedSearchCursor: RootShelfLocalSimulator.encodeSearchCursor(
+          rootShelf.id
+        ),
+        node: {
+          __typename: "PrivateRootShelf",
+          id: rootShelf.id as UUID,
+          name: rootShelf.name,
+          permission: rootShelf.permission,
+          subShelfCount: rootShelf.subShelfCount,
+          itemCount: rootShelf.itemCount,
+          lastAnalyzedAt: rootShelf.lastAnalyzedAt,
+          deletedAt: rootShelf.deletedAt,
+          updatedAt: rootShelf.updatedAt,
+          createdAt: rootShelf.createdAt,
+          owner: [
+            {
+              __typename: "PublicUser",
+              publicId: loggedInUser.publicId,
+              name: loggedInUser.name,
+              displayName: loggedInUser.displayName,
+              role: UserRole.Normal,
+              plan: UserPlan.Free,
+              status: loggedInUser.status as UserStatus,
+              createdAt: loggedInUser.createdAt,
+            },
+          ],
+        },
+      })),
+      searchPageInfo: {
+        __typename: "SearchPageInfo",
+        hasNextPage: startIndex + first < matchedRootShelves.length,
+        hasPreviousPage: startIndex > 0,
+        startEncodedSearchCursor:
+          pagedRootShelves.length > 0
+            ? RootShelfLocalSimulator.encodeSearchCursor(pagedRootShelves[0].id)
+            : null,
+        endEncodedSearchCursor:
+          pagedRootShelves.length > 0
+            ? RootShelfLocalSimulator.encodeSearchCursor(
+                pagedRootShelves[pagedRootShelves.length - 1].id
+              )
+            : null,
+      },
+      totalCount: matchedRootShelves.length,
+      searchTime: performance.now() - startedAt,
+    };
+  };
 
   static simulateGetMyRootShelfById = async (
     request: GetMyRootShelfByIdRequest
@@ -150,8 +321,12 @@ export class RootShelfLocalSimulator {
           permission: AccessControlPermission.Owner,
         })
       );
-      await tx.insert(RootShelf).values(createdRootShelves);
-      await tx.insert(UsersToShelves).values(createdUsersToShelves);
+      if (createdRootShelves.length > 0) {
+        await tx.insert(RootShelf).values(createdRootShelves);
+      }
+      if (createdUsersToShelves.length > 0) {
+        await tx.insert(UsersToShelves).values(createdUsersToShelves);
+      }
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,
         entityType: TransactionEntityType.RootShelf,

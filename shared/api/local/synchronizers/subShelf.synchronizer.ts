@@ -93,20 +93,22 @@ export class SubShelfLocalSynchronizer {
     response: GetMySubShelvesByPrevSubShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+
+    const subShelves = response.data.map(subShelf => ({
+      id: subShelf.id,
+      name: subShelf.name,
+      rootShelfId: subShelf.rootShelfId,
+      prevSubShelfId: subShelf.prevSubShelfId,
+      path: subShelf.path as UUID[],
+      deletedAt: subShelf.deletedAt,
+      updatedAt: subShelf.updatedAt,
+      createdAt: subShelf.createdAt,
+    }));
+    if (subShelves.length === 0) return;
+
     await localDB
       .insert(SubShelf)
-      .values(
-        response.data.map(subShelf => ({
-          id: subShelf.id,
-          name: subShelf.name,
-          rootShelfId: subShelf.rootShelfId,
-          prevSubShelfId: subShelf.prevSubShelfId,
-          path: subShelf.path as UUID[],
-          deletedAt: subShelf.deletedAt,
-          updatedAt: subShelf.updatedAt,
-          createdAt: subShelf.createdAt,
-        }))
-      )
+      .values(subShelves)
       .onConflictDoUpdate({
         target: SubShelf.id,
         set: {
@@ -125,20 +127,22 @@ export class SubShelfLocalSynchronizer {
     response: GetAllMySubShelvesByRootShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+
+    const subShelves = response.data.map(subShelf => ({
+      id: subShelf.id,
+      name: subShelf.name,
+      rootShelfId: subShelf.rootShelfId,
+      prevSubShelfId: subShelf.prevSubShelfId,
+      path: subShelf.path as UUID[],
+      deletedAt: subShelf.deletedAt,
+      updatedAt: subShelf.updatedAt,
+      createdAt: subShelf.createdAt,
+    }));
+    if (subShelves.length === 0) return;
+
     await localDB
       .insert(SubShelf)
-      .values(
-        response.data.map(subShelf => ({
-          id: subShelf.id,
-          name: subShelf.name,
-          rootShelfId: subShelf.rootShelfId,
-          prevSubShelfId: subShelf.prevSubShelfId,
-          path: subShelf.path as UUID[],
-          deletedAt: subShelf.deletedAt,
-          updatedAt: subShelf.updatedAt,
-          createdAt: subShelf.createdAt,
-        }))
-      )
+      .values(subShelves)
       .onConflictDoUpdate({
         target: SubShelf.id,
         set: {
@@ -157,62 +161,66 @@ export class SubShelfLocalSynchronizer {
     response: GetMySubShelvesAndItemsByPrevSubShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
-    await localDB.transaction(async tx => {
-      await tx
-        .insert(SubShelf)
-        .values(
-          response.data.subShelves.map(subShelf => ({
-            id: subShelf.id,
-            name: subShelf.name,
-            rootShelfId: subShelf.rootShelfId,
-            prevSubShelfId: subShelf.prevSubShelfId,
-            path: subShelf.path as UUID[],
-            deletedAt: subShelf.deletedAt,
-            updatedAt: subShelf.updatedAt,
-            createdAt: subShelf.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: SubShelf.id,
-          set: {
-            name: sql`excluded.name`,
-            rootShelfId: sql`excluded.root_shelf_id`,
-            prevSubShelfId: sql`excluded.prev_sub_shelf_id`,
-            path: sql`excluded.path`,
-            deletedAt: sql`excluded.deleted_at`,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
 
-      await tx
-        .insert(BlockPack)
-        .values(
-          response.data.blockPacks.map(blockPack => ({
-            id: blockPack.id,
-            parentSubShelfId: blockPack.parentSubShelfId,
-            name: blockPack.name,
-            icon: blockPack.icon,
-            headerBackgroundURL: blockPack.headerBackgroundURL,
-            blockCount: blockPack.blockCount,
-            deletedAt: blockPack.deletedAt,
-            updatedAt: blockPack.updatedAt,
-            createdAt: blockPack.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: BlockPack.id,
-          set: {
-            parentSubShelfId: sql`excluded.parent_sub_shelf_id`,
-            name: sql`excluded.name`,
-            icon: sql`excluded.icon`,
-            headerBackgroundURL: sql`excluded.header_background_url`,
-            blockCount: sql`excluded.block_count`,
-            deletedAt: sql`excluded.deleted_at`,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
+    const subShelves = response.data.subShelves.map(subShelf => ({
+      id: subShelf.id,
+      name: subShelf.name,
+      rootShelfId: subShelf.rootShelfId,
+      prevSubShelfId: subShelf.prevSubShelfId,
+      path: subShelf.path as UUID[],
+      deletedAt: subShelf.deletedAt,
+      updatedAt: subShelf.updatedAt,
+      createdAt: subShelf.createdAt,
+    }));
+    const blockPacks = response.data.blockPacks.map(blockPack => ({
+      id: blockPack.id,
+      parentSubShelfId: blockPack.parentSubShelfId,
+      name: blockPack.name,
+      icon: blockPack.icon,
+      headerBackgroundURL: blockPack.headerBackgroundURL,
+      blockCount: blockPack.blockCount,
+      deletedAt: blockPack.deletedAt,
+      updatedAt: blockPack.updatedAt,
+      createdAt: blockPack.createdAt,
+    }));
+
+    await localDB.transaction(async tx => {
+      if (subShelves.length > 0) {
+        await tx
+          .insert(SubShelf)
+          .values(subShelves)
+          .onConflictDoUpdate({
+            target: SubShelf.id,
+            set: {
+              name: sql`excluded.name`,
+              rootShelfId: sql`excluded.root_shelf_id`,
+              prevSubShelfId: sql`excluded.prev_sub_shelf_id`,
+              path: sql`excluded.path`,
+              deletedAt: sql`excluded.deleted_at`,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
+
+      if (blockPacks.length > 0) {
+        await tx
+          .insert(BlockPack)
+          .values(blockPacks)
+          .onConflictDoUpdate({
+            target: BlockPack.id,
+            set: {
+              parentSubShelfId: sql`excluded.parent_sub_shelf_id`,
+              name: sql`excluded.name`,
+              icon: sql`excluded.icon`,
+              headerBackgroundURL: sql`excluded.header_background_url`,
+              blockCount: sql`excluded.block_count`,
+              deletedAt: sql`excluded.deleted_at`,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
     });
   };
 
@@ -298,8 +306,8 @@ export class SubShelfLocalSynchronizer {
         ])
       );
 
-      await tx.insert(SubShelf).values(
-        request.body.createdSubShelves.map((createdSubShelf, index) => ({
+      const createdSubShelves = request.body.createdSubShelves.map(
+        (createdSubShelf, index) => ({
           id: response.data.ids[index],
           name: createdSubShelf.name,
           rootShelfId: createdSubShelf.rootShelfId,
@@ -312,8 +320,11 @@ export class SubShelfLocalSynchronizer {
           deletedAt: null,
           updatedAt: response.data.createdAt,
           createdAt: response.data.createdAt,
-        }))
+        })
       );
+      if (createdSubShelves.length > 0) {
+        await tx.insert(SubShelf).values(createdSubShelves);
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const createdSubShelf of request.body.createdSubShelves) {
@@ -685,32 +696,33 @@ export class SubShelfLocalSynchronizer {
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
-      await tx
-        .insert(SubShelf)
-        .values(
-          response.data.map(subShelf => ({
-            id: subShelf.id,
-            name: subShelf.name,
-            rootShelfId: subShelf.rootShelfId,
-            prevSubShelfId: subShelf.prevSubShelfId,
-            path: subShelf.path as UUID[],
-            deletedAt: null,
-            updatedAt: subShelf.updatedAt,
-            createdAt: subShelf.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: SubShelf.id,
-          set: {
-            name: sql`excluded.name`,
-            rootShelfId: sql`excluded.root_shelf_id`,
-            prevSubShelfId: sql`excluded.prev_sub_shelf_id`,
-            path: sql`excluded.path`,
-            deletedAt: null,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
+      const restoredSubShelves = response.data.map(subShelf => ({
+        id: subShelf.id,
+        name: subShelf.name,
+        rootShelfId: subShelf.rootShelfId,
+        prevSubShelfId: subShelf.prevSubShelfId,
+        path: subShelf.path as UUID[],
+        deletedAt: null,
+        updatedAt: subShelf.updatedAt,
+        createdAt: subShelf.createdAt,
+      }));
+      if (restoredSubShelves.length > 0) {
+        await tx
+          .insert(SubShelf)
+          .values(restoredSubShelves)
+          .onConflictDoUpdate({
+            target: SubShelf.id,
+            set: {
+              name: sql`excluded.name`,
+              rootShelfId: sql`excluded.root_shelf_id`,
+              prevSubShelfId: sql`excluded.prev_sub_shelf_id`,
+              path: sql`excluded.path`,
+              deletedAt: null,
+              updatedAt: sql`excluded.updated_at`,
+              createdAt: sql`excluded.created_at`,
+            },
+          });
+      }
 
       const rootShelfIdToCountMap = new Map<string, number>();
       for (const subShelf of response.data) {

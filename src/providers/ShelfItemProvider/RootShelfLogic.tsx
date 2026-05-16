@@ -10,6 +10,7 @@ import {
   useDeleteMyRootShelfById,
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
+import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
 import { queryFnGetAllMySubShelvesByRootShelfId } from "@shared/api/invokers/subShelf.invoker";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
@@ -23,7 +24,7 @@ import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useState } from "react";
 
 interface UseRootShelfLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;
@@ -45,6 +46,7 @@ export const useRootShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseRootShelfLogicProps) => {
+  const getAllSubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
@@ -64,7 +66,6 @@ export const useRootShelfLogic = ({
     useState<string>("");
   const [originalRootShelfNodeName, setOriginalRootShelfNodeName] =
     useState<string>("");
-  const searchRequestIdRef = useRef(0);
 
   const [executeSearch, { data, loading, fetchMore }] =
     useSearchRootShelvesLazyQuery();
@@ -160,15 +161,12 @@ export const useRootShelfLogic = ({
 
   const loadMoreRootShelves = useCallback(async (): Promise<void> => {
     const searchRootShelvesConnection = data?.searchRootShelves;
+    const searchEdges = searchRootShelvesConnection?.searchEdges ?? [];
 
-    if (
-      !searchRootShelvesConnection ||
-      searchRootShelvesConnection.searchEdges.length === 0
-    )
-      return;
+    if (!searchRootShelvesConnection || searchEdges.length === 0) return;
 
     const pageInfo = searchRootShelvesConnection?.searchPageInfo;
-    if (!pageInfo.hasNextPage) return;
+    if (!pageInfo || !pageInfo.hasNextPage) return;
 
     await fetchMore({
       variables: {
@@ -195,16 +193,15 @@ export const useRootShelfLogic = ({
     const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKey.accessToken
     );
-    const responseOfGettingAllSubShelves =
-      await queryFnGetAllMySubShelvesByRootShelfId({
-        header: {
-          userAgent: userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        param: {
-          rootShelfId: rootShelf.id,
-        },
-      });
+    const responseOfGettingAllSubShelves = await getAllSubShelvesQuerier.fetch({
+      header: {
+        userAgent: userAgent,
+        authorization: getAuthorization(accessToken),
+      },
+      param: {
+        rootShelfId: rootShelf.id,
+      },
+    });
 
     const newRootShelfNode =
       RootShelfManipulator.initializeSubShelfNodeTreeByResponse(
