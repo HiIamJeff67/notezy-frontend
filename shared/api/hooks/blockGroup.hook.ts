@@ -5,6 +5,7 @@ import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetAllMyBlockGroupsByBlockPackIdRequest,
@@ -71,6 +72,10 @@ export const useGetMyBlockGroupById = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -149,6 +154,10 @@ export const useGetMyBlockGroupAndItsBlocksById = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -234,8 +243,13 @@ export const useGetMyBlockGroupsAndTheirBlocksByIds = (
       );
     }
 
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
     try {
-      const response = await queryFnGetMyBlockGroupsAndTheirBlocksByIds(request);
+      const response =
+        await queryFnGetMyBlockGroupsAndTheirBlocksByIds(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -327,6 +341,15 @@ export const useGetMyBlockGroupsAndTheirBlocksByBlockPackId = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    console.log(
+      "isOnline: ",
+      typeof navigator === "undefined" || navigator.onLine === true
+    );
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -440,6 +463,10 @@ export const useGetMyBlockGroupsByPrevBlockGroupId = (
       );
     }
 
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
     try {
       const response = await queryFnGetMyBlockGroupsByPrevBlockGroupId(request);
       LocalStorageManipulator.ensureItem(
@@ -522,6 +549,10 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
       );
     }
 
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
     try {
       const response = await queryFnGetAllMyBlockGroupsByBlockPackId(request);
       LocalStorageManipulator.ensureItem(
@@ -590,9 +621,22 @@ export const useGetAllMyBlockGroupsByBlockPackId = (
 export const useInsertBlockGroupByBlockPackId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnInsertBlockGroupByBlockPackId>[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnInsertBlockGroupByBlockPackId>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnInsertBlockGroupByBlockPackId(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnInsertBlockGroupByBlockPackId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -641,9 +685,22 @@ export const useInsertBlockGroupByBlockPackId = () => {
 export const useInsertBlockGroupsByBlockPackId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnInsertBlockGroupsByBlockPackId>[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnInsertBlockGroupsByBlockPackId>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnInsertBlockGroupsByBlockPackId(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnInsertBlockGroupsByBlockPackId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -699,9 +756,24 @@ export const useInsertBlockGroupsByBlockPackId = () => {
 export const useBatchInsertBlockGroupsByBlockPackIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<
+      typeof mutationFnBatchInsertBlockGroupsByBlockPackIds
+    >[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnBatchInsertBlockGroupsByBlockPackIds>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnBatchInsertBlockGroupsByBlockPackIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBatchInsertBlockGroupsByBlockPackIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -760,9 +832,26 @@ export const useBatchInsertBlockGroupsByBlockPackIds = () => {
 export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<
+      typeof mutationFnInsertBlockGroupAndItsBlocksByBlockPackId
+    >[0]
+  ): Promise<
+    Awaited<
+      ReturnType<typeof mutationFnInsertBlockGroupAndItsBlocksByBlockPackId>
+    >
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnInsertBlockGroupAndItsBlocksByBlockPackId(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnInsertBlockGroupAndItsBlocksByBlockPackId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -811,9 +900,28 @@ export const useInsertBlockGroupAndItsBlocksByBlockPackId = () => {
 export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<
+      typeof mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId
+    >[0]
+  ): Promise<
+    Awaited<
+      ReturnType<typeof mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId>
+    >
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId(
+      request
+    );
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -865,9 +973,30 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
 export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<
+      typeof mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds
+    >[0]
+  ): Promise<
+    Awaited<
+      ReturnType<
+        typeof mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds
+      >
+    >
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+      request
+    );
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -926,10 +1055,30 @@ export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
 export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<
+      typeof mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId
+    >[0]
+  ): Promise<
+    Awaited<
+      ReturnType<
+        typeof mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId
+      >
+    >
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId(
+      request
+    );
+  };
+
   const mutation = useMutation({
-    mutationFn:
-      mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -978,9 +1127,20 @@ export const useInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = () => {
 export const useMoveMyBlockGroupById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnMoveMyBlockGroupById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMyBlockGroupById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnMoveMyBlockGroupById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnMoveMyBlockGroupById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1024,7 +1184,9 @@ export const useMoveMyBlockGroupById = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupById(request);
+            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupById(
+              request
+            );
             break;
         }
       }
@@ -1037,9 +1199,20 @@ export const useMoveMyBlockGroupById = () => {
 export const useMoveMyBlockGroupsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnMoveMyBlockGroupsByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMyBlockGroupsByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnMoveMyBlockGroupsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnMoveMyBlockGroupsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1103,9 +1276,22 @@ export const useMoveMyBlockGroupsByIds = () => {
 export const useBatchMoveMyBlockGroupsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnBatchMoveMyBlockGroupsByIds>[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnBatchMoveMyBlockGroupsByIds>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnBatchMoveMyBlockGroupsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBatchMoveMyBlockGroupsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1181,9 +1367,20 @@ export const useBatchMoveMyBlockGroupsByIds = () => {
 export const useRestoreMyBlockGroupById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMyBlockGroupById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyBlockGroupById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMyBlockGroupById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyBlockGroupById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1233,9 +1430,22 @@ export const useRestoreMyBlockGroupById = () => {
 export const useRestoreMyBlockGroupsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMyBlockGroupsByIds>[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnRestoreMyBlockGroupsByIds>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMyBlockGroupsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyBlockGroupsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1289,9 +1499,20 @@ export const useRestoreMyBlockGroupsByIds = () => {
 export const useDeleteMyBlockGroupById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMyBlockGroupById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyBlockGroupById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMyBlockGroupById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyBlockGroupById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -1343,9 +1564,22 @@ export const useDeleteMyBlockGroupById = () => {
 export const useDeleteMyBlockGroupsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMyBlockGroupsByIds>[0]
+  ): Promise<
+    Awaited<ReturnType<typeof mutationFnDeleteMyBlockGroupsByIds>>
+  > => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMyBlockGroupsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyBlockGroupsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,

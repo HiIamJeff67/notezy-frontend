@@ -1,17 +1,34 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { ExceptionReasonDictionary } from "@shared/api/exceptions";
 import { QueryClient } from "@tanstack/react-query";
 
 let browserQueryClient: QueryClient | undefined;
 
 export const makeQueryClient = (): QueryClient => {
+  const retryPolicy = (failureCount: number, error: unknown): boolean => {
+    if (error instanceof NotezyFetchError) {
+      const reason = error.unWrap.reason;
+      if (
+        reason === ExceptionReasonDictionary.client.fetch.missingNetwork ||
+        reason === ExceptionReasonDictionary.client.fetch.networkRequired
+      ) {
+        return false;
+      }
+    }
+
+    return failureCount < 1;
+  };
   return new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 6 * 60 * 60 * 1000, // 6 hours
-        retry: 1,
+        networkMode: "always",
+        retry: retryPolicy,
         refetchOnWindowFocus: false,
       },
       mutations: {
-        retry: 1,
+        networkMode: "always",
+        retry: retryPolicy,
       },
     },
   });

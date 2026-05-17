@@ -5,6 +5,7 @@ import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetAllMySubShelvesByRootShelfIdRequest,
@@ -62,6 +63,10 @@ export const useGetMySubShelfById = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -140,6 +145,10 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -224,6 +233,10 @@ export const useGetAllMySubShelvesByRootShelfId = (
       );
     }
 
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
     try {
       const response = await queryFnGetAllMySubShelvesByRootShelfId(request);
       LocalStorageManipulator.ensureItem(
@@ -306,6 +319,10 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
       );
     }
 
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
     try {
       const response =
         await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(request);
@@ -378,9 +395,20 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
 export const useCreateSubShelfByRootShelfId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnCreateSubShelfByRootShelfId>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnCreateSubShelfByRootShelfId>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnCreateSubShelfByRootShelfId(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateSubShelfByRootShelfId,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -427,9 +455,20 @@ export const useCreateSubShelfByRootShelfId = () => {
 export const useCreateSubShelvesByRootShelfIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnCreateSubShelvesByRootShelfIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnCreateSubShelvesByRootShelfIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnCreateSubShelvesByRootShelfIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateSubShelvesByRootShelfIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -481,9 +520,20 @@ export const useCreateSubShelvesByRootShelfIds = () => {
 export const useUpdateMySubShelfById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnUpdateMySubShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMySubShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnUpdateMySubShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMySubShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -527,9 +577,20 @@ export const useUpdateMySubShelfById = () => {
 export const useUpdateMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnUpdateMySubShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMySubShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnUpdateMySubShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMySubShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -580,9 +641,20 @@ export const useUpdateMySubShelvesByIds = () => {
 
 export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
+  const perform = async (
+    request: Parameters<typeof mutationFnMoveMySubShelf>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMySubShelf>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnMoveMySubShelf(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnMoveMySubShelf,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -633,9 +705,20 @@ export const useMoveMySubShelf = () => {
 export const useMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnMoveMySubShelves>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMySubShelves>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnMoveMySubShelves(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnMoveMySubShelves,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -693,9 +776,20 @@ export const useMoveMySubShelves = () => {
 export const useBatchMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnBatchMoveMySubShelves>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnBatchMoveMySubShelves>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnBatchMoveMySubShelves(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBatchMoveMySubShelves,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -762,9 +856,20 @@ export const useBatchMoveMySubShelves = () => {
 export const useRestoreMySubShelfById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMySubShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMySubShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMySubShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMySubShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -811,9 +916,20 @@ export const useRestoreMySubShelfById = () => {
 export const useRestoreMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMySubShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMySubShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMySubShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMySubShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -875,9 +991,20 @@ export const useRestoreMySubShelvesByIds = () => {
 export const useDeleteMySubShelfById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMySubShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMySubShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMySubShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMySubShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -925,9 +1052,20 @@ export const useDeleteMySubShelfById = () => {
 export const useDeleteMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMySubShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMySubShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMySubShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMySubShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,

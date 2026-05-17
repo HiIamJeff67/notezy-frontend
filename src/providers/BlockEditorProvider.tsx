@@ -323,8 +323,6 @@ export const BlockEditorProvider = ({
       },
     };
 
-    console.log("receiving events", events);
-
     // Step 2: Prepare the disjoint set for getting the block group of any given blocks, relink blocks, and the blocks required new block groups
     const needsRelinkBlockIds: UUID[] = [];
     const needsNewBlockGroupBlockIds: Set<UUID> = new Set<UUID>();
@@ -334,13 +332,6 @@ export const BlockEditorProvider = ({
       const blockId = event.payload.block.id as UUID;
       const parentBlock = editor.getParentBlock(blockId);
       dsuRef.current.add(blockId);
-
-      console.log(
-        "parentBlock: ",
-        parentBlock,
-        ", block group payload: ",
-        dsuRef.current.getPayload(blockId)
-      );
 
       if (parentBlock !== undefined) {
         dsuRef.current.add(parentBlock.id as UUID);
@@ -420,7 +411,6 @@ export const BlockEditorProvider = ({
           nextBlockGroupNode.prev = currentBlockGroupNode;
         }
 
-        console.log("adding to needsNewBlockGroupBlockIds: ", blockId);
         needsNewBlockGroupBlockIds.add(blockId);
 
         if (prevBlock !== undefined && prevBlockGroupId === null) {
@@ -464,8 +454,6 @@ export const BlockEditorProvider = ({
       return node.prev.key;
     };
 
-    console.log("remaining events", events);
-
     // Step 4: Iterate through the events to combine them into the requests
     for (const event of events) {
       const blockId = event.payload.block.id as UUID;
@@ -479,17 +467,10 @@ export const BlockEditorProvider = ({
       switch (event.type) {
         case "insert": {
           const parentBlock = editor.getParentBlock(blockId);
-          console.log(
-            "handling insert operation, parentBlock",
-            parentBlock,
-            ", has new block group: ",
-            needsNewBlockGroupBlockIds.has(blockId)
-          );
           if (
             parentBlock === undefined &&
             needsNewBlockGroupBlockIds.has(blockId)
           ) {
-            console.log("Push to insertBlockGroupsAndBlocksRequest...");
             const prevBlockGroupId = getSafePrevBlockGroupId(blockGroupId!);
             insertBlockGroupsAndBlocksRequest.body.blockGroupContents.push({
               blockGroupId: blockGroupId!,

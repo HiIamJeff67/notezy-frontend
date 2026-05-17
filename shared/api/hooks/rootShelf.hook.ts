@@ -6,6 +6,7 @@ import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetMyRootShelfByIdRequest,
@@ -51,6 +52,10 @@ export const useGetMyRootShelfById = (
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
       );
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
     try {
@@ -117,9 +122,20 @@ export const useGetMyRootShelfById = (
 export const useCreateRootShelf = () => {
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnCreateRootShelf>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnCreateRootShelf>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnCreateRootShelf(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateRootShelf,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -180,9 +196,20 @@ export const useCreateRootShelf = () => {
 export const useCreateRootShelves = () => {
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnCreateRootShelves>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnCreateRootShelves>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnCreateRootShelves(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateRootShelves,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -255,9 +282,20 @@ export const useUpdateMyRootShelfById = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnUpdateMyRootShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyRootShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnUpdateMyRootShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyRootShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -307,9 +345,20 @@ export const useUpdateMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnUpdateMyRootShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyRootShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnUpdateMyRootShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyRootShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -363,9 +412,20 @@ export const useRestoreMyRootShelfById = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMyRootShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyRootShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMyRootShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyRootShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -451,9 +511,20 @@ export const useRestoreMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnRestoreMyRootShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyRootShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnRestoreMyRootShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyRootShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -544,9 +615,20 @@ export const useDeleteMyRootShelfById = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMyRootShelfById>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyRootShelfById>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMyRootShelfById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyRootShelfById,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -609,9 +691,20 @@ export const useDeleteMyRootShelfById = () => {
 export const useDeleteMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (
+    request: Parameters<typeof mutationFnDeleteMyRootShelvesByIds>[0]
+  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyRootShelvesByIds>>> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteMyRootShelvesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyRootShelvesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
