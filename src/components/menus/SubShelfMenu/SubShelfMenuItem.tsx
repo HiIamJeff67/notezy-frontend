@@ -8,7 +8,9 @@ import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
+import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
 import MaterialMenu from "@/components/menus/MaterialMenu/MaterialMenu";
+import MaterialMenuItemSkeleton from "@/components/menus/MaterialMenu/MaterialMenuItemSkeleton";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
 import {
   Collapsible,
@@ -103,11 +105,13 @@ const SubShelfMenuItem = ({
   }));
 
   if (depth > MaxShelfDepth) {
-    <SidebarMenuSubItem>
-      <SidebarMenuButton className="rounded-sm text-muted">
-        ... (Too deep)
-      </SidebarMenuButton>
-    </SidebarMenuSubItem>;
+    return (
+      <SidebarMenuSubItem>
+        <SidebarMenuButton className="rounded-sm text-muted">
+          ... (Too deep)
+        </SidebarMenuButton>
+      </SidebarMenuSubItem>
+    );
   }
 
   const handleCreateTextbookMaterial = useCallback(async () => {
@@ -198,10 +202,10 @@ const SubShelfMenuItem = ({
                 }}
                 className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
                 onClick={async () => {
+                  shelfItemManager.toggleSubShelf(current);
                   if (!current.isExpanded) {
                     await shelfItemManager.expandSubShelf(root, current);
                   }
-                  shelfItemManager.toggleSubShelf(current);
                 }}
               >
                 {current.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
@@ -263,75 +267,81 @@ const SubShelfMenuItem = ({
         </ContextMenu>
         <CollapsibleContent>
           <SidebarMenuSub className="w-full">
-            {Object.keys(current.children).length > 0 && (
-              <Suspense fallback={<SubShelfMenuItemSkeleton />}>
-                {/* this part can be executed before the current sub shelf being expanded */}
-                {Object.entries(current.children).map(
-                  ([subShelfId, subShelfNode]) => {
-                    return (
-                      <Suspense
-                        fallback={<SubShelfMenuItemSkeleton />}
-                        key={subShelfId}
-                      >
-                        {shelfItemManager.isSubShelfNodeEditing(
-                          subShelfNode.id
-                        ) ? (
-                          <SidebarMenuItem
-                            key={subShelfId}
-                            className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
-                          >
-                            <input
-                              ref={shelfItemManager.inputRef}
-                              type="text"
-                              value={shelfItemManager.editSubShelfNodeName}
-                              className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
-                              onChange={e =>
-                                shelfItemManager.setEditSubShelfNodeName(
-                                  e.target.value
-                                )
-                              }
-                              onKeyDown={async e => {
-                                switch (e.key) {
-                                  case "Enter":
-                                    await handleRenameSubShelfOnSubmit();
-                                  case "Escape":
-                                    shelfItemManager.cancelRenamingSubShelfNode();
+            {!current.isExpanded ? (
+              <>
+                <SubShelfMenuItemSkeleton number={1} />
+                <MaterialMenuItemSkeleton number={1} />
+                <BlockPackMenuItemSkeleton number={1} />
+              </>
+            ) : (
+              <>
+                {Object.keys(current.children).length > 0 &&
+                  Object.entries(current.children).map(
+                    ([subShelfId, subShelfNode]) => {
+                      return (
+                        <Suspense
+                          fallback={<SubShelfMenuItemSkeleton number={1} />}
+                          key={subShelfId}
+                        >
+                          {shelfItemManager.isSubShelfNodeEditing(
+                            subShelfNode.id
+                          ) ? (
+                            <SidebarMenuItem
+                              key={subShelfId}
+                              className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
+                            >
+                              <input
+                                ref={shelfItemManager.inputRef}
+                                type="text"
+                                value={shelfItemManager.editSubShelfNodeName}
+                                className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
+                                onChange={e =>
+                                  shelfItemManager.setEditSubShelfNodeName(
+                                    e.target.value
+                                  )
                                 }
-                              }}
-                              // note that autoFocus doesn't work in this case,
-                              // bcs the user clicked context menu trigger before the input element rendering
-                            />
-                            {shelfItemManager.isNewSubShelfNodeName() && (
-                              <button
-                                onClick={async e => {
-                                  await handleRenameSubShelfOnSubmit();
-                                  e.stopPropagation();
+                                onKeyDown={async e => {
+                                  switch (e.key) {
+                                    case "Enter":
+                                      await handleRenameSubShelfOnSubmit();
+                                    case "Escape":
+                                      shelfItemManager.cancelRenamingSubShelfNode();
+                                  }
                                 }}
-                                className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                                onMouseDown={e => e.stopPropagation()}
-                              >
-                                <CheckIcon className="w-full h-full" />
-                              </button>
-                            )}
-                          </SidebarMenuItem>
-                        ) : (
-                          <SubShelfMenuItem
-                            key={subShelfId}
-                            summary={summary}
-                            root={root}
-                            prev={current}
-                            current={subShelfNode}
-                            depth={depth + 1}
-                          />
-                        )}
-                      </Suspense>
-                    );
-                  }
-                )}
-              </Suspense>
+                                // note that autoFocus doesn't work in this case,
+                                // bcs the user clicked context menu trigger before the input element rendering
+                              />
+                              {shelfItemManager.isNewSubShelfNodeName() && (
+                                <button
+                                  onClick={async e => {
+                                    await handleRenameSubShelfOnSubmit();
+                                    e.stopPropagation();
+                                  }}
+                                  className="rounded hover:bg-primary/60 absolute w-4 h-4"
+                                  onMouseDown={e => e.stopPropagation()}
+                                >
+                                  <CheckIcon className="w-full h-full" />
+                                </button>
+                              )}
+                            </SidebarMenuItem>
+                          ) : (
+                            <SubShelfMenuItem
+                              key={subShelfId}
+                              summary={summary}
+                              root={root}
+                              prev={current}
+                              current={subShelfNode}
+                              depth={depth + 1}
+                            />
+                          )}
+                        </Suspense>
+                      );
+                    }
+                  )}
+                <MaterialMenu parent={current} />
+                <BlockPackMenu parent={current} />
+              </>
             )}
-            <MaterialMenu parent={current} />
-            <BlockPackMenu parent={current} />
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>

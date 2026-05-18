@@ -8,6 +8,16 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
+  BatchMoveMySubShelvesRequest,
+  BatchMoveMySubShelvesResponse,
+  CreateSubShelfByRootShelfIdRequest,
+  CreateSubShelfByRootShelfIdResponse,
+  CreateSubShelvesByRootShelfIdsRequest,
+  CreateSubShelvesByRootShelfIdsResponse,
+  DeleteMySubShelfByIdRequest,
+  DeleteMySubShelfByIdResponse,
+  DeleteMySubShelvesByIdsRequest,
+  DeleteMySubShelvesByIdsResponse,
   GetAllMySubShelvesByRootShelfIdRequest,
   GetAllMySubShelvesByRootShelfIdResponse,
   GetMySubShelfByIdRequest,
@@ -16,6 +26,18 @@ import type {
   GetMySubShelvesAndItemsByPrevSubShelfIdResponse,
   GetMySubShelvesByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdResponse,
+  MoveMySubShelfRequest,
+  MoveMySubShelfResponse,
+  MoveMySubShelvesRequest,
+  MoveMySubShelvesResponse,
+  RestoreMySubShelfByIdRequest,
+  RestoreMySubShelfByIdResponse,
+  RestoreMySubShelvesByIdsRequest,
+  RestoreMySubShelvesByIdsResponse,
+  UpdateMySubShelfByIdRequest,
+  UpdateMySubShelfByIdResponse,
+  UpdateMySubShelvesByIdsRequest,
+  UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import {
   mutationFnBatchMoveMySubShelves,
@@ -65,11 +87,11 @@ export const useGetMySubShelfById = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMySubShelfById(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -147,11 +169,11 @@ export const useGetMySubShelvesByPrevSubShelfId = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMySubShelvesByPrevSubShelfId(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -233,11 +255,11 @@ export const useGetAllMySubShelvesByRootShelfId = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetAllMySubShelvesByRootShelfId(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -319,11 +341,11 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response =
         await queryFnGetMySubShelvesAndItemsByPrevSubShelfId(request);
       LocalStorageManipulator.ensureItem(
@@ -396,8 +418,8 @@ export const useCreateSubShelfByRootShelfId = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnCreateSubShelfByRootShelfId>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnCreateSubShelfByRootShelfId>>> => {
+    request: CreateSubShelfByRootShelfIdRequest
+  ): Promise<CreateSubShelfByRootShelfIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -456,8 +478,8 @@ export const useCreateSubShelvesByRootShelfIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnCreateSubShelvesByRootShelfIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnCreateSubShelvesByRootShelfIds>>> => {
+    request: CreateSubShelvesByRootShelfIdsRequest
+  ): Promise<CreateSubShelvesByRootShelfIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -521,8 +543,8 @@ export const useUpdateMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMySubShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMySubShelfById>>> => {
+    request: UpdateMySubShelfByIdRequest
+  ): Promise<UpdateMySubShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -578,8 +600,8 @@ export const useUpdateMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMySubShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMySubShelvesByIds>>> => {
+    request: UpdateMySubShelvesByIdsRequest
+  ): Promise<UpdateMySubShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -642,8 +664,8 @@ export const useUpdateMySubShelvesByIds = () => {
 export const useMoveMySubShelf = () => {
   const queryClient = getQueryClient();
   const perform = async (
-    request: Parameters<typeof mutationFnMoveMySubShelf>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMySubShelf>>> => {
+    request: MoveMySubShelfRequest
+  ): Promise<MoveMySubShelfResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -706,8 +728,8 @@ export const useMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnMoveMySubShelves>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnMoveMySubShelves>>> => {
+    request: MoveMySubShelvesRequest
+  ): Promise<MoveMySubShelvesResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -777,8 +799,8 @@ export const useBatchMoveMySubShelves = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnBatchMoveMySubShelves>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnBatchMoveMySubShelves>>> => {
+    request: BatchMoveMySubShelvesRequest
+  ): Promise<BatchMoveMySubShelvesResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -857,8 +879,8 @@ export const useRestoreMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMySubShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMySubShelfById>>> => {
+    request: RestoreMySubShelfByIdRequest
+  ): Promise<RestoreMySubShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -917,8 +939,8 @@ export const useRestoreMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMySubShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMySubShelvesByIds>>> => {
+    request: RestoreMySubShelvesByIdsRequest
+  ): Promise<RestoreMySubShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -992,8 +1014,8 @@ export const useDeleteMySubShelfById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMySubShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMySubShelfById>>> => {
+    request: DeleteMySubShelfByIdRequest
+  ): Promise<DeleteMySubShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -1053,8 +1075,8 @@ export const useDeleteMySubShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMySubShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMySubShelvesByIds>>> => {
+    request: DeleteMySubShelvesByIdsRequest
+  ): Promise<DeleteMySubShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }

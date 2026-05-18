@@ -177,6 +177,7 @@ export const TransactionSynchronizerProvider = ({
     useState<number>(0);
   const hasBootstrappedRef = useRef<boolean>(false);
   const isBootstrappingRef = useRef<boolean>(false);
+  const isSynchronizingRef = useRef<boolean>(false);
 
   const getTransactions = useCallback(
     async (): Promise<InferSelectModel<typeof Transaction>[]> =>
@@ -251,7 +252,20 @@ export const TransactionSynchronizerProvider = ({
 
       syncResults.forEach((syncResult, index) => {
         const sequences = result.syncJobs[index].sequences;
-        if (syncResult.status === "fulfilled") {
+        // A job is only considered synchronized when:
+        //  1. the promise is fulfilled, and
+        //  2. it is not an offline/local fallback response (a fallback response indicate that `success === false`).
+        // `fulfilled + success:false` means request handling completed,
+        // but server synchronization did not actually succeed yet.
+        if (
+          syncResult.status === "fulfilled" &&
+          !(
+            typeof syncResult.value === "object" &&
+            syncResult.value !== null &&
+            "success" in syncResult.value &&
+            syncResult.value.success === false
+          )
+        ) {
           mergeSet(succeededSequences, sequences);
         } else {
           mergeSet(failedSequences, sequences);
@@ -566,6 +580,46 @@ export const TransactionSynchronizerProvider = ({
       cancelled = true;
     };
   }, [getTransactionCount, synchronizeTransactions]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const synchronizeWhenOnline = async () => {
+      if (!isOnline || isSynchronizingRef.current) return;
+
+      const pendingCount = await getTransactionCount();
+      if (pendingCount === 0) {
+        if (!cancelled && hasBootstrappedRef.current) {
+          setStatus("synchronized");
+        }
+        return;
+      }
+
+      isSynchronizingRef.current = true;
+      if (!cancelled) setStatus("synchronizing");
+      try {
+        await synchronizeTransactions();
+        const remainingCount = await getTransactionCount();
+        if (!cancelled) {
+          setStatus(remainingCount > 0 ? "unsynchronized" : "synchronized");
+        }
+      } catch (error) {
+        console.error(
+          "failed to synchronize transactions on online event:",
+          error
+        );
+        if (!cancelled) setStatus("unsynchronized");
+      } finally {
+        isSynchronizingRef.current = false;
+      }
+    };
+
+    void synchronizeWhenOnline();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOnline, getTransactionCount, synchronizeTransactions]);
 
   return (
     <TransactionSynchronizerContext.Provider

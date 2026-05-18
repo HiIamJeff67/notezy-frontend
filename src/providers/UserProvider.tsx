@@ -85,8 +85,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
-          if (!isOnline)
+          console.log("fetching user automatically...");
+          if (!isOnline) {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
+          }
 
           const userAgent = navigator.userAgent;
           const response = await getUserDataQuerier.fetch({
@@ -130,7 +132,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   // For maintaining the basic user data in the context
   useEffect(() => {
-    if (!isLocalDBReady || !enableInitialFetching || userData !== null) return;
+    if (!enableInitialFetching || userData !== null) return;
     if (!accessToken || isAutoFetchingUserDataRef.current) return;
 
     isAutoFetchingUserDataRef.current = true;

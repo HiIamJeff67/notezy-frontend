@@ -1,8 +1,14 @@
-const RootShelfMenuItemSkeleton = () => {
+import { SidebarMenuItem, SidebarMenuSkeleton } from "@/components/ui/sidebar";
+
+const RootShelfMenuItemSkeleton = ({ number = 1 }: { number?: number }) => {
   return (
-    <div className="flex items-center h-8 px-2 py-1 rounded-sm bg-muted animate-pulse">
-      <div className="flex-1 h-4 bg-muted-foreground/20 rounded"></div>
-    </div>
+    <>
+      {Array.from({ length: number }).map((_, index) => (
+        <SidebarMenuItem key={index}>
+          <SidebarMenuSkeleton className="rounded-sm" />
+        </SidebarMenuItem>
+      ))}
+    </>
   );
 };
 

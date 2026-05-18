@@ -14,6 +14,7 @@ import {
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
+import { UserLocalSynchronizer } from "@shared/api/local/synchronizers/user.synchronizer";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -51,6 +52,7 @@ export const useGetUserData = (
         response.refreshableTokens?.newCSRFToken,
         response.embedded.publicId
       );
+      await UserLocalSynchronizer.syncGetUserData(response);
       return response;
     } catch (error) {
       throw error;
@@ -106,6 +108,7 @@ export const useGetMe = (
         response.refreshableTokens?.newCSRFToken,
         response.embedded.publicId
       );
+      await UserLocalSynchronizer.syncGetMe(response);
       return response;
     } catch (error) {
       throw error;

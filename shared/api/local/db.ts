@@ -43,6 +43,7 @@ if (import.meta.hot) {
 
 const { driver: rawDriver, batchDriver: rawBatchDriver } = sqlocalDrizzle;
 let _SQLOperationChain: Promise<void> = Promise.resolve(); // the chain that make sure the sql operations are executed in sequences
+let _SQLOperationSequence = 0;
 let markLocalDBNotReady = () => {};
 
 // run with OPFS error handling
@@ -54,22 +55,37 @@ const recoverableRun = async <T>(operation: () => Promise<T>) => {
     markLocalDBNotReady();
 
     console.warn(
-      "OPFS local database file is missing during lock. Rebuilding local database and retrying once.",
+      "OPFS local database issue detected. Trying a non-destructive retry before rebuilding database file.",
       error
     );
 
-    await recoverOPFSError(sqlocalDrizzle);
-    return await operation();
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return await operation();
+    } catch (retryError) {
+      if (!isOPFSMissingFileError(retryError)) throw retryError;
+      markLocalDBNotReady();
+
+      console.warn(
+        "OPFS retry still failed. Rebuilding local database file and retrying once.",
+        retryError
+      );
+
+      await recoverOPFSError(sqlocalDrizzle);
+      return await operation();
+    }
   }
 };
 
 // use this function to make sure the sql operations are execute in sequences,
 // so that no miss order issues or multiple sql executing at the same interval
 const runOperations = async <T>(operation: () => Promise<T>): Promise<T> => {
-  const task = _SQLOperationChain.then(
-    () => recoverableRun(operation),
-    () => recoverableRun(operation)
-  );
+  const execute = async () => {
+    const result = await recoverableRun(operation);
+    return result;
+  };
+
+  const task = _SQLOperationChain.then(execute, execute);
   _SQLOperationChain = task.then(
     () => undefined,
     () => undefined

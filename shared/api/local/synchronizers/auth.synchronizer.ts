@@ -15,7 +15,7 @@ import { AccessControlPermission } from "@shared/api/interfaces/enums/accessCont
 import { localDB } from "@shared/api/local/db";
 import { RootShelf, UsersToShelves } from "@shared/api/local/schemas";
 import { User } from "@shared/api/local/schemas/user.schema";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, exists, sql } from "drizzle-orm";
 
 export class AuthLocalSynchronizer {
   static async syncRegister(
@@ -32,11 +32,23 @@ export class AuthLocalSynchronizer {
           name: request.body.name,
           displayName: response.data.displayName,
           email: request.body.email,
+          status: UserStatus.Online,
           isLoggedIn: true,
           updatedAt: response.data.createdAt,
           createdAt: response.data.createdAt,
         })
-        .onConflictDoNothing({ target: User.publicId });
+        .onConflictDoUpdate({
+          target: User.publicId,
+          set: {
+            name: request.body.name,
+            displayName: response.data.displayName,
+            email: request.body.email,
+            status: UserStatus.Online,
+            isLoggedIn: true,
+            updatedAt: response.data.createdAt,
+            createdAt: response.data.createdAt,
+          },
+        });
     });
   }
 
@@ -53,11 +65,23 @@ export class AuthLocalSynchronizer {
           name: response.data.name,
           displayName: response.data.displayName,
           email: response.data.email,
+          status: UserStatus.Online,
           isLoggedIn: true,
           updatedAt: response.data.createdAt,
           createdAt: response.data.createdAt,
         })
-        .onConflictDoNothing({ target: User.publicId });
+        .onConflictDoUpdate({
+          target: User.publicId,
+          set: {
+            name: response.data.name,
+            displayName: response.data.displayName,
+            email: response.data.email,
+            status: UserStatus.Online,
+            isLoggedIn: true,
+            updatedAt: response.data.createdAt,
+            createdAt: response.data.createdAt,
+          },
+        });
     });
   }
 
@@ -72,11 +96,23 @@ export class AuthLocalSynchronizer {
           name: response.data.name,
           displayName: response.data.displayName,
           email: response.data.email,
+          status: UserStatus.Online,
           isLoggedIn: true,
           updatedAt: response.data.updatedAt,
           createdAt: response.data.createdAt,
         })
-        .onConflictDoNothing({ target: User.publicId });
+        .onConflictDoUpdate({
+          target: User.publicId,
+          set: {
+            name: response.data.name,
+            displayName: response.data.displayName,
+            email: response.data.email,
+            status: UserStatus.Online,
+            isLoggedIn: true,
+            updatedAt: response.data.updatedAt,
+            createdAt: response.data.createdAt,
+          },
+        });
     });
   }
 
@@ -93,11 +129,23 @@ export class AuthLocalSynchronizer {
           name: response.data.name,
           displayName: response.data.displayName,
           email: response.data.email,
+          status: UserStatus.Online,
           isLoggedIn: true,
           updatedAt: response.data.updatedAt,
           createdAt: response.data.createdAt,
         })
-        .onConflictDoNothing({ target: User.publicId });
+        .onConflictDoUpdate({
+          target: User.publicId,
+          set: {
+            name: response.data.name,
+            displayName: response.data.displayName,
+            email: response.data.email,
+            status: UserStatus.Online,
+            isLoggedIn: true,
+            updatedAt: response.data.updatedAt,
+            createdAt: response.data.createdAt,
+          },
+        });
     });
   }
 
@@ -130,13 +178,20 @@ export class AuthLocalSynchronizer {
 
   static async syncResetMe(response: ResetMeResponse): Promise<void> {
     if (!localDB.isReady) await localDB.ensureReady();
-    await localDB.delete(RootShelf).where(sql`EXISTS (
-        SELECT 1
-        FROM ${UsersToShelves}
-        WHERE ${UsersToShelves.userPublicId} = ${response.embedded.publicId}
-          AND ${UsersToShelves.rootShelfId} = ${RootShelf.id}
-          AND ${UsersToShelves.permission} = ${AccessControlPermission.Owner}
-      )`);
+    await localDB.delete(RootShelf).where(
+      exists(
+        localDB
+          .select({ one: sql`1` })
+          .from(UsersToShelves)
+          .where(
+            and(
+              eq(UsersToShelves.userPublicId, response.embedded.publicId),
+              eq(UsersToShelves.rootShelfId, RootShelf.id),
+              eq(UsersToShelves.permission, AccessControlPermission.Owner)
+            )
+          )
+      )
+    );
   }
 
   static async syncDeleteMe(response: DeleteMeResponse): Promise<void> {

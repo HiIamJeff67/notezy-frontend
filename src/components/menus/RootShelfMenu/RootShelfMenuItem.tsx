@@ -47,10 +47,6 @@ const RootShelfMenuItem = ({
   const shelfItemManager = useShelfItem();
 
   const summary = shelfItemManager.expandedShelves.get(rootShelfEdge.node.id);
-  if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
-
-  // the hook should be place before break
-  // since we have to make sure the render order of the hooks is static
   const [{ isOver }, drop] = useDrop(() => ({
     accept: DNDType.DraggableSubShelf.toString(),
     drop: async (draggedItem: {
@@ -85,6 +81,8 @@ const RootShelfMenuItem = ({
       ),
     [loadingManager, languageManager, shelfItemManager]
   );
+
+  if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
 
   return (
     <Collapsible open={summary.root.isOpen}>

@@ -18,6 +18,7 @@ export const makeQueryClient = (): QueryClient => {
 
     return failureCount < 1;
   };
+
   return new QueryClient({
     defaultOptions: {
       queries: {

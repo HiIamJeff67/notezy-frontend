@@ -77,7 +77,10 @@ export const buildBlockSyncResult = ({
     onParsed?.();
     const request = {
       body: transaction.body as unknown,
-      affected: transaction.affected as unknown,
+      ...(transaction.affected !== null &&
+      typeof transaction.affected === "object"
+        ? { affected: transaction.affected as unknown }
+        : {}),
     };
 
     if (transaction.entityType !== TransactionEntityType.Block) {

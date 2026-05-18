@@ -9,8 +9,24 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
+  CreateRootShelfRequest,
+  CreateRootShelfResponse,
+  CreateRootShelvesRequest,
+  CreateRootShelvesResponse,
+  DeleteMyRootShelfByIdRequest,
+  DeleteMyRootShelfByIdResponse,
+  DeleteMyRootShelvesByIdsRequest,
+  DeleteMyRootShelvesByIdsResponse,
   GetMyRootShelfByIdRequest,
   GetMyRootShelfByIdResponse,
+  RestoreMyRootShelfByIdRequest,
+  RestoreMyRootShelfByIdResponse,
+  RestoreMyRootShelvesByIdsRequest,
+  RestoreMyRootShelvesByIdsResponse,
+  UpdateMyRootShelfByIdRequest,
+  UpdateMyRootShelfByIdResponse,
+  UpdateMyRootShelvesByIdsRequest,
+  UpdateMyRootShelvesByIdsResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import {
   mutationFnCreateRootShelf,
@@ -54,11 +70,11 @@ export const useGetMyRootShelfById = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyRootShelfById(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -123,8 +139,8 @@ export const useCreateRootShelf = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnCreateRootShelf>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnCreateRootShelf>>> => {
+    request: CreateRootShelfRequest
+  ): Promise<CreateRootShelfResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -197,8 +213,8 @@ export const useCreateRootShelves = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnCreateRootShelves>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnCreateRootShelves>>> => {
+    request: CreateRootShelvesRequest
+  ): Promise<CreateRootShelvesResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -283,8 +299,8 @@ export const useUpdateMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMyRootShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyRootShelfById>>> => {
+    request: UpdateMyRootShelfByIdRequest
+  ): Promise<UpdateMyRootShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -346,8 +362,8 @@ export const useUpdateMyRootShelvesByIds = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMyRootShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyRootShelvesByIds>>> => {
+    request: UpdateMyRootShelvesByIdsRequest
+  ): Promise<UpdateMyRootShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -413,8 +429,8 @@ export const useRestoreMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMyRootShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyRootShelfById>>> => {
+    request: RestoreMyRootShelfByIdRequest
+  ): Promise<RestoreMyRootShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -512,8 +528,8 @@ export const useRestoreMyRootShelvesByIds = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMyRootShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyRootShelvesByIds>>> => {
+    request: RestoreMyRootShelvesByIdsRequest
+  ): Promise<RestoreMyRootShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -616,8 +632,8 @@ export const useDeleteMyRootShelfById = () => {
   const apolloClient = useApolloClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMyRootShelfById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyRootShelfById>>> => {
+    request: DeleteMyRootShelfByIdRequest
+  ): Promise<DeleteMyRootShelfByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -692,8 +708,8 @@ export const useDeleteMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMyRootShelvesByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyRootShelvesByIds>>> => {
+    request: DeleteMyRootShelvesByIdsRequest
+  ): Promise<DeleteMyRootShelvesByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }

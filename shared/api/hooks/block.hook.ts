@@ -9,6 +9,10 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
+  DeleteMyBlockByIdRequest,
+  DeleteMyBlockByIdResponse,
+  DeleteMyBlocksByIdsRequest,
+  DeleteMyBlocksByIdsResponse,
   GetAllMyBlocksRequest,
   GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
@@ -23,6 +27,16 @@ import type {
   GetMyBlocksByIdsResponse,
   InsertBlockRequest,
   InsertBlockResponse,
+  InsertBlocksRequest,
+  InsertBlocksResponse,
+  RestoreMyBlockByIdRequest,
+  RestoreMyBlockByIdResponse,
+  RestoreMyBlocksByIdsRequest,
+  RestoreMyBlocksByIdsResponse,
+  UpdateMyBlockByIdRequest,
+  UpdateMyBlockByIdResponse,
+  UpdateMyBlocksByIdsRequest,
+  UpdateMyBlocksByIdsResponse,
 } from "@shared/api/interfaces/block.interface";
 import type { GetMyBlockPackByIdResponse } from "@shared/api/interfaces/blockPack.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
@@ -73,11 +87,11 @@ export const useGetMyBlockById = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyBlockById(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -160,11 +174,11 @@ export const useGetMyBlocksByIds = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyBlocksByIds(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -250,11 +264,11 @@ export const useGetMyBlocksByBlockGroupId = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyBlocksByBlockGroupId(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -335,11 +349,11 @@ export const useGetMyBlocksByBlockGroupIds = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyBlocksByBlockGroupIds(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -430,11 +444,11 @@ export const useGetMyBlocksByBlockPackId = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetMyBlocksByBlockPackId(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -510,11 +524,11 @@ export const useGetAllMyBlocks = (
       );
     }
 
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
     try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
       const response = await queryFnGetAllMyBlocks(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -647,8 +661,8 @@ export const useInsertBlocks = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnInsertBlocks>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnInsertBlocks>>> => {
+    request: InsertBlocksRequest
+  ): Promise<InsertBlocksResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -743,8 +757,8 @@ export const useUpdateMyBlockById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMyBlockById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyBlockById>>> => {
+    request: UpdateMyBlockByIdRequest
+  ): Promise<UpdateMyBlockByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -798,8 +812,8 @@ export const useUpdateMyBlocksByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnUpdateMyBlocksByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnUpdateMyBlocksByIds>>> => {
+    request: UpdateMyBlocksByIdsRequest
+  ): Promise<UpdateMyBlocksByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -883,8 +897,8 @@ export const useRestoreMyBlockById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMyBlockById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyBlockById>>> => {
+    request: RestoreMyBlockByIdRequest
+  ): Promise<RestoreMyBlockByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -958,8 +972,8 @@ export const useRestoreMyBlocksByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnRestoreMyBlocksByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnRestoreMyBlocksByIds>>> => {
+    request: RestoreMyBlocksByIdsRequest
+  ): Promise<RestoreMyBlocksByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -1034,8 +1048,8 @@ export const useDeleteMyBlockById = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMyBlockById>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyBlockById>>> => {
+    request: DeleteMyBlockByIdRequest
+  ): Promise<DeleteMyBlockByIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
@@ -1108,8 +1122,8 @@ export const useDeleteMyBlocksByIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: Parameters<typeof mutationFnDeleteMyBlocksByIds>[0]
-  ): Promise<Awaited<ReturnType<typeof mutationFnDeleteMyBlocksByIds>>> => {
+    request: DeleteMyBlocksByIdsRequest
+  ): Promise<DeleteMyBlocksByIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }

@@ -1,4 +1,3 @@
-import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import {
   BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
   BatchInsertBlockGroupsByBlockPackIdsRequest,
@@ -21,6 +20,7 @@ import {
   RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupsByIdsRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
+import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import { localDB } from "@shared/api/local/db";
 import {
   Block,
@@ -48,7 +48,10 @@ export class BlockGroupLocalSimulator {
       queryBuilder
         .select({ one: sql`1` })
         .from(UsersToShelves)
-        .innerJoin(SubShelf, eq(SubShelf.rootShelfId, UsersToShelves.rootShelfId))
+        .innerJoin(
+          SubShelf,
+          eq(SubShelf.rootShelfId, UsersToShelves.rootShelfId)
+        )
         .innerJoin(BlockPack, eq(BlockPack.parentSubShelfId, SubShelf.id))
         .where(
           and(
@@ -112,12 +115,16 @@ export class BlockGroupLocalSimulator {
       .where(
         and(
           eq(BlockGroup.id, request.param.blockGroupId),
-          BlockGroupLocalSimulator.getPassPermissionCheckSQL(localDB, loggedInUser.publicId, [
-            AccessControlPermission.Read,
-            AccessControlPermission.Write,
-            AccessControlPermission.Admin,
-            AccessControlPermission.Owner,
-          ])
+          BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+            localDB,
+            loggedInUser.publicId,
+            [
+              AccessControlPermission.Read,
+              AccessControlPermission.Write,
+              AccessControlPermission.Admin,
+              AccessControlPermission.Owner,
+            ]
+          )
         )
       )
       .limit(1);
@@ -138,20 +145,25 @@ export class BlockGroupLocalSimulator {
     const blockGroup = await localDB.query.BlockGroup.findFirst({
       where: and(
         eq(BlockGroup.id, request.param.blockGroupId),
-        BlockGroupLocalSimulator.getPassPermissionCheckSQL(localDB, loggedInUser.publicId, [
-          AccessControlPermission.Read,
-          AccessControlPermission.Write,
-          AccessControlPermission.Admin,
-          AccessControlPermission.Owner,
-        ])
+        BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+          localDB,
+          loggedInUser.publicId,
+          [
+            AccessControlPermission.Read,
+            AccessControlPermission.Write,
+            AccessControlPermission.Admin,
+            AccessControlPermission.Owner,
+          ]
+        )
       ),
     });
     if (!blockGroup) return null;
 
-    const rawArborizedEditableBlock = await BlockGroupLocalSimulator.getArborizedEditableBlock(
-      localDB,
-      blockGroup.id
-    );
+    const rawArborizedEditableBlock =
+      await BlockGroupLocalSimulator.getArborizedEditableBlock(
+        localDB,
+        blockGroup.id
+      );
 
     return {
       id: blockGroup.id,
@@ -179,12 +191,16 @@ export class BlockGroupLocalSimulator {
     const blockGroups = await localDB.query.BlockGroup.findMany({
       where: and(
         inArray(BlockGroup.id, request.param.blockGroupIds),
-        BlockGroupLocalSimulator.getPassPermissionCheckSQL(localDB, loggedInUser.publicId, [
-          AccessControlPermission.Read,
-          AccessControlPermission.Write,
-          AccessControlPermission.Admin,
-          AccessControlPermission.Owner,
-        ])
+        BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+          localDB,
+          loggedInUser.publicId,
+          [
+            AccessControlPermission.Read,
+            AccessControlPermission.Write,
+            AccessControlPermission.Admin,
+            AccessControlPermission.Owner,
+          ]
+        )
       ),
     });
 
@@ -294,12 +310,16 @@ export class BlockGroupLocalSimulator {
     return await localDB.query.BlockGroup.findMany({
       where: and(
         eq(BlockGroup.prevBlockGroupId, request.param.prevBlockGroupId),
-        BlockGroupLocalSimulator.getPassPermissionCheckSQL(localDB, loggedInUser.publicId, [
-          AccessControlPermission.Read,
-          AccessControlPermission.Write,
-          AccessControlPermission.Admin,
-          AccessControlPermission.Owner,
-        ])
+        BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+          localDB,
+          loggedInUser.publicId,
+          [
+            AccessControlPermission.Read,
+            AccessControlPermission.Write,
+            AccessControlPermission.Admin,
+            AccessControlPermission.Owner,
+          ]
+        )
       ),
     });
   };
@@ -340,8 +360,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const blockGroupId = request.body.blockGroupId ?? generateUUID();
       request.body.blockGroupId = blockGroupId;
@@ -370,8 +391,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const rows = request.body.blockPackContents.map(content => {
         const blockGroupId = content.blockGroupId ?? generateUUID();
@@ -406,8 +428,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const rows = request.body.blockPackContents.map(content => {
         const blockGroupId = content.blockGroupId ?? generateUUID();
@@ -442,8 +465,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const blockGroupId = request.body.blockGroupId ?? generateUUID();
       request.body.blockGroupId = blockGroupId;
@@ -451,7 +475,7 @@ export class BlockGroupLocalSimulator {
       const flattenedBlocks = EditableBlockManipulator.flatten(
         request.body.arborizedEditableBlock
       );
-      const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+      const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
         id: flattenedBlock.id,
         parentBlockId: flattenedBlock.parentBlockId,
         blockGroupId,
@@ -467,17 +491,17 @@ export class BlockGroupLocalSimulator {
         ownerPublicId: loggedInUser.publicId,
         blockPackId: request.body.blockPackId,
         prevBlockGroupId: request.body.prevBlockGroupId,
-        size: blockRecords.length,
+        size: insertedBlocks.length,
       });
 
-      if (blockRecords.length > 0) {
-        await tx.insert(Block).values(blockRecords);
+      if (insertedBlocks.length > 0) {
+        await tx.insert(Block).values(insertedBlocks);
       }
 
       await tx
         .update(BlockPack)
         .set({
-          blockCount: sql`${BlockPack.blockCount} + ${blockRecords.length}`,
+          blockCount: sql`${BlockPack.blockCount} + ${insertedBlocks.length}`,
           updatedAt: new Date(),
         })
         .where(eq(BlockPack.id, request.body.blockPackId));
@@ -499,8 +523,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       let insertedBlockCount = 0;
 
@@ -511,7 +536,7 @@ export class BlockGroupLocalSimulator {
         const flattenedBlocks = EditableBlockManipulator.flatten(
           content.arborizedEditableBlock
         );
-        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+        const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
           id: flattenedBlock.id,
           parentBlockId: flattenedBlock.parentBlockId,
           blockGroupId,
@@ -527,12 +552,12 @@ export class BlockGroupLocalSimulator {
           ownerPublicId: loggedInUser.publicId,
           blockPackId: request.body.blockPackId,
           prevBlockGroupId: content.prevBlockGroupId,
-          size: blockRecords.length,
+          size: insertedBlocks.length,
         });
 
-        if (blockRecords.length > 0) {
-          insertedBlockCount += blockRecords.length;
-          await tx.insert(Block).values(blockRecords);
+        if (insertedBlocks.length > 0) {
+          insertedBlockCount += insertedBlocks.length;
+          await tx.insert(Block).values(insertedBlocks);
         }
       }
 
@@ -563,8 +588,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const blockPackIdToCountMap = new Map<string, number>();
 
@@ -575,7 +601,7 @@ export class BlockGroupLocalSimulator {
         const flattenedBlocks = EditableBlockManipulator.flatten(
           content.arborizedEditableBlock
         );
-        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+        const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
           id: flattenedBlock.id,
           parentBlockId: flattenedBlock.parentBlockId,
           blockGroupId,
@@ -591,15 +617,15 @@ export class BlockGroupLocalSimulator {
           ownerPublicId: loggedInUser.publicId,
           blockPackId: content.blockPackId,
           prevBlockGroupId: content.prevBlockGroupId,
-          size: blockRecords.length,
+          size: insertedBlocks.length,
         });
 
-        if (blockRecords.length > 0) {
-          await tx.insert(Block).values(blockRecords);
+        if (insertedBlocks.length > 0) {
+          await tx.insert(Block).values(insertedBlocks);
           blockPackIdToCountMap.set(
             content.blockPackId,
             (blockPackIdToCountMap.get(content.blockPackId) ?? 0) +
-              blockRecords.length
+              insertedBlocks.length
           );
         }
       }
@@ -623,71 +649,74 @@ export class BlockGroupLocalSimulator {
     });
   };
 
-  static simulateInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId = async (
-    request: InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest
-  ): Promise<void> => {
-    if (!localDB.isReady) await localDB.ensureReady();
+  static simulateInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
+    async (
+      request: InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest
+    ): Promise<void> => {
+      if (!localDB.isReady) await localDB.ensureReady();
 
-    await localDB.transaction(async tx => {
-      const loggedInUser = await tx.query.User.findFirst({
+      await localDB.transaction(async tx => {
+        const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
-      let prevBlockGroupId = request.body.prevBlockGroupId;
-      let insertedBlockCount = 0;
+        let prevBlockGroupId = request.body.prevBlockGroupId;
+        let insertedBlockCount = 0;
 
-      for (const arborizedEditableBlock of request.body.arborizedEditableBlocks) {
-        const blockGroupId = generateUUID();
+        for (const arborizedEditableBlock of request.body
+          .arborizedEditableBlocks) {
+          const blockGroupId = generateUUID();
 
-        const flattenedBlocks = EditableBlockManipulator.flatten(
-          arborizedEditableBlock
-        );
-        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
-          id: flattenedBlock.id,
-          parentBlockId: flattenedBlock.parentBlockId,
-          blockGroupId,
-          type: flattenedBlock.type,
-          props: flattenedBlock.props,
-          content: flattenedBlock.content,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }));
+          const flattenedBlocks = EditableBlockManipulator.flatten(
+            arborizedEditableBlock
+          );
+          const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
+            id: flattenedBlock.id,
+            parentBlockId: flattenedBlock.parentBlockId,
+            blockGroupId,
+            type: flattenedBlock.type,
+            props: flattenedBlock.props,
+            content: flattenedBlock.content,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }));
 
-        await tx.insert(BlockGroup).values({
-          id: blockGroupId,
-          ownerPublicId: loggedInUser.publicId,
-          blockPackId: request.body.blockPackId,
-          prevBlockGroupId,
-          size: blockRecords.length,
-        });
+          await tx.insert(BlockGroup).values({
+            id: blockGroupId,
+            ownerPublicId: loggedInUser.publicId,
+            blockPackId: request.body.blockPackId,
+            prevBlockGroupId,
+            size: insertedBlocks.length,
+          });
 
-        if (blockRecords.length > 0) {
-          insertedBlockCount += blockRecords.length;
-          await tx.insert(Block).values(blockRecords);
+          if (insertedBlocks.length > 0) {
+            insertedBlockCount += insertedBlocks.length;
+            await tx.insert(Block).values(insertedBlocks);
+          }
+
+          prevBlockGroupId = blockGroupId;
         }
 
-        prevBlockGroupId = blockGroupId;
-      }
+        if (insertedBlockCount > 0) {
+          await tx
+            .update(BlockPack)
+            .set({
+              blockCount: sql`${BlockPack.blockCount} + ${insertedBlockCount}`,
+              updatedAt: new Date(),
+            })
+            .where(eq(BlockPack.id, request.body.blockPackId));
+        }
 
-      if (insertedBlockCount > 0) {
-        await tx
-          .update(BlockPack)
-          .set({
-            blockCount: sql`${BlockPack.blockCount} + ${insertedBlockCount}`,
-            updatedAt: new Date(),
-          })
-          .where(eq(BlockPack.id, request.body.blockPackId));
-      }
-
-      await tx.insert(Transaction).values({
-        ownerPublicId: loggedInUser.publicId,
-        entityType: TransactionEntityType.BlockGroup,
-        actionType: TransactionActionType.CREATE,
-        body: request.body,
+        await tx.insert(Transaction).values({
+          ownerPublicId: loggedInUser.publicId,
+          entityType: TransactionEntityType.BlockGroup,
+          actionType: TransactionActionType.CREATE,
+          body: request.body,
+        });
       });
-    });
-  };
+    };
 
   static simulateMoveMyBlockGroupById = async (
     request: MoveMyBlockGroupByIdRequest
@@ -697,8 +726,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       await tx
         .update(BlockGroup)
@@ -740,8 +770,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       await tx
         .update(BlockGroup)
@@ -783,8 +814,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       for (const moved of request.body.movedBlockGroups) {
         await tx
@@ -818,8 +850,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const targetBlockGroup = await tx.query.BlockGroup.findFirst({
         where: eq(BlockGroup.id, request.body.blockGroupId),
@@ -839,11 +872,15 @@ export class BlockGroupLocalSimulator {
         .where(
           and(
             eq(BlockGroup.id, request.body.blockGroupId),
-            BlockGroupLocalSimulator.getPassPermissionCheckSQL(tx, loggedInUser.publicId, [
-              AccessControlPermission.Owner,
-              AccessControlPermission.Admin,
-              AccessControlPermission.Write,
-            ])
+            BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+              tx,
+              loggedInUser.publicId,
+              [
+                AccessControlPermission.Owner,
+                AccessControlPermission.Admin,
+                AccessControlPermission.Write,
+              ]
+            )
           )
         );
 
@@ -882,8 +919,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const targetBlockGroups = await tx.query.BlockGroup.findMany({
         where: inArray(BlockGroup.id, request.body.blockGroupIds),
@@ -904,11 +942,15 @@ export class BlockGroupLocalSimulator {
         .where(
           and(
             inArray(BlockGroup.id, request.body.blockGroupIds),
-            BlockGroupLocalSimulator.getPassPermissionCheckSQL(tx, loggedInUser.publicId, [
-              AccessControlPermission.Owner,
-              AccessControlPermission.Admin,
-              AccessControlPermission.Write,
-            ])
+            BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+              tx,
+              loggedInUser.publicId,
+              [
+                AccessControlPermission.Owner,
+                AccessControlPermission.Admin,
+                AccessControlPermission.Write,
+              ]
+            )
           )
         );
 
@@ -956,8 +998,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const targetBlockGroup = await tx.query.BlockGroup.findFirst({
         where: eq(BlockGroup.id, request.body.blockGroupId),
@@ -993,7 +1036,8 @@ export class BlockGroupLocalSimulator {
         })
         .where(eq(Block.blockGroupId, request.body.blockGroupId));
 
-      const size = targetBlockGroup?.deletedAt === null ? targetBlockGroup.size : 0;
+      const size =
+        targetBlockGroup?.deletedAt === null ? targetBlockGroup.size : 0;
       if (size > 0) {
         await tx
           .update(BlockPack)
@@ -1022,8 +1066,9 @@ export class BlockGroupLocalSimulator {
     await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
+        columns: { publicId: true },
       });
-      if (!loggedInUser) return;
+      if (!loggedInUser?.publicId) return;
 
       const targetBlockGroups = await tx.query.BlockGroup.findMany({
         where: inArray(BlockGroup.id, request.body.blockGroupIds),
@@ -1044,10 +1089,11 @@ export class BlockGroupLocalSimulator {
         .where(
           and(
             inArray(BlockGroup.id, request.body.blockGroupIds),
-            BlockGroupLocalSimulator.getPassPermissionCheckSQL(tx, loggedInUser.publicId, [
-              AccessControlPermission.Owner,
-              AccessControlPermission.Admin,
-            ])
+            BlockGroupLocalSimulator.getPassPermissionCheckSQL(
+              tx,
+              loggedInUser.publicId,
+              [AccessControlPermission.Owner, AccessControlPermission.Admin]
+            )
           )
         );
 

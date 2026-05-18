@@ -397,7 +397,7 @@ export class BlockLocalSimulator {
       const flattenedBlocks = EditableBlockManipulator.flatten(
         request.body.arborizedEditableBlock
       );
-      const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+      const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
         id: flattenedBlock.id,
         parentBlockId: flattenedBlock.parentBlockId,
         blockGroupId: request.body.blockGroupId,
@@ -408,14 +408,14 @@ export class BlockLocalSimulator {
         updatedAt: response?.data.createdAt ?? new Date(),
       }));
 
-      if (blockRecords.length > 0) {
-        await tx.insert(Block).values(blockRecords);
+      if (insertedBlocks.length > 0) {
+        await tx.insert(Block).values(insertedBlocks);
       }
 
       await tx
         .update(BlockGroup)
         .set({
-          size: sql`${BlockGroup.size} + ${blockRecords.length}`,
+          size: sql`${BlockGroup.size} + ${insertedBlocks.length}`,
           updatedAt: new Date(),
         })
         .where(eq(BlockGroup.id, request.body.blockGroupId));
@@ -423,7 +423,7 @@ export class BlockLocalSimulator {
       await tx
         .update(BlockPack)
         .set({
-          blockCount: sql`${BlockPack.blockCount} + ${blockRecords.length}`,
+          blockCount: sql`${BlockPack.blockCount} + ${insertedBlocks.length}`,
           updatedAt: new Date(),
         })
         .where(eq(BlockPack.id, request.affected.blockPackId));
@@ -456,7 +456,7 @@ export class BlockLocalSimulator {
         const flattenedBlocks = EditableBlockManipulator.flatten(
           inserted.arborizedEditableBlock
         );
-        const blockRecords = flattenedBlocks.map(flattenedBlock => ({
+        const insertedBlocks = flattenedBlocks.map(flattenedBlock => ({
           id: flattenedBlock.id,
           parentBlockId: flattenedBlock.parentBlockId,
           blockGroupId: inserted.blockGroupId,
@@ -467,21 +467,22 @@ export class BlockLocalSimulator {
           updatedAt: new Date(),
         }));
 
-        if (blockRecords.length > 0) {
-          await tx.insert(Block).values(blockRecords);
+        if (insertedBlocks.length > 0) {
+          await tx.insert(Block).values(insertedBlocks);
         }
 
         blockGroupIdToCountMap.set(
           inserted.blockGroupId,
           (blockGroupIdToCountMap.get(inserted.blockGroupId) ?? 0) +
-            blockRecords.length
+            insertedBlocks.length
         );
 
         const blockPackId = request.affected.blockPackIds[index];
         if (blockPackId) {
           blockPackIdToCountMap.set(
             blockPackId,
-            (blockPackIdToCountMap.get(blockPackId) ?? 0) + blockRecords.length
+            (blockPackIdToCountMap.get(blockPackId) ?? 0) +
+              insertedBlocks.length
           );
         }
       }
