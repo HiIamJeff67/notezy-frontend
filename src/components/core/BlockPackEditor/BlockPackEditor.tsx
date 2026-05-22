@@ -29,7 +29,10 @@ const BlockPackEditor = ({ blockPackMeta }: BlockPackEditorProps) => {
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <BlockEditorProvider blockPackMeta={meta}>
-        <BlockPackEditorContent blockPackMeta={meta} />
+        <BlockPackEditorContent
+          blockPackMeta={meta}
+          dispatchMeta={dispatchMeta}
+        />
       </BlockEditorProvider>
     </Suspense>
   );

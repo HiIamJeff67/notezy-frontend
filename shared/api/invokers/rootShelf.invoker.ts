@@ -64,6 +64,7 @@ export const queryFnGetMyRootShelfById = async (
     });
     return GetMyRootShelfByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyRootShelfById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -74,7 +75,6 @@ export const queryFnGetMyRootShelfById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(
         FetchClientExceptions.MissingNetwork()
       ).removePresentation();
@@ -91,6 +91,7 @@ export const mutationFnCreateRootShelf = async (
     const response = await CreateRootShelf({ data: validatedRequest });
     return CreateRootShelfResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnCreateRootShelf", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -101,7 +102,6 @@ export const mutationFnCreateRootShelf = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -118,6 +118,7 @@ export const mutationFnCreateRootShelves = async (
     });
     return CreateRootShelvesResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnCreateRootShelves", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -126,7 +127,6 @@ export const mutationFnCreateRootShelves = async (
       switch (error.unWrap.reason) {
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -143,6 +143,7 @@ export const mutationFnUpdateMyRootShelfById = async (
     });
     return UpdateMyRootShelfByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMyRootShelfById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -153,7 +154,6 @@ export const mutationFnUpdateMyRootShelfById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -171,6 +171,7 @@ export const mutationFnUpdateMyRootShelvesByIds = async (
     });
     return UpdateMyRootShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMyRootShelvesByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -181,7 +182,6 @@ export const mutationFnUpdateMyRootShelvesByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -198,6 +198,7 @@ export const mutationFnRestoreMyRootShelfById = async (
     });
     return RestoreMyRootShelfByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyRootShelfById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -208,7 +209,6 @@ export const mutationFnRestoreMyRootShelfById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -226,6 +226,7 @@ export const mutationFnRestoreMyRootShelvesByIds = async (
     });
     return RestoreMyRootShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyRootShelvesByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -236,7 +237,6 @@ export const mutationFnRestoreMyRootShelvesByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -253,6 +253,7 @@ export const mutationFnDeleteMyRootShelfById = async (
     });
     return DeleteMyRootShelfByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyRootShelfById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -263,7 +264,6 @@ export const mutationFnDeleteMyRootShelfById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -281,6 +281,7 @@ export const mutationFnDeleteMyRootShelvesByIds = async (
     });
     return DeleteMyRootShelvesByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyRootShelvesByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -291,7 +292,6 @@ export const mutationFnDeleteMyRootShelvesByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;

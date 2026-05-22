@@ -36,6 +36,7 @@ export const queryFnGetUserData = async (
     const response = await GetUserData({ data: validatedRequest });
     return GetUserDataResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetUserData", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -48,7 +49,6 @@ export const queryFnGetUserData = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -64,6 +64,7 @@ export const queryFnGetMe = async (
     const response = await GetMe({ data: validatedRequest });
     return GetMeResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMe", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -76,7 +77,6 @@ export const queryFnGetMe = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -92,6 +92,7 @@ export const mutationFnUpdateMe = async (
     const response = await UpdateMe({ data: validatedRequest });
     return UpdateMeResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMe", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -104,7 +105,6 @@ export const mutationFnUpdateMe = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 

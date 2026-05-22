@@ -95,10 +95,9 @@ export const APIURLPathDictionary = {
     getMyMaterialsByParentSubShelfId:
       "material/getMyMaterialsByParentSubShelfId",
     getAllMyMaterialsByRootShelfId: "material/getAllMyMaterialsByRootShelfId",
-    createTextbookMaterial: "material/createTextbookMaterial",
-    createNotebookMaterial: "material/createNotebookMaterial",
+    createMyMaterial: "material/createMyMaterial",
     updateMyMaterialById: "material/updateMyMaterialById",
-    saveMyNotebookMaterialById: "material/saveMyNotebookMaterialById",
+    saveMyMaterialById: "material/saveMyMaterialById",
     moveMyMaterialById: "material/moveMyMaterialById",
     moveMyMaterialsByIds: "material/moveMyMaterialsByIds",
     restoreMyMaterialById: "material/restoreMyMaterialById",
@@ -213,13 +212,15 @@ export const WebURLPathDictionary = {
     },
   },
   root: {
-    materialEditor: {
-      _: "material-editor",
-      notebook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
-        `material-editor/notebook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
-      textbook: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
-        `material-editor/textbook/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
-      notFound: "material-editor/not-found",
+    materialViewer: {
+      _: "material-viewer",
+      byId: (
+        materialId: UUID,
+        parentSubShelfId: UUID,
+        rootShelfId: UUID
+      ) =>
+        `material-viewer/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
+      notFound: "material-viewer/not-found",
     },
     blockPackEditor: {
       _: (blockPackId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>

@@ -3,7 +3,7 @@ import {
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
 import {
-  AllMaterialTypes,
+  AllMaterialContentTypes,
   AllSupportedBlockPackIcons,
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
@@ -171,9 +171,10 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           id: z.uuidv4(),
           parentSubShelfId: z.uuidv4(),
           name: z.string(),
-          type: z.enum(AllMaterialTypes),
-          megaByteSize: z.int64(),
-          downloadURL: z.url(),
+          size: z.int64(),
+          contentType: z.enum(AllMaterialContentTypes),
+          parseMediaType: z.string(),
+          downloadURL: z.url().nullable().optional(),
           deletedAt: z.coerce.date().nullable(),
           updatedAt: z.coerce.date(),
           createdAt: z.coerce.date(),

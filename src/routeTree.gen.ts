@@ -14,21 +14,22 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RootPrivacyPolicyRouteImport } from './routes/_root.privacy-policy'
 import { Route as RootPlaygroundRouteImport } from './routes/_root.playground'
-import { Route as RootMaterialEditorRouteImport } from './routes/_root.material-editor'
+import { Route as RootMaterialViewerRouteImport } from './routes/_root.material-viewer'
 import { Route as RootIntroductionRouteImport } from './routes/_root.introduction'
 import { Route as RootDashboardRouteImport } from './routes/_root.dashboard'
+import { Route as RootBlockPackEditorRouteImport } from './routes/_root.block-pack-editor'
 import { Route as RootAdminRouteImport } from './routes/_root.admin'
 import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as AuthForgetPasswordRouteImport } from './routes/_auth.forgetPassword'
-import { Route as RootMaterialEditorIndexRouteImport } from './routes/_root.material-editor.index'
+import { Route as RootMaterialViewerIndexRouteImport } from './routes/_root.material-viewer.index'
 import { Route as RootDashboardIndexRouteImport } from './routes/_root.dashboard.index'
+import { Route as RootBlockPackEditorIndexRouteImport } from './routes/_root.block-pack-editor.index'
+import { Route as RootMaterialViewerMaterialIdRouteImport } from './routes/_root.material-viewer.$materialId'
 import { Route as RootBlockPackEditorBlockPackIdRouteImport } from './routes/_root.block-pack-editor.$blockPackId'
 import { Route as AuthRedirectXRouteImport } from './routes/_auth.redirect.x'
 import { Route as AuthRedirectGoogleRouteImport } from './routes/_auth.redirect.google'
 import { Route as AuthRedirectErrorRouteImport } from './routes/_auth.redirect.error'
-import { Route as RootMaterialEditorTextbookMaterialIdRouteImport } from './routes/_root.material-editor.textbook.$materialId'
-import { Route as RootMaterialEditorNotebookMaterialIdRouteImport } from './routes/_root.material-editor.notebook.$materialId'
 
 const RootRoute = RootRouteImport.update({
   id: '/_root',
@@ -53,9 +54,9 @@ const RootPlaygroundRoute = RootPlaygroundRouteImport.update({
   path: '/playground',
   getParentRoute: () => RootRoute,
 } as any)
-const RootMaterialEditorRoute = RootMaterialEditorRouteImport.update({
-  id: '/material-editor',
-  path: '/material-editor',
+const RootMaterialViewerRoute = RootMaterialViewerRouteImport.update({
+  id: '/material-viewer',
+  path: '/material-viewer',
   getParentRoute: () => RootRoute,
 } as any)
 const RootIntroductionRoute = RootIntroductionRouteImport.update({
@@ -66,6 +67,11 @@ const RootIntroductionRoute = RootIntroductionRouteImport.update({
 const RootDashboardRoute = RootDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => RootRoute,
+} as any)
+const RootBlockPackEditorRoute = RootBlockPackEditorRouteImport.update({
+  id: '/block-pack-editor',
+  path: '/block-pack-editor',
   getParentRoute: () => RootRoute,
 } as any)
 const RootAdminRoute = RootAdminRouteImport.update({
@@ -88,21 +94,33 @@ const AuthForgetPasswordRoute = AuthForgetPasswordRouteImport.update({
   path: '/forgetPassword',
   getParentRoute: () => AuthRoute,
 } as any)
-const RootMaterialEditorIndexRoute = RootMaterialEditorIndexRouteImport.update({
+const RootMaterialViewerIndexRoute = RootMaterialViewerIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => RootMaterialEditorRoute,
+  getParentRoute: () => RootMaterialViewerRoute,
 } as any)
 const RootDashboardIndexRoute = RootDashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => RootDashboardRoute,
 } as any)
+const RootBlockPackEditorIndexRoute =
+  RootBlockPackEditorIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => RootBlockPackEditorRoute,
+  } as any)
+const RootMaterialViewerMaterialIdRoute =
+  RootMaterialViewerMaterialIdRouteImport.update({
+    id: '/$materialId',
+    path: '/$materialId',
+    getParentRoute: () => RootMaterialViewerRoute,
+  } as any)
 const RootBlockPackEditorBlockPackIdRoute =
   RootBlockPackEditorBlockPackIdRouteImport.update({
-    id: '/block-pack-editor/$blockPackId',
-    path: '/block-pack-editor/$blockPackId',
-    getParentRoute: () => RootRoute,
+    id: '/$blockPackId',
+    path: '/$blockPackId',
+    getParentRoute: () => RootBlockPackEditorRoute,
   } as any)
 const AuthRedirectXRoute = AuthRedirectXRouteImport.update({
   id: '/redirect/x',
@@ -119,18 +137,6 @@ const AuthRedirectErrorRoute = AuthRedirectErrorRouteImport.update({
   path: '/redirect/error',
   getParentRoute: () => AuthRoute,
 } as any)
-const RootMaterialEditorTextbookMaterialIdRoute =
-  RootMaterialEditorTextbookMaterialIdRouteImport.update({
-    id: '/textbook/$materialId',
-    path: '/textbook/$materialId',
-    getParentRoute: () => RootMaterialEditorRoute,
-  } as any)
-const RootMaterialEditorNotebookMaterialIdRoute =
-  RootMaterialEditorNotebookMaterialIdRouteImport.update({
-    id: '/notebook/$materialId',
-    path: '/notebook/$materialId',
-    getParentRoute: () => RootMaterialEditorRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,19 +144,20 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/admin': typeof RootAdminRoute
+  '/block-pack-editor': typeof RootBlockPackEditorRouteWithChildren
   '/dashboard': typeof RootDashboardRouteWithChildren
   '/introduction': typeof RootIntroductionRoute
-  '/material-editor': typeof RootMaterialEditorRouteWithChildren
+  '/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/playground': typeof RootPlaygroundRoute
   '/privacy-policy': typeof RootPrivacyPolicyRoute
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
+  '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/dashboard/': typeof RootDashboardIndexRoute
-  '/material-editor/': typeof RootMaterialEditorIndexRoute
-  '/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
-  '/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
+  '/material-viewer/': typeof RootMaterialViewerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,10 +172,10 @@ export interface FileRoutesByTo {
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
+  '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/block-pack-editor': typeof RootBlockPackEditorIndexRoute
   '/dashboard': typeof RootDashboardIndexRoute
-  '/material-editor': typeof RootMaterialEditorIndexRoute
-  '/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
-  '/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
+  '/material-viewer': typeof RootMaterialViewerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,19 +186,20 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_root/admin': typeof RootAdminRoute
+  '/_root/block-pack-editor': typeof RootBlockPackEditorRouteWithChildren
   '/_root/dashboard': typeof RootDashboardRouteWithChildren
   '/_root/introduction': typeof RootIntroductionRoute
-  '/_root/material-editor': typeof RootMaterialEditorRouteWithChildren
+  '/_root/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/_root/playground': typeof RootPlaygroundRoute
   '/_root/privacy-policy': typeof RootPrivacyPolicyRoute
   '/_auth/redirect/error': typeof AuthRedirectErrorRoute
   '/_auth/redirect/google': typeof AuthRedirectGoogleRoute
   '/_auth/redirect/x': typeof AuthRedirectXRoute
   '/_root/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
+  '/_root/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/_root/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/_root/dashboard/': typeof RootDashboardIndexRoute
-  '/_root/material-editor/': typeof RootMaterialEditorIndexRoute
-  '/_root/material-editor/notebook/$materialId': typeof RootMaterialEditorNotebookMaterialIdRoute
-  '/_root/material-editor/textbook/$materialId': typeof RootMaterialEditorTextbookMaterialIdRoute
+  '/_root/material-viewer/': typeof RootMaterialViewerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,19 +209,20 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/admin'
+    | '/block-pack-editor'
     | '/dashboard'
     | '/introduction'
-    | '/material-editor'
+    | '/material-viewer'
     | '/playground'
     | '/privacy-policy'
     | '/redirect/error'
     | '/redirect/google'
     | '/redirect/x'
     | '/block-pack-editor/$blockPackId'
+    | '/material-viewer/$materialId'
+    | '/block-pack-editor/'
     | '/dashboard/'
-    | '/material-editor/'
-    | '/material-editor/notebook/$materialId'
-    | '/material-editor/textbook/$materialId'
+    | '/material-viewer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -228,10 +237,10 @@ export interface FileRouteTypes {
     | '/redirect/google'
     | '/redirect/x'
     | '/block-pack-editor/$blockPackId'
+    | '/material-viewer/$materialId'
+    | '/block-pack-editor'
     | '/dashboard'
-    | '/material-editor'
-    | '/material-editor/notebook/$materialId'
-    | '/material-editor/textbook/$materialId'
+    | '/material-viewer'
   id:
     | '__root__'
     | '/'
@@ -241,19 +250,20 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/_root/admin'
+    | '/_root/block-pack-editor'
     | '/_root/dashboard'
     | '/_root/introduction'
-    | '/_root/material-editor'
+    | '/_root/material-viewer'
     | '/_root/playground'
     | '/_root/privacy-policy'
     | '/_auth/redirect/error'
     | '/_auth/redirect/google'
     | '/_auth/redirect/x'
     | '/_root/block-pack-editor/$blockPackId'
+    | '/_root/material-viewer/$materialId'
+    | '/_root/block-pack-editor/'
     | '/_root/dashboard/'
-    | '/_root/material-editor/'
-    | '/_root/material-editor/notebook/$materialId'
-    | '/_root/material-editor/textbook/$materialId'
+    | '/_root/material-viewer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -299,11 +309,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RootPlaygroundRouteImport
       parentRoute: typeof RootRoute
     }
-    '/_root/material-editor': {
-      id: '/_root/material-editor'
-      path: '/material-editor'
-      fullPath: '/material-editor'
-      preLoaderRoute: typeof RootMaterialEditorRouteImport
+    '/_root/material-viewer': {
+      id: '/_root/material-viewer'
+      path: '/material-viewer'
+      fullPath: '/material-viewer'
+      preLoaderRoute: typeof RootMaterialViewerRouteImport
       parentRoute: typeof RootRoute
     }
     '/_root/introduction': {
@@ -318,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof RootDashboardRouteImport
+      parentRoute: typeof RootRoute
+    }
+    '/_root/block-pack-editor': {
+      id: '/_root/block-pack-editor'
+      path: '/block-pack-editor'
+      fullPath: '/block-pack-editor'
+      preLoaderRoute: typeof RootBlockPackEditorRouteImport
       parentRoute: typeof RootRoute
     }
     '/_root/admin': {
@@ -348,12 +365,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_root/material-editor/': {
-      id: '/_root/material-editor/'
+    '/_root/material-viewer/': {
+      id: '/_root/material-viewer/'
       path: '/'
-      fullPath: '/material-editor/'
-      preLoaderRoute: typeof RootMaterialEditorIndexRouteImport
-      parentRoute: typeof RootMaterialEditorRoute
+      fullPath: '/material-viewer/'
+      preLoaderRoute: typeof RootMaterialViewerIndexRouteImport
+      parentRoute: typeof RootMaterialViewerRoute
     }
     '/_root/dashboard/': {
       id: '/_root/dashboard/'
@@ -362,12 +379,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RootDashboardIndexRouteImport
       parentRoute: typeof RootDashboardRoute
     }
+    '/_root/block-pack-editor/': {
+      id: '/_root/block-pack-editor/'
+      path: '/'
+      fullPath: '/block-pack-editor/'
+      preLoaderRoute: typeof RootBlockPackEditorIndexRouteImport
+      parentRoute: typeof RootBlockPackEditorRoute
+    }
+    '/_root/material-viewer/$materialId': {
+      id: '/_root/material-viewer/$materialId'
+      path: '/$materialId'
+      fullPath: '/material-viewer/$materialId'
+      preLoaderRoute: typeof RootMaterialViewerMaterialIdRouteImport
+      parentRoute: typeof RootMaterialViewerRoute
+    }
     '/_root/block-pack-editor/$blockPackId': {
       id: '/_root/block-pack-editor/$blockPackId'
-      path: '/block-pack-editor/$blockPackId'
+      path: '/$blockPackId'
       fullPath: '/block-pack-editor/$blockPackId'
       preLoaderRoute: typeof RootBlockPackEditorBlockPackIdRouteImport
-      parentRoute: typeof RootRoute
+      parentRoute: typeof RootBlockPackEditorRoute
     }
     '/_auth/redirect/x': {
       id: '/_auth/redirect/x'
@@ -389,20 +420,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/redirect/error'
       preLoaderRoute: typeof AuthRedirectErrorRouteImport
       parentRoute: typeof AuthRoute
-    }
-    '/_root/material-editor/textbook/$materialId': {
-      id: '/_root/material-editor/textbook/$materialId'
-      path: '/textbook/$materialId'
-      fullPath: '/material-editor/textbook/$materialId'
-      preLoaderRoute: typeof RootMaterialEditorTextbookMaterialIdRouteImport
-      parentRoute: typeof RootMaterialEditorRoute
-    }
-    '/_root/material-editor/notebook/$materialId': {
-      id: '/_root/material-editor/notebook/$materialId'
-      path: '/notebook/$materialId'
-      fullPath: '/material-editor/notebook/$materialId'
-      preLoaderRoute: typeof RootMaterialEditorNotebookMaterialIdRouteImport
-      parentRoute: typeof RootMaterialEditorRoute
     }
   }
 }
@@ -427,6 +444,19 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface RootBlockPackEditorRouteChildren {
+  RootBlockPackEditorBlockPackIdRoute: typeof RootBlockPackEditorBlockPackIdRoute
+  RootBlockPackEditorIndexRoute: typeof RootBlockPackEditorIndexRoute
+}
+
+const RootBlockPackEditorRouteChildren: RootBlockPackEditorRouteChildren = {
+  RootBlockPackEditorBlockPackIdRoute: RootBlockPackEditorBlockPackIdRoute,
+  RootBlockPackEditorIndexRoute: RootBlockPackEditorIndexRoute,
+}
+
+const RootBlockPackEditorRouteWithChildren =
+  RootBlockPackEditorRoute._addFileChildren(RootBlockPackEditorRouteChildren)
+
 interface RootDashboardRouteChildren {
   RootDashboardIndexRoute: typeof RootDashboardIndexRoute
 }
@@ -439,41 +469,37 @@ const RootDashboardRouteWithChildren = RootDashboardRoute._addFileChildren(
   RootDashboardRouteChildren,
 )
 
-interface RootMaterialEditorRouteChildren {
-  RootMaterialEditorIndexRoute: typeof RootMaterialEditorIndexRoute
-  RootMaterialEditorNotebookMaterialIdRoute: typeof RootMaterialEditorNotebookMaterialIdRoute
-  RootMaterialEditorTextbookMaterialIdRoute: typeof RootMaterialEditorTextbookMaterialIdRoute
+interface RootMaterialViewerRouteChildren {
+  RootMaterialViewerMaterialIdRoute: typeof RootMaterialViewerMaterialIdRoute
+  RootMaterialViewerIndexRoute: typeof RootMaterialViewerIndexRoute
 }
 
-const RootMaterialEditorRouteChildren: RootMaterialEditorRouteChildren = {
-  RootMaterialEditorIndexRoute: RootMaterialEditorIndexRoute,
-  RootMaterialEditorNotebookMaterialIdRoute:
-    RootMaterialEditorNotebookMaterialIdRoute,
-  RootMaterialEditorTextbookMaterialIdRoute:
-    RootMaterialEditorTextbookMaterialIdRoute,
+const RootMaterialViewerRouteChildren: RootMaterialViewerRouteChildren = {
+  RootMaterialViewerMaterialIdRoute: RootMaterialViewerMaterialIdRoute,
+  RootMaterialViewerIndexRoute: RootMaterialViewerIndexRoute,
 }
 
-const RootMaterialEditorRouteWithChildren =
-  RootMaterialEditorRoute._addFileChildren(RootMaterialEditorRouteChildren)
+const RootMaterialViewerRouteWithChildren =
+  RootMaterialViewerRoute._addFileChildren(RootMaterialViewerRouteChildren)
 
 interface RootRouteChildren {
   RootAdminRoute: typeof RootAdminRoute
+  RootBlockPackEditorRoute: typeof RootBlockPackEditorRouteWithChildren
   RootDashboardRoute: typeof RootDashboardRouteWithChildren
   RootIntroductionRoute: typeof RootIntroductionRoute
-  RootMaterialEditorRoute: typeof RootMaterialEditorRouteWithChildren
+  RootMaterialViewerRoute: typeof RootMaterialViewerRouteWithChildren
   RootPlaygroundRoute: typeof RootPlaygroundRoute
   RootPrivacyPolicyRoute: typeof RootPrivacyPolicyRoute
-  RootBlockPackEditorBlockPackIdRoute: typeof RootBlockPackEditorBlockPackIdRoute
 }
 
 const RootRouteChildren: RootRouteChildren = {
   RootAdminRoute: RootAdminRoute,
+  RootBlockPackEditorRoute: RootBlockPackEditorRouteWithChildren,
   RootDashboardRoute: RootDashboardRouteWithChildren,
   RootIntroductionRoute: RootIntroductionRoute,
-  RootMaterialEditorRoute: RootMaterialEditorRouteWithChildren,
+  RootMaterialViewerRoute: RootMaterialViewerRouteWithChildren,
   RootPlaygroundRoute: RootPlaygroundRoute,
   RootPrivacyPolicyRoute: RootPrivacyPolicyRoute,
-  RootBlockPackEditorBlockPackIdRoute: RootBlockPackEditorBlockPackIdRoute,
 }
 
 const RootRouteWithChildren = RootRoute._addFileChildren(RootRouteChildren)

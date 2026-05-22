@@ -2,7 +2,7 @@ import type { UUID } from "node:crypto";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
-import { SaveMyNotebookMaterialById } from "@shared/api/functions/material.clientFn";
+import { SaveMyMaterialById } from "@shared/api/functions/material.clientFn";
 import {
   type GetAllMyMaterialsByRootShelfIdRequest,
   type GetAllMyMaterialsByRootShelfIdResponse,
@@ -12,13 +12,12 @@ import {
   type GetMyMaterialByIdResponse,
   type GetMyMaterialsByParentSubShelfIdRequest,
   type GetMyMaterialsByParentSubShelfIdResponse,
-  type SaveMyNotebookMaterialByIdRequest,
-  SaveMyNotebookMaterialByIdRequestSchema,
-  SaveMyNotebookMaterialByIdResponseSchema,
+  type SaveMyMaterialByIdRequest,
+  SaveMyMaterialByIdRequestSchema,
+  SaveMyMaterialByIdResponseSchema,
 } from "@shared/api/interfaces/material.interface";
 import {
-  mutationFnCreateNotebookMaterial,
-  mutationFnCreateTextbookMaterial,
+  mutationFnCreateMyMaterial,
   mutationFnDeleteMyMaterialById,
   mutationFnDeleteMyMaterialsByIds,
   mutationFnMoveMyMaterialById,
@@ -281,46 +280,11 @@ export const useGetAllMyMaterialsByRootShelfId = (
   return { ...(hookRequest ? query : {}), fetch };
 };
 
-export const useCreateTextbookMaterial = () => {
+export const useCreateMyMaterial = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    mutationFn: mutationFnCreateTextbookMaterial,
-    onSuccess: (response, request) => {
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.publicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.publicId
-      );
-      const parentSubShelfId = request.affected.parentSubShelfId as UUID;
-      const rootShelfId = request.affected.rootShelfId as UUID;
-      const targetKeys: QueryKey[] = [
-        queryKeys.rootShelf.oneById(rootShelfId),
-        queryKeys.material.manyByParentSubShelfId(parentSubShelfId),
-        queryKeys.material.manyByRootShelfId(rootShelfId),
-      ];
-      Promise.all(
-        targetKeys.map(targetKey =>
-          queryClient.invalidateQueries({ queryKey: targetKey })
-        )
-      );
-    },
-    onError: error => {},
-  });
-
-  return mutation;
-};
-
-export const useCreateNotebookMaterial = () => {
-  const queryClient = getQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: mutationFnCreateNotebookMaterial,
+    mutationFn: mutationFnCreateMyMaterial,
     onSuccess: (response, request) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -387,17 +351,16 @@ export const useUpdateMyMaterialById = () => {
   return mutation;
 };
 
-export const useSaveMyNotebookMaterialById = () => {
+export const useSaveMyMaterialById = () => {
   const queryClient = getQueryClient();
 
   const mutation = useMutation({
-    // since the SaveMyNotebookMaterialById is a client only function, we define it here directly
-    mutationFn: async (request: SaveMyNotebookMaterialByIdRequest) => {
+    // since the SaveMyMaterialById is a client only function, we define it here directly
+    mutationFn: async (request: SaveMyMaterialByIdRequest) => {
       try {
-        const validatedRequest =
-          SaveMyNotebookMaterialByIdRequestSchema.parse(request);
-        const response = await SaveMyNotebookMaterialById(validatedRequest);
-        return SaveMyNotebookMaterialByIdResponseSchema.parse(response);
+        const validatedRequest = SaveMyMaterialByIdRequestSchema.parse(request);
+        const response = await SaveMyMaterialById(validatedRequest);
+        return SaveMyMaterialByIdResponseSchema.parse(response);
       } catch (error) {
         if (error instanceof ZodError) {
           const errorMessage = error.issues

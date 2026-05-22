@@ -36,10 +36,12 @@ import { ContentType } from "@shared/enums/contentType.enum";
 import toast from "@shared/lib/toast";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { ChevronDownIcon } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Dispatch, useState, useTransition } from "react";
+import { BlockPackMetaAction } from "@/reducers/blockPackMeta.reducer";
 
 interface BlockPackEditorContentProps {
   blockPackMeta: BlockPackMeta;
+  dispatchMeta: Dispatch<BlockPackMetaAction>;
 }
 
 const BlockPackEditorContent = ({

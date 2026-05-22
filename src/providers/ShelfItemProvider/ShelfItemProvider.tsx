@@ -2,7 +2,6 @@ import {
   PrivateRootShelf,
   SearchRootShelfEdge,
 } from "@shared/api/graphql/generated/graphql";
-import { MaterialType } from "@shared/api/interfaces/enums";
 import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
@@ -85,17 +84,12 @@ interface ShelfItemContextType {
   cancelRenamingItemNode: () => void;
   // material
   toggleMaterial: (materialNode: MaterialNode, reset?: boolean) => void;
-  createTextbookMaterial: (
+  createMaterial: (
     rootShelfId: UUID,
     parentSubShelfNode: SubShelfNode,
     name: string
   ) => Promise<void>;
-  createNotebookMaterial: (
-    rootShelfId: UUID,
-    parentSubShelfNode: SubShelfNode,
-    name: string
-  ) => Promise<void>;
-  renameEditingMaterial: (materialType: MaterialType) => Promise<void>;
+  renameEditingMaterial: () => Promise<void>;
   deleteMaterial: (
     parentSubShelfNode: SubShelfNode,
     materialNode: MaterialNode

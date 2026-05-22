@@ -4,8 +4,7 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  CreateNotebookMaterial,
-  CreateTextbookMaterial,
+  CreateMyMaterial,
   DeleteMyMaterialById,
   DeleteMyMaterialsByIds,
   GetAllMyMaterialsByRootShelfId,
@@ -18,14 +17,10 @@ import {
   UpdateMyMaterialById,
 } from "@shared/api/functions/material.serverFn";
 import {
-  type CreateNotebookMaterialRequest,
-  CreateNotebookMaterialRequestSchema,
-  type CreateNotebookMaterialResponse,
-  CreateNotebookMaterialResponseSchema,
-  type CreateTextbookMaterialRequest,
-  CreateTextbookMaterialRequestSchema,
-  type CreateTextbookMaterialResponse,
-  CreateTextbookMaterialResponseSchema,
+  type CreateMyMaterialRequest,
+  CreateMyMaterialRequestSchema,
+  type CreateMyMaterialResponse,
+  CreateMyMaterialResponseSchema,
   type DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdRequestSchema,
   type DeleteMyMaterialByIdResponse,
@@ -79,6 +74,7 @@ export const queryFnGetMyMaterialById = async (
     });
     return GetMyMaterialByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyMaterialById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -89,7 +85,6 @@ export const queryFnGetMyMaterialById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -107,6 +102,7 @@ export const queryFnGetMyMaterialAndItsParentById = async (
     });
     return GetMyMaterialAndItsParentByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyMaterialAndItsParentById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -117,7 +113,6 @@ export const queryFnGetMyMaterialAndItsParentById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -135,6 +130,7 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
     });
     return GetMyMaterialsByParentSubShelfIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyMaterialsByParentSubShelfId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -145,7 +141,6 @@ export const queryFnGetMyMaterialsByParentSubShelfId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -163,6 +158,7 @@ export const queryFnGetAllMyMaterialsByRootShelfId = async (
     });
     return GetAllMyMaterialsByRootShelfIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetAllMyMaterialsByRootShelfId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -173,23 +169,23 @@ export const queryFnGetAllMyMaterialsByRootShelfId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
   }
 };
 
-export const mutationFnCreateTextbookMaterial = async (
-  request: CreateTextbookMaterialRequest
-): Promise<CreateTextbookMaterialResponse> => {
+export const mutationFnCreateMyMaterial = async (
+  request: CreateMyMaterialRequest
+): Promise<CreateMyMaterialResponse> => {
   try {
-    const validatedRequest = CreateTextbookMaterialRequestSchema.parse(request);
-    const response = await CreateTextbookMaterial({
+    const validatedRequest = CreateMyMaterialRequestSchema.parse(request);
+    const response = await CreateMyMaterial({
       data: validatedRequest,
     });
-    return CreateTextbookMaterialResponseSchema.parse(response);
+    return CreateMyMaterialResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnCreateMyMaterial", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -200,34 +196,6 @@ export const mutationFnCreateTextbookMaterial = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-    throw error;
-  }
-};
-
-export const mutationFnCreateNotebookMaterial = async (
-  request: CreateNotebookMaterialRequest
-): Promise<CreateNotebookMaterialResponse> => {
-  try {
-    const validatedRequest = CreateNotebookMaterialRequestSchema.parse(request);
-    const response = await CreateNotebookMaterial({
-      data: validatedRequest,
-    });
-    return CreateNotebookMaterialResponseSchema.parse(response);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      throw new NotezyValidationError(
-        ValidationClientException.ZodParsingFailed(error)
-      );
-    } else if (error instanceof NotezyAPIError) {
-      switch (error.unWrap.reason) {
-        default:
-          throw error;
-      }
-    } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -244,6 +212,7 @@ export const mutationFnUpdateMyMaterialById = async (
     });
     return UpdateMyMaterialByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMyMaterialById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -254,7 +223,6 @@ export const mutationFnUpdateMyMaterialById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -271,6 +239,7 @@ export const mutationFnMoveMyMaterialById = async (
     });
     return MoveMyMaterialByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnMoveMyMaterialById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -281,7 +250,6 @@ export const mutationFnMoveMyMaterialById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -298,6 +266,7 @@ export const mutationFnRestoreMyMaterialById = async (
     });
     return RestoreMyMaterialByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyMaterialById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -308,7 +277,6 @@ export const mutationFnRestoreMyMaterialById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -326,6 +294,7 @@ export const mutationFnRestoreMyMaterialsByIds = async (
     });
     return RestoreMyMaterialsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyMaterialsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -336,7 +305,6 @@ export const mutationFnRestoreMyMaterialsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -353,6 +321,7 @@ export const mutationFnDeleteMyMaterialById = async (
     });
     return DeleteMyMaterialByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyMaterialById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -363,7 +332,6 @@ export const mutationFnDeleteMyMaterialById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -380,6 +348,7 @@ export const mutationFnDeleteMyMaterialsByIds = async (
     });
     return DeleteMyMaterialsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyMaterialsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -390,7 +359,6 @@ export const mutationFnDeleteMyMaterialsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;

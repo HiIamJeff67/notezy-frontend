@@ -114,28 +114,9 @@ const SubShelfMenuItem = ({
     );
   }
 
-  const handleCreateTextbookMaterial = useCallback(async () => {
+  const handleCreateMaterial = useCallback(async () => {
     try {
-      await shelfItemManager.createTextbookMaterial(
-        root.id,
-        current,
-        "new textbook"
-      );
-      if (!current.isExpanded) {
-        await shelfItemManager.expandSubShelf(root, current);
-      }
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  }, [root, current, languageManager, shelfItemManager]);
-
-  const handleCreateNotebookMaterial = useCallback(async () => {
-    try {
-      await shelfItemManager.createNotebookMaterial(
-        root.id,
-        current,
-        "new notebook"
-      );
+      await shelfItemManager.createMaterial(root.id, current, "new material");
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
       }
@@ -214,17 +195,9 @@ const SubShelfMenuItem = ({
             </CollapsibleTrigger>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuSub>
-              <ContextMenuSubTrigger>Create Material</ContextMenuSubTrigger>
-              <ContextMenuSubContent>
-                <ContextMenuItem onClick={handleCreateTextbookMaterial}>
-                  Textbook
-                </ContextMenuItem>
-                <ContextMenuItem onClick={handleCreateNotebookMaterial}>
-                  Notebook
-                </ContextMenuItem>
-              </ContextMenuSubContent>
-            </ContextMenuSub>
+            <ContextMenuItem onClick={handleCreateMaterial}>
+              Create Material
+            </ContextMenuItem>
             <ContextMenuItem onClick={handleCreateBlockPack}>
               Create Block Pack
             </ContextMenuItem>

@@ -1,7 +1,7 @@
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { Suspense } from "react";
+import BlockPackEditor from "@/components/core/BlockPackEditor/BlockPackEditor";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import BlockPackEditor from "@/components/editors/BlockPackEditor/BlockPackEditor";
 
 interface BlockPackEditorPageProps {
   blockPackMeta: BlockPackMeta;

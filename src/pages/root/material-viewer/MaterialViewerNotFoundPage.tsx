@@ -1,6 +1,6 @@
 import type { UUID } from "crypto";
 
-const MaterialEditorNotFoundPage = ({ id }: { id?: UUID }) => {
+const MaterialViewerNotFoundPage = ({ id }: { id?: UUID }) => {
   const notFoundMessage = id
     ? `Material with id of ${id} Not Found`
     : "Material not found";
@@ -11,4 +11,4 @@ const MaterialEditorNotFoundPage = ({ id }: { id?: UUID }) => {
   );
 };
 
-export default MaterialEditorNotFoundPage;
+export default MaterialViewerNotFoundPage;

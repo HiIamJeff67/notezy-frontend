@@ -2,10 +2,8 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  CreateNotebookMaterialRequest,
-  CreateNotebookMaterialResponse,
-  CreateTextbookMaterialRequest,
-  CreateTextbookMaterialResponse,
+  CreateMyMaterialRequest,
+  CreateMyMaterialResponse,
   DeleteMyMaterialByIdRequest,
   DeleteMyMaterialByIdResponse,
   DeleteMyMaterialsByIdsRequest,
@@ -231,95 +229,43 @@ export const GetAllMyMaterialsByRootShelfId = createServerFn({
     }
   );
 
-export const CreateTextbookMaterial = createServerFn({ method: "POST" })
-  .inputValidator((data: CreateTextbookMaterialRequest) => data)
-  .handler(
-    async ({ data: request }): Promise<CreateTextbookMaterialResponse> => {
-      const inboundCookie = getRequestHeader("cookie");
-      const userAgent =
-        request.header?.userAgent ??
-        getRequestHeader("User-Agent") ??
-        "unknown";
-      const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createTextbookMaterial}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": userAgent,
-            ...(request.header?.authorization
-              ? { Authorization: request.header.authorization }
-              : {}),
-            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-          },
-          body: JSON.stringify(request.body),
-          credentials: "include",
-        }
-      );
-
-      if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+export const CreateMyMaterial = createServerFn({ method: "POST" })
+  .inputValidator((data: CreateMyMaterialRequest) => data)
+  .handler(async ({ data: request }): Promise<CreateMyMaterialResponse> => {
+    const inboundCookie = getRequestHeader("cookie");
+    const userAgent =
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+    const response = await fetch(
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createMyMaterial}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        body: JSON.stringify(request.body),
+        credentials: "include",
       }
-      forwardUpstreamSetCookies(response);
-      const formattedResponse =
-        (await response.json()) as CreateNotebookMaterialResponse;
-      if (formattedResponse.exception != null) {
-        throw new NotezyAPIError(
-          new NotezyException(formattedResponse.exception)
-        );
-      }
-      AccessTokenCookieHandler.ensure(
-        formattedResponse.refreshableTokens?.newAccessToken
-      );
+    );
 
-      return formattedResponse;
+    if (!isJsonResponse(response)) {
+      throw new Error(tKey.error.encounterUnknownError);
     }
-  );
-
-export const CreateNotebookMaterial = createServerFn({ method: "POST" })
-  .inputValidator((data: CreateNotebookMaterialRequest) => data)
-  .handler(
-    async ({ data: request }): Promise<CreateNotebookMaterialResponse> => {
-      const inboundCookie = getRequestHeader("cookie");
-      const userAgent =
-        request.header?.userAgent ??
-        getRequestHeader("User-Agent") ??
-        "unknown";
-      const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.createNotebookMaterial}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": userAgent,
-            ...(request.header?.authorization
-              ? { Authorization: request.header.authorization }
-              : {}),
-            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-          },
-          body: JSON.stringify(request.body),
-          credentials: "include",
-        }
-      );
-
-      if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
-      }
-      forwardUpstreamSetCookies(response);
-      const formattedResponse =
-        (await response.json()) as CreateNotebookMaterialResponse;
-      if (formattedResponse.exception != null) {
-        throw new NotezyAPIError(
-          new NotezyException(formattedResponse.exception)
-        );
-      }
-      AccessTokenCookieHandler.ensure(
-        formattedResponse.refreshableTokens?.newAccessToken
-      );
-
-      return formattedResponse;
+    forwardUpstreamSetCookies(response);
+    const formattedResponse = (await response.json()) as CreateMyMaterialResponse;
+    if (formattedResponse.exception != null) {
+      throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
     }
-  );
+    AccessTokenCookieHandler.ensure(
+      formattedResponse.refreshableTokens?.newAccessToken
+    );
+
+    return formattedResponse;
+  });
 
 export const UpdateMyMaterialById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyMaterialByIdRequest) => data)

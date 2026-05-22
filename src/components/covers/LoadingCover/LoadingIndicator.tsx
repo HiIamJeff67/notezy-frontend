@@ -6,13 +6,20 @@ const NOTEZY_LOGO_PATHS = [
   `M369.186432,845.813477 C397.872101,874.416077 426.307770,902.768799 454.534485,930.913086 C439.096405,946.420837 423.964722,961.620911 409.097260,976.555481 C343.884125,911.394043 278.536224,846.098022 213.406342,781.019714 C228.319397,766.120972 243.491699,750.963257 258.873810,735.595886 C295.269073,771.959717 332.102753,808.761597 369.186432,845.813477 z`,
 ];
 
+const LOGO_VIEW_BOX = "0 0 1080 1080";
+const LOGO_SIZE_PX = 154;
+const GHOST_STROKE_WIDTH = 18;
+const GHOST_STROKE_MITER_LIMIT = 2;
+
 const LoadingIndicator = () => {
   return (
     <div className="flex flex-col items-center justify-center">
       <svg
-        viewBox="0 0 1080 1080"
+        viewBox={LOGO_VIEW_BOX}
         aria-hidden="true"
-        className="mb-4 h-[192px] w-[192px] overflow-visible"
+        className="mb-4 overflow-visible"
+        width={LOGO_SIZE_PX}
+        height={LOGO_SIZE_PX}
       >
         <g className="loading-logo-ghost">
           {NOTEZY_LOGO_PATHS.map((path, index) => (
@@ -21,9 +28,9 @@ const LoadingIndicator = () => {
               d={path}
               fill="none"
               stroke="var(--loading-logo-ghost)"
-              strokeWidth="18"
+              strokeWidth={GHOST_STROKE_WIDTH}
               strokeLinejoin="miter"
-              strokeMiterlimit="2"
+              strokeMiterlimit={GHOST_STROKE_MITER_LIMIT}
             />
           ))}
         </g>

@@ -1,7 +1,4 @@
-import {
-  MaterialType,
-  SupportedBlockPackIcon,
-} from "@shared/api/interfaces/enums";
+import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
 import type { UUID } from "crypto";
 
 export type ItemType = "BlockPack" | "Material";
@@ -10,9 +7,11 @@ export interface MaterialNode {
   id: UUID;
   parentSubShelfId: UUID;
   name: string;
-  type: MaterialType;
-  size: bigint;
-  downloadURL: string;
+  size: number;
+  contentType: string;
+  parseMediaType: string;
+  downloadURL: string | null;
+  deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
 

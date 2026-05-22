@@ -119,6 +119,7 @@ export const queryFnGetMyBlockGroupById = async (
     });
     return GetMyBlockGroupByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyBlockGroupById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -129,7 +130,6 @@ export const queryFnGetMyBlockGroupById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -148,6 +148,7 @@ export const queryFnGetMyBlockGroupAndItsBlocksById = async (
     });
     return GetMyBlockGroupAndItsBlocksByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyBlockGroupAndItsBlocksById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -158,7 +159,6 @@ export const queryFnGetMyBlockGroupAndItsBlocksById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -177,6 +177,7 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByIds = async (
     });
     return GetMyBlockGroupsAndTheirBlocksByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyBlockGroupsAndTheirBlocksByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -205,6 +206,7 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
       response
     );
   } catch (error) {
+    console.error("error happening in queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -215,7 +217,6 @@ export const queryFnGetMyBlockGroupsAndTheirBlocksByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -234,6 +235,7 @@ export const queryFnGetMyBlockGroupsByPrevBlockGroupId = async (
     });
     return GetMyBlockGroupsByPrevBlockGroupIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyBlockGroupsByPrevBlockGroupId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -259,6 +261,7 @@ export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
     });
     return GetAllMyBlockGroupsByBlockPackIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetAllMyBlockGroupsByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -269,7 +272,6 @@ export const queryFnGetAllMyBlockGroupsByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -288,6 +290,7 @@ export const mutationFnInsertBlockGroupByBlockPackId = async (
     });
     return InsertBlockGroupByBlockPackIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnInsertBlockGroupByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -298,7 +301,6 @@ export const mutationFnInsertBlockGroupByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -317,6 +319,7 @@ export const mutationFnInsertBlockGroupsByBlockPackId = async (
     });
     return InsertBlockGroupsByBlockPackIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnInsertBlockGroupsByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -327,7 +330,6 @@ export const mutationFnInsertBlockGroupsByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -346,6 +348,7 @@ export const mutationFnBatchInsertBlockGroupsByBlockPackIds = async (
     });
     return BatchInsertBlockGroupsByBlockPackIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnBatchInsertBlockGroupsByBlockPackIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -356,7 +359,6 @@ export const mutationFnBatchInsertBlockGroupsByBlockPackIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -377,6 +379,7 @@ export const mutationFnInsertBlockGroupAndItsBlocksByBlockPackId = async (
       response
     );
   } catch (error) {
+    console.error("error happening in mutationFnInsertBlockGroupAndItsBlocksByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -387,7 +390,6 @@ export const mutationFnInsertBlockGroupAndItsBlocksByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -408,6 +410,7 @@ export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId = async (
       response
     );
   } catch (error) {
+    console.error("error happening in mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -418,7 +421,6 @@ export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -444,6 +446,7 @@ export const mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
         response
       );
     } catch (error) {
+      console.error("error happening in mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds", error);
       if (error instanceof ZodError) {
         const errorMessage = error.issues
           .map(issue => issue.message)
@@ -455,7 +458,6 @@ export const mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
             throw new Error(error.unWrap.message);
         }
       } else if (error instanceof TypeError) {
-        // network error
         throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
       }
 
@@ -480,6 +482,7 @@ export const mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
         response
       );
     } catch (error) {
+      console.error("error happening in mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId", error);
       if (error instanceof ZodError) {
         const errorMessage = error.issues
           .map(issue => issue.message)
@@ -491,7 +494,6 @@ export const mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId =
             throw new Error(error.unWrap.message);
         }
       } else if (error instanceof TypeError) {
-        // network error
         throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
       }
 
@@ -509,6 +511,7 @@ export const mutationFnMoveMyBlockGroupById = async (
     });
     return MoveMyBlockGroupByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnMoveMyBlockGroupById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -519,7 +522,6 @@ export const mutationFnMoveMyBlockGroupById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -537,6 +539,7 @@ export const mutationFnMoveMyBlockGroupsByIds = async (
     });
     return MoveMyBlockGroupsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnMoveMyBlockGroupsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -547,7 +550,6 @@ export const mutationFnMoveMyBlockGroupsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -566,6 +568,7 @@ export const mutationFnBatchMoveMyBlockGroupsByIds = async (
     });
     return BatchMoveMyBlockGroupsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnBatchMoveMyBlockGroupsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -576,7 +579,6 @@ export const mutationFnBatchMoveMyBlockGroupsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -595,6 +597,7 @@ export const mutationFnRestoreMyBlockGroupById = async (
     });
     return RestoreMyBlockGroupByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyBlockGroupById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -605,7 +608,6 @@ export const mutationFnRestoreMyBlockGroupById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -624,6 +626,7 @@ export const mutationFnRestoreMyBlockGroupsByIds = async (
     });
     return RestoreMyBlockGroupsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRestoreMyBlockGroupsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -634,7 +637,6 @@ export const mutationFnRestoreMyBlockGroupsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -652,6 +654,7 @@ export const mutationFnDeleteMyBlockGroupById = async (
     });
     return DeleteMyBlockGroupByIdResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyBlockGroupById", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -662,7 +665,6 @@ export const mutationFnDeleteMyBlockGroupById = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
@@ -681,6 +683,7 @@ export const mutationFnDeleteMyBlockGroupsByIds = async (
     });
     return DeleteMyBlockGroupsByIdsResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMyBlockGroupsByIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -691,7 +694,6 @@ export const mutationFnDeleteMyBlockGroupsByIds = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 

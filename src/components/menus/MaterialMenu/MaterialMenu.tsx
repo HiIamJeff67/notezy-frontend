@@ -1,4 +1,3 @@
-import { MaterialType } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";
@@ -18,11 +17,11 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
   const shelfItemManager = useShelfItem();
 
   const handleRenameMaterialOnSubmit = useCallback(
-    async (materialType: MaterialType) =>
+    async () =>
       await loadingManager.startAsyncTransactionLoading(
         async () =>
           await shelfItemManager
-            .renameEditingMaterial(materialType)
+            .renameEditingMaterial()
             .catch(error => toast.error(languageManager.tError(error)))
       ),
     [loadingManager, languageManager, shelfItemManager]
@@ -50,7 +49,7 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
                     onKeyDown={async e => {
                       switch (e.key) {
                         case "Enter":
-                          await handleRenameMaterialOnSubmit(materialNode.type);
+                          await handleRenameMaterialOnSubmit();
                         case "Escape":
                           shelfItemManager.cancelRenamingItemNode();
                       }
@@ -59,7 +58,7 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
                   {shelfItemManager.isNewItemNodeName() && (
                     <button
                       onClick={async e => {
-                        await handleRenameMaterialOnSubmit(materialNode.type);
+                        await handleRenameMaterialOnSubmit();
                         e.stopPropagation();
                       }}
                       className="rounded hover:bg-primary/60 absolute w-4 h-4"

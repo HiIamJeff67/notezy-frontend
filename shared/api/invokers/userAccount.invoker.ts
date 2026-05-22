@@ -37,6 +37,7 @@ export const queryFnGetMyAccount = async (
     const response = await GetMyAccount({ data: validatedRequest });
     return GetMyAccountResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyAccount", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -47,7 +48,6 @@ export const queryFnGetMyAccount = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -62,6 +62,7 @@ export const mutationFnUpdateMyAccount = async (
     const response = await UpdateMyAccount({ data: validatedRequest });
     return UpdateMyAccountResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMyAccount", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -72,7 +73,6 @@ export const mutationFnUpdateMyAccount = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -89,6 +89,7 @@ export const mutationFnBindGoogleAccount = async (
     });
     return BindGoogleAccountResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnBindGoogleAccount", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -99,7 +100,6 @@ export const mutationFnBindGoogleAccount = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -116,6 +116,7 @@ export const mutationFnUnbindGoogleAccount = async (
     });
     return UnbindGoogleAccountResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUnbindGoogleAccount", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -126,7 +127,6 @@ export const mutationFnUnbindGoogleAccount = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;

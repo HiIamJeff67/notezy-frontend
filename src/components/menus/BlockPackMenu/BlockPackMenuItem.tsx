@@ -61,8 +61,8 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
         <ContextMenuItem
           onClick={async () => {
             await shelfItemManager.deleteBlockPack(parent, current);
-            if (current.id === (router.params.materialId as string)) {
-              router.push(WebURLPathDictionary.root.materialEditor._);
+            if (current.id === (router.params.blockPackId as string)) {
+              router.push(WebURLPathDictionary.root.materialViewer._);
             }
           }}
         >

@@ -1,4 +1,3 @@
-import { MaterialType } from "@shared/api/interfaces/enums";
 import { WebURLPathDictionary } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
@@ -50,26 +49,11 @@ const ItemPathItem = ({ rootShelfNode, subShelfNode }: ItemPathItemProps) => {
   const handleMaterialOnClick = useCallback(
     (current: MaterialNode, parent: SubShelfNode) => {
       try {
-        let nextPath: string | undefined = undefined;
-
-        switch (current.type) {
-          case MaterialType.Notebook:
-            nextPath = WebURLPathDictionary.root.materialEditor.notebook(
-              current.id,
-              parent.id,
-              parent.rootShelfId
-            );
-            break;
-          case MaterialType.Textbook:
-            nextPath = WebURLPathDictionary.root.materialEditor.textbook(
-              current.id,
-              parent.id,
-              parent.rootShelfId
-            );
-            break;
-          default:
-            throw new Error(`Unsupported type`);
-        }
+        const nextPath = WebURLPathDictionary.root.materialViewer.byId(
+          current.id,
+          parent.id,
+          parent.rootShelfId
+        );
 
         router.push(nextPath);
         shelfItemManager.toggleMaterial(current);

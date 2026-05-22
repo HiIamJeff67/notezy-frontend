@@ -1,4 +1,3 @@
-import { MaterialType } from "@shared/api/interfaces/enums";
 import { WebURLPathDictionary } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import { MaterialNode } from "@shared/types/itemNodes.type";
@@ -25,28 +24,13 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
 
   const handleMaterialOnClick = useCallback(() => {
     try {
-      let nextPath: string | undefined = undefined;
-
-      switch (current.type) {
-        case MaterialType.Notebook:
-          nextPath = WebURLPathDictionary.root.materialEditor.notebook(
-            current.id,
-            parent.id,
-            parent.rootShelfId
-          );
-          break;
-        case MaterialType.Textbook:
-          nextPath = WebURLPathDictionary.root.materialEditor.textbook(
-            current.id,
-            parent.id,
-            parent.rootShelfId
-          );
-          break;
-        default:
-          throw new Error(`Unsupported type`);
-      }
-
-      router.push(nextPath);
+      router.push(
+        WebURLPathDictionary.root.materialViewer.byId(
+          current.id,
+          parent.id,
+          parent.rootShelfId
+        )
+      );
       shelfItemManager.toggleMaterial(current);
     } catch (error) {
       toast.error(languageManager.tError(error));
@@ -78,7 +62,7 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
           onClick={async () => {
             await shelfItemManager.deleteMaterial(parent, current);
             if (current.id === (router.params.materialId as string)) {
-              router.push(WebURLPathDictionary.root.materialEditor._);
+              router.push(WebURLPathDictionary.root.materialViewer._);
             }
           }}
         >

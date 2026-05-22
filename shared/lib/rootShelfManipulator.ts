@@ -75,7 +75,8 @@ export class RootShelfManipulator {
       BytesOfObjectHeader + // 物件本身
       2 * BytesOfUUIDString + // id + parentSubShelfId
       (materialNode.name?.length ?? 0) * 2 +
-      (materialNode.type?.toString()?.length ?? 0) * 2 +
+      (materialNode.contentType?.length ?? 0) * 2 +
+      (materialNode.parseMediaType?.length ?? 0) * 2 +
       (materialNode.downloadURL?.length ?? 0) * 2 +
       3 * BytesOfDate // deletedAt/updatedAt/createdAt
     );

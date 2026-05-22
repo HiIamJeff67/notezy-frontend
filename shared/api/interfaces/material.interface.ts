@@ -2,7 +2,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllMaterialTypes, MaterialType } from "@shared/api/interfaces/enums";
+import { AllMaterialContentTypes } from "@shared/api/interfaces/enums";
 import z from "zod";
 
 /* ============================== GetMyMaterialById ============================== */
@@ -28,9 +28,10 @@ export const GetMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     id: z.uuidv4(),
     parentSubShelfId: z.uuidv4(),
     name: z.string(),
-    type: z.enum(AllMaterialTypes),
-    size: z.int64(),
-    downloadURL: z.url(),
+    size: z.number(),
+    contentType: z.enum(AllMaterialContentTypes),
+    parseMediaType: z.string(),
+    downloadURL: z.url().nullable().optional(),
     deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
@@ -68,16 +69,17 @@ export const GetMyMaterialAndItsParentByIdResponseSchema =
     data: z.object({
       id: z.uuidv4(),
       name: z.string(),
-      type: z.enum(AllMaterialTypes),
       size: z.number(),
-      downloadURL: z.url(),
+      contentType: z.enum(AllMaterialContentTypes),
+      parseMediaType: z.string(),
+      downloadURL: z.url().nullable().optional(),
       deletedAt: z.coerce.date().nullable(),
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
       rootShelfId: z.uuidv4(),
       parentSubShelfId: z.uuidv4(),
       parentSubShelfName: z.string(),
-      parentSubShelfPrevSubShelfId: z.uuidv4(),
+      parentSubShelfPrevSubShelfId: z.uuidv4().nullable(),
       parentSubShelfPath: z.array(z.uuidv4()),
       parentSubShelfDeletedAt: z.coerce.date().nullable(),
       parentSubShelfUpdatedAt: z.coerce.date(),
@@ -118,9 +120,10 @@ export const GetMyMaterialsByParentSubShelfIdResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        type: z.enum(AllMaterialTypes),
-        size: z.int64(),
-        downloadURL: z.url(),
+        size: z.number(),
+        contentType: z.enum(AllMaterialContentTypes),
+        parseMediaType: z.string(),
+        downloadURL: z.url().nullable().optional(),
         deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
@@ -161,9 +164,10 @@ export const GetAllMyMaterialsByRootShelfIdResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        type: z.enum(AllMaterialTypes),
-        size: z.int64(),
-        downloadURL: z.url(),
+        size: z.number(),
+        contentType: z.enum(AllMaterialContentTypes),
+        parseMediaType: z.string(),
+        downloadURL: z.url().nullable().optional(),
         deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
@@ -178,9 +182,9 @@ export type GetAllMyMaterialsByRootShelfIdResponse = z.infer<
   typeof GetAllMyMaterialsByRootShelfIdResponseSchema
 >;
 
-/* ============================== CreateTextbookMaterial ============================== */
+/* ============================== CreateMyMaterial ============================== */
 
-export const CreateTextbookMaterialRequestSchema = NotezyRequestSchema.extend({
+export const CreateMyMaterialRequestSchema = NotezyRequestSchema.extend({
   header: z
     .object({
       userAgent: z.string().min(1).optional(),
@@ -197,65 +201,22 @@ export const CreateTextbookMaterialRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type CreateTextbookMaterialRequest = z.infer<
-  typeof CreateTextbookMaterialRequestSchema
+export type CreateMyMaterialRequest = z.infer<
+  typeof CreateMyMaterialRequestSchema
 >;
 
-export const CreateTextbookMaterialResponseSchema = NotezyResponseSchema.extend(
-  {
-    data: z.object({
-      id: z.uuidv4(),
-      downloadURL: z.string(),
-      createdAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  }
-);
-
-export type CreateTextbookMaterialResponse = z.infer<
-  typeof CreateTextbookMaterialResponseSchema
->;
-
-/* ============================== CreateNotebookMaterial ============================== */
-
-export const CreateNotebookMaterialRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
-  body: z.object({
-    parentSubShelfId: z.uuidv4(),
-    name: z.string().min(1).max(128),
+export const CreateMyMaterialResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    createdAt: z.coerce.date(),
   }),
-  affected: z.object({
-    rootShelfId: z.uuidv4(),
-    parentSubShelfId: z.uuidv4(),
+  embedded: z.object({
+    publicId: z.string(),
   }),
 });
 
-export type CreateNotebookMaterialRequest = z.infer<
-  typeof CreateNotebookMaterialRequestSchema
->;
-
-export const CreateNotebookMaterialResponseSchema = NotezyResponseSchema.extend(
-  {
-    data: z.object({
-      id: z.uuidv4(),
-      downloadURL: z.string(),
-      createdAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  }
-);
-
-export type CreateNotebookMaterialResponse = z.infer<
-  typeof CreateNotebookMaterialResponseSchema
+export type CreateMyMaterialResponse = z.infer<
+  typeof CreateMyMaterialResponseSchema
 >;
 
 /* ============================== UpdateMyMaterialById ============================== */
@@ -275,7 +236,6 @@ export const UpdateMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
       })
       .partial(),
     setNull: z.record(z.string(), z.boolean()).optional(),
-    type: z.enum(MaterialType),
   }),
   affected: z.object({
     rootShelfId: z.uuidv4().optional(),
@@ -302,39 +262,37 @@ export type UpdateMyMaterialByIdResponse = z.infer<
 
 /* ============================== SaveMyMaterialById ============================== */
 
-export const SaveMyNotebookMaterialByIdRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
-      })
-      .optional(),
-    body: z.object({
-      materialId: z.uuidv4(),
-      contentFile: z.file().optional(),
-    }),
-    affected: z.object({
-      parentSubShelfId: z.uuidv4(),
-    }),
-  });
+export const SaveMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    materialId: z.uuidv4(),
+    contentFile: z.file(),
+  }),
+  affected: z.object({
+    parentSubShelfId: z.uuidv4(),
+  }),
+});
 
-export type SaveMyNotebookMaterialByIdRequest = z.infer<
-  typeof SaveMyNotebookMaterialByIdRequestSchema
+export type SaveMyMaterialByIdRequest = z.infer<
+  typeof SaveMyMaterialByIdRequestSchema
 >;
 
-export const SaveMyNotebookMaterialByIdResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
+export const SaveMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
 
-export type SaveMyNotebookMaterialByIdResponse = z.infer<
-  typeof SaveMyNotebookMaterialByIdResponseSchema
+export type SaveMyMaterialByIdResponse = z.infer<
+  typeof SaveMyMaterialByIdResponseSchema
 >;
 
 /* ============================== MoveMyMaterialById ============================== */
@@ -436,9 +394,10 @@ export const RestoreMyMaterialByIdResponseSchema = NotezyResponseSchema.extend({
     id: z.uuidv4(),
     parentSubShelfId: z.uuidv4(),
     name: z.string(),
-    type: z.enum(AllMaterialTypes),
-    size: z.int64(),
-    downloadURL: z.url(),
+    size: z.number(),
+    contentType: z.enum(AllMaterialContentTypes),
+    parseMediaType: z.string(),
+    downloadURL: z.url().nullable().optional(),
     deletedAt: z.coerce.date().nullable(),
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
@@ -481,9 +440,10 @@ export const RestoreMyMaterialsByIdsResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        type: z.enum(AllMaterialTypes),
-        size: z.int64(),
-        downloadURL: z.url(),
+        size: z.number(),
+        contentType: z.enum(AllMaterialContentTypes),
+        parseMediaType: z.string(),
+        downloadURL: z.url().nullable().optional(),
         deletedAt: z.coerce.date().nullable(),
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),

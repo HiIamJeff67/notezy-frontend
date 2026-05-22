@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage, useLoading, useShelfItem } from "@/hooks";
 
-const MaterialEditorPage = () => {
+const MaterialViewerIndexPage = () => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const shelfItemManager = useShelfItem();
@@ -57,4 +57,4 @@ const MaterialEditorPage = () => {
   );
 };
 
-export default MaterialEditorPage;
+export default MaterialViewerIndexPage;

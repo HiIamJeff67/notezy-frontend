@@ -27,6 +27,7 @@ export const queryFnGetMyInfo = async (
     const response = await GetMyInfo({ data: validatedRequest });
     return GetMyInfoResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in queryFnGetMyInfo", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -37,7 +38,6 @@ export const queryFnGetMyInfo = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;
@@ -52,6 +52,7 @@ export const mutationFnUpdateMyInfo = async (
     const response = await UpdateMyInfo({ data: validatedRequest });
     return UpdateMyInfoResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnUpdateMyInfo", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -62,7 +63,6 @@ export const mutationFnUpdateMyInfo = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
     throw error;

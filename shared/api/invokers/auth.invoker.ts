@@ -76,6 +76,7 @@ export const mutationFnRegister = async (
     const response = await Register({ data: validatedRequest });
     return RegisterResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRegister", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -97,7 +98,6 @@ export const mutationFnRegister = async (
           throw error;
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
     throw error;
@@ -114,6 +114,7 @@ export const mutationFnRegisterViaGoogle = async (
     });
     return RegisterViaGoogleResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnRegisterViaGoogle", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -127,7 +128,6 @@ export const mutationFnRegisterViaGoogle = async (
           );
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -143,6 +143,7 @@ export const mutationFnLogin = async (
     const response = await Login({ data: validatedRequest });
     return LoginResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnLogin", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -156,7 +157,6 @@ export const mutationFnLogin = async (
           );
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -172,6 +172,7 @@ export const mutationFnLoginViaGoogle = async (
     const response = await LoginViaGoogle({ data: validatedRequest });
     return LoginViaGoogleResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnLoginViaGoogle", error);
     console.error(error);
     if (error instanceof ZodError) {
       const errorMessage = error.issues.map(issue => issue.message).join(", ");
@@ -184,7 +185,6 @@ export const mutationFnLoginViaGoogle = async (
           );
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -200,6 +200,7 @@ export const mutationFnLogout = async (
     const response = await Logout({ data: validatedRequest });
     return LogoutResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnLogout", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -216,7 +217,6 @@ export const mutationFnLogout = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -232,6 +232,7 @@ export const mutationFnSendAuthCode = async (
     const response = await SendAuthCode({ data: validatedRequest });
     return SendAuthCodeResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnSendAuthCode", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -248,7 +249,6 @@ export const mutationFnSendAuthCode = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -264,6 +264,7 @@ export const mutationFnValidateEmail = async (
     const response = await ValidateEmail({ data: validatedRequest });
     return ValidateEmailResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnValidateEmail", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -280,7 +281,6 @@ export const mutationFnValidateEmail = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -296,6 +296,7 @@ export const mutationFnResetEmail = async (
     const response = await ResetEmail({ data: validatedRequest });
     return ResetEmailResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnResetEmail", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -312,7 +313,6 @@ export const mutationFnResetEmail = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -328,6 +328,7 @@ export const mutationFnForgetPassword = async (
     const response = await ForgetPassword({ data: validatedRequest });
     return ForgetPasswordResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnForgetPassword", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -344,7 +345,6 @@ export const mutationFnForgetPassword = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -360,6 +360,7 @@ export const mutationFnResetMe = async (
     const response = await ResetMe({ data: validatedRequest });
     return ResetMeResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnResetMe", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -368,7 +369,6 @@ export const mutationFnResetMe = async (
     } else if (error instanceof NotezyAPIError) {
       throw new Error(error.unWrap.message);
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 
@@ -384,6 +384,7 @@ export const mutationFnDeleteMe = async (
     const response = await DeleteMe({ data: validatedRequest });
     return DeleteMeResponseSchema.parse(response);
   } catch (error) {
+    console.error("error happening in mutationFnDeleteMe", error);
     console.error(error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
@@ -400,7 +401,6 @@ export const mutationFnDeleteMe = async (
           throw new Error(error.unWrap.message);
       }
     } else if (error instanceof TypeError) {
-      // network error
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
     }
 

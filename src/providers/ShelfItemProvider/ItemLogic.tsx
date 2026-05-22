@@ -4,12 +4,10 @@ import {
   useUpdateMyBlockPackById,
 } from "@shared/api/hooks/blockPack.hook";
 import {
-  useCreateNotebookMaterial,
-  useCreateTextbookMaterial,
+  useCreateMyMaterial,
   useDeleteMyMaterialById,
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
-import { MaterialType } from "@shared/api/interfaces/enums";
 import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -42,8 +40,7 @@ export const useItemLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseItemLogicProps) => {
-  const createTextbookMaterialMutator = useCreateTextbookMaterial();
-  const createNotebookMaterialMutator = useCreateNotebookMaterial();
+  const createMaterialMutator = useCreateMyMaterial();
   const updateMaterialMutator = useUpdateMyMaterialById();
   const deleteMaterialMutator = useDeleteMyMaterialById();
 
@@ -68,7 +65,7 @@ export const useItemLogic = ({
       ) {
         switch (editingItemNode.nodeType) {
           case "Material":
-            await renameEditingMaterial(editingItemNode.type);
+            await renameEditingMaterial();
             break;
           case "BlockPack":
             await renameEditingBlockPack();
@@ -144,7 +141,7 @@ export const useItemLogic = ({
     forceUpdate();
   };
 
-  const createTextbookMaterial = useCallback(
+  const createMaterial = useCallback(
     async (
       rootShelfId: UUID,
       parentSubShelfNode: SubShelfNode,
@@ -161,73 +158,8 @@ export const useItemLogic = ({
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
       );
-      const responseOfCreatingNotebookMaterial =
-        await createTextbookMaterialMutator.mutateAsync({
-          header: {
-            userAgent: userAgent,
-            authorization: getAuthorization(accessToken),
-          },
-          body: {
-            parentSubShelfId: parentSubShelfNode.id,
-            name: name,
-          },
-          affected: {
-            rootShelfId: rootShelfId,
-            parentSubShelfId: parentSubShelfNode.id,
-          },
-        });
-      shelfTreeSummary.hasChanged = true;
-      shelfTreeSummary.root.subShelfCount++;
-      if (parentSubShelfNode !== null) {
-        shelfTreeSummary.maxDepth = Math.max(
-          shelfTreeSummary.maxDepth,
-          parentSubShelfNode.path.length + 1
-        );
-        shelfTreeSummary.maxWidth = Math.max(
-          shelfTreeSummary.maxWidth,
-          Object.entries(parentSubShelfNode.children).length +
-            Object.entries(parentSubShelfNode.materialNodes).length +
-            1
-        );
-        parentSubShelfNode.materialNodes[
-          responseOfCreatingNotebookMaterial.data.id as UUID
-        ] = {
-          id: responseOfCreatingNotebookMaterial.data.id as UUID,
-          parentSubShelfId: parentSubShelfNode.id,
-          name: name,
-          type: MaterialType.Notebook,
-          size: BigInt(0),
-          downloadURL: responseOfCreatingNotebookMaterial.data.downloadURL,
-          updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
-          createdAt: responseOfCreatingNotebookMaterial.data.createdAt,
-          isOpen: false,
-          nodeType: "Material",
-        };
-        forceUpdate();
-      }
-    },
-    [expandedShelvesRef, createTextbookMaterialMutator]
-  );
-
-  const createNotebookMaterial = useCallback(
-    async (
-      rootShelfId: UUID,
-      parentSubShelfNode: SubShelfNode,
-      name: string
-    ): Promise<void> => {
-      const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfId);
-      if (shelfTreeSummary === undefined) {
-        throw new Error(
-          `The given rootShelfId is not exist in the expandedShelvesRef`
-        );
-      }
-
-      const userAgent = navigator.userAgent;
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const responseOfCreatingNotebookMaterial =
-        await createNotebookMaterialMutator.mutateAsync({
+      const responseOfCreatingMaterial =
+        await createMaterialMutator.mutateAsync({
           header: {
             userAgent: userAgent,
             authorization: getAuthorization(accessToken),
@@ -255,80 +187,78 @@ export const useItemLogic = ({
             1
         );
         parentSubShelfNode.materialNodes[
-          responseOfCreatingNotebookMaterial.data.id as UUID
+          responseOfCreatingMaterial.data.id as UUID
         ] = {
-          id: responseOfCreatingNotebookMaterial.data.id as UUID,
+          id: responseOfCreatingMaterial.data.id as UUID,
           parentSubShelfId: parentSubShelfNode.id,
           name: name,
-          type: MaterialType.Notebook,
-          size: BigInt(0),
-          downloadURL: responseOfCreatingNotebookMaterial.data.downloadURL,
-          updatedAt: responseOfCreatingNotebookMaterial.data.createdAt,
-          createdAt: responseOfCreatingNotebookMaterial.data.createdAt,
+          size: 0,
+          contentType: "text/plain",
+          parseMediaType: "",
+          downloadURL: null,
+          deletedAt: null,
+          updatedAt: responseOfCreatingMaterial.data.createdAt,
+          createdAt: responseOfCreatingMaterial.data.createdAt,
           isOpen: false,
           nodeType: "Material",
         };
         forceUpdate();
       }
     },
-    [expandedShelvesRef, createNotebookMaterialMutator]
+    [expandedShelvesRef, createMaterialMutator]
   );
 
-  const renameEditingMaterial = useCallback(
-    async (materialType: MaterialType): Promise<void> => {
-      try {
-        if (
-          !isNewItemNodeName() ||
-          !editingItemNode ||
-          editingItemNode.nodeType !== "Material"
-        ) {
-          throw new Error("the name of the given material node is invalid");
-        }
-
-        const userAgent = navigator.userAgent;
-        const accessToken = LocalStorageManipulator.getItemByKey(
-          LocalStorageKey.accessToken
-        );
-        await updateMaterialMutator.mutateAsync({
-          header: {
-            userAgent: userAgent,
-            authorization: getAuthorization(accessToken),
-          },
-          body: {
-            materialId: editingItemNode.id,
-            values: {
-              name: editItemNodeName,
-            },
-            type: materialType,
-          },
-          affected: {
-            parentSubShelfId: editingItemNode.parentSubShelfId,
-          },
-        });
-
-        editingItemNode.name = editItemNodeName;
-        setEditingItemNode(prev =>
-          prev ? { ...prev, name: editItemNodeName } : undefined
-        );
-        forceUpdate();
-      } catch (error) {
-        throw error;
-      } finally {
-        setEditingItemNode(undefined);
-        setEditItemNodeName("");
-        setOriginalItemNodeName("");
+  const renameEditingMaterial = useCallback(async (): Promise<void> => {
+    try {
+      if (
+        !isNewItemNodeName() ||
+        !editingItemNode ||
+        editingItemNode.nodeType !== "Material"
+      ) {
+        throw new Error("the name of the given material node is invalid");
       }
-    },
-    [
-      editingItemNode,
-      editItemNodeName,
-      originalItemNodeName,
-      setEditingItemNode,
-      setEditItemNodeName,
-      setOriginalItemNodeName,
-      updateMaterialMutator,
-    ]
-  );
+
+      const userAgent = navigator.userAgent;
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      await updateMaterialMutator.mutateAsync({
+        header: {
+          userAgent: userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          materialId: editingItemNode.id,
+          values: {
+            name: editItemNodeName,
+          },
+        },
+        affected: {
+          parentSubShelfId: editingItemNode.parentSubShelfId,
+        },
+      });
+
+      editingItemNode.name = editItemNodeName;
+      setEditingItemNode(prev =>
+        prev ? { ...prev, name: editItemNodeName } : undefined
+      );
+      forceUpdate();
+    } catch (error) {
+      throw error;
+    } finally {
+      setEditingItemNode(undefined);
+      setEditItemNodeName("");
+      setOriginalItemNodeName("");
+    }
+  }, [
+    editingItemNode,
+    editItemNodeName,
+    originalItemNodeName,
+    setEditingItemNode,
+    setEditItemNodeName,
+    setOriginalItemNodeName,
+    updateMaterialMutator,
+  ]);
 
   const deleteMaterial = useCallback(
     async (
@@ -555,8 +485,7 @@ export const useItemLogic = ({
     startRenamingItemNode: startRenamingItemNode,
     cancelRenamingItemNode: cancelRenamingItemNode,
     toggleMaterial: toggleMaterial,
-    createTextbookMaterial: createTextbookMaterial,
-    createNotebookMaterial: createNotebookMaterial,
+    createMaterial: createMaterial,
     renameEditingMaterial: renameEditingMaterial,
     deleteMaterial: deleteMaterial,
     toggleBlockPack: toggleBlockPack,
