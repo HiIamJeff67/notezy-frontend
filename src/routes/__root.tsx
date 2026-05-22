@@ -1,6 +1,6 @@
 import type { ApolloClientIntegration } from "@apollo/client-integration-tanstack-start";
 import { createRootRouteWithContext } from "@tanstack/react-router";
-import appCss from "@/global/styles/globals.css?url";
+import appCSS from "@/global/styles/globals.css?url";
 import { RootDocument } from "@/pages/root/RootDocument";
 import { RootNotFoundPage } from "@/pages/root/RootNotFoundPage";
 // @ts-ignore: allow side-effect import of global CSS without declaration
@@ -24,7 +24,7 @@ export const Route =
         },
         {
           rel: "stylesheet",
-          href: appCss,
+          href: appCSS,
         },
       ],
     }),

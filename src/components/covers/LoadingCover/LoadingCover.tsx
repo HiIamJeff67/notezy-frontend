@@ -1,12 +1,11 @@
 import { useEffect } from "react";
-import { useAppRouter, useLoading, useTheme } from "@/hooks";
+import { useAppRouter, useLoading } from "@/hooks";
 import LoadingIndicator from "./LoadingIndicator";
 
 const LoadingCover = () => {
   const { isStrictLoading } = useLoading();
   const { isNavigating } = useAppRouter();
   const isAnyLoading = isStrictLoading || isNavigating;
-  const themeManager = useTheme();
 
   useEffect(() => {
     if (isAnyLoading) {
