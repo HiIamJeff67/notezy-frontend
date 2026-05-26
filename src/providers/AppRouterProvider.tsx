@@ -43,9 +43,11 @@ export const AppRouterProvider = ({
 
   const [isOptimisticNavigating, setIsOptimisticNavigating] =
     useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isRoutePending, _startRouteTransition] = useTransition();
   const prevPathsRef = useRef<string[]>([]);
-  const isNavigating = isOptimisticNavigating || isRoutePending;
+  const refreshIdRef = useRef<number>(0);
+  const isNavigating = isOptimisticNavigating || isRoutePending || isRefreshing;
 
   const isSamePath = useCallback((a: string, b: string): boolean => {
     if (a[0] === "/") {
@@ -129,9 +131,13 @@ export const AppRouterProvider = ({
   }, []);
 
   const refresh = useCallback((): void => {
-    setIsOptimisticNavigating(true);
-    _startRouteTransition(() => {
-      void router.invalidate();
+    const refreshId = ++refreshIdRef.current;
+
+    setIsRefreshing(true);
+    void router.invalidate({ sync: true }).finally(() => {
+      if (refreshIdRef.current === refreshId) {
+        setIsRefreshing(false);
+      }
     });
   }, [router]);
 

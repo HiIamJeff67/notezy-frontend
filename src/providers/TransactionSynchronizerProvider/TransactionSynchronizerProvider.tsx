@@ -179,16 +179,18 @@ export const TransactionSynchronizerProvider = ({
   const isBootstrappingRef = useRef<boolean>(false);
   const isSynchronizingRef = useRef<boolean>(false);
 
-  const getTransactions = useCallback(
-    async (): Promise<InferSelectModel<typeof Transaction>[]> =>
-      await localDB
-        .select()
-        .from(Transaction)
-        .orderBy(asc(Transaction.sequence)),
-    []
-  );
+  const getTransactions = useCallback(async (): Promise<
+    InferSelectModel<typeof Transaction>[]
+  > => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    return await localDB
+      .select()
+      .from(Transaction)
+      .orderBy(asc(Transaction.sequence));
+  }, []);
 
   const getTransactionCount = useCallback(async (): Promise<number> => {
+    if (!localDB.isReady) await localDB.ensureReady();
     return await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),
@@ -210,6 +212,7 @@ export const TransactionSynchronizerProvider = ({
         "ownerPublicId" | "sequence" | "createdAt"
       >[]
     ): Promise<void> => {
+      if (!localDB.isReady) await localDB.ensureReady();
       await localDB.transaction(async tx => {
         const loggedInUser = await tx.query.User.findFirst({
           where: eq(User.isLoggedIn, true),
@@ -236,6 +239,7 @@ export const TransactionSynchronizerProvider = ({
           new Set([...result.noopSequences, ...result.parseFailedSequences])
         );
         if (noopAndParseFailed.length > 0) {
+          if (!localDB.isReady) await localDB.ensureReady();
           await localDB
             .delete(Transaction)
             .where(inArray(Transaction.sequence, noopAndParseFailed));
@@ -309,6 +313,7 @@ export const TransactionSynchronizerProvider = ({
       authorization: getAuthorization(accessToken),
     };
 
+    if (!localDB.isReady) await localDB.ensureReady();
     const localData = await localDB.transaction(async tx => {
       const loggedInUser = await tx.query.User.findFirst({
         where: eq(User.isLoggedIn, true),

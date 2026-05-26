@@ -3,7 +3,7 @@ export * from "./blockType.enum";
 export * from "./country.enum";
 export * from "./countryCode.enum";
 export * from "./language.enum";
-export * from "./materialType.enum";
+export * from "./materialContentType.enum";
 export * from "./supportedBlockPackIcon.enum";
 export * from "./userGender.enum";
 export * from "./userPlan.enum";

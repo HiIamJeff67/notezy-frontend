@@ -61,7 +61,7 @@ const ItemPath = ({
   const subShelfNodes = tracePathInSummary();
 
   return (
-    <Breadcrumb className="bg-muted/25 w-full">
+    <Breadcrumb className="bg-transparent border-y w-full">
       <BreadcrumbList className="px-4 py-1 w-full">
         <BreadcrumbItem>
           <DropdownMenu>

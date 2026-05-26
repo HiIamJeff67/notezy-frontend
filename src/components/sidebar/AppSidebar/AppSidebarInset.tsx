@@ -6,7 +6,11 @@ interface AppSidebarInsetProps {
 }
 
 const AppSidebarInset = ({ children }: AppSidebarInsetProps) => {
-  return <ResizableSidebarInset>{children}</ResizableSidebarInset>;
+  return (
+    <ResizableSidebarInset className="h-dvh min-w-0 min-h-0 overflow-hidden">
+      {children}
+    </ResizableSidebarInset>
+  );
 };
 
 export default AppSidebarInset;
