@@ -23,6 +23,19 @@ export const Route =
           href: `${import.meta.env.BASE_URL}favicon.ico`,
         },
         {
+          rel: "preconnect",
+          href: "https://fonts.googleapis.com",
+        },
+        {
+          rel: "preconnect",
+          href: "https://fonts.gstatic.com",
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap",
+        },
+        {
           rel: "stylesheet",
           href: appCSS,
         },

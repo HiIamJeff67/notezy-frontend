@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RootRouteImport } from './routes/_root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RootRoutinesRouteImport } from './routes/_root.routines'
 import { Route as RootPrivacyPolicyRouteImport } from './routes/_root.privacy-policy'
 import { Route as RootPlaygroundRouteImport } from './routes/_root.playground'
 import { Route as RootMaterialViewerRouteImport } from './routes/_root.material-viewer'
@@ -22,6 +23,7 @@ import { Route as RootAdminRouteImport } from './routes/_root.admin'
 import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as AuthForgetPasswordRouteImport } from './routes/_auth.forgetPassword'
+import { Route as RootRoutinesIndexRouteImport } from './routes/_root.routines.index'
 import { Route as RootMaterialViewerIndexRouteImport } from './routes/_root.material-viewer.index'
 import { Route as RootDashboardIndexRouteImport } from './routes/_root.dashboard.index'
 import { Route as RootBlockPackEditorIndexRouteImport } from './routes/_root.block-pack-editor.index'
@@ -43,6 +45,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RootRoutinesRoute = RootRoutinesRouteImport.update({
+  id: '/routines',
+  path: '/routines',
+  getParentRoute: () => RootRoute,
 } as any)
 const RootPrivacyPolicyRoute = RootPrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
@@ -93,6 +100,11 @@ const AuthForgetPasswordRoute = AuthForgetPasswordRouteImport.update({
   id: '/forgetPassword',
   path: '/forgetPassword',
   getParentRoute: () => AuthRoute,
+} as any)
+const RootRoutinesIndexRoute = RootRoutinesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RootRoutinesRoute,
 } as any)
 const RootMaterialViewerIndexRoute = RootMaterialViewerIndexRouteImport.update({
   id: '/',
@@ -150,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/playground': typeof RootPlaygroundRoute
   '/privacy-policy': typeof RootPrivacyPolicyRoute
+  '/routines': typeof RootRoutinesRouteWithChildren
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
@@ -158,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/dashboard/': typeof RootDashboardIndexRoute
   '/material-viewer/': typeof RootMaterialViewerIndexRoute
+  '/routines/': typeof RootRoutinesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -176,6 +190,7 @@ export interface FileRoutesByTo {
   '/block-pack-editor': typeof RootBlockPackEditorIndexRoute
   '/dashboard': typeof RootDashboardIndexRoute
   '/material-viewer': typeof RootMaterialViewerIndexRoute
+  '/routines': typeof RootRoutinesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -192,6 +207,7 @@ export interface FileRoutesById {
   '/_root/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/_root/playground': typeof RootPlaygroundRoute
   '/_root/privacy-policy': typeof RootPrivacyPolicyRoute
+  '/_root/routines': typeof RootRoutinesRouteWithChildren
   '/_auth/redirect/error': typeof AuthRedirectErrorRoute
   '/_auth/redirect/google': typeof AuthRedirectGoogleRoute
   '/_auth/redirect/x': typeof AuthRedirectXRoute
@@ -200,6 +216,7 @@ export interface FileRoutesById {
   '/_root/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/_root/dashboard/': typeof RootDashboardIndexRoute
   '/_root/material-viewer/': typeof RootMaterialViewerIndexRoute
+  '/_root/routines/': typeof RootRoutinesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -215,6 +232,7 @@ export interface FileRouteTypes {
     | '/material-viewer'
     | '/playground'
     | '/privacy-policy'
+    | '/routines'
     | '/redirect/error'
     | '/redirect/google'
     | '/redirect/x'
@@ -223,6 +241,7 @@ export interface FileRouteTypes {
     | '/block-pack-editor/'
     | '/dashboard/'
     | '/material-viewer/'
+    | '/routines/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,6 +260,7 @@ export interface FileRouteTypes {
     | '/block-pack-editor'
     | '/dashboard'
     | '/material-viewer'
+    | '/routines'
   id:
     | '__root__'
     | '/'
@@ -256,6 +276,7 @@ export interface FileRouteTypes {
     | '/_root/material-viewer'
     | '/_root/playground'
     | '/_root/privacy-policy'
+    | '/_root/routines'
     | '/_auth/redirect/error'
     | '/_auth/redirect/google'
     | '/_auth/redirect/x'
@@ -264,6 +285,7 @@ export interface FileRouteTypes {
     | '/_root/block-pack-editor/'
     | '/_root/dashboard/'
     | '/_root/material-viewer/'
+    | '/_root/routines/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -294,6 +316,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_root/routines': {
+      id: '/_root/routines'
+      path: '/routines'
+      fullPath: '/routines'
+      preLoaderRoute: typeof RootRoutinesRouteImport
+      parentRoute: typeof RootRoute
     }
     '/_root/privacy-policy': {
       id: '/_root/privacy-policy'
@@ -364,6 +393,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/forgetPassword'
       preLoaderRoute: typeof AuthForgetPasswordRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_root/routines/': {
+      id: '/_root/routines/'
+      path: '/'
+      fullPath: '/routines/'
+      preLoaderRoute: typeof RootRoutinesIndexRouteImport
+      parentRoute: typeof RootRoutinesRoute
     }
     '/_root/material-viewer/': {
       id: '/_root/material-viewer/'
@@ -482,6 +518,18 @@ const RootMaterialViewerRouteChildren: RootMaterialViewerRouteChildren = {
 const RootMaterialViewerRouteWithChildren =
   RootMaterialViewerRoute._addFileChildren(RootMaterialViewerRouteChildren)
 
+interface RootRoutinesRouteChildren {
+  RootRoutinesIndexRoute: typeof RootRoutinesIndexRoute
+}
+
+const RootRoutinesRouteChildren: RootRoutinesRouteChildren = {
+  RootRoutinesIndexRoute: RootRoutinesIndexRoute,
+}
+
+const RootRoutinesRouteWithChildren = RootRoutinesRoute._addFileChildren(
+  RootRoutinesRouteChildren,
+)
+
 interface RootRouteChildren {
   RootAdminRoute: typeof RootAdminRoute
   RootBlockPackEditorRoute: typeof RootBlockPackEditorRouteWithChildren
@@ -490,6 +538,7 @@ interface RootRouteChildren {
   RootMaterialViewerRoute: typeof RootMaterialViewerRouteWithChildren
   RootPlaygroundRoute: typeof RootPlaygroundRoute
   RootPrivacyPolicyRoute: typeof RootPrivacyPolicyRoute
+  RootRoutinesRoute: typeof RootRoutinesRouteWithChildren
 }
 
 const RootRouteChildren: RootRouteChildren = {
@@ -500,6 +549,7 @@ const RootRouteChildren: RootRouteChildren = {
   RootMaterialViewerRoute: RootMaterialViewerRouteWithChildren,
   RootPlaygroundRoute: RootPlaygroundRoute,
   RootPrivacyPolicyRoute: RootPrivacyPolicyRoute,
+  RootRoutinesRoute: RootRoutinesRouteWithChildren,
 }
 
 const RootRouteWithChildren = RootRoute._addFileChildren(RootRouteChildren)

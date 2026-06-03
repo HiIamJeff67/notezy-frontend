@@ -45,11 +45,11 @@ import {
 } from "drizzle-orm";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNetwork } from "@/hooks";
-import { buildBlockGroupSyncResult } from "./blockGroupSyncLogic";
-import { buildBlockPackSyncResult } from "./blockPackSyncLogic";
-import { buildBlockSyncResult } from "./blockSyncLogic";
-import { buildRootShelfSyncResult } from "./rootShelfSyncLogic";
-import { buildSubShelfSyncResult } from "./subShelfSyncLogic";
+import { buildBlockGroupSyncResult } from "./BlockGroupSyncLogic";
+import { buildBlockPackSyncResult } from "./BlockPackSyncLogic";
+import { buildBlockSyncResult } from "./BlockSyncLogic";
+import { buildRootShelfSyncResult } from "./RootShelfSyncLogic";
+import { buildSubShelfSyncResult } from "./SubShelfSyncLogic";
 
 /* ============================== General types ============================== */
 

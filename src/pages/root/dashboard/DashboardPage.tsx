@@ -24,11 +24,8 @@ import {
 } from "@/components/widgets/widget";
 import {
   useBackgroundImages,
-  useDebounceValue,
-  useLanguage,
   useModal,
   useScreen,
-  useTheme,
   useWidget,
 } from "@/hooks";
 
@@ -47,8 +44,6 @@ const DashboardElementZIndexes = {
 
 const DashboardPage = () => {
   const screenManager = useScreen();
-  const themeManager = useTheme();
-  const languageManager = useLanguage();
   const widgetManager = useWidget();
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
@@ -74,46 +69,43 @@ const DashboardPage = () => {
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
-    useDebounceValue(
-      useMemo(() => {
-        let widthTotalFrameCount = 4;
-        let frameGap = 4;
-        switch (screenManager.breakpoint) {
-          case "base":
-          case "sm":
-            widthTotalFrameCount = 4;
-            break;
-          case "md":
-          case "lg":
-            widthTotalFrameCount = 6;
-            break;
-          case "xl":
-            widthTotalFrameCount = 8;
-            frameGap = 6;
-            break;
-          case "2xl":
-            widthTotalFrameCount = 12;
-            break;
-          case "3xl":
-            widthTotalFrameCount = 16;
-            break;
-        }
+    useMemo(() => {
+      let widthTotalFrameCount = 4;
+      let frameGap = 4;
+      switch (screenManager.breakpoint) {
+        case "base":
+        case "sm":
+          widthTotalFrameCount = 4;
+          break;
+        case "md":
+        case "lg":
+          widthTotalFrameCount = 6;
+          break;
+        case "xl":
+          widthTotalFrameCount = 8;
+          frameGap = 6;
+          break;
+        case "2xl":
+          widthTotalFrameCount = 12;
+          break;
+        case "3xl":
+          widthTotalFrameCount = 16;
+          break;
+      }
 
-        let heightTotalFrameCount = 0;
-        widgetManager.getWidgets().forEach(widget => {
-          heightTotalFrameCount = Math.max(
-            heightTotalFrameCount,
-            widget.position.topFrameCount + widget.size.heightFrameCount
-          );
-        });
-        return {
-          widthTotalFrameCount: widthTotalFrameCount,
-          heightTotalFrameCount: heightTotalFrameCount,
-          frameGap: frameGap,
-        };
-      }, [screenManager.breakpoint, widgetManager]),
-      1000
-    );
+      let heightTotalFrameCount = 0;
+      widgetManager.getWidgets().forEach(widget => {
+        heightTotalFrameCount = Math.max(
+          heightTotalFrameCount,
+          widget.position.topFrameCount + widget.size.heightFrameCount
+        );
+      });
+      return {
+        widthTotalFrameCount: widthTotalFrameCount,
+        heightTotalFrameCount: heightTotalFrameCount,
+        frameGap: frameGap,
+      };
+    }, [screenManager.breakpoint, widgetManager]);
 
   const hasSomeWidgetsOutOfBoundary = useMemo(
     () =>
@@ -124,7 +116,7 @@ const DashboardPage = () => {
             widget.position.leftFrameCount + widget.size.widthFrameCount >
             widthTotalFrameCount
         ),
-    [widthTotalFrameCount]
+    [widgetManager, widthTotalFrameCount]
   );
 
   useLayoutEffect(() => {
@@ -156,7 +148,9 @@ const DashboardPage = () => {
           })
         );
       } else {
-        const createdFramePosition: FrameCountPosition = currentFramePosition;
+        const createdFramePosition: FrameCountPosition = {
+          ...currentFramePosition,
+        };
         if (
           createdFramePosition.leftFrameCount +
             previewWidget.size.widthFrameCount >
@@ -182,7 +176,12 @@ const DashboardPage = () => {
       setCreateWidgetDialogOpen(false);
       setCreateWidgetAtBottom(false);
     },
-    [widgetManager, currentFramePosition, createWidgetAtBottom]
+    [
+      widgetManager,
+      currentFramePosition,
+      createWidgetAtBottom,
+      widthTotalFrameCount,
+    ]
   );
 
   const isWidgetConflicted = useCallback(
@@ -192,73 +191,35 @@ const DashboardPage = () => {
       heightFrameCount?: number
     ): boolean => {
       const widgetWidthFrameCount =
-        widthFrameCount === undefined
-          ? widget.size.widthFrameCount
-          : widthFrameCount;
+        widthFrameCount ?? widget.size.widthFrameCount;
       const widgetHeightFrameCount =
-        heightFrameCount === undefined
-          ? widget.size.heightFrameCount
-          : heightFrameCount;
+        heightFrameCount ?? widget.size.heightFrameCount;
+      const widgetLeftFrameCount = widget.position.leftFrameCount;
+      const widgetRightFrameCount =
+        widgetLeftFrameCount + widgetWidthFrameCount;
+      const widgetTopFrameCount = widget.position.topFrameCount;
+      const widgetBottomFrameCount =
+        widgetTopFrameCount + widgetHeightFrameCount;
 
       return widgetManager.getWidgets().some(potentialConflictableWidget => {
         if (potentialConflictableWidget.id === widget.id) return false;
 
-        if (
-          (potentialConflictableWidget.position.leftFrameCount >=
-            widget.position.leftFrameCount &&
-            potentialConflictableWidget.position.leftFrameCount <
-              widget.position.leftFrameCount + widgetWidthFrameCount) ||
-          (potentialConflictableWidget.position.leftFrameCount +
-            potentialConflictableWidget.size.widthFrameCount >
-            widget.position.leftFrameCount &&
-            potentialConflictableWidget.position.leftFrameCount +
-              potentialConflictableWidget.size.widthFrameCount <=
-              widget.position.leftFrameCount + widgetWidthFrameCount)
-        ) {
-          if (
-            (widget.position.topFrameCount >=
-              potentialConflictableWidget.position.topFrameCount &&
-              widget.position.topFrameCount <
-                potentialConflictableWidget.position.topFrameCount +
-                  potentialConflictableWidget.size.heightFrameCount) ||
-            (widget.position.topFrameCount + widgetHeightFrameCount >
-              potentialConflictableWidget.position.topFrameCount &&
-              widget.position.topFrameCount + widgetHeightFrameCount <=
-                potentialConflictableWidget.position.topFrameCount +
-                  potentialConflictableWidget.size.heightFrameCount)
-          ) {
-            return true;
-          }
-        }
+        const potentialLeftFrameCount =
+          potentialConflictableWidget.position.leftFrameCount;
+        const potentialRightFrameCount =
+          potentialLeftFrameCount +
+          potentialConflictableWidget.size.widthFrameCount;
+        const potentialTopFrameCount =
+          potentialConflictableWidget.position.topFrameCount;
+        const potentialBottomFrameCount =
+          potentialTopFrameCount +
+          potentialConflictableWidget.size.heightFrameCount;
 
-        // biome-ignore format: make the comment of all conditions at the same line
         return (
-          // check if some of the potential conflictable widgets containing the widget
-          // if the right bottom point of the widget is less than some of the other widgets
-          (widget.position.leftFrameCount + widgetWidthFrameCount >= 
-            potentialConflictableWidget.position.leftFrameCount +
-              potentialConflictableWidget.size.widthFrameCount && 
-            widget.position.topFrameCount + widgetHeightFrameCount >= 
-              potentialConflictableWidget.position.topFrameCount +
-                potentialConflictableWidget.size.heightFrameCount &&
-            // and if the left top point of the widget is greater than some other widgets
-            widget.position.leftFrameCount <=
-              potentialConflictableWidget.position.leftFrameCount &&
-            widget.position.topFrameCount <=
-              potentialConflictableWidget.position.topFrameCount) || 
-          // check if the widget is containing in some of the potential conflictable widgets
-          // if the right bottom points of some other widgets are less than the widget
-          (potentialConflictableWidget.position.leftFrameCount +
-            potentialConflictableWidget.size.widthFrameCount >=
-            widget.position.leftFrameCount + widgetWidthFrameCount &&
-            potentialConflictableWidget.position.topFrameCount +
-              potentialConflictableWidget.size.heightFrameCount >=
-              // and if the left top points of some other widgets are greater than the widget
-              widget.position.topFrameCount + widgetHeightFrameCount &&
-            potentialConflictableWidget.position.leftFrameCount <=
-              widget.position.leftFrameCount &&
-            potentialConflictableWidget.position.topFrameCount <=
-              widget.position.topFrameCount)
+          widgetLeftFrameCount < potentialRightFrameCount &&
+          widgetRightFrameCount > potentialLeftFrameCount &&
+          widgetTopFrameCount < potentialBottomFrameCount &&
+          widgetBottomFrameCount > potentialTopFrameCount
         );
       });
     },
@@ -358,17 +319,16 @@ const DashboardPage = () => {
 
       return result;
     },
-    [widgetManager, frameSize, frameGap]
+    [isWidgetConflicted, frameSize, frameGap]
   );
 
   const handleReorderWidgetsToFitInBoundary = useCallback(() => {
-    const sortedWidgets = widgetManager
-      .getWidgets()
-      .sort((a: Widget, b: Widget) =>
+    const sortedWidgets = [...widgetManager.getWidgets()].sort(
+      (a: Widget, b: Widget) =>
         a.position.topFrameCount === b.position.topFrameCount
           ? a.position.leftFrameCount - b.position.leftFrameCount
           : a.position.topFrameCount - b.position.topFrameCount
-      );
+    );
     let currentLeftFrameCount = 0,
       currentTopFrameCount = 0;
     const isOccupied: (UUID | undefined)[][] = Array.from(
@@ -437,7 +397,7 @@ const DashboardPage = () => {
   return (
     <div
       className="
-        relative w-full h-full min-h-[calc(100vh-4rem)] overflow-hidden
+        relative w-full h-full min-h-[calc(100vh-4rem)] overflow-hidden flex flex-col
       "
     >
       <CreateWidgetDialog
@@ -447,7 +407,7 @@ const DashboardPage = () => {
       />
       {backgroundImagesManager.currentBackgroundImage === null ? (
         <GridBackground
-          className={`!w-full !h-60 relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-60 shrink-0 relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -466,7 +426,7 @@ const DashboardPage = () => {
       ) : (
         <ProgressiveBackground
           ref={headerBackgroundImageRef}
-          className={`!w-full !h-60 border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
+          className={`!w-full !h-60 shrink-0 border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
         >
           {isEditing && (
             <ModifyImageHover
@@ -483,15 +443,13 @@ const DashboardPage = () => {
         </ProgressiveBackground>
       )}
       <PlaceableBackground
-        className="overflow-x-hidden overflow-y-auto relative !bg-popover top-[-12px] border border-foreground/30 rounded-t-lg"
-        // height: (heightTotalFrameCount + 「 2 」) * frameSize => remain 2 for extra spaces at the bottom area
-        style={{ height: (heightTotalFrameCount + 2) * frameSize }}
+        className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto relative !bg-popover mt-[-12px] border border-foreground/30 rounded-t-lg"
         zIndex={DashboardElementZIndexes.placeableBackground}
         frameSizeSource="horizontal"
         frameSize={frameSize}
         setFrameSize={setFrameSize}
         widthTotalFrameCount={widthTotalFrameCount}
-        heightTotalFrameCount={heightTotalFrameCount + 1}
+        heightTotalFrameCount={heightTotalFrameCount + 2}
         frameProps={{
           children: <PlusIcon />,
           zIndex: DashboardElementZIndexes.placeableFrames,
@@ -524,15 +482,24 @@ const DashboardPage = () => {
                 .getWidgets()
                 .find(widget => widget.id === draggedItem.id);
               if (draggedWidget === undefined) return false;
-              draggedWidget.position = position;
-              return !isWidgetConflicted(draggedWidget);
+              return !isWidgetConflicted({
+                ...draggedWidget,
+                position: { ...position },
+              });
             },
             drop: (
               draggedItem: Widget,
               _: DropTargetMonitor,
               position: FrameCountPosition
-            ) =>
-              widgetManager.updateByWidget(draggedItem, "position", position),
+            ) => {
+              const draggedWidget = widgetManager
+                .getWidgets()
+                .find(widget => widget.id === draggedItem.id);
+              if (draggedWidget === undefined) return;
+              widgetManager.updateByWidget(draggedWidget, "position", {
+                ...position,
+              });
+            },
           },
           onClick: (position: FrameCountPosition) => {
             setCreateWidgetAtBottom(false);

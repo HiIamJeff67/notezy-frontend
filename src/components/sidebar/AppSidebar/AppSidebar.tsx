@@ -96,9 +96,9 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
               >
                 <SidebarMenuButton
                   className="w-19/20 bg-transparent hover:bg-primary flex justify-start items-center select-none"
-                  onClick={() => {
-                    router.push(WebURLPathDictionary.root.dashboard._);
-                  }}
+                  onClick={() =>
+                    router.push(WebURLPathDictionary.root.dashboard._)
+                  }
                 >
                   <LayoutDashboardIcon />
                   {sidebarManager.open && (
@@ -115,10 +115,13 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                   className={`w-full flex ${
                     sidebarManager.open ? "justify-start" : "justify-center"
                   } items-center select-none hover:bg-primary`}
+                  onClick={() =>
+                    router.push(WebURLPathDictionary.root.routines._)
+                  }
                 >
                   <CalendarIcon />
                   {sidebarManager.open && (
-                    <span className="truncate">Daily Routine</span>
+                    <span className="truncate">Routines</span>
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>

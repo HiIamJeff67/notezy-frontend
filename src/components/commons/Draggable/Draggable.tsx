@@ -28,7 +28,7 @@ const Draggable = ({
         ...(collect ? collect(monitor) : {}),
       }),
     }),
-    [canDrag]
+    [canDrag, item]
   );
 
   return (

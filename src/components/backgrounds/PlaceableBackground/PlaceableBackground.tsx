@@ -142,100 +142,107 @@ const PlaceableBackground = ({
     heightTotalFrameCount,
   ]);
 
+  const surfaceHeight = heightTotalFrameCount * frameSize;
+
   return (
     <div
       ref={backgroundRef}
-      className={`w-full min-h-full relative ${className} z-${zIndex}`}
+      className={`w-full relative ${className} z-${zIndex}`}
       style={{
         background: themeManager.currentTheme.isDark ? "black" : "white",
         zIndex: zIndex,
         ...style,
       }}
     >
-      {children}
-      {dropPlaceholderSize && (
-        <div
-          className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
-          style={{
-            left: getPositionValue(
-              hoveredFrameCord[0],
-              frameSize,
-              frameProps.gap
-            ),
-            top: getPositionValue(
-              hoveredFrameCord[1],
-              frameSize,
-              frameProps.gap
-            ),
-            width: getSizeValue(
-              dropPlaceholderSize.widthFrameCount,
-              frameSize,
-              frameProps.gap
-            ),
-            height: getSizeValue(
-              dropPlaceholderSize.heightFrameCount,
-              frameSize,
-              frameProps.gap
-            ),
-          }}
-        />
-      )}
-      {frames.map(([x, y]) => (
-        <PlaceableFrame
-          key={`${x}-${y}`}
-          className={`absolute transition-all duration-200 ease-in-out z-${frameProps.zIndex ?? zIndex} ${frameProps.className}`}
-          disabled={frameProps.disabled}
-          frameSize={frameSize}
-          position={{ leftFrameCount: x, topFrameCount: y }}
-          size={{ widthFrameCount: 1, heightFrameCount: 1 }}
-          gap={{
-            horizontal: frameProps.gap,
-            vertical: frameProps.gap,
-          }}
-          droppableProps={{
-            ...frameProps.droppableProps,
-            hover: (draggedItem: Widget, monitor: DropTargetMonitor) => {
-              if (frameProps.droppableProps.hover === undefined) return;
-              setHoveredFrameCord([x, y]);
-              const newSize = frameProps.droppableProps.hover(
-                draggedItem,
-                monitor
-              );
-              setDropPlaceholderSize(newSize);
-            },
-            canDrop: (
-              draggedItem: Widget,
-              monitor: DropTargetMonitor,
-              position: FrameCountPosition
-            ): boolean => {
-              const canDrop: boolean =
-                frameProps.droppableProps.canDrop !== undefined
-                  ? frameProps.droppableProps.canDrop(
-                      draggedItem,
-                      monitor,
-                      position
-                    )
-                  : true;
-              // disabled the drop placeholder if the user is trying to drop on a non droppable position
-              if (!canDrop) setDropPlaceholderSize(undefined);
-              return canDrop;
-            },
-            drop: (
-              draggedItem: Widget,
-              monitor: DropTargetMonitor,
-              position: FrameCountPosition
-            ) => {
-              if (frameProps.droppableProps.drop !== undefined) {
-                frameProps.droppableProps.drop(draggedItem, monitor, position);
-                setDropPlaceholderSize(undefined);
-              }
-            },
-          }}
-          onClick={frameProps.onClick}
-        >
-          {frameProps.children}
-        </PlaceableFrame>
-      ))}
+      <div
+        className="relative min-h-full"
+        style={{ minHeight: surfaceHeight }}
+      >
+        {children}
+        {dropPlaceholderSize && (
+          <div
+            className="absolute border-2 border-foreground bg-foreground/50 rounded-lg transition"
+            style={{
+              left: getPositionValue(
+                hoveredFrameCord[0],
+                frameSize,
+                frameProps.gap
+              ),
+              top: getPositionValue(
+                hoveredFrameCord[1],
+                frameSize,
+                frameProps.gap
+              ),
+              width: getSizeValue(
+                dropPlaceholderSize.widthFrameCount,
+                frameSize,
+                frameProps.gap
+              ),
+              height: getSizeValue(
+                dropPlaceholderSize.heightFrameCount,
+                frameSize,
+                frameProps.gap
+              ),
+            }}
+          />
+        )}
+        {frames.map(([x, y]) => (
+          <PlaceableFrame
+            key={`${x}-${y}`}
+            className={`absolute transition-all duration-200 ease-in-out z-${frameProps.zIndex ?? zIndex} ${frameProps.className}`}
+            disabled={frameProps.disabled}
+            frameSize={frameSize}
+            position={{ leftFrameCount: x, topFrameCount: y }}
+            size={{ widthFrameCount: 1, heightFrameCount: 1 }}
+            gap={{
+              horizontal: frameProps.gap,
+              vertical: frameProps.gap,
+            }}
+            droppableProps={{
+              ...frameProps.droppableProps,
+              hover: (draggedItem: Widget, monitor: DropTargetMonitor) => {
+                if (frameProps.droppableProps.hover === undefined) return;
+                setHoveredFrameCord([x, y]);
+                const newSize = frameProps.droppableProps.hover(
+                  draggedItem,
+                  monitor
+                );
+                setDropPlaceholderSize(newSize);
+              },
+              canDrop: (
+                draggedItem: Widget,
+                monitor: DropTargetMonitor,
+                position: FrameCountPosition
+              ): boolean => {
+                const canDrop: boolean =
+                  frameProps.droppableProps.canDrop !== undefined
+                    ? frameProps.droppableProps.canDrop(
+                        draggedItem,
+                        monitor,
+                        position
+                      )
+                    : true;
+                // disabled the drop placeholder if the user is trying to drop on a non droppable position
+                if (!canDrop) setDropPlaceholderSize(undefined);
+                return canDrop;
+              },
+              drop: (
+                draggedItem: Widget,
+                monitor: DropTargetMonitor,
+                position: FrameCountPosition
+              ) => {
+                if (frameProps.droppableProps.drop !== undefined) {
+                  frameProps.droppableProps.drop(draggedItem, monitor, position);
+                  setDropPlaceholderSize(undefined);
+                }
+              },
+            }}
+            onClick={frameProps.onClick}
+          >
+            {frameProps.children}
+          </PlaceableFrame>
+        ))}
+      </div>
     </div>
   );
 };

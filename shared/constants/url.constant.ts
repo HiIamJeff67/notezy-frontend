@@ -214,11 +214,7 @@ export const WebURLPathDictionary = {
   root: {
     materialViewer: {
       _: "material-viewer",
-      byId: (
-        materialId: UUID,
-        parentSubShelfId: UUID,
-        rootShelfId: UUID
-      ) =>
+      byId: (materialId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
         `material-viewer/${materialId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
       notFound: "material-viewer/not-found",
     },
@@ -231,6 +227,9 @@ export const WebURLPathDictionary = {
     },
     dashboard: {
       _: "dashboard",
+    },
+    routines: {
+      _: "routines",
     },
   },
 };
