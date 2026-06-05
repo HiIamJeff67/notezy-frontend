@@ -1,0 +1,691 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
+import {
+  AllItemTypes,
+  AllRoutinePeriods,
+  AllRoutineStatuses,
+} from "@shared/api/interfaces/enums";
+import { z } from "zod";
+
+/* ============================== GetMyRoutineById ============================== */
+
+export const GetMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  param: z.object({
+    routineId: z.uuidv4(),
+    onlyDeleted: z.number().int().min(0).max(2).optional(),
+  }),
+});
+
+export type GetMyRoutineByIdRequest = z.infer<
+  typeof GetMyRoutineByIdRequestSchema
+>;
+
+export const GetMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    stationId: z.uuidv4(),
+    title: z.string(),
+    description: z.string(),
+    status: z.enum(AllRoutineStatuses),
+    isPinned: z.boolean(),
+    scheduledStartAt: z.coerce.date(),
+    scheduledEndAt: z.coerce.date(),
+    period: z.enum(AllRoutinePeriods).nullable(),
+    timezone: z.string(),
+    deletedAt: z.coerce.date().nullable(),
+    updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type GetMyRoutineByIdResponse = z.infer<
+  typeof GetMyRoutineByIdResponseSchema
+>;
+
+/* ============================== CreateRoutineByStationId ============================== */
+
+export const CreateRoutineByStationIdRequestSchema = NotezyRequestSchema.extend(
+  {
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z
+      .object({
+        id: z.uuidv4().optional(),
+        stationId: z.uuidv4(),
+        title: z.string().min(1).max(128),
+        description: z.string().max(1024),
+        status: z.enum(AllRoutineStatuses),
+        isPinned: z.boolean(),
+        scheduledStartAt: z.coerce.date(),
+        scheduledEndAt: z.coerce.date(),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        timezone: z.string().max(64),
+      })
+      .partial({
+        status: true,
+        isPinned: true,
+        scheduledStartAt: true,
+        scheduledEndAt: true,
+        period: true,
+        timezone: true,
+      }),
+  }
+);
+
+export type CreateRoutineByStationIdRequest = z.infer<
+  typeof CreateRoutineByStationIdRequestSchema
+>;
+
+export const CreateRoutineByStationIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      id: z.uuidv4(),
+      createdAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type CreateRoutineByStationIdResponse = z.infer<
+  typeof CreateRoutineByStationIdResponseSchema
+>;
+
+/* ============================== CreateRoutinesByStationIds ============================== */
+
+export const CreateRoutinesByStationIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      createdRoutines: z.array(
+        z
+          .object({
+            id: z.uuidv4().optional(),
+            stationId: z.uuidv4(),
+            title: z.string().min(1).max(128),
+            description: z.string().max(1024),
+            status: z.enum(AllRoutineStatuses),
+            isPinned: z.boolean(),
+            scheduledStartAt: z.coerce.date(),
+            scheduledEndAt: z.coerce.date(),
+            period: z.enum(AllRoutinePeriods).nullable(),
+            timezone: z.string().max(64),
+          })
+          .partial({
+            status: true,
+            isPinned: true,
+            scheduledStartAt: true,
+            scheduledEndAt: true,
+            period: true,
+            timezone: true,
+          })
+      ),
+    }),
+  });
+
+export type CreateRoutinesByStationIdsRequest = z.infer<
+  typeof CreateRoutinesByStationIdsRequestSchema
+>;
+
+export const CreateRoutinesByStationIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      ids: z.array(z.uuidv4()),
+      createdAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type CreateRoutinesByStationIdsResponse = z.infer<
+  typeof CreateRoutinesByStationIdsResponseSchema
+>;
+
+/* ============================== UpdateMyRoutineById ============================== */
+
+export const UpdateMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+    values: z
+      .object({
+        stationId: z.uuidv4(),
+        title: z.string().min(1).max(128),
+        description: z.string().max(1024),
+        status: z.enum(AllRoutineStatuses),
+        isPinned: z.boolean(),
+        scheduledStartAt: z.coerce.date(),
+        scheduledEndAt: z.coerce.date(),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        timezone: z.string().max(64),
+      })
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
+  }),
+});
+
+export type UpdateMyRoutineByIdRequest = z.infer<
+  typeof UpdateMyRoutineByIdRequestSchema
+>;
+
+export const UpdateMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type UpdateMyRoutineByIdResponse = z.infer<
+  typeof UpdateMyRoutineByIdResponseSchema
+>;
+
+/* ============================== UpdateMyRoutinesByIds ============================== */
+
+export const UpdateMyRoutinesByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    updatedRoutines: z.array(
+      z.object({
+        routineId: z.uuidv4(),
+        values: z
+          .object({
+            stationId: z.uuidv4(),
+            title: z.string().min(1).max(128),
+            description: z.string().max(1024),
+            status: z.enum(AllRoutineStatuses),
+            isPinned: z.boolean(),
+            scheduledStartAt: z.coerce.date(),
+            scheduledEndAt: z.coerce.date(),
+            period: z.enum(AllRoutinePeriods).nullable(),
+            timezone: z.string().max(64),
+          })
+          .partial(),
+        setNull: z.record(z.string(), z.boolean()).optional(),
+      })
+    ),
+  }),
+});
+
+export type UpdateMyRoutinesByIdsRequest = z.infer<
+  typeof UpdateMyRoutinesByIdsRequestSchema
+>;
+
+export const UpdateMyRoutinesByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+export type UpdateMyRoutinesByIdsResponse = z.infer<
+  typeof UpdateMyRoutinesByIdsResponseSchema
+>;
+
+/* ============================== LinkRoutineTagById ============================== */
+
+export const LinkRoutineTagByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+    routineTagId: z.uuidv4(),
+    isUnlink: z.boolean(),
+  }),
+});
+
+export type LinkRoutineTagByIdRequest = z.infer<
+  typeof LinkRoutineTagByIdRequestSchema
+>;
+
+export const LinkRoutineTagByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type LinkRoutineTagByIdResponse = z.infer<
+  typeof LinkRoutineTagByIdResponseSchema
+>;
+
+/* ============================== BulkLinkRoutineTagsByIds ============================== */
+
+export const BulkLinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend(
+  {
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      linkedRoutinesAndTags: z.array(
+        z.object({
+          routineId: z.uuidv4(),
+          routineTagId: z.uuidv4(),
+        })
+      ),
+      isUnlink: z.boolean(),
+    }),
+  }
+);
+
+export type BulkLinkRoutineTagsByIdsRequest = z.infer<
+  typeof BulkLinkRoutineTagsByIdsRequestSchema
+>;
+
+export const BulkLinkRoutineTagsByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type BulkLinkRoutineTagsByIdsResponse = z.infer<
+  typeof BulkLinkRoutineTagsByIdsResponseSchema
+>;
+
+/* ============================== LinkRoutineTaskById ============================== */
+
+export const LinkRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+    routineTaskId: z.uuidv4(),
+    isUnlink: z.boolean(),
+  }),
+});
+
+export type LinkRoutineTaskByIdRequest = z.infer<
+  typeof LinkRoutineTaskByIdRequestSchema
+>;
+
+export const LinkRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type LinkRoutineTaskByIdResponse = z.infer<
+  typeof LinkRoutineTaskByIdResponseSchema
+>;
+
+/* ============================== BulkLinkRoutineTasksByIds ============================== */
+
+export const BulkLinkRoutineTasksByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      linkedRoutinesAndTasks: z.array(
+        z.object({
+          routineId: z.uuidv4(),
+          routineTaskId: z.uuidv4(),
+        })
+      ),
+      isUnlink: z.boolean(),
+    }),
+  });
+
+export type BulkLinkRoutineTasksByIdsRequest = z.infer<
+  typeof BulkLinkRoutineTasksByIdsRequestSchema
+>;
+
+export const BulkLinkRoutineTasksByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type BulkLinkRoutineTasksByIdsResponse = z.infer<
+  typeof BulkLinkRoutineTasksByIdsResponseSchema
+>;
+
+/* ============================== LinkRoutineItemById ============================== */
+
+export const LinkRoutineItemByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+    itemId: z.uuidv4(),
+    itemType: z.enum(AllItemTypes),
+    isUnlink: z.boolean(),
+  }),
+});
+
+export type LinkRoutineItemByIdRequest = z.infer<
+  typeof LinkRoutineItemByIdRequestSchema
+>;
+
+export const LinkRoutineItemByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type LinkRoutineItemByIdResponse = z.infer<
+  typeof LinkRoutineItemByIdResponseSchema
+>;
+
+/* ============================== BulkLinkRoutineItemsByIds ============================== */
+
+export const BulkLinkRoutineItemsByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      linkedRoutinesAndItems: z.array(
+        z.object({
+          routineId: z.uuidv4(),
+          itemId: z.uuidv4(),
+          itemType: z.enum(AllItemTypes),
+        })
+      ),
+      isUnlink: z.boolean(),
+    }),
+  });
+
+export type BulkLinkRoutineItemsByIdsRequest = z.infer<
+  typeof BulkLinkRoutineItemsByIdsRequestSchema
+>;
+
+export const BulkLinkRoutineItemsByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type BulkLinkRoutineItemsByIdsResponse = z.infer<
+  typeof BulkLinkRoutineItemsByIdsResponseSchema
+>;
+
+/* ============================== RestoreMyRoutineById ============================== */
+
+export const RestoreMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+  }),
+});
+
+export type RestoreMyRoutineByIdRequest = z.infer<
+  typeof RestoreMyRoutineByIdRequestSchema
+>;
+
+export const RestoreMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    stationId: z.uuidv4(),
+    title: z.string(),
+    description: z.string(),
+    status: z.enum(AllRoutineStatuses),
+    isPinned: z.boolean(),
+    scheduledStartAt: z.coerce.date(),
+    scheduledEndAt: z.coerce.date(),
+    period: z.enum(AllRoutinePeriods).nullable(),
+    timezone: z.string(),
+    deletedAt: z.coerce.date().nullable(),
+    updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type RestoreMyRoutineByIdResponse = z.infer<
+  typeof RestoreMyRoutineByIdResponseSchema
+>;
+
+/* ============================== RestoreMyRoutinesByIds ============================== */
+
+export const RestoreMyRoutinesByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type RestoreMyRoutinesByIdsRequest = z.infer<
+  typeof RestoreMyRoutinesByIdsRequestSchema
+>;
+
+export const RestoreMyRoutinesByIdsResponseSchema = NotezyResponseSchema.extend(
+  {
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        stationId: z.uuidv4(),
+        title: z.string(),
+        description: z.string(),
+        status: z.enum(AllRoutineStatuses),
+        isPinned: z.boolean(),
+        scheduledStartAt: z.coerce.date(),
+        scheduledEndAt: z.coerce.date(),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        timezone: z.string(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  }
+);
+export type RestoreMyRoutinesByIdsResponse = z.infer<
+  typeof RestoreMyRoutinesByIdsResponseSchema
+>;
+
+/* ============================== DeleteMyRoutineById ============================== */
+
+export const DeleteMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+  }),
+});
+
+export type DeleteMyRoutineByIdRequest = z.infer<
+  typeof DeleteMyRoutineByIdRequestSchema
+>;
+
+export const DeleteMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type DeleteMyRoutineByIdResponse = z.infer<
+  typeof DeleteMyRoutineByIdResponseSchema
+>;
+
+/* ============================== DeleteMyRoutinesByIds ============================== */
+
+export const DeleteMyRoutinesByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type DeleteMyRoutinesByIdsRequest = z.infer<
+  typeof DeleteMyRoutinesByIdsRequestSchema
+>;
+
+export const DeleteMyRoutinesByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type DeleteMyRoutinesByIdsResponse = z.infer<
+  typeof DeleteMyRoutinesByIdsResponseSchema
+>;
+
+/* ============================== HardDeleteMyRoutineById ============================== */
+
+export const HardDeleteMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineId: z.uuidv4(),
+  }),
+});
+
+export type HardDeleteMyRoutineByIdRequest = z.infer<
+  typeof HardDeleteMyRoutineByIdRequestSchema
+>;
+
+export const HardDeleteMyRoutineByIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type HardDeleteMyRoutineByIdResponse = z.infer<
+  typeof HardDeleteMyRoutineByIdResponseSchema
+>;
+
+/* ============================== HardDeleteMyRoutinesByIds ============================== */
+
+export const HardDeleteMyRoutinesByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      routineIds: z.array(z.uuidv4()),
+    }),
+  });
+
+export type HardDeleteMyRoutinesByIdsRequest = z.infer<
+  typeof HardDeleteMyRoutinesByIdsRequestSchema
+>;
+
+export const HardDeleteMyRoutinesByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type HardDeleteMyRoutinesByIdsResponse = z.infer<
+  typeof HardDeleteMyRoutinesByIdsResponseSchema
+>;

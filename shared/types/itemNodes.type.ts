@@ -1,4 +1,4 @@
-import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
+import { SupportedIcon } from "@shared/api/interfaces/enums";
 import type { UUID } from "crypto";
 
 export type ItemType = "BlockPack" | "Material";
@@ -23,7 +23,7 @@ export interface BlockPackNode {
   id: UUID;
   parentSubShelfId: UUID;
   name: string;
-  icon: SupportedBlockPackIcon | null;
+  icon: SupportedIcon | null;
   headerBackgroundURL: string | null;
   blockCount: number;
   updatedAt: Date;

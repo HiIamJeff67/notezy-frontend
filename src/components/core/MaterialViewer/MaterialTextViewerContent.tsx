@@ -1,7 +1,7 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
 import { MaterialMeta } from "@shared/types/materialMeta.type";
 import { useEffect, useState } from "react";
-import MaterialViewerFrame from "../MaterialViewerFrame";
+import MaterialViewerFrame from "./MaterialViewerFrame";
 
 interface MaterialTextViewerContentProps {
   meta: MaterialMeta;

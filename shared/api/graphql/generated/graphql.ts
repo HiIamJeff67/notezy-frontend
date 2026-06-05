@@ -16,8 +16,10 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   Base64Bytes: { input: string; output: string; }
+  DatatypeJSON: { input: Record<string, unknown>; output: Record<string, unknown>; }
   Int32: { input: number; output: number; }
   Int64: { input: number; output: number; }
+  RawJSON: { input: Record<string, unknown>; output: Record<string, unknown>; }
   Time: { input: Date; output: Date; }
   UUID: { input: UUID; output: UUID; }
 };
@@ -58,6 +60,11 @@ export enum CountryCode {
   CountryCode_81 = 'COUNTRY_CODE_81',
   CountryCode_86 = 'COUNTRY_CODE_86',
   CountryCode_886 = 'COUNTRY_CODE_886'
+}
+
+export enum ItemType {
+  ItemTypeBlockPack = 'ItemType_BlockPack',
+  ItemTypeMaterial = 'ItemType_Material'
 }
 
 export enum Language {
@@ -109,9 +116,80 @@ export type PrivateRootShelf = {
   itemCount: Scalars['Int32']['output'];
   lastAnalyzedAt: Scalars['Time']['output'];
   name: Scalars['String']['output'];
-  owner: Array<PublicUser>;
+  owner: PublicUser;
   permission: AccessControlPermission;
+  sharers: Array<PublicUser>;
   subShelfCount: Scalars['Int32']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
+export type PrivateRoutine = {
+  __typename?: 'PrivateRoutine';
+  createdAt: Scalars['Time']['output'];
+  deletedAt?: Maybe<Scalars['Time']['output']>;
+  description: Scalars['String']['output'];
+  id: Scalars['UUID']['output'];
+  isPinned: Scalars['Boolean']['output'];
+  period?: Maybe<RoutinePeriod>;
+  scheduledEndAt: Scalars['Time']['output'];
+  scheduledStartAt: Scalars['Time']['output'];
+  station: PrivateStation;
+  stationId: Scalars['UUID']['output'];
+  status: RoutineStatus;
+  tags: Array<PrivateRoutineTag>;
+  tasks: Array<PrivateRoutineTask>;
+  timezone: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
+export type PrivateRoutineTag = {
+  __typename?: 'PrivateRoutineTag';
+  color: Scalars['String']['output'];
+  createdAt: Scalars['Time']['output'];
+  icon?: Maybe<SupportedIcon>;
+  id: Scalars['UUID']['output'];
+  name: Scalars['String']['output'];
+  owner: PublicUser;
+  routines: Array<PrivateRoutine>;
+  sharers: Array<PublicUser>;
+  updatedAt: Scalars['Time']['output'];
+};
+
+export type PrivateRoutineTask = {
+  __typename?: 'PrivateRoutineTask';
+  actualEndedAt?: Maybe<Scalars['Time']['output']>;
+  actualStartedAt?: Maybe<Scalars['Time']['output']>;
+  attempts: Scalars['Int32']['output'];
+  createdAt: Scalars['Time']['output'];
+  id: Scalars['UUID']['output'];
+  maxAttempts: Scalars['Int32']['output'];
+  payload: Scalars['RawJSON']['output'];
+  priority: Scalars['Int32']['output'];
+  purpose: RoutineTaskPurpose;
+  routines: Array<PrivateRoutine>;
+  scheduledAt: Scalars['Time']['output'];
+  station: PrivateStation;
+  stationId: Scalars['UUID']['output'];
+  status: RoutineTaskStatus;
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
+export type PrivateStation = {
+  __typename?: 'PrivateStation';
+  createdAt: Scalars['Time']['output'];
+  deletedAt?: Maybe<Scalars['Time']['output']>;
+  description: Scalars['String']['output'];
+  headerBackgroundURL?: Maybe<Scalars['String']['output']>;
+  icon?: Maybe<SupportedIcon>;
+  id: Scalars['UUID']['output'];
+  name: Scalars['String']['output'];
+  owner: PublicUser;
+  permission: AccessControlPermission;
+  routineCount: Scalars['Int32']['output'];
+  routines: Array<PrivateRoutine>;
+  sharers: Array<PublicUser>;
   updatedAt: Scalars['Time']['output'];
 };
 
@@ -183,6 +261,10 @@ export type PublicUserInfo = {
 export type Query = {
   __typename?: 'Query';
   searchRootShelves: SearchRootShelfConnection;
+  searchRoutineTags: SearchRoutineTagConnection;
+  searchRoutineTasks: SearchRoutineTaskConnection;
+  searchRoutines: SearchRoutineConnection;
+  searchStations: SearchStationConnection;
   searchThemes: SearchThemeConnection;
   searchUsers: SearchUserConnection;
 };
@@ -190,6 +272,26 @@ export type Query = {
 
 export type QuerySearchRootShelvesArgs = {
   input: SearchRootShelfInput;
+};
+
+
+export type QuerySearchRoutineTagsArgs = {
+  input: SearchRoutineTagInput;
+};
+
+
+export type QuerySearchRoutineTasksArgs = {
+  input: SearchRoutineTaskInput;
+};
+
+
+export type QuerySearchRoutinesArgs = {
+  input: SearchRoutineInput;
+};
+
+
+export type QuerySearchStationsArgs = {
+  input: SearchStationInput;
 };
 
 
@@ -201,6 +303,38 @@ export type QuerySearchThemesArgs = {
 export type QuerySearchUsersArgs = {
   input: SearchUserInput;
 };
+
+export enum RoutinePeriod {
+  RoutinePeriodDaily = 'RoutinePeriod_Daily',
+  RoutinePeriodMonthly = 'RoutinePeriod_Monthly',
+  RoutinePeriodWeekly = 'RoutinePeriod_Weekly',
+  RoutinePeriodYearly = 'RoutinePeriod_Yearly'
+}
+
+export enum RoutineStatus {
+  RoutineStatusCompleted = 'RoutineStatus_Completed',
+  RoutineStatusInProgress = 'RoutineStatus_InProgress',
+  RoutineStatusOverDue = 'RoutineStatus_OverDue',
+  RoutineStatusScheduled = 'RoutineStatus_Scheduled'
+}
+
+export enum RoutineTaskPurpose {
+  RoutineTaskPurposeCreateBlock = 'RoutineTaskPurpose_CreateBlock',
+  RoutineTaskPurposeCreateBlockPack = 'RoutineTaskPurpose_CreateBlockPack',
+  RoutineTaskPurposeDeleteBlock = 'RoutineTaskPurpose_DeleteBlock',
+  RoutineTaskPurposeDeleteBlockPack = 'RoutineTaskPurpose_DeleteBlockPack',
+  RoutineTaskPurposeUpdateBlock = 'RoutineTaskPurpose_UpdateBlock'
+}
+
+export enum RoutineTaskStatus {
+  RoutineTaskStatusCancel = 'RoutineTaskStatus_Cancel',
+  RoutineTaskStatusFail = 'RoutineTaskStatus_Fail',
+  RoutineTaskStatusIdle = 'RoutineTaskStatus_Idle',
+  RoutineTaskStatusPause = 'RoutineTaskStatus_Pause',
+  RoutineTaskStatusRunning = 'RoutineTaskStatus_Running',
+  RoutineTaskStatusSuccess = 'RoutineTaskStatus_Success',
+  RoutineTaskStatusWaiting = 'RoutineTaskStatus_Waiting'
+}
 
 export type SearchBadgeConnection = SearchConnection & {
   __typename?: 'SearchBadgeConnection';
@@ -290,9 +424,155 @@ export enum SearchRootShelfSortBy {
   Relevance = 'RELEVANCE'
 }
 
+export type SearchRoutineConnection = SearchConnection & {
+  __typename?: 'SearchRoutineConnection';
+  searchEdges: Array<SearchRoutineEdge>;
+  searchPageInfo: SearchPageInfo;
+  searchTime: Scalars['Float']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export type SearchRoutineCursorFields = {
+  id: Scalars['UUID']['input'];
+};
+
+export type SearchRoutineEdge = SearchEdge & {
+  __typename?: 'SearchRoutineEdge';
+  encodedSearchCursor: Scalars['String']['output'];
+  node: PrivateRoutine;
+};
+
+export type SearchRoutineInput = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  query: Scalars['String']['input'];
+  sortBy?: InputMaybe<SearchRoutineSortBy>;
+  sortOrder?: InputMaybe<SearchSortOrder>;
+  stationId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+export enum SearchRoutineSortBy {
+  CreatedAt = 'CREATED_AT',
+  LastUpdate = 'LAST_UPDATE',
+  Period = 'PERIOD',
+  Relevance = 'RELEVANCE',
+  ScheduledEndAt = 'SCHEDULED_END_AT',
+  ScheduledStartAt = 'SCHEDULED_START_AT',
+  Status = 'STATUS',
+  Title = 'TITLE'
+}
+
+export type SearchRoutineTagConnection = SearchConnection & {
+  __typename?: 'SearchRoutineTagConnection';
+  searchEdges: Array<SearchRoutineTagEdge>;
+  searchPageInfo: SearchPageInfo;
+  searchTime: Scalars['Float']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export type SearchRoutineTagCursorFields = {
+  id: Scalars['UUID']['input'];
+};
+
+export type SearchRoutineTagEdge = SearchEdge & {
+  __typename?: 'SearchRoutineTagEdge';
+  encodedSearchCursor: Scalars['String']['output'];
+  node: PrivateRoutineTag;
+};
+
+export type SearchRoutineTagInput = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  query: Scalars['String']['input'];
+  sortBy?: InputMaybe<SearchRoutineTagSortBy>;
+  sortOrder?: InputMaybe<SearchSortOrder>;
+};
+
+export enum SearchRoutineTagSortBy {
+  CreatedAt = 'CREATED_AT',
+  LastUpdate = 'LAST_UPDATE',
+  Name = 'NAME',
+  Relevance = 'RELEVANCE'
+}
+
+export type SearchRoutineTaskConnection = SearchConnection & {
+  __typename?: 'SearchRoutineTaskConnection';
+  searchEdges: Array<SearchRoutineTaskEdge>;
+  searchPageInfo: SearchPageInfo;
+  searchTime: Scalars['Float']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export type SearchRoutineTaskCursorFields = {
+  id: Scalars['UUID']['input'];
+};
+
+export type SearchRoutineTaskEdge = SearchEdge & {
+  __typename?: 'SearchRoutineTaskEdge';
+  encodedSearchCursor: Scalars['String']['output'];
+  node: PrivateRoutineTask;
+};
+
+export type SearchRoutineTaskInput = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  query: Scalars['String']['input'];
+  sortBy?: InputMaybe<SearchRoutineTaskSortBy>;
+  sortOrder?: InputMaybe<SearchSortOrder>;
+  stationId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+export enum SearchRoutineTaskSortBy {
+  ActualEndedAt = 'ACTUAL_ENDED_AT',
+  ActualStartedAt = 'ACTUAL_STARTED_AT',
+  Attempts = 'ATTEMPTS',
+  CreatedAt = 'CREATED_AT',
+  LastUpdate = 'LAST_UPDATE',
+  MaxAttempts = 'MAX_ATTEMPTS',
+  Priority = 'PRIORITY',
+  Purpose = 'PURPOSE',
+  Relevance = 'RELEVANCE',
+  ScheduledAt = 'SCHEDULED_AT',
+  Status = 'STATUS',
+  Title = 'TITLE'
+}
+
 export enum SearchSortOrder {
   Asc = 'ASC',
   Desc = 'DESC'
+}
+
+export type SearchStationConnection = SearchConnection & {
+  __typename?: 'SearchStationConnection';
+  searchEdges: Array<SearchStationEdge>;
+  searchPageInfo: SearchPageInfo;
+  searchTime: Scalars['Float']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export type SearchStationCursorFields = {
+  id: Scalars['UUID']['input'];
+};
+
+export type SearchStationEdge = SearchEdge & {
+  __typename?: 'SearchStationEdge';
+  encodedSearchCursor: Scalars['String']['output'];
+  node: PrivateStation;
+};
+
+export type SearchStationInput = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  query: Scalars['String']['input'];
+  sortBy?: InputMaybe<SearchStationSortBy>;
+  sortOrder?: InputMaybe<SearchSortOrder>;
+};
+
+export enum SearchStationSortBy {
+  CreatedAt = 'CREATED_AT',
+  LastUpdate = 'LAST_UPDATE',
+  Name = 'NAME',
+  Relevance = 'RELEVANCE',
+  RoutineCount = 'ROUTINE_COUNT'
 }
 
 export type SearchThemeConnection = SearchConnection & {
@@ -377,6 +657,24 @@ export enum SearchUserSortBy {
   Relevance = 'RELEVANCE'
 }
 
+export enum SupportedIcon {
+  SupportedIconBooks = 'SupportedIcon_Books',
+  SupportedIconCalendar = 'SupportedIcon_Calendar',
+  SupportedIconCheckMark = 'SupportedIcon_CheckMark',
+  SupportedIconClock = 'SupportedIcon_Clock',
+  SupportedIconFire = 'SupportedIcon_Fire',
+  SupportedIconFolderOpen = 'SupportedIcon_FolderOpen',
+  SupportedIconGrinningFace = 'SupportedIcon_GrinningFace',
+  SupportedIconLightbulb = 'SupportedIcon_Lightbulb',
+  SupportedIconNotebook = 'SupportedIcon_Notebook',
+  SupportedIconPencilPaper = 'SupportedIcon_PencilPaper',
+  SupportedIconPin = 'SupportedIcon_Pin',
+  SupportedIconRedHeart = 'SupportedIcon_RedHeart',
+  SupportedIconRocket = 'SupportedIcon_Rocket',
+  SupportedIconSmilingFaceWithSmilingEyes = 'SupportedIcon_SmilingFaceWithSmilingEyes',
+  SupportedIconStar = 'SupportedIcon_Star'
+}
+
 export enum UserGender {
   Female = 'Female',
   Male = 'Male',
@@ -418,12 +716,73 @@ export type FragmentedPrivateMaterialFragment = (
 export type FragmentedBasicPrivateRootShelfFragment = { __typename?: 'PrivateRootShelf', id: UUID, name: string, permission: AccessControlPermission, subShelfCount: number, itemCount: number, lastAnalyzedAt: Date, deletedAt?: Date | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateRootShelfFragment' };
 
 export type FragmentedPrivateRootShelfFragment = (
-  { __typename?: 'PrivateRootShelf', owner: Array<(
+  { __typename?: 'PrivateRootShelf', owner: (
     { __typename?: 'PublicUser' }
     & { ' $fragmentRefs'?: { 'FragmentedBasicPublicUserFragment': FragmentedBasicPublicUserFragment } }
-  )> }
+  ) }
   & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRootShelfFragment': FragmentedBasicPrivateRootShelfFragment } }
 ) & { ' $fragmentName'?: 'FragmentedPrivateRootShelfFragment' };
+
+export type FragmentedBasicPrivateRoutineFragment = { __typename?: 'PrivateRoutine', id: UUID, stationId: UUID, title: string, description: string, status: RoutineStatus, isPinned: boolean, scheduledStartAt: Date, scheduledEndAt: Date, period?: RoutinePeriod | null, timezone: string, deletedAt?: Date | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateRoutineFragment' };
+
+export type FragmentedPrivateRoutineFragment = (
+  { __typename?: 'PrivateRoutine', station: (
+    { __typename?: 'PrivateStation' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateStationFragment': FragmentedBasicPrivateStationFragment } }
+  ), tags: Array<(
+    { __typename?: 'PrivateRoutineTag' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineTagFragment': FragmentedBasicPrivateRoutineTagFragment } }
+  )>, tasks: Array<(
+    { __typename?: 'PrivateRoutineTask' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineTaskFragment': FragmentedBasicPrivateRoutineTaskFragment } }
+  )> }
+  & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineFragment': FragmentedBasicPrivateRoutineFragment } }
+) & { ' $fragmentName'?: 'FragmentedPrivateRoutineFragment' };
+
+export type FragmentedBasicPrivateRoutineTagFragment = { __typename?: 'PrivateRoutineTag', id: UUID, name: string, color: string, icon?: SupportedIcon | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateRoutineTagFragment' };
+
+export type FragmentedPrivateRoutineTagFragment = (
+  { __typename?: 'PrivateRoutineTag', owner: (
+    { __typename?: 'PublicUser' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPublicUserFragment': FragmentedBasicPublicUserFragment } }
+  ), sharers: Array<(
+    { __typename?: 'PublicUser' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPublicUserFragment': FragmentedBasicPublicUserFragment } }
+  )>, routines: Array<(
+    { __typename?: 'PrivateRoutine' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineFragment': FragmentedBasicPrivateRoutineFragment } }
+  )> }
+  & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineTagFragment': FragmentedBasicPrivateRoutineTagFragment } }
+) & { ' $fragmentName'?: 'FragmentedPrivateRoutineTagFragment' };
+
+export type FragmentedBasicPrivateRoutineTaskFragment = { __typename?: 'PrivateRoutineTask', id: UUID, stationId: UUID, title: string, purpose: RoutineTaskPurpose, payload: Record<string, unknown>, priority: number, status: RoutineTaskStatus, attempts: number, maxAttempts: number, scheduledAt: Date, actualStartedAt?: Date | null, actualEndedAt?: Date | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateRoutineTaskFragment' };
+
+export type FragmentedPrivateRoutineTaskFragment = (
+  { __typename?: 'PrivateRoutineTask', station: (
+    { __typename?: 'PrivateStation' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateStationFragment': FragmentedBasicPrivateStationFragment } }
+  ), routines: Array<(
+    { __typename?: 'PrivateRoutine' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineFragment': FragmentedBasicPrivateRoutineFragment } }
+  )> }
+  & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineTaskFragment': FragmentedBasicPrivateRoutineTaskFragment } }
+) & { ' $fragmentName'?: 'FragmentedPrivateRoutineTaskFragment' };
+
+export type FragmentedBasicPrivateStationFragment = { __typename?: 'PrivateStation', id: UUID, permission: AccessControlPermission, name: string, description: string, icon?: SupportedIcon | null, headerBackgroundURL?: string | null, routineCount: number, deletedAt?: Date | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateStationFragment' };
+
+export type FragmentedPrivateStationFragment = (
+  { __typename?: 'PrivateStation', owner: (
+    { __typename?: 'PublicUser' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPublicUserFragment': FragmentedBasicPublicUserFragment } }
+  ), sharers: Array<(
+    { __typename?: 'PublicUser' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPublicUserFragment': FragmentedBasicPublicUserFragment } }
+  )>, routines: Array<(
+    { __typename?: 'PrivateRoutine' }
+    & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateRoutineFragment': FragmentedBasicPrivateRoutineFragment } }
+  )> }
+  & { ' $fragmentRefs'?: { 'FragmentedBasicPrivateStationFragment': FragmentedBasicPrivateStationFragment } }
+) & { ' $fragmentName'?: 'FragmentedPrivateStationFragment' };
 
 export type FragmentedBasicPrivateSubShelfFragment = { __typename?: 'PrivateSubShelf', id: UUID, name: string, rootShelfId: UUID, prevSubShelfId?: UUID | null, path: Array<UUID>, deletedAt?: Date | null, updatedAt: Date, createdAt: Date } & { ' $fragmentName'?: 'FragmentedBasicPrivateSubShelfFragment' };
 
@@ -499,12 +858,60 @@ export type SearchRootShelvesQuery = { __typename?: 'Query', searchRootShelves: 
         & { ' $fragmentRefs'?: { 'FragmentedPrivateRootShelfFragment': FragmentedPrivateRootShelfFragment } }
       ) }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
 
+export type SearchStationsQueryVariables = Exact<{
+  input: SearchStationInput;
+}>;
+
+
+export type SearchStationsQuery = { __typename?: 'Query', searchStations: { __typename?: 'SearchStationConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchStationEdge', encodedSearchCursor: string, node: (
+        { __typename?: 'PrivateStation' }
+        & { ' $fragmentRefs'?: { 'FragmentedPrivateStationFragment': FragmentedPrivateStationFragment } }
+      ) }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
+
+export type SearchRoutinesQueryVariables = Exact<{
+  input: SearchRoutineInput;
+}>;
+
+
+export type SearchRoutinesQuery = { __typename?: 'Query', searchRoutines: { __typename?: 'SearchRoutineConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchRoutineEdge', encodedSearchCursor: string, node: (
+        { __typename?: 'PrivateRoutine' }
+        & { ' $fragmentRefs'?: { 'FragmentedPrivateRoutineFragment': FragmentedPrivateRoutineFragment } }
+      ) }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
+
+export type SearchRoutineTagsQueryVariables = Exact<{
+  input: SearchRoutineTagInput;
+}>;
+
+
+export type SearchRoutineTagsQuery = { __typename?: 'Query', searchRoutineTags: { __typename?: 'SearchRoutineTagConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchRoutineTagEdge', encodedSearchCursor: string, node: (
+        { __typename?: 'PrivateRoutineTag' }
+        & { ' $fragmentRefs'?: { 'FragmentedPrivateRoutineTagFragment': FragmentedPrivateRoutineTagFragment } }
+      ) }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
+
+export type SearchRoutineTasksQueryVariables = Exact<{
+  input: SearchRoutineTaskInput;
+}>;
+
+
+export type SearchRoutineTasksQuery = { __typename?: 'Query', searchRoutineTasks: { __typename?: 'SearchRoutineTaskConnection', totalCount: number, searchTime: number, searchEdges: Array<{ __typename?: 'SearchRoutineTaskEdge', encodedSearchCursor: string, node: (
+        { __typename?: 'PrivateRoutineTask' }
+        & { ' $fragmentRefs'?: { 'FragmentedPrivateRoutineTaskFragment': FragmentedPrivateRoutineTaskFragment } }
+      ) }>, searchPageInfo: { __typename?: 'SearchPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startEncodedSearchCursor?: string | null, endEncodedSearchCursor?: string | null } } };
+
 export const FragmentedBasicPrivateMaterialFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateMaterial"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateMaterial"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"parentSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"contentKey"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"parseMediaType"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateMaterialFragment, unknown>;
 export const FragmentedBasicPrivateSubShelfFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateSubShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"rootShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"prevSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateSubShelfFragment, unknown>;
 export const FragmentedPrivateMaterialFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateMaterial"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateMaterial"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateMaterial"}},{"kind":"Field","name":{"kind":"Name","value":"parentSubShelf"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateMaterial"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateMaterial"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"parentSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"contentKey"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"parseMediaType"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateSubShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"rootShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"prevSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateMaterialFragment, unknown>;
 export const FragmentedBasicPrivateRootShelfFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"subShelfCount"}},{"kind":"Field","name":{"kind":"Name","value":"itemCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastAnalyzedAt"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateRootShelfFragment, unknown>;
 export const FragmentedBasicPublicUserFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPublicUserFragment, unknown>;
 export const FragmentedPrivateRootShelfFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"subShelfCount"}},{"kind":"Field","name":{"kind":"Name","value":"itemCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastAnalyzedAt"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateRootShelfFragment, unknown>;
+export const FragmentedBasicPrivateRoutineFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateRoutineFragment, unknown>;
+export const FragmentedBasicPrivateStationFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateStationFragment, unknown>;
+export const FragmentedBasicPrivateRoutineTagFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateRoutineTagFragment, unknown>;
+export const FragmentedBasicPrivateRoutineTaskFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"purpose"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"maxAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualEndedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPrivateRoutineTaskFragment, unknown>;
+export const FragmentedPrivateRoutineFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}},{"kind":"Field","name":{"kind":"Name","value":"station"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"purpose"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"maxAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualEndedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateRoutineFragment, unknown>;
+export const FragmentedPrivateRoutineTagFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sharers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateRoutineTagFragment, unknown>;
+export const FragmentedPrivateRoutineTaskFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"}},{"kind":"Field","name":{"kind":"Name","value":"station"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"purpose"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"maxAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualEndedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateRoutineTaskFragment, unknown>;
+export const FragmentedPrivateStationFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sharers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateStationFragment, unknown>;
 export const FragmentedPrivateSubShelfFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateSubShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateSubShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"}},{"kind":"Field","name":{"kind":"Name","value":"rootShelf"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"}}]}},{"kind":"Field","name":{"kind":"Name","value":"nextSubShelves"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"}}]}},{"kind":"Field","name":{"kind":"Name","value":"materials"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateMaterial"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateSubShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateSubShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"rootShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"prevSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"subShelfCount"}},{"kind":"Field","name":{"kind":"Name","value":"itemCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastAnalyzedAt"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateMaterial"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateMaterial"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"parentSubShelfId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"contentKey"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"parseMediaType"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPrivateSubShelfFragment, unknown>;
 export const FragmentedBasicPublicThemeFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isDark"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"isDefault"}},{"kind":"Field","name":{"kind":"Name","value":"downloadURL"}},{"kind":"Field","name":{"kind":"Name","value":"downloadCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<FragmentedBasicPublicThemeFragment, unknown>;
 export const FragmentedPublicThemeFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"}},{"kind":"Field","name":{"kind":"Name","value":"author"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isDark"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"isDefault"}},{"kind":"Field","name":{"kind":"Name","value":"downloadURL"}},{"kind":"Field","name":{"kind":"Name","value":"downloadCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FragmentedPublicThemeFragment, unknown>;
@@ -514,3 +921,7 @@ export const FragmentedPublicUserFragmentDoc = {"kind":"Document","definitions":
 export const SearchUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchUserInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchUsers"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPublicUser"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUserInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUserInfo"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avatarURL"}},{"kind":"Field","name":{"kind":"Name","value":"coverBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"header"}},{"kind":"Field","name":{"kind":"Name","value":"introduction"}},{"kind":"Field","name":{"kind":"Name","value":"gender"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"birthDate"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicBadge"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicBadge"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"imageURL"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isDark"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"isDefault"}},{"kind":"Field","name":{"kind":"Name","value":"downloadURL"}},{"kind":"Field","name":{"kind":"Name","value":"downloadCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}},{"kind":"Field","name":{"kind":"Name","value":"userInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUserInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicBadge"}}]}},{"kind":"Field","name":{"kind":"Name","value":"themes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"}}]}}]}}]} as unknown as DocumentNode<SearchUsersQuery, SearchUsersQueryVariables>;
 export const SearchThemesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchThemes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchThemeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchThemes"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPublicTheme"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isDark"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"isDefault"}},{"kind":"Field","name":{"kind":"Name","value":"downloadURL"}},{"kind":"Field","name":{"kind":"Name","value":"downloadCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPublicTheme"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicTheme"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicTheme"}},{"kind":"Field","name":{"kind":"Name","value":"author"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}}]}}]} as unknown as DocumentNode<SearchThemesQuery, SearchThemesQueryVariables>;
 export const SearchRootShelvesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchRootShelves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchRootShelfInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchRootShelves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPrivateRootShelf"}}]}},{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"subShelfCount"}},{"kind":"Field","name":{"kind":"Name","value":"itemCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastAnalyzedAt"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRootShelf"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRootShelf"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRootShelf"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}}]}}]} as unknown as DocumentNode<SearchRootShelvesQuery, SearchRootShelvesQueryVariables>;
+export const SearchStationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchStations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchStationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchStations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPrivateStation"}}]}},{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sharers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}}]} as unknown as DocumentNode<SearchStationsQuery, SearchStationsQueryVariables>;
+export const SearchRoutinesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchRoutines"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchRoutineInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchRoutines"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPrivateRoutine"}}]}},{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"purpose"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"maxAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualEndedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}},{"kind":"Field","name":{"kind":"Name","value":"station"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"}}]}}]}}]} as unknown as DocumentNode<SearchRoutinesQuery, SearchRoutinesQueryVariables>;
+export const SearchRoutineTagsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchRoutineTags"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchRoutineTagInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchRoutineTags"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPrivateRoutineTag"}}]}},{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPublicUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PublicUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publicId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutineTag"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTag"}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sharers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPublicUser"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}}]} as unknown as DocumentNode<SearchRoutineTagsQuery, SearchRoutineTagsQueryVariables>;
+export const SearchRoutineTasksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchRoutineTasks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchRoutineTaskInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchRoutineTasks"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"searchEdges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedPrivateRoutineTask"}}]}},{"kind":"Field","name":{"kind":"Name","value":"encodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"searchPageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startEncodedSearchCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endEncodedSearchCursor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"searchTime"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"purpose"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"maxAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actualEndedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateStation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"headerBackgroundURL"}},{"kind":"Field","name":{"kind":"Name","value":"routineCount"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutine"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stationId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isPinned"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"deletedAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentedPrivateRoutineTask"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PrivateRoutineTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutineTask"}},{"kind":"Field","name":{"kind":"Name","value":"station"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateStation"}}]}},{"kind":"Field","name":{"kind":"Name","value":"routines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FragmentedBasicPrivateRoutine"}}]}}]}}]} as unknown as DocumentNode<SearchRoutineTasksQuery, SearchRoutineTasksQueryVariables>;

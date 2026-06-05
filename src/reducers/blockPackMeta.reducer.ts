@@ -1,4 +1,4 @@
-import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums/supportedBlockPackIcon.enum";
+import { SupportedIcon } from "@shared/api/interfaces/enums/supportedIcon.enum";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 
@@ -8,7 +8,7 @@ export type BlockPackMetaAction =
       payload: BlockPackMeta;
     }
   | { type: "setName"; newName: string }
-  | { type: "setIcon"; newIcon: SupportedBlockPackIcon }
+  | { type: "setIcon"; newIcon: SupportedIcon }
   | { type: "setHeaderBackgroundURL"; newHeaderBackgroundURL: string }
   | { type: "setBlockCount"; newBlockCount: number }
   | { type: "setUpdatedAt"; newUpdatedAt: Date }

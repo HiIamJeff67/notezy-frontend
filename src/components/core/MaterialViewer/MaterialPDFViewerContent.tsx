@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAppRouter, useLanguage } from "@/hooks";
-import MaterialViewerFrame from "../MaterialViewerFrame";
+import MaterialViewerFrame from "./MaterialViewerFrame";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",

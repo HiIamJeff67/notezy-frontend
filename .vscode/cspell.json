@@ -58,7 +58,8 @@
     "renderable",
     "unsynchronized",
     "opfs",
-    "reloadable"
+    "reloadable",
+    "overviewer"
   ],
   "ignorePaths": [
     "node_modules/**",

@@ -2,7 +2,7 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllSupportedBlockPackIcons } from "@shared/api/interfaces/enums";
+import { AllSupportedIcons } from "@shared/api/interfaces/enums";
 import { z } from "zod";
 import { BatchMoveMySubShelvesResponseSchema } from "./subShelf.interface";
 
@@ -29,7 +29,7 @@ export const GetMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend({
     id: z.uuidv4(),
     parentSubShelfId: z.uuidv4(),
     name: z.string(),
-    icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+    icon: z.enum(AllSupportedIcons).nullable(),
     headerBackgroundURL: z.url().nullable(),
     blockCount: z.int32(),
     deletedAt: z.coerce.date().nullable(),
@@ -69,7 +69,7 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
     data: z.object({
       id: z.uuidv4(),
       name: z.string(),
-      icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+      icon: z.enum(AllSupportedIcons).nullable(),
       headerBackgroundURL: z.url().nullable(),
       blockCount: z.int32(),
       deletedAt: z.coerce.date().nullable(),
@@ -119,7 +119,7 @@ export const GetMyBlockPacksByParentSubShelfIdResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+        icon: z.enum(AllSupportedIcons).nullable(),
         headerBackgroundURL: z.url().nullable(),
         blockCount: z.int32(),
         deletedAt: z.coerce.date().nullable(),
@@ -162,7 +162,7 @@ export const GetAllMyBlockPacksByRootShelfIdResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+        icon: z.enum(AllSupportedIcons).nullable(),
         headerBackgroundURL: z.url().nullable(),
         blockCount: z.int32(),
         deletedAt: z.coerce.date().nullable(),
@@ -192,7 +192,7 @@ export const CreateBlockPackRequestSchema = NotezyRequestSchema.extend({
     id: z.uuidv4().optional(),
     parentSubShelfId: z.uuidv4(),
     name: z.string().min(1).max(128),
-    icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+    icon: z.enum(AllSupportedIcons).nullable(),
     headerBackgroundURL: z.url().nullable(),
   }),
   affected: z.object({
@@ -234,7 +234,7 @@ export const CreateBlockPacksRequestSchema = NotezyRequestSchema.extend({
         id: z.uuidv4().optional(),
         parentSubShelfId: z.uuidv4(),
         name: z.string().min(1).max(128),
-        icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+        icon: z.enum(AllSupportedIcons).nullable(),
         headerBackgroundURL: z.url().nullable(),
       })
     ),
@@ -277,7 +277,7 @@ export const UpdateMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
     values: z
       .object({
         name: z.string().min(1).max(128),
-        icon: z.enum(AllSupportedBlockPackIcons),
+        icon: z.enum(AllSupportedIcons),
         headerBackgroundURL: z.url(),
       })
       .partial(),
@@ -322,7 +322,7 @@ export const UpdateMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
         values: z
           .object({
             name: z.string().min(1).max(128),
-            icon: z.enum(AllSupportedBlockPackIcons),
+            icon: z.enum(AllSupportedIcons),
             headerBackgroundURL: z.url(),
           })
           .partial(),
@@ -496,7 +496,7 @@ export const RestoreMyBlockPackByIdResponseSchema = NotezyResponseSchema.extend(
       id: z.uuidv4(),
       parentSubShelfId: z.uuidv4(),
       name: z.string(),
-      icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+      icon: z.enum(AllSupportedIcons).nullable(),
       headerBackgroundURL: z.url().nullable(),
       blockCount: z.int32(),
       deletedAt: z.coerce.date().nullable(),
@@ -544,7 +544,7 @@ export const RestoreMyBlockPacksByIdsResponseSchema =
         id: z.uuidv4(),
         parentSubShelfId: z.uuidv4(),
         name: z.string(),
-        icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+        icon: z.enum(AllSupportedIcons).nullable(),
         headerBackgroundURL: z.url().nullable(),
         blockCount: z.int32(),
         deletedAt: z.coerce.date().nullable(),

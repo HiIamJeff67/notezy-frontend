@@ -20,19 +20,17 @@ export const getDefaultMaterialMeta = (
   materialId: UUID,
   parentSubShelfId: UUID,
   rootShelfId: UUID = generateUUID()
-): MaterialMeta => {
-  return {
-    id: materialId,
-    parentId: parentSubShelfId,
-    rootId: rootShelfId,
-    name: "Untitled",
-    size: 0,
-    contentType: "text/plain",
-    parseMediaType: "",
-    downloadURL: null,
-    path: [],
-    deletedAt: null,
-    updatedAt: new Date(),
-    createdAt: new Date(),
-  };
-};
+): MaterialMeta => ({
+  id: materialId,
+  parentId: parentSubShelfId,
+  rootId: rootShelfId,
+  name: "Untitled",
+  size: 0,
+  contentType: "text/plain",
+  parseMediaType: "",
+  downloadURL: null,
+  path: [],
+  deletedAt: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+});

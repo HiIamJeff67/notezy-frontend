@@ -1,0 +1,415 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
+import {
+  AllAccessControlPermissions,
+  AllSupportedIcons,
+} from "@shared/api/interfaces/enums";
+import { z } from "zod";
+
+/* ============================== GetMyStationById ============================== */
+
+export const GetMyStationByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  param: z.object({
+    stationId: z.uuidv4(),
+    onlyDeleted: z.number().int().min(0).max(2).optional(),
+  }),
+});
+
+export type GetMyStationByIdRequest = z.infer<
+  typeof GetMyStationByIdRequestSchema
+>;
+
+export const GetMyStationByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    name: z.string(),
+    description: z.string(),
+    icon: z.enum(AllSupportedIcons).nullable(),
+    headerBackgroundURL: z.url().nullable(),
+    permission: z.enum(AllAccessControlPermissions),
+    routineCount: z.int32(),
+    deletedAt: z.coerce.date().nullable(),
+    updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type GetMyStationByIdResponse = z.infer<
+  typeof GetMyStationByIdResponseSchema
+>;
+
+/* ============================== CreateStation ============================== */
+
+export const CreateStationRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    id: z.uuidv4().optional(),
+    name: z.string().min(1).max(128),
+    description: z.string().max(1024),
+    icon: z.enum(AllSupportedIcons).nullable(),
+    headerBackgroundURL: z.url().nullable(),
+  }),
+});
+
+export type CreateStationRequest = z.infer<typeof CreateStationRequestSchema>;
+
+export const CreateStationResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type CreateStationResponse = z.infer<typeof CreateStationResponseSchema>;
+
+/* ============================== CreateStations ============================== */
+
+export const CreateStationsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    createdStations: z.array(
+      z.object({
+        id: z.uuidv4().optional(),
+        name: z.string().min(1).max(128),
+        description: z.string().max(1024),
+        icon: z.enum(AllSupportedIcons).nullable(),
+        headerBackgroundURL: z.url().nullable(),
+      })
+    ),
+  }),
+});
+
+export type CreateStationsRequest = z.infer<typeof CreateStationsRequestSchema>;
+
+export const CreateStationsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    ids: z.array(z.uuidv4()),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type CreateStationsResponse = z.infer<
+  typeof CreateStationsResponseSchema
+>;
+
+/* ============================== UpdateMyStationById ============================== */
+
+export const UpdateMyStationByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationId: z.uuidv4(),
+    values: z
+      .object({
+        name: z.string().min(1).max(128),
+        description: z.string().max(1024),
+        icon: z.enum(AllSupportedIcons).nullable(),
+        headerBackgroundURL: z.url().nullable(),
+      })
+      .partial(),
+    setNull: z.record(z.string(), z.boolean()).optional(),
+  }),
+});
+
+export type UpdateMyStationByIdRequest = z.infer<
+  typeof UpdateMyStationByIdRequestSchema
+>;
+
+export const UpdateMyStationByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type UpdateMyStationByIdResponse = z.infer<
+  typeof UpdateMyStationByIdResponseSchema
+>;
+
+/* ============================== UpdateMyStationsByIds ============================== */
+
+export const UpdateMyStationsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    updatedStations: z.array(
+      z.object({
+        stationId: z.uuidv4(),
+        values: z
+          .object({
+            name: z.string().min(1).max(128),
+            description: z.string().max(1024),
+            icon: z.enum(AllSupportedIcons).nullable(),
+            headerBackgroundURL: z.url().nullable(),
+          })
+          .partial(),
+        setNull: z.record(z.string(), z.boolean()).optional(),
+      })
+    ),
+  }),
+});
+
+export type UpdateMyStationsByIdsRequest = z.infer<
+  typeof UpdateMyStationsByIdsRequestSchema
+>;
+
+export const UpdateMyStationsByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type UpdateMyStationsByIdsResponse = z.infer<
+  typeof UpdateMyStationsByIdsResponseSchema
+>;
+
+/* ============================== RestoreMyStationById ============================== */
+
+export const RestoreMyStationByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationId: z.uuidv4(),
+  }),
+});
+
+export type RestoreMyStationByIdRequest = z.infer<
+  typeof RestoreMyStationByIdRequestSchema
+>;
+
+export const RestoreMyStationByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    id: z.uuidv4(),
+    name: z.string(),
+    description: z.string(),
+    icon: z.enum(AllSupportedIcons).nullable(),
+    headerBackgroundURL: z.url().nullable(),
+    permission: z.enum(AllAccessControlPermissions),
+    routineCount: z.int32(),
+    deletedAt: z.coerce.date().nullable(),
+    updatedAt: z.coerce.date(),
+    createdAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type RestoreMyStationByIdResponse = z.infer<
+  typeof RestoreMyStationByIdResponseSchema
+>;
+
+/* ============================== RestoreMyStationsByIds ============================== */
+
+export const RestoreMyStationsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type RestoreMyStationsByIdsRequest = z.infer<
+  typeof RestoreMyStationsByIdsRequestSchema
+>;
+
+export const RestoreMyStationsByIdsResponseSchema = NotezyResponseSchema.extend(
+  {
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        name: z.string(),
+        description: z.string(),
+        icon: z.enum(AllSupportedIcons).nullable(),
+        headerBackgroundURL: z.url().nullable(),
+        permission: z.enum(AllAccessControlPermissions),
+        routineCount: z.int32(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  }
+);
+
+export type RestoreMyStationsByIdsResponse = z.infer<
+  typeof RestoreMyStationsByIdsResponseSchema
+>;
+
+/* ============================== DeleteMyStationById ============================== */
+
+export const DeleteMyStationByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationId: z.uuidv4(),
+  }),
+});
+
+export type DeleteMyStationByIdRequest = z.infer<
+  typeof DeleteMyStationByIdRequestSchema
+>;
+
+export const DeleteMyStationByIdResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type DeleteMyStationByIdResponse = z.infer<
+  typeof DeleteMyStationByIdResponseSchema
+>;
+
+/* ============================== DeleteMyStationsByIds ============================== */
+
+export const DeleteMyStationsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationIds: z.array(z.uuidv4()),
+  }),
+});
+
+export type DeleteMyStationsByIdsRequest = z.infer<
+  typeof DeleteMyStationsByIdsRequestSchema
+>;
+
+export const DeleteMyStationsByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    deletedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type DeleteMyStationsByIdsResponse = z.infer<
+  typeof DeleteMyStationsByIdsResponseSchema
+>;
+
+/* ============================== HardDeleteMyStationById ============================== */
+
+export const HardDeleteMyStationByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    stationId: z.uuidv4(),
+  }),
+});
+
+export type HardDeleteMyStationByIdRequest = z.infer<
+  typeof HardDeleteMyStationByIdRequestSchema
+>;
+
+export const HardDeleteMyStationByIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type HardDeleteMyStationByIdResponse = z.infer<
+  typeof HardDeleteMyStationByIdResponseSchema
+>;
+
+/* ============================== HardDeleteMyStationsByIds ============================== */
+
+export const HardDeleteMyStationsByIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      stationIds: z.array(z.uuidv4()),
+    }),
+  });
+
+export type HardDeleteMyStationsByIdsRequest = z.infer<
+  typeof HardDeleteMyStationsByIdsRequestSchema
+>;
+
+export const HardDeleteMyStationsByIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      deletedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type HardDeleteMyStationsByIdsResponse = z.infer<
+  typeof HardDeleteMyStationsByIdsResponseSchema
+>;

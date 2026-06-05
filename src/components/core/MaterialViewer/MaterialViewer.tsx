@@ -4,12 +4,12 @@ import { Suspense, useEffect, useMemo, useReducer } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useShelfItem } from "@/hooks";
 import { materialMetaReducer } from "@/reducers/materialMeta.reducer";
-import MaterialAudioViewerContent from "./content/MaterialAudioViewerContent";
-import MaterialImageViewerContent from "./content/MaterialImageViewerContent";
-import MaterialPDFViewerContent from "./content/MaterialPDFViewerContent";
-import MaterialTextViewerContent from "./content/MaterialTextViewerContent";
-import MaterialUnsupportedViewerContent from "./content/MaterialUnsupportedViewerContent";
-import MaterialVideoViewerContent from "./content/MaterialVideoViewerContent";
+import MaterialAudioViewerContent from "./MaterialAudioViewerContent";
+import MaterialImageViewerContent from "./MaterialImageViewerContent";
+import MaterialPDFViewerContent from "./MaterialPDFViewerContent";
+import MaterialTextViewerContent from "./MaterialTextViewerContent";
+import MaterialUnsupportedViewerContent from "./MaterialUnsupportedViewerContent";
+import MaterialVideoViewerContent from "./MaterialVideoViewerContent";
 
 interface MaterialViewerProps {
   materialMeta: MaterialMeta;

@@ -1,0 +1,582 @@
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyAPIError } from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
+import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import {
+  BulkLinkRoutineItemsByIds,
+  BulkLinkRoutineTagsByIds,
+  BulkLinkRoutineTasksByIds,
+  CreateRoutineByStationId,
+  CreateRoutinesByStationIds,
+  DeleteMyRoutineById,
+  DeleteMyRoutinesByIds,
+  GetMyRoutineById,
+  HardDeleteMyRoutineById,
+  HardDeleteMyRoutinesByIds,
+  LinkRoutineItemById,
+  LinkRoutineTagById,
+  LinkRoutineTaskById,
+  RestoreMyRoutineById,
+  RestoreMyRoutinesByIds,
+  UpdateMyRoutineById,
+  UpdateMyRoutinesByIds,
+} from "@shared/api/functions/routine.serverFn";
+import {
+  BulkLinkRoutineItemsByIdsRequest,
+  BulkLinkRoutineItemsByIdsRequestSchema,
+  BulkLinkRoutineItemsByIdsResponse,
+  BulkLinkRoutineItemsByIdsResponseSchema,
+  BulkLinkRoutineTagsByIdsRequest,
+  BulkLinkRoutineTagsByIdsRequestSchema,
+  BulkLinkRoutineTagsByIdsResponse,
+  BulkLinkRoutineTagsByIdsResponseSchema,
+  BulkLinkRoutineTasksByIdsRequest,
+  BulkLinkRoutineTasksByIdsRequestSchema,
+  BulkLinkRoutineTasksByIdsResponse,
+  BulkLinkRoutineTasksByIdsResponseSchema,
+  CreateRoutineByStationIdRequest,
+  CreateRoutineByStationIdRequestSchema,
+  CreateRoutineByStationIdResponse,
+  CreateRoutineByStationIdResponseSchema,
+  CreateRoutinesByStationIdsRequest,
+  CreateRoutinesByStationIdsRequestSchema,
+  CreateRoutinesByStationIdsResponse,
+  CreateRoutinesByStationIdsResponseSchema,
+  DeleteMyRoutineByIdRequest,
+  DeleteMyRoutineByIdRequestSchema,
+  DeleteMyRoutineByIdResponse,
+  DeleteMyRoutineByIdResponseSchema,
+  DeleteMyRoutinesByIdsRequest,
+  DeleteMyRoutinesByIdsRequestSchema,
+  DeleteMyRoutinesByIdsResponse,
+  DeleteMyRoutinesByIdsResponseSchema,
+  GetMyRoutineByIdRequest,
+  GetMyRoutineByIdRequestSchema,
+  GetMyRoutineByIdResponse,
+  GetMyRoutineByIdResponseSchema,
+  HardDeleteMyRoutineByIdRequest,
+  HardDeleteMyRoutineByIdRequestSchema,
+  HardDeleteMyRoutineByIdResponse,
+  HardDeleteMyRoutineByIdResponseSchema,
+  HardDeleteMyRoutinesByIdsRequest,
+  HardDeleteMyRoutinesByIdsRequestSchema,
+  HardDeleteMyRoutinesByIdsResponse,
+  HardDeleteMyRoutinesByIdsResponseSchema,
+  LinkRoutineItemByIdRequest,
+  LinkRoutineItemByIdRequestSchema,
+  LinkRoutineItemByIdResponse,
+  LinkRoutineItemByIdResponseSchema,
+  LinkRoutineTagByIdRequest,
+  LinkRoutineTagByIdRequestSchema,
+  LinkRoutineTagByIdResponse,
+  LinkRoutineTagByIdResponseSchema,
+  LinkRoutineTaskByIdRequest,
+  LinkRoutineTaskByIdRequestSchema,
+  LinkRoutineTaskByIdResponse,
+  LinkRoutineTaskByIdResponseSchema,
+  RestoreMyRoutineByIdRequest,
+  RestoreMyRoutineByIdRequestSchema,
+  RestoreMyRoutineByIdResponse,
+  RestoreMyRoutineByIdResponseSchema,
+  RestoreMyRoutinesByIdsRequest,
+  RestoreMyRoutinesByIdsRequestSchema,
+  RestoreMyRoutinesByIdsResponse,
+  RestoreMyRoutinesByIdsResponseSchema,
+  UpdateMyRoutineByIdRequest,
+  UpdateMyRoutineByIdRequestSchema,
+  UpdateMyRoutineByIdResponse,
+  UpdateMyRoutineByIdResponseSchema,
+  UpdateMyRoutinesByIdsRequest,
+  UpdateMyRoutinesByIdsRequestSchema,
+  UpdateMyRoutinesByIdsResponse,
+  UpdateMyRoutinesByIdsResponseSchema,
+} from "@shared/api/interfaces/routine.interface";
+import { ZodError } from "zod";
+
+export const queryFnGetMyRoutineById = async (
+  request: GetMyRoutineByIdRequest
+): Promise<GetMyRoutineByIdResponse> => {
+  try {
+    const validatedRequest = GetMyRoutineByIdRequestSchema.parse(request);
+    const response = await GetMyRoutineById({
+      data: validatedRequest,
+    });
+    return GetMyRoutineByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetMyRoutineById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnCreateRoutineByStationId = async (
+  request: CreateRoutineByStationIdRequest
+): Promise<CreateRoutineByStationIdResponse> => {
+  try {
+    const validatedRequest =
+      CreateRoutineByStationIdRequestSchema.parse(request);
+    const response = await CreateRoutineByStationId({
+      data: validatedRequest,
+    });
+    return CreateRoutineByStationIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnCreateRoutineByStationId",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnCreateRoutinesByStationIds = async (
+  request: CreateRoutinesByStationIdsRequest
+): Promise<CreateRoutinesByStationIdsResponse> => {
+  try {
+    const validatedRequest =
+      CreateRoutinesByStationIdsRequestSchema.parse(request);
+    const response = await CreateRoutinesByStationIds({
+      data: validatedRequest,
+    });
+    return CreateRoutinesByStationIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnCreateRoutinesByStationIds",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyRoutineById = async (
+  request: UpdateMyRoutineByIdRequest
+): Promise<UpdateMyRoutineByIdResponse> => {
+  try {
+    const validatedRequest = UpdateMyRoutineByIdRequestSchema.parse(request);
+    const response = await UpdateMyRoutineById({
+      data: validatedRequest,
+    });
+    return UpdateMyRoutineByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnUpdateMyRoutineById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpdateMyRoutinesByIds = async (
+  request: UpdateMyRoutinesByIdsRequest
+): Promise<UpdateMyRoutinesByIdsResponse> => {
+  try {
+    const validatedRequest = UpdateMyRoutinesByIdsRequestSchema.parse(request);
+    const response = await UpdateMyRoutinesByIds({
+      data: validatedRequest,
+    });
+    return UpdateMyRoutinesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnUpdateMyRoutinesByIds", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnLinkRoutineTagById = async (
+  request: LinkRoutineTagByIdRequest
+): Promise<LinkRoutineTagByIdResponse> => {
+  try {
+    const validatedRequest = LinkRoutineTagByIdRequestSchema.parse(request);
+    const response = await LinkRoutineTagById({
+      data: validatedRequest,
+    });
+    return LinkRoutineTagByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnLinkRoutineTagById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnBulkLinkRoutineTagsByIds = async (
+  request: BulkLinkRoutineTagsByIdsRequest
+): Promise<BulkLinkRoutineTagsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      BulkLinkRoutineTagsByIdsRequestSchema.parse(request);
+    const response = await BulkLinkRoutineTagsByIds({
+      data: validatedRequest,
+    });
+    return BulkLinkRoutineTagsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnBulkLinkRoutineTagsByIds",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnLinkRoutineTaskById = async (
+  request: LinkRoutineTaskByIdRequest
+): Promise<LinkRoutineTaskByIdResponse> => {
+  try {
+    const validatedRequest = LinkRoutineTaskByIdRequestSchema.parse(request);
+    const response = await LinkRoutineTaskById({
+      data: validatedRequest,
+    });
+    return LinkRoutineTaskByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnLinkRoutineTaskById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnBulkLinkRoutineTasksByIds = async (
+  request: BulkLinkRoutineTasksByIdsRequest
+): Promise<BulkLinkRoutineTasksByIdsResponse> => {
+  try {
+    const validatedRequest =
+      BulkLinkRoutineTasksByIdsRequestSchema.parse(request);
+    const response = await BulkLinkRoutineTasksByIds({
+      data: validatedRequest,
+    });
+    return BulkLinkRoutineTasksByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnBulkLinkRoutineTasksByIds",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnLinkRoutineItemById = async (
+  request: LinkRoutineItemByIdRequest
+): Promise<LinkRoutineItemByIdResponse> => {
+  try {
+    const validatedRequest = LinkRoutineItemByIdRequestSchema.parse(request);
+    const response = await LinkRoutineItemById({
+      data: validatedRequest,
+    });
+    return LinkRoutineItemByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnLinkRoutineItemById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnBulkLinkRoutineItemsByIds = async (
+  request: BulkLinkRoutineItemsByIdsRequest
+): Promise<BulkLinkRoutineItemsByIdsResponse> => {
+  try {
+    const validatedRequest =
+      BulkLinkRoutineItemsByIdsRequestSchema.parse(request);
+    const response = await BulkLinkRoutineItemsByIds({
+      data: validatedRequest,
+    });
+    return BulkLinkRoutineItemsByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnBulkLinkRoutineItemsByIds",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnRestoreMyRoutineById = async (
+  request: RestoreMyRoutineByIdRequest
+): Promise<RestoreMyRoutineByIdResponse> => {
+  try {
+    const validatedRequest = RestoreMyRoutineByIdRequestSchema.parse(request);
+    const response = await RestoreMyRoutineById({
+      data: validatedRequest,
+    });
+    return RestoreMyRoutineByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnRestoreMyRoutineById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnRestoreMyRoutinesByIds = async (
+  request: RestoreMyRoutinesByIdsRequest
+): Promise<RestoreMyRoutinesByIdsResponse> => {
+  try {
+    const validatedRequest = RestoreMyRoutinesByIdsRequestSchema.parse(request);
+    const response = await RestoreMyRoutinesByIds({
+      data: validatedRequest,
+    });
+    return RestoreMyRoutinesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnRestoreMyRoutinesByIds", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnDeleteMyRoutineById = async (
+  request: DeleteMyRoutineByIdRequest
+): Promise<DeleteMyRoutineByIdResponse> => {
+  try {
+    const validatedRequest = DeleteMyRoutineByIdRequestSchema.parse(request);
+    const response = await DeleteMyRoutineById({
+      data: validatedRequest,
+    });
+    return DeleteMyRoutineByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnDeleteMyRoutineById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnDeleteMyRoutinesByIds = async (
+  request: DeleteMyRoutinesByIdsRequest
+): Promise<DeleteMyRoutinesByIdsResponse> => {
+  try {
+    const validatedRequest = DeleteMyRoutinesByIdsRequestSchema.parse(request);
+    const response = await DeleteMyRoutinesByIds({
+      data: validatedRequest,
+    });
+    return DeleteMyRoutinesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnDeleteMyRoutinesByIds", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnHardDeleteMyRoutineById = async (
+  request: HardDeleteMyRoutineByIdRequest
+): Promise<HardDeleteMyRoutineByIdResponse> => {
+  try {
+    const validatedRequest =
+      HardDeleteMyRoutineByIdRequestSchema.parse(request);
+    const response = await HardDeleteMyRoutineById({
+      data: validatedRequest,
+    });
+    return HardDeleteMyRoutineByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnHardDeleteMyRoutineById",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnHardDeleteMyRoutinesByIds = async (
+  request: HardDeleteMyRoutinesByIdsRequest
+): Promise<HardDeleteMyRoutinesByIdsResponse> => {
+  try {
+    const validatedRequest =
+      HardDeleteMyRoutinesByIdsRequestSchema.parse(request);
+    const response = await HardDeleteMyRoutinesByIds({
+      data: validatedRequest,
+    });
+    return HardDeleteMyRoutinesByIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnHardDeleteMyRoutinesByIds",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};

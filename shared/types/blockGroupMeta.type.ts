@@ -19,16 +19,14 @@ export const getDefaultBlockGroupMeta = (
   prevBlockGroupId: UUID | null = null,
   syncBlockGroupId: UUID | null = null,
   rawArborizedEditableBlock: PartialBlock = {}
-): BlockGroupMeta => {
-  return {
-    id: blockGroupId,
-    blockPackId: blockPackId,
-    prevBlockGroupId: prevBlockGroupId,
-    syncBlockGroupId: syncBlockGroupId,
-    size: 0,
-    deletedAt: null,
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    rawArborizedEditableBlock: rawArborizedEditableBlock,
-  };
-};
+): BlockGroupMeta => ({
+  id: blockGroupId,
+  blockPackId: blockPackId,
+  prevBlockGroupId: prevBlockGroupId,
+  syncBlockGroupId: syncBlockGroupId,
+  size: 0,
+  deletedAt: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+  rawArborizedEditableBlock: rawArborizedEditableBlock,
+});

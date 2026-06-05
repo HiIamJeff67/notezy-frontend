@@ -1,4 +1,4 @@
-export enum SupportedBlockPackIcon {
+export enum SupportedIcon {
   GrinningFace = "😀",
   SmilingFaceWithSmilingEyes = "😊",
   RedHeart = "❤️",
@@ -16,5 +16,4 @@ export enum SupportedBlockPackIcon {
   Clock = "⏰",
 }
 
-export const AllSupportedBlockPackIcons: SupportedBlockPackIcon[] =
-  Object.values(SupportedBlockPackIcon);
+export const AllSupportedIcons: SupportedIcon[] = Object.values(SupportedIcon);

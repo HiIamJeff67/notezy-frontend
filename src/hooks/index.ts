@@ -10,6 +10,7 @@ export * from "./useMobile";
 export * from "./useModal";
 export * from "./useNetwork";
 export * from "./useResizeSidebar";
+export * from "./useRoutine";
 export * from "./useScreen";
 export * from "./useShelfItem";
 export * from "./useTheme";

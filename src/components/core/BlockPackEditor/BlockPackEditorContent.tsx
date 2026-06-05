@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { useAppRouter, useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLanguage, useShelfItem } from "@/hooks";
 import { useBlockEditor } from "@/hooks/useBlockEditor";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
@@ -47,15 +47,12 @@ interface BlockPackEditorContentProps {
 const BlockPackEditorContent = ({
   blockPackMeta,
 }: BlockPackEditorContentProps) => {
-  const router = useAppRouter();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
 
   const { editor, state } = useBlockEditor();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [isSaving, startSavingTransition] = useTransition();
   const [isImporting, startImportingTransition] = useTransition();
   const [isExporting, startExportingTransition] = useTransition();
 

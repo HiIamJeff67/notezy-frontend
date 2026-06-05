@@ -1,4 +1,4 @@
-import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
+import { SupportedIcon } from "@shared/api/interfaces/enums";
 import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";
@@ -8,7 +8,7 @@ export interface BlockPackMeta {
   parentId: UUID;
   rootId: UUID;
   name: string;
-  icon: SupportedBlockPackIcon | null;
+  icon: SupportedIcon | null;
   headerBackgroundURL: string | null;
   blockCount: number;
   path: UUID[];
@@ -22,19 +22,17 @@ export const getDefaultBlockPackMeta = (
   blockPackId: UUID,
   parentSubShelfId: UUID,
   rootShelfId: UUID = generateUUID()
-): BlockPackMeta => {
-  return {
-    id: blockPackId,
-    parentId: parentSubShelfId,
-    rootId: rootShelfId,
-    name: "Untitled",
-    icon: null,
-    headerBackgroundURL: null,
-    blockCount: 0,
-    path: [],
-    deletedAt: new Date(),
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    blockGroups: [],
-  };
-};
+): BlockPackMeta => ({
+  id: blockPackId,
+  parentId: parentSubShelfId,
+  rootId: rootShelfId,
+  name: "Untitled",
+  icon: null,
+  headerBackgroundURL: null,
+  blockCount: 0,
+  path: [],
+  deletedAt: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+  blockGroups: [],
+});

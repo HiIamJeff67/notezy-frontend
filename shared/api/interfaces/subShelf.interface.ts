@@ -4,7 +4,7 @@ import {
 } from "@shared/api/interfaces/context.interface";
 import {
   AllMaterialContentTypes,
-  AllSupportedBlockPackIcons,
+  AllSupportedIcons,
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
 
@@ -186,7 +186,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdResponseSchema =
           id: z.uuidv4(),
           parentSubShelfId: z.uuidv4(),
           name: z.string(),
-          icon: z.enum(AllSupportedBlockPackIcons).nullable(),
+          icon: z.enum(AllSupportedIcons).nullable(),
           headerBackgroundURL: z.url().nullable(),
           blockCount: z.int32(),
           deletedAt: z.coerce.date().nullable(),

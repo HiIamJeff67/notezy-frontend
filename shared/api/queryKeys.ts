@@ -103,4 +103,26 @@ export const queryKeys = {
     manyByBlockPackId: (blockPackId?: UUID) =>
       ["blockGroupWithBlock", "manyByBlockPackId", blockPackId] as const,
   },
+  station: {
+    all: () => ["station"] as const,
+    oneById: (stationId?: UUID) => ["station", "oneById", stationId] as const,
+  },
+  routine: {
+    all: () => ["routine"] as const,
+    oneById: (routineId?: UUID) => ["routine", "oneById", routineId] as const,
+    manyByStationId: (stationId?: UUID) =>
+      ["routine", "manyByStationId", stationId] as const,
+  },
+  routineTag: {
+    all: () => ["routineTag"] as const,
+    oneById: (routineTagId?: UUID) =>
+      ["routineTag", "oneById", routineTagId] as const,
+  },
+  routineTask: {
+    all: () => ["routineTask"] as const,
+    oneById: (routineTaskId?: UUID) =>
+      ["routineTask", "oneById", routineTaskId] as const,
+    manyByStationId: (stationId?: UUID) =>
+      ["routineTask", "manyByStationId", stationId] as const,
+  },
 };

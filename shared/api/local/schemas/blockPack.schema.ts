@@ -1,4 +1,4 @@
-import { SupportedBlockPackIcon } from "@shared/api/interfaces/enums";
+import { SupportedIcon } from "@shared/api/interfaces/enums";
 import { BlockGroup, SubShelf } from "@shared/api/local/schemas";
 import { isNotNull, relations } from "drizzle-orm";
 import {
@@ -20,7 +20,7 @@ export const BlockPack = sqliteTable(
         onDelete: "cascade",
       }),
     name: text("name").notNull().default("undefined"),
-    icon: text("icon").$type<SupportedBlockPackIcon>(),
+    icon: text("icon").$type<SupportedIcon>(),
     headerBackgroundURL: text("header_background_url"),
     blockCount: integer("block_count").notNull().default(0),
     deletedAt: integer("deleted_at", { mode: "timestamp" }),

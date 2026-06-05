@@ -1,16 +1,16 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
 import { MaterialMeta } from "@shared/types/materialMeta.type";
-import MaterialViewerFrame from "../MaterialViewerFrame";
+import MaterialViewerFrame from "./MaterialViewerFrame";
 
-interface MaterialVideoViewerContentProps {
+interface MaterialImageViewerContentProps {
   meta: MaterialMeta;
   materialContentType: MaterialContentType;
 }
 
-const MaterialVideoViewerContent = ({
+const MaterialImageViewerContent = ({
   meta,
   materialContentType,
-}: MaterialVideoViewerContentProps) => {
+}: MaterialImageViewerContentProps) => {
   return (
     <MaterialViewerFrame
       meta={meta}
@@ -18,14 +18,14 @@ const MaterialVideoViewerContent = ({
       contentClassName="p-8 overflow-auto"
     >
       {meta.downloadURL && (
-        <video
+        <img
           src={meta.downloadURL}
-          controls
-          className="max-h-[70vh] w-full"
+          alt={meta.name}
+          className="max-h-[70vh] w-auto"
         />
       )}
     </MaterialViewerFrame>
   );
 };
 
-export default MaterialVideoViewerContent;
+export default MaterialImageViewerContent;

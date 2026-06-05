@@ -33,6 +33,8 @@ const config: CodegenConfig = {
           Base64Bytes: "string",
           Int32: "number",
           Int64: "number",
+          RawJSON: "Record<string, unknown>",
+          DatatypeJSON: "Record<string, unknown>",
         },
         enumsAsTypes: false,
       },
