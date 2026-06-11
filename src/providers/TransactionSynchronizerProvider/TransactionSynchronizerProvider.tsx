@@ -23,6 +23,42 @@ import {
   useUpdateMyRootShelvesByIds,
 } from "@shared/api/hooks/rootShelf.hook";
 import {
+  useBulkLinkRoutineItemsByIds,
+  useBulkLinkRoutineTagsByIds,
+  useCreateRoutineByStationId,
+  useCreateRoutinesByStationIds,
+  useDeleteMyRoutineById,
+  useDeleteMyRoutinesByIds,
+  useHardDeleteMyRoutineById,
+  useHardDeleteMyRoutinesByIds,
+  useLinkRoutineItemById,
+  useLinkRoutineTagById,
+  useRestoreMyRoutineById,
+  useRestoreMyRoutinesByIds,
+  useUpdateMyRoutineById,
+  useUpdateMyRoutinesByIds,
+} from "@shared/api/hooks/routine.hook";
+import {
+  useCreateRoutineTag,
+  useCreateRoutineTags,
+  useHardDeleteMyRoutineTagById,
+  useHardDeleteMyRoutineTagsByIds,
+  useUpdateMyRoutineTagById,
+  useUpdateMyRoutineTagsByIds,
+} from "@shared/api/hooks/routineTag.hook";
+import {
+  useCreateStation,
+  useCreateStations,
+  useDeleteMyStationById,
+  useDeleteMyStationsByIds,
+  useHardDeleteMyStationById,
+  useHardDeleteMyStationsByIds,
+  useRestoreMyStationById,
+  useRestoreMyStationsByIds,
+  useUpdateMyStationById,
+  useUpdateMyStationsByIds,
+} from "@shared/api/hooks/station.hook";
+import {
   useBatchMoveMySubShelves,
   useCreateSubShelvesByRootShelfIds,
   useDeleteMySubShelvesByIds,
@@ -49,6 +85,10 @@ import { buildBlockGroupSyncResult } from "./BlockGroupSyncLogic";
 import { buildBlockPackSyncResult } from "./BlockPackSyncLogic";
 import { buildBlockSyncResult } from "./BlockSyncLogic";
 import { buildRootShelfSyncResult } from "./RootShelfSyncLogic";
+import { buildRoutineRelationSyncResult } from "./RoutineRelationSyncLogic";
+import { buildRoutineSyncResult } from "./RoutineSyncLogic";
+import { buildRoutineTagSyncResult } from "./RoutineTagSyncLogic";
+import { buildStationSyncResult } from "./StationSyncLogic";
 import { buildSubShelfSyncResult } from "./SubShelfSyncLogic";
 
 /* ============================== General types ============================== */
@@ -150,6 +190,39 @@ export const TransactionSynchronizerProvider = ({
   const updateRootShelvesMutator = useUpdateMyRootShelvesByIds();
   const restoreRootShelvesMutator = useRestoreMyRootShelvesByIds();
   const deleteRootShelvesMutator = useDeleteMyRootShelvesByIds();
+
+  const createStationMutator = useCreateStation();
+  const createStationsMutator = useCreateStations();
+  const updateStationMutator = useUpdateMyStationById();
+  const updateStationsMutator = useUpdateMyStationsByIds();
+  const restoreStationMutator = useRestoreMyStationById();
+  const restoreStationsMutator = useRestoreMyStationsByIds();
+  const deleteStationMutator = useDeleteMyStationById();
+  const deleteStationsMutator = useDeleteMyStationsByIds();
+  const hardDeleteStationMutator = useHardDeleteMyStationById();
+  const hardDeleteStationsMutator = useHardDeleteMyStationsByIds();
+
+  const createRoutineMutator = useCreateRoutineByStationId();
+  const createRoutinesMutator = useCreateRoutinesByStationIds();
+  const updateRoutineMutator = useUpdateMyRoutineById();
+  const updateRoutinesMutator = useUpdateMyRoutinesByIds();
+  const restoreRoutineMutator = useRestoreMyRoutineById();
+  const restoreRoutinesMutator = useRestoreMyRoutinesByIds();
+  const deleteRoutineMutator = useDeleteMyRoutineById();
+  const deleteRoutinesMutator = useDeleteMyRoutinesByIds();
+  const hardDeleteRoutineMutator = useHardDeleteMyRoutineById();
+  const hardDeleteRoutinesMutator = useHardDeleteMyRoutinesByIds();
+  const linkRoutineTagMutator = useLinkRoutineTagById();
+  const bulkLinkRoutineTagsMutator = useBulkLinkRoutineTagsByIds();
+  const linkRoutineItemMutator = useLinkRoutineItemById();
+  const bulkLinkRoutineItemsMutator = useBulkLinkRoutineItemsByIds();
+
+  const createRoutineTagMutator = useCreateRoutineTag();
+  const createRoutineTagsMutator = useCreateRoutineTags();
+  const updateRoutineTagMutator = useUpdateMyRoutineTagById();
+  const updateRoutineTagsMutator = useUpdateMyRoutineTagsByIds();
+  const hardDeleteRoutineTagMutator = useHardDeleteMyRoutineTagById();
+  const hardDeleteRoutineTagsMutator = useHardDeleteMyRoutineTagsByIds();
 
   const createSubShelvesMutator = useCreateSubShelvesByRootShelfIds();
   const updateSubShelvesMutator = useUpdateMySubShelvesByIds();
@@ -338,6 +411,11 @@ export const TransactionSynchronizerProvider = ({
     const blockPackTransactions: InferSelectModel<typeof Transaction>[] = [];
     const blockGroupTransactions: InferSelectModel<typeof Transaction>[] = [];
     const blockTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const stationTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const routineTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const routineTagTransactions: InferSelectModel<typeof Transaction>[] = [];
+    const routineRelationTransactions: InferSelectModel<typeof Transaction>[] =
+      [];
     for (const transaction of transactions) {
       switch (transaction.entityType) {
         case TransactionEntityType.RootShelf:
@@ -354,6 +432,19 @@ export const TransactionSynchronizerProvider = ({
           break;
         case TransactionEntityType.Block:
           blockTransactions.push(transaction);
+          break;
+        case TransactionEntityType.Station:
+          stationTransactions.push(transaction);
+          break;
+        case TransactionEntityType.Routine:
+          routineTransactions.push(transaction);
+          break;
+        case TransactionEntityType.RoutineTag:
+          routineTagTransactions.push(transaction);
+          break;
+        case TransactionEntityType.RoutinesToTags:
+        case TransactionEntityType.RoutinesToItems:
+          routineRelationTransactions.push(transaction);
           break;
         default:
           throw new Error("undefined transaction entity type");
@@ -441,6 +532,76 @@ export const TransactionSynchronizerProvider = ({
           onParsed: handleOnParsed,
         }),
       },
+      {
+        transactions: stationTransactions,
+        result: buildStationSyncResult({
+          transactions: stationTransactions,
+          header,
+          mutators: {
+            createStationMutator,
+            createStationsMutator,
+            updateStationMutator,
+            updateStationsMutator,
+            restoreStationMutator,
+            restoreStationsMutator,
+            deleteStationMutator,
+            deleteStationsMutator,
+            hardDeleteStationMutator,
+            hardDeleteStationsMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
+      },
+      {
+        transactions: routineTransactions,
+        result: buildRoutineSyncResult({
+          transactions: routineTransactions,
+          header,
+          mutators: {
+            createRoutineMutator,
+            createRoutinesMutator,
+            updateRoutineMutator,
+            updateRoutinesMutator,
+            restoreRoutineMutator,
+            restoreRoutinesMutator,
+            deleteRoutineMutator,
+            deleteRoutinesMutator,
+            hardDeleteRoutineMutator,
+            hardDeleteRoutinesMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
+      },
+      {
+        transactions: routineTagTransactions,
+        result: buildRoutineTagSyncResult({
+          transactions: routineTagTransactions,
+          header,
+          mutators: {
+            createRoutineTagMutator,
+            createRoutineTagsMutator,
+            updateRoutineTagMutator,
+            updateRoutineTagsMutator,
+            hardDeleteRoutineTagMutator,
+            hardDeleteRoutineTagsMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
+      },
+      {
+        transactions: routineRelationTransactions,
+        result: buildRoutineRelationSyncResult({
+          transactions: routineRelationTransactions,
+          header,
+          mutators: {
+            linkRoutineTagMutator,
+            bulkLinkRoutineTagsMutator,
+            linkRoutineItemMutator,
+            bulkLinkRoutineItemsMutator,
+          },
+          onParsed: handleOnParsed,
+        }),
+      },
     ];
 
     const totalJobs = allResults.reduce(
@@ -487,6 +648,36 @@ export const TransactionSynchronizerProvider = ({
     batchInsertBlockGroupsMutator,
     batchMoveBlockGroupsMutator,
     deleteBlockGroupsMutator,
+    createStationMutator,
+    createStationsMutator,
+    updateStationMutator,
+    updateStationsMutator,
+    restoreStationMutator,
+    restoreStationsMutator,
+    deleteStationMutator,
+    deleteStationsMutator,
+    hardDeleteStationMutator,
+    hardDeleteStationsMutator,
+    createRoutineMutator,
+    createRoutinesMutator,
+    updateRoutineMutator,
+    updateRoutinesMutator,
+    restoreRoutineMutator,
+    restoreRoutinesMutator,
+    deleteRoutineMutator,
+    deleteRoutinesMutator,
+    hardDeleteRoutineMutator,
+    hardDeleteRoutinesMutator,
+    linkRoutineTagMutator,
+    bulkLinkRoutineTagsMutator,
+    linkRoutineItemMutator,
+    bulkLinkRoutineItemsMutator,
+    createRoutineTagMutator,
+    createRoutineTagsMutator,
+    updateRoutineTagMutator,
+    updateRoutineTagsMutator,
+    hardDeleteRoutineTagMutator,
+    hardDeleteRoutineTagsMutator,
     persistSyncResult,
   ]);
 

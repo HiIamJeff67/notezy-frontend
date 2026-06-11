@@ -11,6 +11,7 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { UsersToStations } from "./usersToStations.schema";
 
 // the same schemas as the user in api interface and shard type
 export const User = sqliteTable(
@@ -41,6 +42,7 @@ export const User = sqliteTable(
 export const UserRelations = relations(User, ({ many }) => ({
   rootShelves: many(RootShelf),
   usersToShelves: many(UsersToShelves),
+  usersToStations: many(UsersToStations),
   blockGroups: many(BlockGroup),
   transactions: many(Transaction),
 }));

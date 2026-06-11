@@ -1,84 +1,122 @@
 import { useLazyQuery, useQuery } from "@apollo/client/react";
 import {
-  AccessControlPermission,
-  SearchRootShelvesDocument,
-  type SearchRootShelvesQuery,
-  type SearchRootShelvesQueryVariables,
+  SupportedIcon as GraphQLSupportedIcon,
+  SearchStationsDocument,
+  type SearchStationsQuery,
+  type SearchStationsQueryVariables,
 } from "@shared/api/graphql/generated/graphql";
-import { RootShelfLocalSimulator } from "@shared/api/local/simulators/rootShelf.simulator";
-import { RootShelfLocalSynchronizer } from "@shared/api/local/synchronizers/rootShelf.synchronizer";
+import {
+  AccessControlPermission,
+  SupportedIcon,
+} from "@shared/api/interfaces/enums";
+import { StationLocalSimulator } from "@shared/api/local/simulators/station.simulator";
+import { StationLocalSynchronizer } from "@shared/api/local/synchronizers/station.synchronizer";
 import { useEffect, useMemo, useRef } from "react";
 import { isNetworkFallbackError } from "./error";
 
-const alignSearchedRootShelves = (
-  data?: SearchRootShelvesQuery
-): {
+const alignSearchedStations = (
+  data?: SearchStationsQuery
+): Array<{
   id: string;
   name: string;
-  subShelfCount: number;
-  itemCount: number;
-  lastAnalyzedAt: Date;
+  description: string;
+  icon: SupportedIcon | null;
+  headerBackgroundURL: string | null;
+  permission: AccessControlPermission;
+  routineCount: number;
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  ownerPublicId: string;
-  permission: AccessControlPermission;
-}[] =>
-  data?.searchRootShelves.searchEdges.map(edge => {
+}> =>
+  data?.searchStations.searchEdges.map(edge => {
     const node = edge.node as unknown as {
       id: string;
       name: string;
-      subShelfCount: number;
-      itemCount: number;
-      lastAnalyzedAt: Date | string | number;
+      description: string;
+      icon: GraphQLSupportedIcon | null;
+      headerBackgroundURL: string | null;
+      permission: AccessControlPermission;
+      routineCount: number;
       deletedAt: Date | string | number | null;
       updatedAt: Date | string | number;
       createdAt: Date | string | number;
-      owner: Array<{ publicId: string }> | { publicId: string };
-      permission: AccessControlPermission;
     };
-    const ownerPublicId = Array.isArray(node.owner)
-      ? (node.owner[0]?.publicId ?? "")
-      : (node.owner?.publicId ?? "");
+
+    const icon = (() => {
+      switch (node.icon) {
+        case GraphQLSupportedIcon.SupportedIconBooks:
+          return SupportedIcon.Books;
+        case GraphQLSupportedIcon.SupportedIconCalendar:
+          return SupportedIcon.Calendar;
+        case GraphQLSupportedIcon.SupportedIconCheckMark:
+          return SupportedIcon.CheckMark;
+        case GraphQLSupportedIcon.SupportedIconClock:
+          return SupportedIcon.Clock;
+        case GraphQLSupportedIcon.SupportedIconFire:
+          return SupportedIcon.Fire;
+        case GraphQLSupportedIcon.SupportedIconFolderOpen:
+          return SupportedIcon.FolderOpen;
+        case GraphQLSupportedIcon.SupportedIconGrinningFace:
+          return SupportedIcon.GrinningFace;
+        case GraphQLSupportedIcon.SupportedIconLightbulb:
+          return SupportedIcon.Lightbulb;
+        case GraphQLSupportedIcon.SupportedIconNotebook:
+          return SupportedIcon.Notebook;
+        case GraphQLSupportedIcon.SupportedIconPencilPaper:
+          return SupportedIcon.PencilPaper;
+        case GraphQLSupportedIcon.SupportedIconPin:
+          return SupportedIcon.Pin;
+        case GraphQLSupportedIcon.SupportedIconRedHeart:
+          return SupportedIcon.RedHeart;
+        case GraphQLSupportedIcon.SupportedIconRocket:
+          return SupportedIcon.Rocket;
+        case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
+          return SupportedIcon.SmilingFaceWithSmilingEyes;
+        case GraphQLSupportedIcon.SupportedIconStar:
+          return SupportedIcon.Star;
+        default:
+          return null;
+      }
+    })();
 
     return {
       id: node.id,
       name: node.name,
-      subShelfCount: node.subShelfCount,
-      itemCount: node.itemCount,
-      lastAnalyzedAt: new Date(node.lastAnalyzedAt ?? 0),
+      description: node.description,
+      icon,
+      headerBackgroundURL: node.headerBackgroundURL,
+      permission: node.permission as unknown as AccessControlPermission,
+      routineCount: node.routineCount,
       deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt ?? 0),
       updatedAt: new Date(node.updatedAt ?? 0),
       createdAt: new Date(node.createdAt ?? 0),
-      ownerPublicId,
-      permission: node.permission,
     };
   }) ?? [];
 
-export const useSearchRootShelvesLazyQuery = (
+export const useSearchStationsLazyQuery = (
   options?: useLazyQuery.Options<
-    SearchRootShelvesQuery,
-    SearchRootShelvesQueryVariables
+    SearchStationsQuery,
+    SearchStationsQueryVariables
   >
 ): useLazyQuery.ResultTuple<
-  SearchRootShelvesQuery,
-  SearchRootShelvesQueryVariables
+  SearchStationsQuery,
+  SearchStationsQueryVariables
 > => {
   const [execute, result] = useLazyQuery<
-    SearchRootShelvesQuery,
-    SearchRootShelvesQueryVariables
-  >(SearchRootShelvesDocument, {
+    SearchStationsQuery,
+    SearchStationsQueryVariables
+  >(SearchStationsDocument, {
     notifyOnNetworkStatusChange: true,
     ...options,
   });
   const latestSyncedSignatureRef = useRef<string>("");
 
-  const syncWithSignatureGuard = (data?: SearchRootShelvesQuery) => {
+  const syncWithSignatureGuard = (data?: SearchStationsQuery) => {
     const nextSignature = JSON.stringify({
-      totalCount: data?.searchRootShelves.totalCount ?? 0,
-      endCursor: data?.searchRootShelves.searchPageInfo.endEncodedSearchCursor,
+      totalCount: data?.searchStations.totalCount ?? 0,
+      endCursor: data?.searchStations.searchPageInfo.endEncodedSearchCursor,
       edges:
-        data?.searchRootShelves.searchEdges.map(edge => {
+        data?.searchStations.searchEdges.map(edge => {
           const node = edge.node as unknown as {
             id: string;
             permission: AccessControlPermission;
@@ -95,11 +133,11 @@ export const useSearchRootShelvesLazyQuery = (
     if (nextSignature === latestSyncedSignatureRef.current) return;
     latestSyncedSignatureRef.current = nextSignature;
 
-    void RootShelfLocalSynchronizer.syncSearchRootShelves(
-      alignSearchedRootShelves(data)
+    void StationLocalSynchronizer.syncSearchStations(
+      alignSearchedStations(data)
     ).catch(error =>
       console.error(
-        "failed to synchronize searched root shelves to local db",
+        "failed to synchronize searched stations to local db",
         error
       )
     );
@@ -117,30 +155,28 @@ export const useSearchRootShelvesLazyQuery = (
 
         const variables =
           (executeOptions?.variables as
-            | SearchRootShelvesQueryVariables
+            | SearchStationsQueryVariables
             | undefined) ??
-          (result.variables as SearchRootShelvesQueryVariables | undefined);
+          (result.variables as SearchStationsQueryVariables | undefined);
         if (variables?.input === undefined) throw error;
 
-        const fallbackSearchRootShelves =
-          await RootShelfLocalSimulator.simulateSearchRootShelves(
-            variables.input
-          );
+        const fallbackSearchStations =
+          await StationLocalSimulator.simulateSearchStations(variables.input);
         result.client.writeQuery<
-          SearchRootShelvesQuery,
-          SearchRootShelvesQueryVariables
+          SearchStationsQuery,
+          SearchStationsQueryVariables
         >({
-          query: SearchRootShelvesDocument,
+          query: SearchStationsDocument,
           variables,
           data: {
             __typename: "Query",
-            searchRootShelves: fallbackSearchRootShelves,
+            searchStations: fallbackSearchStations,
           },
         });
         return {
           data: {
             __typename: "Query",
-            searchRootShelves: fallbackSearchRootShelves,
+            searchStations: fallbackSearchStations,
           },
         } as any;
       }) as ReturnType<typeof execute>;
@@ -156,35 +192,33 @@ export const useSearchRootShelvesLazyQuery = (
   const fetchMoreWithFallback = (async fetchMoreOptions => {
     try {
       const fetchResult = await result.fetchMore(fetchMoreOptions);
-      syncWithSignatureGuard(fetchResult.data as SearchRootShelvesQuery);
+      syncWithSignatureGuard(fetchResult.data as SearchStationsQuery);
       return fetchResult;
     } catch (error) {
       if (!isNetworkFallbackError(error)) throw error;
 
       const variables = fetchMoreOptions.variables as
-        | SearchRootShelvesQueryVariables
+        | SearchStationsQueryVariables
         | undefined;
       if (variables?.input === undefined) throw error;
 
-      const fallbackSearchRootShelves =
-        await RootShelfLocalSimulator.simulateSearchRootShelves(
-          variables.input
-        );
+      const fallbackSearchStations =
+        await StationLocalSimulator.simulateSearchStations(variables.input);
       result.client.writeQuery<
-        SearchRootShelvesQuery,
-        SearchRootShelvesQueryVariables
+        SearchStationsQuery,
+        SearchStationsQueryVariables
       >({
-        query: SearchRootShelvesDocument,
+        query: SearchStationsDocument,
         variables,
         data: {
           __typename: "Query",
-          searchRootShelves: fallbackSearchRootShelves,
+          searchStations: fallbackSearchStations,
         },
       });
       return {
         data: {
           __typename: "Query",
-          searchRootShelves: fallbackSearchRootShelves,
+          searchStations: fallbackSearchStations,
         },
       } as any;
     }
@@ -201,30 +235,26 @@ export const useSearchRootShelvesLazyQuery = (
   return [executeWithSync, wrappedResult];
 };
 
-export const useSearchShelvesQuery = (
-  variables: SearchRootShelvesQueryVariables,
-  options?: useQuery.Options<
-    SearchRootShelvesQuery,
-    SearchRootShelvesQueryVariables
-  >
+export const useSearchStationsQuery = (
+  variables: SearchStationsQueryVariables,
+  options?: useQuery.Options<SearchStationsQuery, SearchStationsQueryVariables>
 ) => {
   const queryResult = useQuery<
-    SearchRootShelvesQuery,
-    SearchRootShelvesQueryVariables
-  >(SearchRootShelvesDocument, {
+    SearchStationsQuery,
+    SearchStationsQueryVariables
+  >(SearchStationsDocument, {
     variables,
     ...options,
   });
-
   const latestSyncedSignatureRef = useRef<string>("");
   const latestFallbackKeyRef = useRef<string>("");
 
-  const syncWithSignatureGuard = (data?: SearchRootShelvesQuery) => {
+  const syncWithSignatureGuard = (data?: SearchStationsQuery) => {
     const nextSignature = JSON.stringify({
-      totalCount: data?.searchRootShelves.totalCount ?? 0,
-      endCursor: data?.searchRootShelves.searchPageInfo.endEncodedSearchCursor,
+      totalCount: data?.searchStations.totalCount ?? 0,
+      endCursor: data?.searchStations.searchPageInfo.endEncodedSearchCursor,
       edges:
-        data?.searchRootShelves.searchEdges.map(edge => {
+        data?.searchStations.searchEdges.map(edge => {
           const node = edge.node as unknown as {
             id: string;
             permission: AccessControlPermission;
@@ -241,28 +271,26 @@ export const useSearchShelvesQuery = (
     if (nextSignature === latestSyncedSignatureRef.current) return;
     latestSyncedSignatureRef.current = nextSignature;
 
-    void RootShelfLocalSynchronizer.syncSearchRootShelves(
-      alignSearchedRootShelves(data)
+    void StationLocalSynchronizer.syncSearchStations(
+      alignSearchedStations(data)
     ).catch(error =>
       console.error(
-        "failed to synchronize searched root shelves to local db",
+        "failed to synchronize searched stations to local db",
         error
       )
     );
   };
 
-  // synchronize the result to local database
   useEffect(() => {
     syncWithSignatureGuard(queryResult.data);
   }, [queryResult.data]);
 
-  // simulate the result while some acceptable error happened
   useEffect(() => {
     if (queryResult.error === undefined) return;
     if (!isNetworkFallbackError(queryResult.error)) return;
 
     const fallbackVariables =
-      (queryResult.variables as SearchRootShelvesQueryVariables | undefined) ??
+      (queryResult.variables as SearchStationsQueryVariables | undefined) ??
       variables;
     if (fallbackVariables?.input === undefined) return;
 
@@ -272,25 +300,25 @@ export const useSearchShelvesQuery = (
 
     let cancelled = false;
     void (async () => {
-      const fallbackSearchRootShelves =
-        await RootShelfLocalSimulator.simulateSearchRootShelves(
+      const fallbackSearchStations =
+        await StationLocalSimulator.simulateSearchStations(
           fallbackVariables.input
         );
       if (cancelled) return;
       queryResult.client.writeQuery<
-        SearchRootShelvesQuery,
-        SearchRootShelvesQueryVariables
+        SearchStationsQuery,
+        SearchStationsQueryVariables
       >({
-        query: SearchRootShelvesDocument,
+        query: SearchStationsDocument,
         variables: fallbackVariables,
         data: {
           __typename: "Query",
-          searchRootShelves: fallbackSearchRootShelves,
+          searchStations: fallbackSearchStations,
         },
       });
     })().catch(error => {
       console.error(
-        "failed to simulate searched root shelves from local db",
+        "failed to simulate searched stations from local db",
         error
       );
     });
@@ -303,35 +331,35 @@ export const useSearchShelvesQuery = (
   const fetchMoreWithFallback = (async fetchMoreOptions => {
     try {
       const fetchResult = await queryResult.fetchMore(fetchMoreOptions);
-      syncWithSignatureGuard(fetchResult.data as SearchRootShelvesQuery);
+      syncWithSignatureGuard(fetchResult.data as SearchStationsQuery);
       return fetchResult;
     } catch (error) {
       if (!isNetworkFallbackError(error)) throw error;
 
       const fallbackVariables = fetchMoreOptions.variables as
-        | SearchRootShelvesQueryVariables
+        | SearchStationsQueryVariables
         | undefined;
       if (fallbackVariables?.input === undefined) throw error;
 
-      const fallbackSearchRootShelves =
-        await RootShelfLocalSimulator.simulateSearchRootShelves(
+      const fallbackSearchStations =
+        await StationLocalSimulator.simulateSearchStations(
           fallbackVariables.input
         );
       queryResult.client.writeQuery<
-        SearchRootShelvesQuery,
-        SearchRootShelvesQueryVariables
+        SearchStationsQuery,
+        SearchStationsQueryVariables
       >({
-        query: SearchRootShelvesDocument,
+        query: SearchStationsDocument,
         variables: fallbackVariables,
         data: {
           __typename: "Query",
-          searchRootShelves: fallbackSearchRootShelves,
+          searchStations: fallbackSearchStations,
         },
       });
       return {
         data: {
           __typename: "Query",
-          searchRootShelves: fallbackSearchRootShelves,
+          searchStations: fallbackSearchStations,
         },
       } as any;
     }

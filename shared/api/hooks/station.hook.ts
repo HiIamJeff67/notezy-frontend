@@ -1,5 +1,11 @@
 import type { UUID } from "node:crypto";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   CreateStationRequest,
@@ -28,6 +34,8 @@ import {
   mutationFnUpdateMyStationsByIds,
   queryFnGetMyStationById,
 } from "@shared/api/invokers/station.invoker";
+import { StationLocalSimulator } from "@shared/api/local/simulators/station.simulator";
+import { StationLocalSynchronizer } from "@shared/api/local/synchronizers/station.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -56,18 +64,41 @@ export const useGetMyStationById = (
       );
     }
 
-    const response = await queryFnGetMyStationById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetMyStationById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await StationLocalSynchronizer.syncGetMyStationById(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const station =
+          await StationLocalSimulator.simulateGetMyStationById(request);
+        return {
+          success: false,
+          data: station,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyStationByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyStationByIdResponse, Error>({
@@ -101,9 +132,17 @@ export const useGetMyStationById = (
 export const useCreateStation = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: CreateStationRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnCreateStation(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateStation,
+    mutationFn: perform,
     onSuccess: async (response, request: CreateStationRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -121,8 +160,17 @@ export const useCreateStation = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncCreateStation(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateCreateStation(request);
+      }
+    },
   });
 
   return mutation;
@@ -131,9 +179,17 @@ export const useCreateStation = () => {
 export const useCreateStations = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: CreateStationsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnCreateStations(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateStations,
+    mutationFn: perform,
     onSuccess: async (response, request: CreateStationsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -151,8 +207,17 @@ export const useCreateStations = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncCreateStations(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateCreateStations(request);
+      }
+    },
   });
 
   return mutation;
@@ -161,9 +226,17 @@ export const useCreateStations = () => {
 export const useUpdateMyStationById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: UpdateMyStationByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnUpdateMyStationById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyStationById,
+    mutationFn: perform,
     onSuccess: async (response, request: UpdateMyStationByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -181,8 +254,17 @@ export const useUpdateMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncUpdateMyStationById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateUpdateMyStationById(request);
+      }
+    },
   });
 
   return mutation;
@@ -191,9 +273,17 @@ export const useUpdateMyStationById = () => {
 export const useUpdateMyStationsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: UpdateMyStationsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnUpdateMyStationsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyStationsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: UpdateMyStationsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -213,8 +303,20 @@ export const useUpdateMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncUpdateMyStationsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateUpdateMyStationsByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -223,9 +325,17 @@ export const useUpdateMyStationsByIds = () => {
 export const useRestoreMyStationById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: RestoreMyStationByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnRestoreMyStationById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyStationById,
+    mutationFn: perform,
     onSuccess: async (response, request: RestoreMyStationByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -243,8 +353,20 @@ export const useRestoreMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncRestoreMyStationById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateRestoreMyStationById(request);
+      }
+    },
   });
 
   return mutation;
@@ -253,9 +375,17 @@ export const useRestoreMyStationById = () => {
 export const useRestoreMyStationsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: RestoreMyStationsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnRestoreMyStationsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyStationsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: RestoreMyStationsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -275,8 +405,20 @@ export const useRestoreMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncRestoreMyStationsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateRestoreMyStationsByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -285,9 +427,17 @@ export const useRestoreMyStationsByIds = () => {
 export const useDeleteMyStationById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: DeleteMyStationByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnDeleteMyStationById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyStationById,
+    mutationFn: perform,
     onSuccess: async (response, request: DeleteMyStationByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -305,8 +455,17 @@ export const useDeleteMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncDeleteMyStationById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateDeleteMyStationById(request);
+      }
+    },
   });
 
   return mutation;
@@ -315,9 +474,17 @@ export const useDeleteMyStationById = () => {
 export const useDeleteMyStationsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: DeleteMyStationsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnDeleteMyStationsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyStationsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: DeleteMyStationsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -337,8 +504,20 @@ export const useDeleteMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncDeleteMyStationsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateDeleteMyStationsByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -347,9 +526,17 @@ export const useDeleteMyStationsByIds = () => {
 export const useHardDeleteMyStationById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: HardDeleteMyStationByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnHardDeleteMyStationById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnHardDeleteMyStationById,
+    mutationFn: perform,
     onSuccess: async (response, request: HardDeleteMyStationByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -367,8 +554,20 @@ export const useHardDeleteMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncHardDeleteMyStationById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateHardDeleteMyStationById(request);
+      }
+    },
   });
 
   return mutation;
@@ -377,9 +576,17 @@ export const useHardDeleteMyStationById = () => {
 export const useHardDeleteMyStationsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: HardDeleteMyStationsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnHardDeleteMyStationsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnHardDeleteMyStationsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: HardDeleteMyStationsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -399,8 +606,20 @@ export const useHardDeleteMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await StationLocalSynchronizer.syncHardDeleteMyStationsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await StationLocalSimulator.simulateHardDeleteMyStationsByIds(request);
+      }
+    },
   });
 
   return mutation;

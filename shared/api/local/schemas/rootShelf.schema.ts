@@ -1,11 +1,6 @@
-import { SubShelf, User, UsersToShelves } from "@shared/api/local/schemas";
-import { isNotNull, relations } from "drizzle-orm";
-import {
-  integer,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { SubShelf, UsersToShelves } from "@shared/api/local/schemas";
+import { relations } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // the same schemas as the rootShelf in api interface
 export const RootShelf = sqliteTable("RootShelfTable", {
@@ -27,7 +22,7 @@ export const RootShelf = sqliteTable("RootShelfTable", {
     .default(new Date()),
 });
 
-export const RootShelfRelations = relations(RootShelf, ({ one, many }) => ({
+export const RootShelfRelations = relations(RootShelf, ({ many }) => ({
   subShelves: many(SubShelf),
   usersToShelves: many(UsersToShelves),
 }));

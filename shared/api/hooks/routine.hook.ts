@@ -1,5 +1,11 @@
 import type { UUID } from "node:crypto";
+import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import {
+  ExceptionReasonDictionary,
+  NotezyAPIError,
+} from "@shared/api/exceptions";
+import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   BulkLinkRoutineItemsByIdsRequest,
@@ -40,6 +46,8 @@ import {
   mutationFnUpdateMyRoutinesByIds,
   queryFnGetMyRoutineById,
 } from "@shared/api/invokers/routine.invoker";
+import { RoutineLocalSimulator } from "@shared/api/local/simulators/routine.simulator";
+import { RoutineLocalSynchronizer } from "@shared/api/local/synchronizers/routine.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -68,18 +76,41 @@ export const useGetMyRoutineById = (
       );
     }
 
-    const response = await queryFnGetMyRoutineById(request);
-    LocalStorageManipulator.ensureItem(
-      LocalStorageKey.accessToken,
-      response.refreshableTokens?.newAccessToken,
-      response.embedded?.publicId
-    );
-    SessionStorageManipulator.ensureItem(
-      SessionStorageKey.csrfToken,
-      response.refreshableTokens?.newCSRFToken,
-      response.embedded?.publicId
-    );
-    return response;
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetMyRoutineById(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded?.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded?.publicId
+      );
+      await RoutineLocalSynchronizer.syncGetMyRoutineById(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const routine =
+          await RoutineLocalSimulator.simulateGetMyRoutineById(request);
+        return {
+          success: false,
+          data: routine,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyRoutineByIdResponse;
+      }
+
+      throw error;
+    }
   };
 
   const query = useQuery<GetMyRoutineByIdResponse, Error>({
@@ -113,9 +144,17 @@ export const useGetMyRoutineById = (
 export const useCreateRoutineByStationId = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: CreateRoutineByStationIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnCreateRoutineByStationId(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateRoutineByStationId,
+    mutationFn: perform,
     onSuccess: async (response, request: CreateRoutineByStationIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -135,8 +174,20 @@ export const useCreateRoutineByStationId = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncCreateRoutineByStationId(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateCreateRoutineByStationId(request);
+      }
+    },
   });
 
   return mutation;
@@ -145,9 +196,17 @@ export const useCreateRoutineByStationId = () => {
 export const useCreateRoutinesByStationIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: CreateRoutinesByStationIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnCreateRoutinesByStationIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnCreateRoutinesByStationIds,
+    mutationFn: perform,
     onSuccess: async (response, request: CreateRoutinesByStationIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -171,8 +230,20 @@ export const useCreateRoutinesByStationIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncCreateRoutinesByStationIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateCreateRoutinesByStationIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -181,9 +252,17 @@ export const useCreateRoutinesByStationIds = () => {
 export const useUpdateMyRoutineById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: UpdateMyRoutineByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnUpdateMyRoutineById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyRoutineById,
+    mutationFn: perform,
     onSuccess: async (response, request: UpdateMyRoutineByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -201,8 +280,17 @@ export const useUpdateMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncUpdateMyRoutineById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateUpdateMyRoutineById(request);
+      }
+    },
   });
 
   return mutation;
@@ -211,9 +299,17 @@ export const useUpdateMyRoutineById = () => {
 export const useUpdateMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: UpdateMyRoutinesByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnUpdateMyRoutinesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnUpdateMyRoutinesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: UpdateMyRoutinesByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -233,8 +329,20 @@ export const useUpdateMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncUpdateMyRoutinesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateUpdateMyRoutinesByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -243,9 +351,17 @@ export const useUpdateMyRoutinesByIds = () => {
 export const useLinkRoutineTagById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: LinkRoutineTagByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnLinkRoutineTagById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnLinkRoutineTagById,
+    mutationFn: perform,
     onSuccess: async (response, request: LinkRoutineTagByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -264,8 +380,17 @@ export const useLinkRoutineTagById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncLinkRoutineTagById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateLinkRoutineTagById(request);
+      }
+    },
   });
 
   return mutation;
@@ -274,9 +399,17 @@ export const useLinkRoutineTagById = () => {
 export const useBulkLinkRoutineTagsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: BulkLinkRoutineTagsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnBulkLinkRoutineTagsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBulkLinkRoutineTagsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: BulkLinkRoutineTagsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -299,8 +432,20 @@ export const useBulkLinkRoutineTagsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncBulkLinkRoutineTagsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateBulkLinkRoutineTagsByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -375,9 +520,17 @@ export const useBulkLinkRoutineTasksByIds = () => {
 export const useLinkRoutineItemById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: LinkRoutineItemByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnLinkRoutineItemById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnLinkRoutineItemById,
+    mutationFn: perform,
     onSuccess: async (response, request: LinkRoutineItemByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -396,8 +549,17 @@ export const useLinkRoutineItemById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncLinkRoutineItemById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateLinkRoutineItemById(request);
+      }
+    },
   });
 
   return mutation;
@@ -406,9 +568,17 @@ export const useLinkRoutineItemById = () => {
 export const useBulkLinkRoutineItemsByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: BulkLinkRoutineItemsByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnBulkLinkRoutineItemsByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnBulkLinkRoutineItemsByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: BulkLinkRoutineItemsByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -428,8 +598,20 @@ export const useBulkLinkRoutineItemsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncBulkLinkRoutineItemsByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateBulkLinkRoutineItemsByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -438,9 +620,17 @@ export const useBulkLinkRoutineItemsByIds = () => {
 export const useRestoreMyRoutineById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: RestoreMyRoutineByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnRestoreMyRoutineById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyRoutineById,
+    mutationFn: perform,
     onSuccess: async (response, request: RestoreMyRoutineByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -458,8 +648,20 @@ export const useRestoreMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncRestoreMyRoutineById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateRestoreMyRoutineById(request);
+      }
+    },
   });
 
   return mutation;
@@ -468,9 +670,17 @@ export const useRestoreMyRoutineById = () => {
 export const useRestoreMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: RestoreMyRoutinesByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnRestoreMyRoutinesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnRestoreMyRoutinesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: RestoreMyRoutinesByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -490,8 +700,20 @@ export const useRestoreMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncRestoreMyRoutinesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateRestoreMyRoutinesByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -500,9 +722,17 @@ export const useRestoreMyRoutinesByIds = () => {
 export const useDeleteMyRoutineById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: DeleteMyRoutineByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnDeleteMyRoutineById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyRoutineById,
+    mutationFn: perform,
     onSuccess: async (response, request: DeleteMyRoutineByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -520,8 +750,17 @@ export const useDeleteMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncDeleteMyRoutineById(request, response);
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateDeleteMyRoutineById(request);
+      }
+    },
   });
 
   return mutation;
@@ -530,9 +769,17 @@ export const useDeleteMyRoutineById = () => {
 export const useDeleteMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: DeleteMyRoutinesByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnDeleteMyRoutinesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnDeleteMyRoutinesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: DeleteMyRoutinesByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -552,8 +799,20 @@ export const useDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncDeleteMyRoutinesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateDeleteMyRoutinesByIds(request);
+      }
+    },
   });
 
   return mutation;
@@ -562,9 +821,17 @@ export const useDeleteMyRoutinesByIds = () => {
 export const useHardDeleteMyRoutineById = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: HardDeleteMyRoutineByIdRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnHardDeleteMyRoutineById(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnHardDeleteMyRoutineById,
+    mutationFn: perform,
     onSuccess: async (response, request: HardDeleteMyRoutineByIdRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -582,8 +849,20 @@ export const useHardDeleteMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncHardDeleteMyRoutineById(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateHardDeleteMyRoutineById(request);
+      }
+    },
   });
 
   return mutation;
@@ -592,9 +871,17 @@ export const useHardDeleteMyRoutineById = () => {
 export const useHardDeleteMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
 
+  const perform = async (request: HardDeleteMyRoutinesByIdsRequest) => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    return await mutationFnHardDeleteMyRoutinesByIds(request);
+  };
+
   const mutation = useMutation({
-    mutationFn: mutationFnHardDeleteMyRoutinesByIds,
+    mutationFn: perform,
     onSuccess: async (response, request: HardDeleteMyRoutinesByIdsRequest) => {
+      if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -614,8 +901,20 @@ export const useHardDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      await RoutineLocalSynchronizer.syncHardDeleteMyRoutinesByIds(
+        request,
+        response
+      );
     },
-    onError: error => {},
+    onError: async (error, request) => {
+      if (
+        error instanceof NotezyFetchError &&
+        error.unWrap.reason ===
+          ExceptionReasonDictionary.client.fetch.missingNetwork
+      ) {
+        await RoutineLocalSimulator.simulateHardDeleteMyRoutinesByIds(request);
+      }
+    },
   });
 
   return mutation;

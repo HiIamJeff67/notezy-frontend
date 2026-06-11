@@ -73,6 +73,60 @@ export const createApolloClient = () => {
               return incoming;
             },
           },
+          searchStations: {
+            keyArgs: ["input", ["query", "sortBy", "sortOrder"]],
+            merge(existing, incoming, { args }) {
+              if (!existing) return incoming;
+              if (args?.input?.after) {
+                return {
+                  ...incoming,
+                  searchEdges: [
+                    ...(existing.searchEdges || []),
+                    ...(incoming.searchEdges || []),
+                  ],
+                };
+              }
+              return incoming;
+            },
+          },
+          searchRoutines: {
+            keyArgs: ["input", ["query", "sortBy", "sortOrder", "stationId"]],
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+          searchRoutineTags: {
+            keyArgs: ["input", ["query", "sortBy", "sortOrder"]],
+            merge(existing, incoming, { args }) {
+              if (!existing) return incoming;
+              if (args?.input?.after) {
+                return {
+                  ...incoming,
+                  searchEdges: [
+                    ...(existing.searchEdges || []),
+                    ...(incoming.searchEdges || []),
+                  ],
+                };
+              }
+              return incoming;
+            },
+          },
+          searchRoutineTasks: {
+            keyArgs: ["input", ["query", "sortBy", "sortOrder", "stationId"]],
+            merge(existing, incoming, { args }) {
+              if (!existing) return incoming;
+              if (args?.input?.after) {
+                return {
+                  ...incoming,
+                  searchEdges: [
+                    ...(existing.searchEdges || []),
+                    ...(incoming.searchEdges || []),
+                  ],
+                };
+              }
+              return incoming;
+            },
+          },
           user: {
             keyArgs: ["id"],
           },
