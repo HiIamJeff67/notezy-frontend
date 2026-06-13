@@ -7,7 +7,6 @@ import { AppRouterProvider } from "@/providers/AppRouterProvider";
 import { BackgroundImagesProvider } from "@/providers/BackgroundImagesProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { LoadingProvider } from "@/providers/LoadingProvider";
-import { ModalProvider } from "@/providers/ModalProvider";
 import { ScreenProvider } from "@/providers/ScreenProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { TransactionSynchronizerProvider } from "@/providers/TransactionSynchronizerProvider/TransactionSynchronizerProvider";
@@ -27,7 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <UserProvider>
                     <BackgroundImagesProvider>
                       <DndProvider backend={HTML5Backend}>
-                        <ModalProvider>{children}</ModalProvider>
+                        {children}
                       </DndProvider>
                     </BackgroundImagesProvider>
                   </UserProvider>

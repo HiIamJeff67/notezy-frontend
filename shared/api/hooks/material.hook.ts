@@ -98,7 +98,7 @@ export const useGetMyMaterialById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyMaterialAndItsParentById = (
@@ -159,7 +159,7 @@ export const useGetMyMaterialAndItsParentById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyMaterialsByParentSubShelfId = (
@@ -218,7 +218,7 @@ export const useGetMyMaterialsByParentSubShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetAllMyMaterialsByRootShelfId = (
@@ -277,7 +277,7 @@ export const useGetAllMyMaterialsByRootShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useCreateMyMaterial = () => {

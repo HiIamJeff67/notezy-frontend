@@ -59,6 +59,7 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
           Rename
         </ContextMenuItem>
         <ContextMenuItem
+          className="text-destructive focus:text-destructive"
           onClick={async () => {
             await shelfItemManager.deleteMaterial(parent, current);
             if (current.id === (router.params.materialId as string)) {

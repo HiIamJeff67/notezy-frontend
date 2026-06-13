@@ -1,10 +1,10 @@
 import { useContext } from "react";
-import { RoutineContext } from "@/providers/RoutineProvider/RoutineProvider";
+import { StationRoutineContext } from "@/providers/StationRoutineProvider/StationRoutineProvider";
 
 export const useRoutine = () => {
-  const context = useContext(RoutineContext);
+  const context = useContext(StationRoutineContext);
   if (!context) {
-    throw new Error("useRoutine must be used within RoutineProvider");
+    throw new Error("useRoutine must be used within StationRoutineProvider");
   }
   return context;
 };

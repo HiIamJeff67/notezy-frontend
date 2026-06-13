@@ -79,6 +79,10 @@ export class LRUCache<K, V> {
     return Array.from(this.map.keys());
   }
 
+  values(): V[] {
+    return Array.from(this.map.values(), node => node.value);
+  }
+
   private moveToFront(node: LRUNode<K, V>) {
     this.removeFromList(node);
     this.insertAfterHead(node);

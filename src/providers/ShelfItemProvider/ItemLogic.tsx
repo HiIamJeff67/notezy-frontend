@@ -51,62 +51,12 @@ export const useItemLogic = ({
   const [editingItemNode, setEditingItemNode] = useState<
     MaterialNode | BlockPackNode | undefined
   >(undefined);
-  const [editItemNodeName, setEditItemNodeName] = useState<string>("");
-  const [originalItemNodeName, setOriginalItemNodeName] = useState<string>("");
+  const [editItemName, setEditItemName] = useState<string>("");
+  const [originalItemName, setOriginalItemName] = useState<string>("");
 
-  // trigger for listen and auto focus the input with ref of inputRef declared in the top
-  useEffect(() => {
-    // blur the focusing rename input if the user click other places in the screen
-    const handleClickOutside = async (event: MouseEvent) => {
-      if (
-        editingItemNode &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        switch (editingItemNode.nodeType) {
-          case "Material":
-            await renameEditingMaterial();
-            break;
-          case "BlockPack":
-            await renameEditingBlockPack();
-            break;
-        }
-
-        setEditingItemNode(undefined);
-        setEditItemNodeName("");
-        setOriginalItemNodeName("");
-      }
-    };
-
-    if (editingItemNode) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    // force to focus on the rename input after 500 ms
-    setTimeout(() => {
-      if (editingItemNode && inputRef.current) {
-        inputRef.current?.focus();
-      }
-    }, 500);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [
-    editingItemNode,
-    editItemNodeName, // will be used in renameEditingMaterial
-    originalItemNodeName, // will be used in renameEditingMaterial
-    setEditingItemNode,
-    setEditItemNodeName,
-    setOriginalItemNodeName,
-  ]);
-
-  const isNewItemNodeName = useCallback((): boolean => {
-    return (
-      editItemNodeName !== originalItemNodeName &&
-      editItemNodeName.trim() !== ""
-    );
-  }, [editItemNodeName, originalItemNodeName]);
+  const isNewItemName = useCallback((): boolean => {
+    return editItemName !== originalItemName && editItemName.trim() !== "";
+  }, [editItemName, originalItemName]);
 
   const isItemNodeEditing = useCallback(
     (materialId: UUID): boolean => {
@@ -118,17 +68,17 @@ export const useItemLogic = ({
   const startRenamingItemNode = useCallback(
     (itemNode: MaterialNode | BlockPackNode): void => {
       setEditingItemNode(itemNode);
-      setOriginalItemNodeName(itemNode.name);
-      setEditItemNodeName(itemNode.name);
+      setOriginalItemName(itemNode.name);
+      setEditItemName(itemNode.name);
     },
-    [setEditingItemNode, setOriginalItemNodeName, setEditItemNodeName]
+    [setEditingItemNode, setOriginalItemName, setEditItemName]
   );
 
   const cancelRenamingItemNode = useCallback((): void => {
     setEditingItemNode(undefined);
-    setOriginalItemNodeName("");
-    setEditItemNodeName("");
-  }, [setEditingItemNode, setOriginalItemNodeName, setEditItemNodeName]);
+    setOriginalItemName("");
+    setEditItemName("");
+  }, [setEditingItemNode, setOriginalItemName, setEditItemName]);
 
   /* ==================== Materials ==================== */
 
@@ -211,7 +161,7 @@ export const useItemLogic = ({
   const renameEditingMaterial = useCallback(async (): Promise<void> => {
     try {
       if (
-        !isNewItemNodeName() ||
+        !isNewItemName() ||
         !editingItemNode ||
         editingItemNode.nodeType !== "Material"
       ) {
@@ -230,7 +180,7 @@ export const useItemLogic = ({
         body: {
           materialId: editingItemNode.id,
           values: {
-            name: editItemNodeName,
+            name: editItemName,
           },
         },
         affected: {
@@ -238,25 +188,25 @@ export const useItemLogic = ({
         },
       });
 
-      editingItemNode.name = editItemNodeName;
+      editingItemNode.name = editItemName;
       setEditingItemNode(prev =>
-        prev ? { ...prev, name: editItemNodeName } : undefined
+        prev ? { ...prev, name: editItemName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingItemNode(undefined);
-      setEditItemNodeName("");
-      setOriginalItemNodeName("");
+      setEditItemName("");
+      setOriginalItemName("");
     }
   }, [
     editingItemNode,
-    editItemNodeName,
-    originalItemNodeName,
+    editItemName,
+    originalItemName,
     setEditingItemNode,
-    setEditItemNodeName,
-    setOriginalItemNodeName,
+    setEditItemName,
+    setOriginalItemName,
     updateMaterialMutator,
   ]);
 
@@ -387,7 +337,7 @@ export const useItemLogic = ({
   const renameEditingBlockPack = useCallback(async (): Promise<void> => {
     try {
       if (
-        !isNewItemNodeName() ||
+        !isNewItemName() ||
         !editingItemNode ||
         editingItemNode.nodeType !== "BlockPack"
       ) {
@@ -406,7 +356,7 @@ export const useItemLogic = ({
         body: {
           blockPackId: editingItemNode.id,
           values: {
-            name: editItemNodeName,
+            name: editItemName,
           },
         },
         affected: {
@@ -414,24 +364,24 @@ export const useItemLogic = ({
         },
       });
 
-      editingItemNode.name = editItemNodeName;
+      editingItemNode.name = editItemName;
       setEditingItemNode(prev =>
-        prev ? { ...prev, name: editItemNodeName } : undefined
+        prev ? { ...prev, name: editItemName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingItemNode(undefined);
-      setEditItemNodeName("");
-      setOriginalItemNodeName("");
+      setEditItemName("");
+      setOriginalItemName("");
     }
   }, [
-    editItemNodeName,
-    originalItemNodeName,
+    editItemName,
+    originalItemName,
     setEditingItemNode,
-    setEditItemNodeName,
-    setOriginalItemNodeName,
+    setEditItemName,
+    setOriginalItemName,
     updateBlockPackMutator,
   ]);
 
@@ -476,10 +426,56 @@ export const useItemLogic = ({
     [expandedShelvesRef, deleteBlockPackMutator]
   );
 
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = async (event: MouseEvent) => {
+      if (
+        editingItemNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        switch (editingItemNode.nodeType) {
+          case "Material":
+            await renameEditingMaterial();
+            break;
+          case "BlockPack":
+            await renameEditingBlockPack();
+            break;
+        }
+
+        setEditingItemNode(undefined);
+        setEditItemName("");
+        setOriginalItemName("");
+      }
+    };
+
+    if (editingItemNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    const focusInputBeforeRenameTimeout = setTimeout(() => {
+      if (editingItemNode && inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      clearTimeout(focusInputBeforeRenameTimeout);
+    };
+  }, [
+    editingItemNode,
+    inputRef,
+    renameEditingMaterial,
+    renameEditingBlockPack,
+  ]);
+
   return {
-    editItemNodeName: editItemNodeName,
-    setEditItemNodeName: setEditItemNodeName,
-    isNewItemNodeName: isNewItemNodeName,
+    editItemName: editItemName,
+    setEditItemName: setEditItemName,
+    isNewItemName: isNewItemName,
     isItemNodeEditing: isItemNodeEditing,
     isAnyItemNodeEditing: editingItemNode !== undefined,
     startRenamingItemNode: startRenamingItemNode,

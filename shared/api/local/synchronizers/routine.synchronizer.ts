@@ -17,6 +17,7 @@ import type {
   DeleteMyRoutineByIdResponse,
   DeleteMyRoutinesByIdsRequest,
   DeleteMyRoutinesByIdsResponse,
+  GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdResponse,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutineByIdResponse,
@@ -103,6 +104,50 @@ export class RoutineLocalSynchronizer {
           deletedAt: response.data.deletedAt,
           updatedAt: response.data.updatedAt,
           createdAt: response.data.createdAt,
+        },
+      });
+  };
+
+  static syncGetAllMyRoutinesByTimeRange = async (
+    response: GetAllMyRoutinesByTimeRangeResponse
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    if (response.data.length === 0) return;
+
+    await localDB
+      .insert(Routine)
+      .values(
+        response.data.map(routine => ({
+          id: routine.id,
+          stationId: routine.stationId,
+          title: routine.title,
+          description: routine.description,
+          status: routine.status,
+          isPinned: routine.isPinned,
+          scheduledStartAt: routine.scheduledStartAt,
+          scheduledEndAt: routine.scheduledEndAt,
+          period: routine.period,
+          timezone: routine.timezone,
+          deletedAt: routine.deletedAt,
+          updatedAt: routine.updatedAt,
+          createdAt: routine.createdAt,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: Routine.id,
+        set: {
+          stationId: sql`excluded.station_id`,
+          title: sql`excluded.title`,
+          description: sql`excluded.description`,
+          status: sql`excluded.status`,
+          isPinned: sql`excluded.is_pinned`,
+          scheduledStartAt: sql`excluded.scheduled_start_at`,
+          scheduledEndAt: sql`excluded.scheduled_end_at`,
+          period: sql`excluded.period`,
+          timezone: sql`excluded.timezone`,
+          deletedAt: sql`excluded.deleted_at`,
+          updatedAt: sql`excluded.updated_at`,
+          createdAt: sql`excluded.created_at`,
         },
       });
   };

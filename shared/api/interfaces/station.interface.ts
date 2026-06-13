@@ -49,6 +49,48 @@ export type GetMyStationByIdResponse = z.infer<
   typeof GetMyStationByIdResponseSchema
 >;
 
+/* ============================== GetAllMyStations ============================== */
+
+export const GetAllMyStationsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  param: z.object({
+    onlyDeleted: z.number().int().min(0).max(2).optional(),
+  }),
+});
+
+export type GetAllMyStationsRequest = z.infer<
+  typeof GetAllMyStationsRequestSchema
+>;
+
+export const GetAllMyStationsResponseSchema = NotezyResponseSchema.extend({
+  data: z.array(
+    z.object({
+      id: z.uuidv4(),
+      name: z.string(),
+      description: z.string(),
+      icon: z.enum(AllSupportedIcons).nullable(),
+      headerBackgroundURL: z.url().nullable(),
+      permission: z.enum(AllAccessControlPermissions),
+      routineCount: z.int32(),
+      deletedAt: z.coerce.date().nullable(),
+      updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
+    })
+  ),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type GetAllMyStationsResponse = z.infer<
+  typeof GetAllMyStationsResponseSchema
+>;
+
 /* ============================== CreateStation ============================== */
 
 export const CreateStationRequestSchema = NotezyRequestSchema.extend({

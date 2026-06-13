@@ -132,7 +132,7 @@ export const useGetMyRootShelfById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useCreateRootShelf = () => {

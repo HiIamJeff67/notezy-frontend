@@ -32,6 +32,14 @@ const DeleteShelfItemDialog = ({
 }: DeleteShelfItemDialogProps) => {
   const [value, setValue] = useState<string>("");
 
+  const deleteShelfItem = async () => {
+    if (confirmKeyword !== undefined && value !== confirmKeyword) return;
+
+    await onDelete();
+    setValue("");
+    onClose();
+  };
+
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -44,23 +52,14 @@ const DeleteShelfItemDialog = ({
             <Input
               placeholder={inputPlaceholder}
               value={value}
+              autoComplete="off"
               onChange={e => setValue(e.target.value)}
               className={`w-full ${value === confirmKeyword ? "" : "border-2 border-destructive/50"}`}
             />
           )}
 
           <div className="w-full flex flex-row justify-center gap-4">
-            <Button
-              type="submit"
-              onClick={async () => {
-                if (confirmKeyword !== undefined && value !== confirmKeyword)
-                  return;
-                await onDelete();
-                setValue("");
-                onClose();
-              }}
-              className="w-3/10"
-            >
+            <Button type="button" onClick={deleteShelfItem} className="w-3/10">
               Delete
             </Button>
             <Button

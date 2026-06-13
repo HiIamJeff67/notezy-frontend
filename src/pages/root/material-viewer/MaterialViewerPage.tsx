@@ -1,7 +1,7 @@
-import { MaterialMeta } from "@shared/types/materialMeta.type";
 import { Suspense } from "react";
 import MaterialViewer from "@/components/core/MaterialViewer/MaterialViewer";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
+import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 
 interface MaterialViewerPageProps {
   materialMeta: MaterialMeta;

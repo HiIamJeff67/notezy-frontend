@@ -36,35 +36,43 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
               {shelfItemManager.isItemNodeEditing(materialNode.id) ? (
                 <SidebarMenuItem
                   key={materialId}
-                  className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative"
+                  className="relative flex items-center justify-end rounded-sm border border-foreground bg-muted px-2 py-1"
                 >
                   <input
                     ref={shelfItemManager.inputRef}
                     type="text"
-                    value={shelfItemManager.editItemNodeName}
-                    className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
+                    value={shelfItemManager.editItemName}
+                    className="h-6 min-w-0 flex-1 overflow-hidden bg-transparent pr-6 outline-none"
                     onChange={e =>
-                      shelfItemManager.setEditItemNodeName(e.target.value)
+                      shelfItemManager.setEditItemName(e.target.value)
                     }
                     onKeyDown={async e => {
-                      switch (e.key) {
-                        case "Enter":
-                          await handleRenameMaterialOnSubmit();
-                        case "Escape":
-                          shelfItemManager.cancelRenamingItemNode();
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await handleRenameMaterialOnSubmit();
+                      } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        shelfItemManager.cancelRenamingItemNode();
                       }
                     }}
                   />
-                  {shelfItemManager.isNewItemNodeName() && (
+                  {shelfItemManager.isNewItemName() && (
                     <button
-                      onClick={async e => {
-                        await handleRenameMaterialOnSubmit();
+                      type="button"
+                      className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
+                      onMouseDown={e => {
+                        e.preventDefault();
                         e.stopPropagation();
                       }}
-                      className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                      onMouseDown={e => e.stopPropagation()}
+                      onClick={async e => {
+                        e.stopPropagation();
+                        await handleRenameMaterialOnSubmit();
+                      }}
+                      aria-label="Save material name"
                     >
-                      <CheckIcon className="w-full h-full" />
+                      <CheckIcon className="size-4" />
                     </button>
                   )}
                 </SidebarMenuItem>

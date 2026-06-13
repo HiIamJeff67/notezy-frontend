@@ -32,11 +32,6 @@ import { LinkedList, LinkedListNode } from "@shared/lib/linkedList";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { BlockEvent } from "@shared/types/blockEvent.type";
-import {
-  BlockGroupMeta,
-  getDefaultBlockGroupMeta,
-} from "@shared/types/blockGroupMeta.type";
-import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
@@ -50,6 +45,11 @@ import {
   useState,
 } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
+import {
+  BlockGroupMeta,
+  BlockPackMeta,
+  getDefaultBlockGroupMeta,
+} from "@/reducers/blockPackMeta.reducer";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor;

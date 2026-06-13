@@ -27,6 +27,7 @@ import { Route as RootRoutinesIndexRouteImport } from './routes/_root.routines.i
 import { Route as RootMaterialViewerIndexRouteImport } from './routes/_root.material-viewer.index'
 import { Route as RootDashboardIndexRouteImport } from './routes/_root.dashboard.index'
 import { Route as RootBlockPackEditorIndexRouteImport } from './routes/_root.block-pack-editor.index'
+import { Route as RootRoutinesStationIdRouteImport } from './routes/_root.routines.$stationId'
 import { Route as RootMaterialViewerMaterialIdRouteImport } from './routes/_root.material-viewer.$materialId'
 import { Route as RootBlockPackEditorBlockPackIdRouteImport } from './routes/_root.block-pack-editor.$blockPackId'
 import { Route as AuthRedirectXRouteImport } from './routes/_auth.redirect.x'
@@ -122,6 +123,11 @@ const RootBlockPackEditorIndexRoute =
     path: '/',
     getParentRoute: () => RootBlockPackEditorRoute,
   } as any)
+const RootRoutinesStationIdRoute = RootRoutinesStationIdRouteImport.update({
+  id: '/$stationId',
+  path: '/$stationId',
+  getParentRoute: () => RootRoutinesRoute,
+} as any)
 const RootMaterialViewerMaterialIdRoute =
   RootMaterialViewerMaterialIdRouteImport.update({
     id: '/$materialId',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/redirect/x': typeof AuthRedirectXRoute
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/routines/$stationId': typeof RootRoutinesStationIdRoute
   '/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/dashboard/': typeof RootDashboardIndexRoute
   '/material-viewer/': typeof RootMaterialViewerIndexRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/redirect/x': typeof AuthRedirectXRoute
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/routines/$stationId': typeof RootRoutinesStationIdRoute
   '/block-pack-editor': typeof RootBlockPackEditorIndexRoute
   '/dashboard': typeof RootDashboardIndexRoute
   '/material-viewer': typeof RootMaterialViewerIndexRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/_auth/redirect/x': typeof AuthRedirectXRoute
   '/_root/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/_root/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
+  '/_root/routines/$stationId': typeof RootRoutinesStationIdRoute
   '/_root/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/_root/dashboard/': typeof RootDashboardIndexRoute
   '/_root/material-viewer/': typeof RootMaterialViewerIndexRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/redirect/x'
     | '/block-pack-editor/$blockPackId'
     | '/material-viewer/$materialId'
+    | '/routines/$stationId'
     | '/block-pack-editor/'
     | '/dashboard/'
     | '/material-viewer/'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/redirect/x'
     | '/block-pack-editor/$blockPackId'
     | '/material-viewer/$materialId'
+    | '/routines/$stationId'
     | '/block-pack-editor'
     | '/dashboard'
     | '/material-viewer'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/_auth/redirect/x'
     | '/_root/block-pack-editor/$blockPackId'
     | '/_root/material-viewer/$materialId'
+    | '/_root/routines/$stationId'
     | '/_root/block-pack-editor/'
     | '/_root/dashboard/'
     | '/_root/material-viewer/'
@@ -422,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RootBlockPackEditorIndexRouteImport
       parentRoute: typeof RootBlockPackEditorRoute
     }
+    '/_root/routines/$stationId': {
+      id: '/_root/routines/$stationId'
+      path: '/$stationId'
+      fullPath: '/routines/$stationId'
+      preLoaderRoute: typeof RootRoutinesStationIdRouteImport
+      parentRoute: typeof RootRoutinesRoute
+    }
     '/_root/material-viewer/$materialId': {
       id: '/_root/material-viewer/$materialId'
       path: '/$materialId'
@@ -519,10 +538,12 @@ const RootMaterialViewerRouteWithChildren =
   RootMaterialViewerRoute._addFileChildren(RootMaterialViewerRouteChildren)
 
 interface RootRoutinesRouteChildren {
+  RootRoutinesStationIdRoute: typeof RootRoutinesStationIdRoute
   RootRoutinesIndexRoute: typeof RootRoutinesIndexRoute
 }
 
 const RootRoutinesRouteChildren: RootRoutinesRouteChildren = {
+  RootRoutinesStationIdRoute: RootRoutinesStationIdRoute,
   RootRoutinesIndexRoute: RootRoutinesIndexRoute,
 }
 

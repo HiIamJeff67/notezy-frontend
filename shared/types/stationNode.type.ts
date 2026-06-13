@@ -2,10 +2,11 @@ import {
   AccessControlPermission,
   SupportedIcon,
 } from "@shared/api/interfaces/enums";
-import { UUID } from "crypto";
-import { RoutineMeta } from "./routineMeta.type";
+import type { UUID } from "crypto";
+import type { RoutineNode } from "./routineNode.type";
+import type { RoutineTaskNode } from "./routineTaskNode.type";
 
-export interface StationMeta {
+export interface StationNode {
   id: UUID;
   name: string;
   description: string;
@@ -16,10 +17,14 @@ export interface StationMeta {
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  routines: RoutineMeta[];
+
+  isOpen: boolean;
+
+  routines: RoutineNode[];
+  routineTasks: RoutineTaskNode[];
 }
 
-export const getDefaultStationMeta = (stationId: UUID): StationMeta => ({
+export const getDefaultStationNode = (stationId: UUID): StationNode => ({
   id: stationId,
   name: "Untitled",
   description: "",
@@ -30,5 +35,9 @@ export const getDefaultStationMeta = (stationId: UUID): StationMeta => ({
   deletedAt: null,
   updatedAt: new Date(),
   createdAt: new Date(),
+
+  isOpen: false,
+
   routines: [],
+  routineTasks: [],
 });

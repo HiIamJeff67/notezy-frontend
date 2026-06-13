@@ -10,6 +10,8 @@ import { ValidationClientException } from "@shared/api/exceptions/client/validat
 import type {
   CreateRoutineTagRequest,
   CreateRoutineTagsRequest,
+  GetAllMyRoutineTagsRequest,
+  GetAllMyRoutineTagsResponse,
   GetMyRoutineTagByIdRequest,
   GetMyRoutineTagByIdResponse,
   HardDeleteMyRoutineTagByIdRequest,
@@ -24,6 +26,7 @@ import {
   mutationFnHardDeleteMyRoutineTagsByIds,
   mutationFnUpdateMyRoutineTagById,
   mutationFnUpdateMyRoutineTagsByIds,
+  queryFnGetAllMyRoutineTags,
   queryFnGetMyRoutineTagById,
 } from "@shared/api/invokers/routineTag.invoker";
 import { RoutineTagLocalSimulator } from "@shared/api/local/simulators/routineTag.simulator";
@@ -118,7 +121,83 @@ export const useGetMyRoutineTagById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
+};
+
+export const useGetAllMyRoutineTags = (
+  hookRequest?: GetAllMyRoutineTagsRequest,
+  options?: Partial<UseQueryOptions<GetAllMyRoutineTagsResponse, Error>>
+) => {
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyRoutineTagsRequest
+  ): Promise<GetAllMyRoutineTagsResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetAllMyRoutineTags(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await RoutineTagLocalSynchronizer.syncGetAllMyRoutineTags(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const routineTags =
+          await RoutineTagLocalSimulator.simulateGetAllMyRoutineTags();
+        return {
+          success: false,
+          data: routineTags,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetAllMyRoutineTagsResponse;
+      }
+
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetAllMyRoutineTagsResponse, Error>({
+    queryKey: queryKeys.routineTag.myAll(),
+    queryFn: async () => perform(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
+  });
+
+  const fetch = async (
+    callbackRequest: GetAllMyRoutineTagsRequest
+  ): Promise<GetAllMyRoutineTagsResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.routineTag.myAll(),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
+  return { ...query, fetch };
 };
 
 export const useCreateRoutineTag = () => {

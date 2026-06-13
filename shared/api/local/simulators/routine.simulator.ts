@@ -19,6 +19,7 @@ import type {
   CreateRoutinesByStationIdsRequest,
   DeleteMyRoutineByIdRequest,
   DeleteMyRoutinesByIdsRequest,
+  GetAllMyRoutinesByTimeRangeRequest,
   GetMyRoutineByIdRequest,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutinesByIdsRequest,
@@ -46,7 +47,17 @@ import {
 import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { and, eq, exists, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  exists,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  sql,
+} from "drizzle-orm";
 
 export class RoutineLocalSimulator {
   private static getPassPermissionCheckSQL = (
@@ -401,6 +412,57 @@ export class RoutineLocalSimulator {
       .limit(1);
 
     return routines[0] ?? null;
+  };
+
+  static simulateGetAllMyRoutinesByTimeRange = async (
+    request: GetAllMyRoutinesByTimeRangeRequest
+  ) => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    const loggedInUser = await localDB.query.User.findFirst({
+      where: eq(User.isLoggedIn, true),
+    });
+    if (loggedInUser === undefined) return [];
+
+    return await localDB
+      .select({
+        id: Routine.id,
+        stationId: Routine.stationId,
+        title: Routine.title,
+        description: Routine.description,
+        status: Routine.status,
+        isPinned: Routine.isPinned,
+        scheduledStartAt: Routine.scheduledStartAt,
+        scheduledEndAt: Routine.scheduledEndAt,
+        period: Routine.period,
+        timezone: Routine.timezone,
+        deletedAt: Routine.deletedAt,
+        updatedAt: Routine.updatedAt,
+        createdAt: Routine.createdAt,
+      })
+      .from(Routine)
+      .innerJoin(Station, eq(Station.id, Routine.stationId))
+      .innerJoin(
+        UsersToStations,
+        and(
+          eq(UsersToStations.stationId, Routine.stationId),
+          eq(UsersToStations.userPublicId, loggedInUser.publicId),
+          inArray(UsersToStations.permission, AllAccessControlPermissions)
+        )
+      )
+      .where(
+        and(
+          inArray(Routine.stationId, request.param.stationIds),
+          isNull(Station.deletedAt),
+          isNull(Routine.deletedAt),
+          lt(Routine.scheduledStartAt, request.param.to),
+          gt(Routine.scheduledEndAt, request.param.from)
+        )
+      )
+      .orderBy(
+        asc(Routine.scheduledStartAt),
+        asc(Routine.scheduledEndAt),
+        asc(Routine.id)
+      );
   };
 
   static simulateCreateRoutineByStationId = async (

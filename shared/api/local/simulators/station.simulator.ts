@@ -17,6 +17,7 @@ import type {
   CreateStationsRequest,
   DeleteMyStationByIdRequest,
   DeleteMyStationsByIdsRequest,
+  GetAllMyStationsRequest,
   GetMyStationByIdRequest,
   HardDeleteMyStationByIdRequest,
   HardDeleteMyStationsByIdsRequest,
@@ -282,6 +283,46 @@ export class StationLocalSimulator {
       .limit(1);
 
     return stations[0] ?? null;
+  };
+
+  static simulateGetAllMyStations = async (
+    request: GetAllMyStationsRequest
+  ) => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    const loggedInUser = await localDB.query.User.findFirst({
+      where: eq(User.isLoggedIn, true),
+    });
+    if (loggedInUser === undefined) return [];
+
+    const stations = await localDB
+      .select({
+        id: Station.id,
+        name: Station.name,
+        description: Station.description,
+        icon: Station.icon,
+        headerBackgroundURL: Station.headerBackgroundURL,
+        permission: UsersToStations.permission,
+        routineCount: Station.routineCount,
+        deletedAt: Station.deletedAt,
+        updatedAt: Station.updatedAt,
+        createdAt: Station.createdAt,
+      })
+      .from(Station)
+      .innerJoin(
+        UsersToStations,
+        and(
+          eq(UsersToStations.stationId, Station.id),
+          eq(UsersToStations.userPublicId, loggedInUser.publicId),
+          inArray(UsersToStations.permission, AllAccessControlPermissions)
+        )
+      );
+
+    const onlyDeleted = request.param.onlyDeleted ?? 2;
+    if (onlyDeleted === 0) {
+      return stations.filter(station => station.deletedAt !== null);
+    }
+    if (onlyDeleted === 1) return stations;
+    return stations.filter(station => station.deletedAt === null);
   };
 
   static simulateCreateStation = async (

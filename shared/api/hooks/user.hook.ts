@@ -11,10 +11,10 @@ import {
   queryFnGetMe,
   queryFnGetUserData,
 } from "@shared/api/invokers/user.invoker";
+import { UserLocalSynchronizer } from "@shared/api/local/synchronizers/user.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
-import { UserLocalSynchronizer } from "@shared/api/local/synchronizers/user.synchronizer";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { SessionStorageManipulator } from "@shared/lib/sessionStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -80,7 +80,7 @@ export const useGetUserData = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMe = (
@@ -136,7 +136,7 @@ export const useGetMe = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useUpdateMe = () => {

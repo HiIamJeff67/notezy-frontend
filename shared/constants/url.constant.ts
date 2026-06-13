@@ -176,6 +176,7 @@ export const APIURLPathDictionary = {
   },
   station: {
     getMyStationById: "station/getMyStationById",
+    getAllMyStations: "station/getAllMyStations",
     createStation: "station/createStation",
     createStations: "station/createStations",
     updateMyStationById: "station/updateMyStationById",
@@ -189,6 +190,7 @@ export const APIURLPathDictionary = {
   },
   routine: {
     getMyRoutineById: "routine/getMyRoutineById",
+    getAllMyRoutinesByTimeRange: "routine/getAllMyRoutinesByTimeRange",
     createRoutineByStationId: "routine/createRoutineByStationId",
     createRoutinesByStationIds: "routine/createRoutinesByStationIds",
     updateMyRoutineById: "routine/updateMyRoutineById",
@@ -208,6 +210,7 @@ export const APIURLPathDictionary = {
   },
   routineTag: {
     getMyRoutineTagById: "routineTag/getMyRoutineTagById",
+    getAllMyRoutineTags: "routineTag/getAllMyRoutineTags",
     createRoutineTag: "routineTag/createRoutineTag",
     createRoutineTags: "routineTag/createRoutineTags",
     updateMyRoutineTagById: "routineTag/updateMyRoutineTagById",
@@ -217,6 +220,8 @@ export const APIURLPathDictionary = {
   },
   routineTask: {
     getMyRoutineTaskById: "routineTask/getMyRoutineTaskById",
+    getAllMyRoutineTasksByStationIds:
+      "routineTask/getAllMyRoutineTasksByStationIds",
     createRoutineTaskByStationId: "routineTask/createRoutineTaskByStationId",
     updateMyRoutineTaskById: "routineTask/updateMyRoutineTaskById",
     hardDeleteMyRoutineTaskById: "routineTask/hardDeleteMyRoutineTaskById",
@@ -278,6 +283,7 @@ export const WebURLPathDictionary = {
     },
     routines: {
       _: "routines",
+      byStationId: (stationId: UUID) => `routines/${stationId}`,
     },
   },
 };

@@ -11,7 +11,6 @@ import {
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
 import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
-import { queryFnGetAllMySubShelvesByRootShelfId } from "@shared/api/invokers/subShelf.invoker";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
@@ -62,52 +61,12 @@ export const useRootShelfLogic = ({
   const [editingRootShelfNode, setEditingRootShelfNode] = useState<
     RootShelfNode | undefined
   >(undefined);
-  const [editRootShelfNodeName, setEditRootShelfNodeName] =
-    useState<string>("");
-  const [originalRootShelfNodeName, setOriginalRootShelfNodeName] =
+  const [editRootShelfName, setEditRootShelfName] = useState<string>("");
+  const [originalRootShelfName, setOriginalRootShelfName] =
     useState<string>("");
 
   const [executeSearch, { data, loading, fetchMore }] =
     useSearchRootShelvesLazyQuery();
-
-  // trigger for listen and auto focus the input with ref of inputRef declared in the top
-  useEffect(() => {
-    // blur the focusing rename input if the user click other places in the screen
-    const handleClickOutside = async (event: MouseEvent) => {
-      if (
-        editingRootShelfNode &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        await renameEditingRootShelf();
-        setEditingRootShelfNode(undefined);
-        setEditRootShelfNodeName("");
-        setOriginalRootShelfNodeName("");
-      }
-    };
-
-    if (editingRootShelfNode) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    // force to focus on the rename input after 500 ms
-    setTimeout(() => {
-      if (editingRootShelfNode && inputRef.current) {
-        inputRef.current?.focus();
-      }
-    }, 500);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [
-    editingRootShelfNode,
-    editRootShelfNodeName, // will be used in renameEditingRootShelf
-    originalRootShelfNodeName, // will be used in renameEditingRootShelf
-    setEditingRootShelfNode,
-    setEditRootShelfNodeName,
-    setOriginalRootShelfNodeName,
-  ]);
 
   // fetch some root shelves initially
   useEffect(() => {
@@ -265,12 +224,12 @@ export const useRootShelfLogic = ({
     [createRootShelfMutator, RootShelfManipulator, expandedShelvesRef]
   );
 
-  const isNewRootShelfNodeName = useCallback(() => {
+  const isNewRootShelfName = useCallback(() => {
     return (
-      editRootShelfNodeName !== originalRootShelfNodeName &&
-      editRootShelfNodeName.trim() !== ""
+      editRootShelfName !== originalRootShelfName &&
+      editRootShelfName.trim() !== ""
     );
-  }, [editRootShelfNodeName, originalRootShelfNodeName]);
+  }, [editRootShelfName, originalRootShelfName]);
 
   const isRootShelfNodeEditing = useCallback(
     (rootShelfId: UUID) => {
@@ -282,29 +241,21 @@ export const useRootShelfLogic = ({
   const startRenamingRootShelfNode = useCallback(
     (rootShelfNode: RootShelfNode) => {
       setEditingRootShelfNode(rootShelfNode);
-      setOriginalRootShelfNodeName(rootShelfNode.name);
-      setEditRootShelfNodeName(rootShelfNode.name);
+      setOriginalRootShelfName(rootShelfNode.name);
+      setEditRootShelfName(rootShelfNode.name);
     },
-    [
-      setEditingRootShelfNode,
-      setOriginalRootShelfNodeName,
-      setEditRootShelfNodeName,
-    ]
+    [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]
   );
 
   const cancelRenamingRootShelfNode = useCallback(() => {
     setEditingRootShelfNode(undefined);
-    setOriginalRootShelfNodeName("");
-    setEditRootShelfNodeName("");
-  }, [
-    setEditingRootShelfNode,
-    setOriginalRootShelfNodeName,
-    setEditRootShelfNodeName,
-  ]);
+    setOriginalRootShelfName("");
+    setEditRootShelfName("");
+  }, [setEditingRootShelfNode, setOriginalRootShelfName, setEditRootShelfName]);
 
   const renameEditingRootShelf = useCallback(async (): Promise<void> => {
     try {
-      if (!isNewRootShelfNodeName() || !editingRootShelfNode) {
+      if (!isNewRootShelfName() || !editingRootShelfNode) {
         toast.error("the name of the given root shelf node is invalid");
         return;
       }
@@ -330,34 +281,64 @@ export const useRootShelfLogic = ({
         body: {
           rootShelfId: editingRootShelfNode.id,
           values: {
-            name: editRootShelfNodeName,
+            name: editRootShelfName,
           },
         },
       });
 
-      shelfTreeSummary.root.name = editRootShelfNodeName;
-      editingRootShelfNode.name = editRootShelfNodeName;
+      shelfTreeSummary.root.name = editRootShelfName;
+      editingRootShelfNode.name = editRootShelfName;
       setEditingRootShelfNode(prev =>
-        prev ? { ...prev, name: editRootShelfNodeName } : undefined
+        prev ? { ...prev, name: editRootShelfName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingRootShelfNode(undefined);
-      setEditRootShelfNodeName("");
-      setOriginalRootShelfNodeName("");
+      setEditRootShelfName("");
+      setOriginalRootShelfName("");
     }
   }, [
     editingRootShelfNode,
-    editRootShelfNodeName,
-    originalRootShelfNodeName,
+    editRootShelfName,
+    originalRootShelfName,
     setEditingRootShelfNode,
-    setEditRootShelfNodeName,
-    setOriginalRootShelfNodeName,
+    setEditRootShelfName,
+    setOriginalRootShelfName,
     expandedShelvesRef,
     updateRootShelfMutator,
   ]);
+
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = async (event: MouseEvent) => {
+      if (
+        editingRootShelfNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        await renameEditingRootShelf();
+      }
+    };
+
+    if (editingRootShelfNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    const focusInputBeforeRenameTimeout = setTimeout(() => {
+      if (editingRootShelfNode && inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      clearTimeout(focusInputBeforeRenameTimeout);
+    };
+  }, [editingRootShelfNode, renameEditingRootShelf]);
 
   const deleteRootShelf = useCallback(
     async (rootShelfNode: RootShelfNode): Promise<void> => {
@@ -407,9 +388,9 @@ export const useRootShelfLogic = ({
     expandRootShelf: expandRootShelf,
     toggleRootShelf: toggleRootShelf,
     createRootShelf: createRootShelf,
-    editRootShelfNodeName: editRootShelfNodeName,
-    setEditRootShelfNodeName: setEditRootShelfNodeName,
-    isNewRootShelfNodeName: isNewRootShelfNodeName,
+    editRootShelfName: editRootShelfName,
+    setEditRootShelfName: setEditRootShelfName,
+    isNewRootShelfName: isNewRootShelfName,
     isRootShelfNodeEditing: isRootShelfNodeEditing,
     isAnyRootShelfNodeEditing: editingRootShelfNode !== undefined,
     startRenamingRootShelfNode: startRenamingRootShelfNode,

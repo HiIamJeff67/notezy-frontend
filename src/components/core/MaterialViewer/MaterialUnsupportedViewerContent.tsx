@@ -1,5 +1,5 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
-import { MaterialMeta } from "@shared/types/materialMeta.type";
+import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 import MaterialViewerFrame from "./MaterialViewerFrame";
 
 interface MaterialUnsupportedViewerContentProps {

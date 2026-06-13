@@ -156,7 +156,7 @@ export const useGetMyBlockById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlocksByIds = (
@@ -246,7 +246,7 @@ export const useGetMyBlocksByIds = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlocksByBlockGroupId = (
@@ -331,7 +331,7 @@ export const useGetMyBlocksByBlockGroupId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlocksByBlockGroupIds = (
@@ -426,7 +426,7 @@ export const useGetMyBlocksByBlockGroupIds = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlocksByBlockPackId = (
@@ -506,7 +506,7 @@ export const useGetMyBlocksByBlockPackId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetAllMyBlocks = (
@@ -582,7 +582,7 @@ export const useGetAllMyBlocks = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useInsertBlock = () => {

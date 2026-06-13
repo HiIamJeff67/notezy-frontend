@@ -30,6 +30,7 @@ export const GetMyRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
     stationId: z.uuidv4(),
+    title: z.string(),
     purpose: z.enum(AllRoutineTaskPurposes),
     payload: z.any(),
     priority: z.int32(),
@@ -51,6 +52,54 @@ export type GetMyRoutineTaskByIdResponse = z.infer<
   typeof GetMyRoutineTaskByIdResponseSchema
 >;
 
+/* ============================== GetAllMyRoutineTasksByStationIds ============================== */
+
+export const GetAllMyRoutineTasksByStationIdsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({
+      stationIds: z.array(z.uuidv4()).min(1).max(1024),
+    }),
+  });
+
+export type GetAllMyRoutineTasksByStationIdsRequest = z.infer<
+  typeof GetAllMyRoutineTasksByStationIdsRequestSchema
+>;
+
+export const GetAllMyRoutineTasksByStationIdsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        stationId: z.uuidv4(),
+        title: z.string(),
+        purpose: z.enum(AllRoutineTaskPurposes),
+        payload: z.any(),
+        priority: z.int32(),
+        status: z.enum(AllRoutineTaskStatuses),
+        attempts: z.int32(),
+        maxAttempts: z.int32(),
+        scheduledAt: z.coerce.date(),
+        actualStartedAt: z.coerce.date().nullable(),
+        actualEndedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+      })
+    ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type GetAllMyRoutineTasksByStationIdsResponse = z.infer<
+  typeof GetAllMyRoutineTasksByStationIdsResponseSchema
+>;
+
 /* ============================== CreateRoutineTaskByStationId ============================== */
 
 export const CreateRoutineTaskByStationIdRequestSchema =
@@ -64,6 +113,7 @@ export const CreateRoutineTaskByStationIdRequestSchema =
     body: z
       .object({
         stationId: z.uuidv4(),
+        title: z.string().min(1).max(128),
         purpose: z.enum(AllRoutineTaskPurposes),
         payload: z.any(),
         priority: z.int32().min(0),
@@ -109,6 +159,7 @@ export const UpdateMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
     values: z
       .object({
         stationId: z.uuidv4(),
+        title: z.string().min(1).max(128),
         purpose: z.enum(AllRoutineTaskPurposes),
         payload: z.any(),
         priority: z.int32().min(0),

@@ -16,6 +16,8 @@ import {
   DeleteMyRoutineByIdResponse,
   DeleteMyRoutinesByIdsRequest,
   DeleteMyRoutinesByIdsResponse,
+  GetAllMyRoutinesByTimeRangeRequest,
+  GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdRequest,
   GetMyRoutineByIdResponse,
   HardDeleteMyRoutineByIdRequest,
@@ -99,6 +101,61 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
 
     return formattedResponse;
   });
+
+export const GetAllMyRoutinesByTimeRange = createServerFn({ method: "GET" })
+  .inputValidator((data: GetAllMyRoutinesByTimeRangeRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
+      const params = new URLSearchParams();
+      params.set("from", new Date(request.param.from).toISOString());
+      params.set("to", new Date(request.param.to).toISOString());
+      for (const stationId of request.param.stationIds) {
+        params.append("stationIds", stationId);
+      }
+      const url =
+        import.meta.env.VITE_API_DOMAIN_URL +
+        "/" +
+        CurrentAPIBaseURL +
+        "/" +
+        APIURLPathDictionary.routine.getAllMyRoutinesByTimeRange +
+        "?" +
+        params.toString();
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        credentials: "include",
+      });
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as GetAllMyRoutinesByTimeRangeResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
 
 export const CreateRoutineByStationId = createServerFn({ method: "POST" })
   .inputValidator((data: CreateRoutineByStationIdRequest) => data)

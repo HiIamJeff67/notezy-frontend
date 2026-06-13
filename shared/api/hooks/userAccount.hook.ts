@@ -77,7 +77,7 @@ export const useGetMyAccount = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useUpdateMyAccount = () => {

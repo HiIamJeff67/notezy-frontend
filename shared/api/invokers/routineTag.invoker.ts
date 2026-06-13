@@ -6,6 +6,7 @@ import { ValidationClientException } from "@shared/api/exceptions/client/validat
 import {
   CreateRoutineTag,
   CreateRoutineTags,
+  GetAllMyRoutineTags,
   GetMyRoutineTagById,
   HardDeleteMyRoutineTagById,
   HardDeleteMyRoutineTagsByIds,
@@ -21,6 +22,10 @@ import {
   CreateRoutineTagsRequestSchema,
   CreateRoutineTagsResponse,
   CreateRoutineTagsResponseSchema,
+  GetAllMyRoutineTagsRequest,
+  GetAllMyRoutineTagsRequestSchema,
+  GetAllMyRoutineTagsResponse,
+  GetAllMyRoutineTagsResponseSchema,
   GetMyRoutineTagByIdRequest,
   GetMyRoutineTagByIdRequestSchema,
   GetMyRoutineTagByIdResponse,
@@ -55,6 +60,33 @@ export const queryFnGetMyRoutineTagById = async (
     return GetMyRoutineTagByIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyRoutineTagById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyRoutineTags = async (
+  request: GetAllMyRoutineTagsRequest
+): Promise<GetAllMyRoutineTagsResponse> => {
+  try {
+    const validatedRequest = GetAllMyRoutineTagsRequestSchema.parse(request);
+    const response = await GetAllMyRoutineTags({
+      data: validatedRequest,
+    });
+    return GetAllMyRoutineTagsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetAllMyRoutineTags", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

@@ -3,17 +3,23 @@ import toast from "@shared/lib/toast";
 import { tKey } from "@shared/translations";
 import {
   BellIcon,
-  CalendarIcon,
+  ChevronDown,
+  ChevronRight,
+  ClipboardClock,
   LayoutDashboardIcon,
   MessageSquareIcon,
   PlusIcon,
   SettingsIcon,
+  TagIcon,
 } from "lucide-react";
 import { useEffect } from "react";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import ShelfCaseIcon from "@/components/icons/ShelfCaseIcon";
+import TrainStationIcon from "@/components/icons/TrainStationIcon";
 import RootShelfMenu from "@/components/menus/RootShelfMenu/RootShelfMenu";
+import RoutineTagMenu from "@/components/menus/RoutineTagMenu/RoutineTagMenu";
+import StationMenu from "@/components/menus/StationMenu/StationMenu";
 import ResizableSidebar from "@/components/sidebar/ResizableSidebar/ResizableSidebar";
 import {
   Collapsible,
@@ -32,11 +38,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -50,6 +56,7 @@ import {
   useLanguage,
   useLoading,
   useResizeSidebar,
+  useRoutine,
   useShelfItem,
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
@@ -68,6 +75,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const modalManager = useModal();
   const sidebarManager = useSidebar();
   const resizableSidebarManager = useResizeSidebar();
+  const routineManager = useRoutine();
   const userManager = useUser();
   const shelfItemManager = useShelfItem();
 
@@ -119,7 +127,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                     router.push(WebURLPathDictionary.root.routines._)
                   }
                 >
-                  <CalendarIcon />
+                  <ClipboardClock />
                   {sidebarManager.open && (
                     <span className="truncate">Routines</span>
                   )}
@@ -143,54 +151,117 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarSeparator className="w-full m-0 p-0" />
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="flex flex-row justify-start items-center gap-2 hover:bg-primary">
-                      <ShelfCaseIcon size={16} />
-                      <span>Shelves</span>
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <SidebarMenuAction
-                    onClick={() =>
-                      modalManager.open("CreateShelfItemDialog", {
-                        dialogHeader: "Create a root shelf",
-                        dialogDescription:
-                          "Typing an new name of the created root shelf. Note that duplicate root shelf name is not allowed.",
-                        disableInput: false,
-                        inputPlaceholder: "Type new name here",
-                        onCreate: async (newRootShelfName: string) =>
-                          await loadingManager.startAsyncTransactionLoading(
-                            async () => {
-                              await shelfItemManager
-                                .createRootShelf(newRootShelfName)
-                                .then(modalManager.close)
-                                .catch(error =>
-                                  toast.error(languageManager.tError(error))
-                                );
-                            }
-                          ),
-                        onCancel: modalManager.close,
-                      })
-                    }
-                  >
-                    <PlusIcon />
-                  </SidebarMenuAction>
-                  <CollapsibleContent className="overflow-hidden">
+        <SidebarGroup className="mb-0 pb-0">
+          <Collapsible defaultOpen className="group/collapsible">
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="gap-2 [&[data-state=closed]:hover_.group-label-chevron-right]:block [&[data-state=open]:hover_.group-label-chevron-down]:block">
+                <ShelfCaseIcon size={16} />
+                <span>Shelves</span>
+                <ChevronRight className="group-label-chevron-right hidden size-3" />
+                <ChevronDown className="group-label-chevron-down hidden size-3" />
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <SidebarGroupAction
+              className="sidebar-group-label-action opacity-0 transition-opacity text-muted-foreground"
+              aria-label="Create root shelf"
+              title="Create root shelf"
+              onClick={() =>
+                modalManager.open("CreateShelfItemDialog", {
+                  dialogHeader: "Create a root shelf",
+                  dialogDescription:
+                    "Typing an new name of the created root shelf. Note that duplicate root shelf name is not allowed.",
+                  disableInput: false,
+                  inputPlaceholder: "Type new name here",
+                  onCreate: async (newRootShelfName: string) =>
+                    await loadingManager.startAsyncTransactionLoading(
+                      async () => {
+                        await shelfItemManager
+                          .createRootShelf(newRootShelfName)
+                          .then(modalManager.close)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }
+                    ),
+                  onCancel: modalManager.close,
+                })
+              }
+            >
+              <PlusIcon />
+            </SidebarGroupAction>
+            <CollapsibleContent className="sidebar-group-collapsible-content overflow-hidden">
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
                     <SidebarMenuSub className="w-full pr-4">
                       <SidebarMenuSubItem className="w-full">
                         <RootShelfMenu />
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
-          </SidebarGroupContent>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarGroup>
+        <SidebarGroup className="my-0 pb-0">
+          <Collapsible defaultOpen className="group/collapsible">
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="gap-2 [&[data-state=closed]:hover_.group-label-chevron-right]:block [&[data-state=open]:hover_.group-label-chevron-down]:block">
+                <TrainStationIcon size={16} />
+                <span>Stations</span>
+                <ChevronRight className="group-label-chevron-right hidden size-3" />
+                <ChevronDown className="group-label-chevron-down hidden size-3" />
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <SidebarGroupAction
+              className="sidebar-group-label-action opacity-0 transition-opacity text-muted-foreground"
+              aria-label="Create station"
+              title="Create station"
+              onClick={() => modalManager.open("CreateStationDialog", {})}
+            >
+              <PlusIcon />
+            </SidebarGroupAction>
+            <CollapsibleContent className="sidebar-group-collapsible-content overflow-hidden">
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuSub className="w-full pr-4">
+                      <SidebarMenuSubItem className="w-full">
+                        <StationMenu />
+                        <div className="my-2 flex flex-col gap-1 border-t border-sidebar-border pt-2">
+                          <div className="flex h-7 items-center justify-between px-2 text-xs text-muted-foreground">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <TagIcon className="size-3.5 shrink-0" />
+                              <span className="truncate">Routine tags</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="flex size-5 shrink-0 items-center justify-center rounded-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              aria-label="Create routine tag"
+                              title="Create routine tag"
+                              onClick={() =>
+                                modalManager.open("CreateRoutineTagDialog", {
+                                  onCreated: async routineTagId => {
+                                    routineManager.selectRoutineTag(
+                                      routineTagId
+                                    );
+                                  },
+                                })
+                              }
+                            >
+                              <PlusIcon className="size-3.5" />
+                            </button>
+                          </div>
+                          <RoutineTagMenu />
+                        </div>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
       <SidebarSeparator className="w-full m-0 p-0" />

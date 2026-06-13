@@ -8,6 +8,7 @@ import {
   CreateStations,
   DeleteMyStationById,
   DeleteMyStationsByIds,
+  GetAllMyStations,
   GetMyStationById,
   HardDeleteMyStationById,
   HardDeleteMyStationsByIds,
@@ -33,6 +34,10 @@ import {
   DeleteMyStationsByIdsRequestSchema,
   DeleteMyStationsByIdsResponse,
   DeleteMyStationsByIdsResponseSchema,
+  GetAllMyStationsRequest,
+  GetAllMyStationsRequestSchema,
+  GetAllMyStationsResponse,
+  GetAllMyStationsResponseSchema,
   GetMyStationByIdRequest,
   GetMyStationByIdRequestSchema,
   GetMyStationByIdResponse,
@@ -75,6 +80,33 @@ export const queryFnGetMyStationById = async (
     return GetMyStationByIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyStationById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyStations = async (
+  request: GetAllMyStationsRequest
+): Promise<GetAllMyStationsResponse> => {
+  try {
+    const validatedRequest = GetAllMyStationsRequestSchema.parse(request);
+    const response = await GetAllMyStations({
+      data: validatedRequest,
+    });
+    return GetAllMyStationsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetAllMyStations", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

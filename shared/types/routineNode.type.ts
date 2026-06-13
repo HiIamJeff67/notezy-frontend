@@ -1,8 +1,8 @@
 import { RoutinePeriod, RoutineStatus } from "@shared/api/interfaces/enums";
-import { UUID } from "crypto";
-import { RoutineTaskMeta } from "./routineTaskMeta.type";
+import type { UUID } from "crypto";
+import type { RoutineTaskNode } from "./routineTaskNode.type";
 
-export interface RoutineMeta {
+export interface RoutineNode {
   id: UUID;
   stationId: UUID;
   title: string;
@@ -16,16 +16,19 @@ export interface RoutineMeta {
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  routineTagIds: UUID[]; // the routine tag has a many to many relationship to the routine
-  routineTasks: RoutineTaskMeta[];
+
+  isOpen: boolean;
+
+  routineTagIds: UUID[];
+  routineTasks: RoutineTaskNode[];
 }
 
-export const getDefaultRoutineMeta = (
+export const getDefaultRoutineNode = (
   routineId: UUID,
   stationId: UUID
-): RoutineMeta => ({
+): RoutineNode => ({
   id: routineId,
-  stationId: stationId,
+  stationId,
   title: "Untitled",
   description: "",
   status: RoutineStatus.Scheduled,
@@ -37,6 +40,9 @@ export const getDefaultRoutineMeta = (
   deletedAt: null,
   updatedAt: new Date(),
   createdAt: new Date(),
+
+  isOpen: false,
+
   routineTagIds: [],
   routineTasks: [],
 });

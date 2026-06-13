@@ -329,6 +329,33 @@ export class RoutineTagLocalSimulator {
     return tags[0] ?? null;
   };
 
+  static simulateGetAllMyRoutineTags = async () => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    const loggedInUser = await localDB.query.User.findFirst({
+      where: eq(User.isLoggedIn, true),
+    });
+    if (loggedInUser === undefined) return [];
+
+    return await localDB
+      .select({
+        id: RoutineTag.id,
+        name: RoutineTag.name,
+        color: RoutineTag.color,
+        icon: RoutineTag.icon,
+        updatedAt: RoutineTag.updatedAt,
+        createdAt: RoutineTag.createdAt,
+      })
+      .from(RoutineTag)
+      .innerJoin(
+        UsersToRoutineTags,
+        and(
+          eq(UsersToRoutineTags.tagId, RoutineTag.id),
+          eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
+          inArray(UsersToRoutineTags.permission, AllAccessControlPermissions)
+        )
+      );
+  };
+
   static simulateCreateRoutineTag = async (
     request: CreateRoutineTagRequest
   ): Promise<void> => {

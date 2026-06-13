@@ -149,7 +149,7 @@ export const useGetMyBlockPackById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlockPackAndItsParentById = (
@@ -237,7 +237,7 @@ export const useGetMyBlockPackAndItsParentById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMyBlockPacksByParentSubShelfId = (
@@ -323,7 +323,7 @@ export const useGetMyBlockPacksByParentSubShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetAllMyBlockPacksByRootShelfId = (
@@ -409,7 +409,7 @@ export const useGetAllMyBlockPacksByRootShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useCreateBlockPack = () => {

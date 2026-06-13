@@ -37,33 +37,44 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
           return (
             <Suspense fallback={<SubShelfMenuItemSkeleton />} key={subShelfId}>
               {shelfItemManager.isSubShelfNodeEditing(subShelfNode.id) ? (
-                <SidebarMenuItem className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border border-foreground relative">
+                <SidebarMenuItem className="relative flex items-center justify-end rounded-sm border border-foreground bg-muted px-2 py-1">
                   <input
                     ref={shelfItemManager.inputRef}
                     type="text"
-                    value={shelfItemManager.editSubShelfNodeName}
-                    className="flex-1 bg-transparent w-full h-6 outline-none overflow-hidden"
+                    value={shelfItemManager.editSubShelfName}
+                    className="h-6 min-w-0 flex-1 overflow-hidden bg-transparent pr-6 outline-none"
                     onChange={e =>
-                      shelfItemManager.setEditSubShelfNodeName(e.target.value)
+                      shelfItemManager.setEditSubShelfName(e.target.value)
                     }
                     onKeyDown={async e => {
-                      switch (e.key) {
-                        case "Enter":
-                          await handleRenameSubShelfOnSubmit();
-                        case "Escape":
-                          shelfItemManager.cancelRenamingSubShelfNode();
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await handleRenameSubShelfOnSubmit();
+                      } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        shelfItemManager.cancelRenamingSubShelfNode();
                       }
                     }}
                     // note that autoFocus doesn't work in this case,
                     // bcs the user clicked context menu trigger before the input element rendering
                   />
-                  {shelfItemManager.isNewSubShelfNodeName() && (
+                  {shelfItemManager.isNewSubShelfName() && (
                     <button
-                      className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                      onClick={handleRenameSubShelfOnSubmit}
-                      onMouseDown={e => e.stopPropagation()}
+                      type="button"
+                      className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
+                      onMouseDown={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onClick={async e => {
+                        e.stopPropagation();
+                        await handleRenameSubShelfOnSubmit();
+                      }}
+                      aria-label="Save sub shelf name"
                     >
-                      <CheckIcon className="w-full h-full" />
+                      <CheckIcon className="size-4" />
                     </button>
                   )}
                 </SidebarMenuItem>

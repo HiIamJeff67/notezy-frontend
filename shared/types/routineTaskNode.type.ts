@@ -2,11 +2,12 @@ import {
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 
-export interface RoutineTaskMeta {
+export interface RoutineTaskNode {
   id: UUID;
   stationId: UUID;
+  title: string;
   purpose: RoutineTaskPurpose;
   payload: any;
   priority: number;
@@ -20,12 +21,13 @@ export interface RoutineTaskMeta {
   createdAt: Date;
 }
 
-export const getDefaultRoutineTaskMeta = (
+export const getDefaultRoutineTaskNode = (
   routineTaskId: UUID,
   stationId: UUID
-): RoutineTaskMeta => ({
+): RoutineTaskNode => ({
   id: routineTaskId,
-  stationId: stationId,
+  stationId,
+  title: "Untitled",
   purpose: RoutineTaskPurpose.CreateBlock,
   payload: {},
   priority: 0,

@@ -3,7 +3,6 @@ import { MaterialContentType } from "@shared/api/interfaces/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { MaterialMeta } from "@shared/types/materialMeta.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import {
   DownloadIcon,
@@ -44,6 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAppRouter, useLanguage } from "@/hooks";
+import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 import MaterialViewerFrame from "./MaterialViewerFrame";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(

@@ -10,6 +10,8 @@ import {
   DeleteMyStationByIdResponse,
   DeleteMyStationsByIdsRequest,
   DeleteMyStationsByIdsResponse,
+  GetAllMyStationsRequest,
+  GetAllMyStationsResponse,
   GetMyStationByIdRequest,
   GetMyStationByIdResponse,
   HardDeleteMyStationByIdRequest,
@@ -76,6 +78,54 @@ export const GetMyStationById = createServerFn({ method: "GET" })
     forwardUpstreamSetCookies(response);
     const formattedResponse =
       (await response.json()) as GetMyStationByIdResponse;
+    if (formattedResponse.exception != null) {
+      throw new NotezyAPIError(
+        new NotezyException(formattedResponse.exception)
+      );
+    }
+    AccessTokenCookieHandler.ensure(
+      formattedResponse.refreshableTokens?.newAccessToken
+    );
+
+    return formattedResponse;
+  });
+
+export const GetAllMyStations = createServerFn({ method: "GET" })
+  .inputValidator((data: GetAllMyStationsRequest) => data)
+  .handler(async ({ data: request }): Promise<GetAllMyStationsResponse> => {
+    const params = new URLSearchParams();
+    if (request.param?.onlyDeleted !== undefined) {
+      params.set("onlyDeleted", String(request.param.onlyDeleted));
+    }
+    const url =
+      import.meta.env.VITE_API_DOMAIN_URL +
+      "/" +
+      CurrentAPIBaseURL +
+      "/" +
+      APIURLPathDictionary.station.getAllMyStations +
+      (params.size > 0 ? "?" + params.toString() : "");
+    const inboundCookie = getRequestHeader("cookie");
+    const userAgent =
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": userAgent,
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      credentials: "include",
+    });
+
+    if (!isJsonResponse(response)) {
+      throw new Error(tKey.error.encounterUnknownError);
+    }
+    forwardUpstreamSetCookies(response);
+    const formattedResponse =
+      (await response.json()) as GetAllMyStationsResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)

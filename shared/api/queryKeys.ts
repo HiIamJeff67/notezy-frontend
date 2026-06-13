@@ -105,6 +105,7 @@ export const queryKeys = {
   },
   station: {
     all: () => ["station"] as const,
+    myAll: (onlyDeleted?: number) => ["station", "myAll", onlyDeleted] as const,
     oneById: (stationId?: UUID) => ["station", "oneById", stationId] as const,
   },
   routine: {
@@ -112,9 +113,20 @@ export const queryKeys = {
     oneById: (routineId?: UUID) => ["routine", "oneById", routineId] as const,
     manyByStationId: (stationId?: UUID) =>
       ["routine", "manyByStationId", stationId] as const,
+    manyByTimeRange: (from?: Date, to?: Date, stationIds?: UUID[]) =>
+      [
+        "routine",
+        "manyByTimeRange",
+        from?.toISOString(),
+        to?.toISOString(),
+        stationIds && stationIds.length > 0
+          ? stationIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
   },
   routineTag: {
     all: () => ["routineTag"] as const,
+    myAll: () => ["routineTag", "myAll"] as const,
     oneById: (routineTagId?: UUID) =>
       ["routineTag", "oneById", routineTagId] as const,
   },
@@ -124,5 +136,13 @@ export const queryKeys = {
       ["routineTask", "oneById", routineTaskId] as const,
     manyByStationId: (stationId?: UUID) =>
       ["routineTask", "manyByStationId", stationId] as const,
+    manyByStationIds: (stationIds?: UUID[]) =>
+      [
+        "routineTask",
+        "manyByStationIds",
+        stationIds && stationIds.length > 0
+          ? stationIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
   },
 };

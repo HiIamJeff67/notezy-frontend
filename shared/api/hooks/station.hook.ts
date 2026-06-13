@@ -12,6 +12,8 @@ import type {
   CreateStationsRequest,
   DeleteMyStationByIdRequest,
   DeleteMyStationsByIdsRequest,
+  GetAllMyStationsRequest,
+  GetAllMyStationsResponse,
   GetMyStationByIdRequest,
   GetMyStationByIdResponse,
   HardDeleteMyStationByIdRequest,
@@ -32,6 +34,7 @@ import {
   mutationFnRestoreMyStationsByIds,
   mutationFnUpdateMyStationById,
   mutationFnUpdateMyStationsByIds,
+  queryFnGetAllMyStations,
   queryFnGetMyStationById,
 } from "@shared/api/invokers/station.invoker";
 import { StationLocalSimulator } from "@shared/api/local/simulators/station.simulator";
@@ -126,7 +129,83 @@ export const useGetMyStationById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
+};
+
+export const useGetAllMyStations = (
+  hookRequest?: GetAllMyStationsRequest,
+  options?: Partial<UseQueryOptions<GetAllMyStationsResponse, Error>>
+) => {
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyStationsRequest
+  ): Promise<GetAllMyStationsResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetAllMyStations(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await StationLocalSynchronizer.syncGetAllMyStations(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const stations =
+          await StationLocalSimulator.simulateGetAllMyStations(request);
+        return {
+          success: false,
+          data: stations,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetAllMyStationsResponse;
+      }
+
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetAllMyStationsResponse, Error>({
+    queryKey: queryKeys.station.myAll(hookRequest?.param.onlyDeleted),
+    queryFn: async () => perform(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
+  });
+
+  const fetch = async (
+    callbackRequest: GetAllMyStationsRequest
+  ): Promise<GetAllMyStationsResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.station.myAll(callbackRequest.param.onlyDeleted),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
+  return { ...query, fetch };
 };
 
 export const useCreateStation = () => {

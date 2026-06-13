@@ -59,6 +59,7 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
           Rename
         </ContextMenuItem>
         <ContextMenuItem
+          className="text-destructive focus:text-destructive"
           onClick={async () => {
             await shelfItemManager.deleteBlockPack(parent, current);
             if (current.id === (router.params.blockPackId as string)) {

@@ -1,8 +1,4 @@
 import {
-  PrivateRootShelf,
-  SearchRootShelfEdge,
-} from "@shared/api/graphql/generated/graphql";
-import {
   MaxMaterialsOfRootShelf,
   MaxSubShelvesOfRootShelf,
   MaxTriggerValue,
@@ -17,96 +13,19 @@ import { useItemLogic } from "./ItemLogic";
 import { useRootShelfLogic } from "./RootShelfLogic";
 import { useSubShelfLogic } from "./SubShelfLogic";
 
-interface ShelfItemContextType {
-  // general
+interface ShelfItemBaseContext {
   inputRef: RefObject<HTMLInputElement | null>;
   searchInput: { query: string; after: string | null };
   setSearchInput: (input: { query: string; after: string | null }) => void;
   expandedShelves: LRUCache<string, ShelfTreeSummary>;
   isFocused: (id: UUID) => boolean;
   resetFocusNode: () => void;
-
-  // for root shelf
-  rootShelfEdges: SearchRootShelfEdge[];
-  searchRootShelves: () => Promise<void>;
-  loadMoreRootShelves: () => Promise<void>;
-  isFetching: boolean;
-  expandRootShelf: (rootShelf: PrivateRootShelf) => Promise<ShelfTreeSummary>;
-  toggleRootShelf: (rootShelfNode: RootShelfNode, reset?: boolean) => void;
-  createRootShelf: (name: string) => Promise<void>;
-  editRootShelfNodeName: string;
-  setEditRootShelfNodeName: (editRootShelfNodeName: string) => void;
-  isNewRootShelfNodeName: () => boolean;
-  isRootShelfNodeEditing: (rootShelfId: UUID) => boolean;
-  isAnyRootShelfNodeEditing: boolean;
-  startRenamingRootShelfNode: (rootShelfNode: RootShelfNode) => void;
-  cancelRenamingRootShelfNode: () => void;
-  renameEditingRootShelf: () => Promise<void>;
-  deleteRootShelf: (rootShelfNode: RootShelfNode) => Promise<void>;
-
-  // for sub shelf
-  expandSubShelf: (
-    rootShelfNode: RootShelfNode,
-    subShelfNode: SubShelfNode
-  ) => Promise<void>;
-  toggleSubShelf: (subShelfNode: SubShelfNode, reset?: boolean) => void;
-  createSubShelf: (
-    rootShelfId: UUID,
-    prevSubShelfNode: SubShelfNode | null,
-    name: string
-  ) => Promise<void>;
-  editSubShelfNodeName: string;
-  setEditSubShelfNodeName: (editSubShelfNodeName: string) => void;
-  isNewSubShelfNodeName: () => boolean;
-  isAnySubShelfNodeEditing: boolean;
-  isSubShelfNodeEditing: (subShelfId: UUID) => boolean;
-  startRenamingSubShelfNode: (subShelfNode: SubShelfNode) => void;
-  cancelRenamingSubShelfNode: () => void;
-  renameEditingSubShelf: () => Promise<void>;
-  deleteSubShelf: (
-    prevSubShelfNode: SubShelfNode | null,
-    subShelfNode: SubShelfNode
-  ) => Promise<void>;
-  moveSubShelf: (
-    prevSubShelfNode: SubShelfNode | null,
-    sourceSubShelfNode: SubShelfNode,
-    destinationRootShelfNode: RootShelfNode,
-    destinationSubShelfNode: SubShelfNode | null
-  ) => Promise<void>;
-
-  // for items
-  editItemNodeName: string;
-  setEditItemNodeName: (itemName: string) => void;
-  isNewItemNodeName: () => boolean;
-  isAnyItemNodeEditing: boolean;
-  isItemNodeEditing: (itemId: UUID) => boolean;
-  startRenamingItemNode: (itemNode: MaterialNode | BlockPackNode) => void;
-  cancelRenamingItemNode: () => void;
-  // material
-  toggleMaterial: (materialNode: MaterialNode, reset?: boolean) => void;
-  createMaterial: (
-    rootShelfId: UUID,
-    parentSubShelfNode: SubShelfNode,
-    name: string
-  ) => Promise<void>;
-  renameEditingMaterial: () => Promise<void>;
-  deleteMaterial: (
-    parentSubShelfNode: SubShelfNode,
-    materialNode: MaterialNode
-  ) => Promise<void>;
-  // block pack
-  toggleBlockPack: (blockPackNode: BlockPackNode, reset?: boolean) => void;
-  createBlockPack: (
-    rootShelfId: UUID,
-    parentShelfNode: SubShelfNode,
-    name: string
-  ) => Promise<void>;
-  renameEditingBlockPack: () => Promise<void>;
-  deleteBlockPack: (
-    parentSubShelfNode: SubShelfNode,
-    blockPackNode: BlockPackNode
-  ) => Promise<void>;
 }
+
+export type ShelfItemContextType = ShelfItemBaseContext &
+  ReturnType<typeof useRootShelfLogic> &
+  ReturnType<typeof useSubShelfLogic> &
+  ReturnType<typeof useItemLogic>;
 
 export const ShelfItemContext = createContext<ShelfItemContextType | undefined>(
   undefined

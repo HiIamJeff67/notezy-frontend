@@ -4,12 +4,15 @@ import GridBackground from "@/components/backgrounds/GridBackground/GridBackgrou
 import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
 import { Button } from "@/components/ui/button";
-import { useBackgroundImages, useModal } from "@/hooks";
+import { useSidebar } from "@/components/ui/sidebar";
+import { useBackgroundImages, useModal, useResizeSidebar } from "@/hooks";
 import RoutineScopeBar from "./RoutineScopeBar";
 
 const RoutineOverViewerContent = () => {
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
+  const sidebarManager = useSidebar();
+  const resizableSidebarManager = useResizeSidebar();
 
   const [isHeaderBackgroundImageEditing, setIsHeaderBackgroundImageEditing] =
     useState<boolean>(false);
@@ -29,10 +32,18 @@ const RoutineOverViewerContent = () => {
     <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
       <header
         className="
-          sticky w-full h-10 top-0 z-100
+          fixed top-0 right-0 z-100 h-10
           flex shrink-0 justify-between items-center 
           gap-2 bg-background/75 backdrop-blur-md border-background/10
         "
+        style={{
+          left: sidebarManager.isMobile
+            ? 0
+            : sidebarManager.open
+              ? resizableSidebarManager.width
+              : "var(--sidebar-width-icon)",
+          transition: "left 0.2s",
+        }}
       >
         <RoutineScopeBar />
       </header>
@@ -54,7 +65,7 @@ const RoutineOverViewerContent = () => {
             <Button
               variant="ghost"
               className="
-                fixed right-0 justify-center items-center
+                absolute right-0 bottom-0 justify-center items-center
                 rounded-full shadow-lg w-8 h-8 m-2
                 transition z-100
               "

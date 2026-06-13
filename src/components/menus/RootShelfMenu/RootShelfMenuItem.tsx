@@ -89,35 +89,44 @@ const RootShelfMenuItem = ({
       <SidebarMenuItem>
         <ContextMenu>
           {shelfItemManager.isRootShelfNodeEditing(summary.root.id) ? (
-            <div className="flex items-center justify-end rounded-sm px-2 py-1 bg-muted border-none border-foreground relative">
+            <div className="relative flex items-center justify-end rounded-sm border-none bg-muted px-2 py-1">
               <input
                 ref={shelfItemManager.inputRef}
                 type="text"
-                value={shelfItemManager.editRootShelfNodeName}
-                className="flex-1 bg-transparent h-6 outline-none overflow-hidden"
+                value={shelfItemManager.editRootShelfName}
+                className="h-6 min-w-0 flex-1 overflow-hidden bg-transparent pr-6 outline-none"
                 onChange={e =>
-                  shelfItemManager.setEditRootShelfNodeName(e.target.value)
+                  shelfItemManager.setEditRootShelfName(e.target.value)
                 }
                 onKeyDown={async e => {
                   if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
                     await handleRenameRootShelfOnSubmit();
                   } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
                     shelfItemManager.cancelRenamingRootShelfNode();
                   }
                 }}
                 // note that autoFocus doesn't work in this case,
                 // bcs the user clicked context menu trigger before the input element rendering
               />
-              {shelfItemManager.isNewRootShelfNodeName() && (
+              {shelfItemManager.isNewRootShelfName() && (
                 <button
-                  onClick={async e => {
-                    await handleRenameRootShelfOnSubmit();
+                  type="button"
+                  className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
+                  onMouseDown={e => {
+                    e.preventDefault();
                     e.stopPropagation();
                   }}
-                  className="rounded hover:bg-primary/60 absolute w-4 h-4"
-                  onMouseDown={e => e.stopPropagation()}
+                  onClick={async e => {
+                    e.stopPropagation();
+                    await handleRenameRootShelfOnSubmit();
+                  }}
+                  aria-label="Save root shelf name"
                 >
-                  <CheckIcon className="w-full h-full" />
+                  <CheckIcon className="size-4" />
                 </button>
               )}
             </div>
@@ -128,7 +137,7 @@ const RootShelfMenuItem = ({
                   ref={node => {
                     drop(node);
                   }}
-                  className="w-full rounded-sm border border-secondary hover:border-transparent 
+                  className="w-full rounded-sm
                         whitespace-nowrap text-ellipsis overflow-hidden"
                   onClick={async () => {
                     shelfItemManager.toggleRootShelf(summary.root);
@@ -149,7 +158,7 @@ const RootShelfMenuItem = ({
               </CollapsibleTrigger>
             </ContextMenuTrigger>
           )}
-          {!shelfItemManager.isNewRootShelfNodeName() && summary.hasChanged && (
+          {!shelfItemManager.isNewRootShelfName() && summary.hasChanged && (
             <SidebarMenuAction className="bg-transparent hover:bg-transparent p-0.5 flex justify-center items-center">
               <SquareDotIcon className="max-w-4 max-h-4" />
             </SidebarMenuAction>
@@ -176,6 +185,7 @@ const RootShelfMenuItem = ({
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
+              className="text-destructive focus:text-destructive"
               onClick={() =>
                 modalManager.open("DeleteShelfItemDialog", {
                   dialogHeader: "Delete a root shelf",

@@ -7,6 +7,7 @@ import type {
   CreateRoutineTagResponse,
   CreateRoutineTagsRequest,
   CreateRoutineTagsResponse,
+  GetAllMyRoutineTagsResponse,
   GetMyRoutineTagByIdResponse,
   HardDeleteMyRoutineTagByIdRequest,
   HardDeleteMyRoutineTagByIdResponse,
@@ -63,6 +64,42 @@ export class RoutineTagLocalSynchronizer {
           createdAt: response.data.createdAt,
         },
       });
+  };
+
+  static syncGetAllMyRoutineTags = async (
+    response: GetAllMyRoutineTagsResponse
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    if (response.data.length === 0) return;
+
+    await localDB.transaction(async tx => {
+      await tx
+        .insert(RoutineTag)
+        .values(response.data)
+        .onConflictDoUpdate({
+          target: RoutineTag.id,
+          set: {
+            name: sql`excluded.name`,
+            color: sql`excluded.color`,
+            icon: sql`excluded.icon`,
+            updatedAt: sql`excluded.updated_at`,
+            createdAt: sql`excluded.created_at`,
+          },
+        });
+
+      await tx
+        .insert(UsersToRoutineTags)
+        .values(
+          response.data.map(tag => ({
+            userPublicId: response.embedded.publicId,
+            tagId: tag.id,
+            permission: AccessControlPermission.Read,
+            updatedAt: tag.updatedAt,
+            createdAt: tag.createdAt,
+          }))
+        )
+        .onConflictDoNothing();
+    });
   };
 
   static syncSearchRoutineTags = async (

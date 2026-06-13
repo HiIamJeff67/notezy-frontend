@@ -1,10 +1,6 @@
 import { useGetMyMaterialAndItsParentById } from "@shared/api/hooks/material.hook";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import {
-  getDefaultMaterialMeta,
-  MaterialMeta,
-} from "@shared/types/materialMeta.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import {
@@ -17,6 +13,7 @@ import { useEffect, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import MaterialViewerNotFoundPage from "@/pages/root/material-viewer/MaterialViewerNotFoundPage";
 import MaterialViewerPage from "@/pages/root/material-viewer/MaterialViewerPage";
+import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 
 export const Route = createFileRoute("/_root/material-viewer/$materialId")({
   ssr: false,

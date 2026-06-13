@@ -1,6 +1,71 @@
+import type { PartialBlock } from "@blocknote/core";
 import { SupportedIcon } from "@shared/api/interfaces/enums/supportedIcon.enum";
-import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
-import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
+import { generateUUID } from "@shared/types/uuidv4.type";
+import type { UUID } from "crypto";
+
+export interface BlockGroupMeta {
+  id: UUID;
+  blockPackId: UUID;
+  prevBlockGroupId: UUID | null;
+  syncBlockGroupId: UUID | null;
+  size: number;
+  deletedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
+  rawArborizedEditableBlock: PartialBlock;
+}
+
+export interface BlockPackMeta {
+  id: UUID;
+  parentId: UUID;
+  rootId: UUID;
+  name: string;
+  icon: SupportedIcon | null;
+  headerBackgroundURL: string | null;
+  blockCount: number;
+  path: UUID[];
+  deletedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
+  blockGroups: BlockGroupMeta[];
+}
+
+export const getDefaultBlockGroupMeta = (
+  blockGroupId: UUID,
+  blockPackId: UUID,
+  prevBlockGroupId: UUID | null = null,
+  syncBlockGroupId: UUID | null = null,
+  rawArborizedEditableBlock: PartialBlock = {}
+): BlockGroupMeta => ({
+  id: blockGroupId,
+  blockPackId,
+  prevBlockGroupId,
+  syncBlockGroupId,
+  size: 0,
+  deletedAt: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+  rawArborizedEditableBlock,
+});
+
+export const getDefaultBlockPackMeta = (
+  blockPackId: UUID,
+  parentSubShelfId: UUID,
+  rootShelfId: UUID = generateUUID()
+): BlockPackMeta => ({
+  id: blockPackId,
+  parentId: parentSubShelfId,
+  rootId: rootShelfId,
+  name: "Untitled",
+  icon: null,
+  headerBackgroundURL: null,
+  blockCount: 0,
+  path: [],
+  deletedAt: null,
+  updatedAt: new Date(),
+  createdAt: new Date(),
+  blockGroups: [],
+});
 
 export type BlockPackMetaAction =
   | {

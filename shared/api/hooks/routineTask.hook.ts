@@ -3,6 +3,8 @@ import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   CreateRoutineTaskByStationIdRequest,
+  GetAllMyRoutineTasksByStationIdsRequest,
+  GetAllMyRoutineTasksByStationIdsResponse,
   GetMyRoutineTaskByIdRequest,
   GetMyRoutineTaskByIdResponse,
   HardDeleteMyRoutineTaskByIdRequest,
@@ -14,6 +16,7 @@ import {
   mutationFnHardDeleteMyRoutineTaskById,
   mutationFnHardDeleteMyRoutineTasksByIds,
   mutationFnUpdateMyRoutineTaskById,
+  queryFnGetAllMyRoutineTasksByStationIds,
   queryFnGetMyRoutineTaskById,
 } from "@shared/api/invokers/routineTask.invoker";
 import { getQueryClient } from "@shared/api/queryClient";
@@ -83,7 +86,66 @@ export const useGetMyRoutineTaskById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
+};
+
+export const useGetAllMyRoutineTasksByStationIds = (
+  hookRequest?: GetAllMyRoutineTasksByStationIdsRequest,
+  options?: Partial<
+    UseQueryOptions<GetAllMyRoutineTasksByStationIdsResponse, Error>
+  >
+) => {
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyRoutineTasksByStationIdsRequest
+  ): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    const response = await queryFnGetAllMyRoutineTasksByStationIds(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded.publicId
+    );
+    return response;
+  };
+
+  const query = useQuery<GetAllMyRoutineTasksByStationIdsResponse, Error>({
+    queryKey: queryKeys.routineTask.manyByStationIds(
+      hookRequest?.param.stationIds as UUID[] | undefined
+    ),
+    queryFn: async () => perform(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
+  });
+
+  const fetch = async (
+    callbackRequest: GetAllMyRoutineTasksByStationIdsRequest
+  ): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.routineTask.manyByStationIds(
+        callbackRequest.param.stationIds as UUID[]
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
+  return { ...query, fetch };
 };
 
 export const useCreateRoutineTaskByStationId = () => {

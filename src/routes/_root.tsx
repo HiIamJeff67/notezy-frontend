@@ -2,8 +2,10 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/sidebar/AppSidebar/AppSidebar";
 import AppSidebarInset from "@/components/sidebar/AppSidebar/AppSidebarInset";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ModalProvider } from "@/providers/ModalProvider";
 import { ResizeSidebarProvider } from "@/providers/ResizeSidebarProvider";
 import { ShelfItemProvider } from "@/providers/ShelfItemProvider/ShelfItemProvider";
+import { StationRoutineProvider } from "@/providers/StationRoutineProvider/StationRoutineProvider";
 
 export const Route = createFileRoute("/_root")({
   component: RootRouteLayout,
@@ -14,10 +16,14 @@ function RootRouteLayout() {
     <SidebarProvider>
       <ResizeSidebarProvider>
         <ShelfItemProvider>
-          <AppSidebar />
-          <AppSidebarInset>
-            <Outlet />
-          </AppSidebarInset>
+          <StationRoutineProvider>
+            <ModalProvider>
+              <AppSidebar />
+              <AppSidebarInset>
+                <Outlet />
+              </AppSidebarInset>
+            </ModalProvider>
+          </StationRoutineProvider>
         </ShelfItemProvider>
       </ResizeSidebarProvider>
     </SidebarProvider>

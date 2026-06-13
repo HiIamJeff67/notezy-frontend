@@ -75,7 +75,7 @@ export const useGetMyInfo = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useUpdateMyInfo = () => {

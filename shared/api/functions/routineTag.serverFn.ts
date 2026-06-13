@@ -6,6 +6,8 @@ import {
   CreateRoutineTagResponse,
   CreateRoutineTagsRequest,
   CreateRoutineTagsResponse,
+  GetAllMyRoutineTagsRequest,
+  GetAllMyRoutineTagsResponse,
   GetMyRoutineTagByIdRequest,
   GetMyRoutineTagByIdResponse,
   HardDeleteMyRoutineTagByIdRequest,
@@ -68,6 +70,49 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
     forwardUpstreamSetCookies(response);
     const formattedResponse =
       (await response.json()) as GetMyRoutineTagByIdResponse;
+    if (formattedResponse.exception != null) {
+      throw new NotezyAPIError(
+        new NotezyException(formattedResponse.exception)
+      );
+    }
+    AccessTokenCookieHandler.ensure(
+      formattedResponse.refreshableTokens?.newAccessToken
+    );
+
+    return formattedResponse;
+  });
+
+export const GetAllMyRoutineTags = createServerFn({ method: "GET" })
+  .inputValidator((data: GetAllMyRoutineTagsRequest) => data)
+  .handler(async ({ data: request }): Promise<GetAllMyRoutineTagsResponse> => {
+    const url =
+      import.meta.env.VITE_API_DOMAIN_URL +
+      "/" +
+      CurrentAPIBaseURL +
+      "/" +
+      APIURLPathDictionary.routineTag.getAllMyRoutineTags;
+    const inboundCookie = getRequestHeader("cookie");
+    const userAgent =
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": userAgent,
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      credentials: "include",
+    });
+
+    if (!isJsonResponse(response)) {
+      throw new Error(tKey.error.encounterUnknownError);
+    }
+    forwardUpstreamSetCookies(response);
+    const formattedResponse =
+      (await response.json()) as GetAllMyRoutineTagsResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)

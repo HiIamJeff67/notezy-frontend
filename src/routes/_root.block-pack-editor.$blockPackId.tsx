@@ -1,8 +1,6 @@
 import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
 import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { BlockGroupMeta } from "@shared/types/blockGroupMeta.type";
-import { BlockPackMeta } from "@shared/types/blockPackMeta.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
@@ -16,6 +14,10 @@ import { useEffect, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import BlockPackEditorNotFoundPage from "@/pages/root/block-pack-editor/BlockPackEditorNotFoundPage";
 import BlockPackEditorPage from "@/pages/root/block-pack-editor/BlockPackEditorPage";
+import {
+  BlockGroupMeta,
+  BlockPackMeta,
+} from "@/reducers/blockPackMeta.reducer";
 
 export const Route = createFileRoute("/_root/block-pack-editor/$blockPackId")({
   ssr: false, // since the blocknote editor view is a client side component

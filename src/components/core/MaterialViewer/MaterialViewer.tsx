@@ -1,9 +1,11 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
-import { MaterialMeta } from "@shared/types/materialMeta.type";
 import { Suspense, useEffect, useMemo, useReducer } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useShelfItem } from "@/hooks";
-import { materialMetaReducer } from "@/reducers/materialMeta.reducer";
+import {
+  MaterialMeta,
+  materialMetaReducer,
+} from "@/reducers/materialMeta.reducer";
 import MaterialAudioViewerContent from "./MaterialAudioViewerContent";
 import MaterialImageViewerContent from "./MaterialImageViewerContent";
 import MaterialPDFViewerContent from "./MaterialPDFViewerContent";
@@ -31,10 +33,10 @@ const MaterialViewer = ({ materialMeta }: MaterialViewerProps) => {
     if (shelfItemManager.isItemNodeEditing(meta.id)) {
       dispatchMeta({
         type: "setName",
-        newName: shelfItemManager.editItemNodeName,
+        newName: shelfItemManager.editItemName,
       });
     }
-  }, [shelfItemManager.editItemNodeName]);
+  }, [shelfItemManager.editItemName]);
 
   return (
     <Suspense fallback={<StrictLoadingCover />}>

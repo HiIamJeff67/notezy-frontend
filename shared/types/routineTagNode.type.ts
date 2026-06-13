@@ -1,25 +1,31 @@
 import { SupportedIcon } from "@shared/api/interfaces/enums";
-import { UUID } from "crypto";
-import { RoutineMeta } from "./routineMeta.type";
+import type { UUID } from "crypto";
+import type { RoutineNode } from "./routineNode.type";
 
-export interface RoutineTagMeta {
+export interface RoutineTagNode {
   id: UUID;
   name: string;
   color: string;
   icon: SupportedIcon | null;
   updatedAt: Date;
   createdAt: Date;
-  routines: RoutineMeta[];
+
+  routines: RoutineNode[];
+
+  isOpen: boolean;
 }
 
-export const getDefaultRoutineTagMeta = (
+export const getDefaultRoutineTagNode = (
   routineTagId: UUID
-): RoutineTagMeta => ({
+): RoutineTagNode => ({
   id: routineTagId,
   name: "Undefined",
   color: "#000000",
   icon: null,
   updatedAt: new Date(),
   createdAt: new Date(),
+
+  isOpen: false,
+
   routines: [],
 });

@@ -1,7 +1,16 @@
+import type { UUID } from "crypto";
 import React, { createContext, useState } from "react";
 import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
 import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
+import CreateRoutineDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineDialog";
+import CreateRoutineTagDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineTagDialog";
+import CreateRoutineTaskDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineTaskDialog";
+import CreateStationDialog from "@/components/dialogs/StationRoutineDialog/CreateStationDialog";
+import DeleteRoutineDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineDialog";
+import DeleteRoutineTagDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTagDialog";
+import DeleteRoutineTaskDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTaskDialog";
+import DeleteStationDialog from "@/components/dialogs/StationRoutineDialog/DeleteStationDialog";
 import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
 import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
 
@@ -29,6 +38,42 @@ export type ModalPropsMap = {
     inputPlaceholder?: string;
     onDelete: () => void | Promise<void>;
     onCancel: () => void;
+  };
+  CreateStationDialog: {
+    onCreated?: (stationId: UUID) => void | Promise<void>;
+  };
+  DeleteStationDialog: {
+    stationId: UUID;
+    stationName: string;
+    onDeleted?: () => void | Promise<void>;
+  };
+  CreateRoutineDialog: {
+    stationId: UUID;
+    stationName?: string;
+    onCreated?: (routineId: UUID) => void | Promise<void>;
+  };
+  DeleteRoutineDialog: {
+    routineId: UUID;
+    routineTitle: string;
+    onDeleted?: () => void | Promise<void>;
+  };
+  CreateRoutineTagDialog: {
+    onCreated?: (routineTagId: UUID) => void | Promise<void>;
+  };
+  DeleteRoutineTagDialog: {
+    routineTagId: UUID;
+    routineTagName: string;
+    onDeleted?: () => void | Promise<void>;
+  };
+  CreateRoutineTaskDialog: {
+    stationId: UUID;
+    stationName?: string;
+    onCreated?: (routineTaskId: UUID) => void | Promise<void>;
+  };
+  DeleteRoutineTaskDialog: {
+    routineTaskId: UUID;
+    routineTaskTitle: string;
+    onDeleted?: () => void | Promise<void>;
   };
   SelectBackgroundImageDialog: {
     cropperAspectRatio: number;
@@ -58,25 +103,17 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     { type: ModalType; props?: any }[]
   >([]);
 
-  const open = <T extends ModalType>(type: T, props?: any) => {
+  const open = <T extends ModalType>(type: T, props?: any) =>
     setActiveModals(prev => [...prev, { type, props }]);
-  };
 
-  const close = () => {
-    setActiveModals(prev => prev.slice(0, -1));
-  };
+  const close = () => setActiveModals(prev => prev.slice(0, -1));
 
-  const closeAll = () => {
-    setActiveModals([]);
-  };
+  const closeAll = () => setActiveModals([]);
 
-  const isOpen = (type: ModalType) => {
-    return activeModals.some(m => m.type === type);
-  };
+  const isOpen = (type: ModalType) => activeModals.some(m => m.type === type);
 
-  const getModalProps = (type: ModalType) => {
-    return activeModals.find(m => m.type === type)?.props;
-  };
+  const getModalProps = (type: ModalType) =>
+    activeModals.find(modal => modal.type === type)?.props;
 
   return (
     <ModalContext.Provider value={{ open, close, closeAll, isOpen }}>
@@ -100,6 +137,46 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
         isOpen={isOpen("DeleteShelfItemDialog")}
         onClose={close}
         {...getModalProps("DeleteShelfItemDialog")}
+      />
+      <CreateStationDialog
+        isOpen={isOpen("CreateStationDialog")}
+        onClose={close}
+        {...getModalProps("CreateStationDialog")}
+      />
+      <DeleteStationDialog
+        isOpen={isOpen("DeleteStationDialog")}
+        onClose={close}
+        {...getModalProps("DeleteStationDialog")}
+      />
+      <CreateRoutineDialog
+        isOpen={isOpen("CreateRoutineDialog")}
+        onClose={close}
+        {...getModalProps("CreateRoutineDialog")}
+      />
+      <DeleteRoutineDialog
+        isOpen={isOpen("DeleteRoutineDialog")}
+        onClose={close}
+        {...getModalProps("DeleteRoutineDialog")}
+      />
+      <CreateRoutineTagDialog
+        isOpen={isOpen("CreateRoutineTagDialog")}
+        onClose={close}
+        {...getModalProps("CreateRoutineTagDialog")}
+      />
+      <DeleteRoutineTagDialog
+        isOpen={isOpen("DeleteRoutineTagDialog")}
+        onClose={close}
+        {...getModalProps("DeleteRoutineTagDialog")}
+      />
+      <CreateRoutineTaskDialog
+        isOpen={isOpen("CreateRoutineTaskDialog")}
+        onClose={close}
+        {...getModalProps("CreateRoutineTaskDialog")}
+      />
+      <DeleteRoutineTaskDialog
+        isOpen={isOpen("DeleteRoutineTaskDialog")}
+        onClose={close}
+        {...getModalProps("DeleteRoutineTaskDialog")}
       />
       <SelectBackgroundImageDialog
         isOpen={isOpen("SelectBackgroundImageDialog")}

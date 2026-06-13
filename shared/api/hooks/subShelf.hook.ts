@@ -149,7 +149,7 @@ export const useGetMySubShelfById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMySubShelvesByPrevSubShelfId = (
@@ -235,7 +235,7 @@ export const useGetMySubShelvesByPrevSubShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetAllMySubShelvesByRootShelfId = (
@@ -321,7 +321,7 @@ export const useGetAllMySubShelvesByRootShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
@@ -411,7 +411,7 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
 };
 
 export const useCreateSubShelfByRootShelfId = () => {

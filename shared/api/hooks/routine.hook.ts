@@ -15,6 +15,8 @@ import type {
   CreateRoutinesByStationIdsRequest,
   DeleteMyRoutineByIdRequest,
   DeleteMyRoutinesByIdsRequest,
+  GetAllMyRoutinesByTimeRangeRequest,
+  GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdRequest,
   GetMyRoutineByIdResponse,
   HardDeleteMyRoutineByIdRequest,
@@ -44,6 +46,7 @@ import {
   mutationFnRestoreMyRoutinesByIds,
   mutationFnUpdateMyRoutineById,
   mutationFnUpdateMyRoutinesByIds,
+  queryFnGetAllMyRoutinesByTimeRange,
   queryFnGetMyRoutineById,
 } from "@shared/api/invokers/routine.invoker";
 import { RoutineLocalSimulator } from "@shared/api/local/simulators/routine.simulator";
@@ -138,7 +141,93 @@ export const useGetMyRoutineById = (
     });
   };
 
-  return { ...(hookRequest ? query : {}), fetch };
+  return { ...query, fetch };
+};
+
+export const useGetAllMyRoutinesByTimeRange = (
+  hookRequest?: GetAllMyRoutinesByTimeRangeRequest,
+  options?: Partial<UseQueryOptions<GetAllMyRoutinesByTimeRangeResponse, Error>>
+) => {
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetAllMyRoutinesByTimeRangeRequest
+  ): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetAllMyRoutinesByTimeRange(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await RoutineLocalSynchronizer.syncGetAllMyRoutinesByTimeRange(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const routines =
+          await RoutineLocalSimulator.simulateGetAllMyRoutinesByTimeRange(
+            request
+          );
+        return {
+          success: false,
+          data: routines,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetAllMyRoutinesByTimeRangeResponse;
+      }
+
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetAllMyRoutinesByTimeRangeResponse, Error>({
+    queryKey: queryKeys.routine.manyByTimeRange(
+      hookRequest?.param.from,
+      hookRequest?.param.to,
+      hookRequest?.param.stationIds as UUID[] | undefined
+    ),
+    queryFn: async () => perform(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
+  });
+
+  const fetch = async (
+    callbackRequest: GetAllMyRoutinesByTimeRangeRequest
+  ): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.routine.manyByTimeRange(
+        callbackRequest.param.from,
+        callbackRequest.param.to,
+        callbackRequest.param.stationIds as UUID[]
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
+  return { ...query, fetch };
 };
 
 export const useCreateRoutineByStationId = () => {

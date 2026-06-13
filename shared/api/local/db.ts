@@ -207,6 +207,14 @@ const ensureReady = async (
   try {
     await wrappedAll(`SELECT 1 FROM "TestTable" LIMIT 1`); // the test table should be always exist for testing
     await wrappedAll(`SELECT 1 FROM "TransactionTable" LIMIT 1`); // the transaction table should be always exist for synchronization
+    await wrappedAll(`SELECT 1 FROM "StationTable" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "RoutineTable" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "RoutineTag" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "ItemTable" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "UsersToStationsTable" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "UsersToTagsTable" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "RoutinesToTags" LIMIT 1`);
+    await wrappedAll(`SELECT 1 FROM "RoutinesToItemsTable" LIMIT 1`);
   } catch {
     const fallbackMigrationResult = await ensureMigrated({
       currentVersion: 0,

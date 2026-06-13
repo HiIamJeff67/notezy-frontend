@@ -50,48 +50,8 @@ export const useSubShelfLogic = ({
   const [editingSubShelfNode, setEditingSubShelfNode] = useState<
     SubShelfNode | undefined
   >(undefined);
-  const [editSubShelfNodeName, setEditSubShelfNodeName] = useState<string>("");
-  const [originalSubShelfNodeName, setOriginalSubShelfNodeName] =
-    useState<string>("");
-
-  // trigger for listen and auto focus the input with ref of inputRef declared in the top
-  useEffect(() => {
-    // blur the focusing rename input if the user click other places in the screen
-    const handleClickOutside = async (event: MouseEvent) => {
-      if (
-        editingSubShelfNode &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        await renameEditingSubShelf();
-        setEditingSubShelfNode(undefined);
-        setEditSubShelfNodeName("");
-        setOriginalSubShelfNodeName("");
-      }
-    };
-
-    if (editingSubShelfNode) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    // force to focus on the rename input after 500 ms
-    setTimeout(() => {
-      if (editingSubShelfNode && inputRef.current) {
-        inputRef.current?.focus();
-      }
-    }, 500);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [
-    editingSubShelfNode,
-    editSubShelfNodeName, // will be used in renameEditingSubShelf
-    originalSubShelfNodeName, // will be used in renameEditingSubShelf
-    setEditingSubShelfNode,
-    setEditSubShelfNodeName,
-    setOriginalSubShelfNodeName,
-  ]);
+  const [editSubShelfName, setEditSubShelfName] = useState<string>("");
+  const [originalSubShelfName, setOriginalSubShelfName] = useState<string>("");
 
   const expandSubShelf = useCallback(
     async (
@@ -258,12 +218,12 @@ export const useSubShelfLogic = ({
     [expandedShelvesRef, createSubShelfMutator]
   );
 
-  const isNewSubShelfNodeName = useCallback((): boolean => {
+  const isNewSubShelfName = useCallback((): boolean => {
     return (
-      editSubShelfNodeName !== originalSubShelfNodeName &&
-      editSubShelfNodeName.trim() !== ""
+      editSubShelfName !== originalSubShelfName &&
+      editSubShelfName.trim() !== ""
     );
-  }, [editSubShelfNodeName, originalSubShelfNodeName]);
+  }, [editSubShelfName, originalSubShelfName]);
 
   const isSubShelfNodeEditing = useCallback(
     (subShelfId: UUID): boolean => {
@@ -275,29 +235,21 @@ export const useSubShelfLogic = ({
   const startRenamingSubShelfNode = useCallback(
     (subShelfNode: SubShelfNode): void => {
       setEditingSubShelfNode(subShelfNode);
-      setOriginalSubShelfNodeName(subShelfNode.name);
-      setEditSubShelfNodeName(subShelfNode.name);
+      setOriginalSubShelfName(subShelfNode.name);
+      setEditSubShelfName(subShelfNode.name);
     },
-    [
-      setEditingSubShelfNode,
-      setOriginalSubShelfNodeName,
-      setEditSubShelfNodeName,
-    ]
+    [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]
   );
 
   const cancelRenamingSubShelfNode = useCallback((): void => {
     setEditingSubShelfNode(undefined);
-    setOriginalSubShelfNodeName("");
-    setEditSubShelfNodeName("");
-  }, [
-    setEditingSubShelfNode,
-    setOriginalSubShelfNodeName,
-    setEditSubShelfNodeName,
-  ]);
+    setOriginalSubShelfName("");
+    setEditSubShelfName("");
+  }, [setEditingSubShelfNode, setOriginalSubShelfName, setEditSubShelfName]);
 
   const renameEditingSubShelf = useCallback(async (): Promise<void> => {
     try {
-      if (!isNewSubShelfNodeName() || !editingSubShelfNode) {
+      if (!isNewSubShelfName() || !editingSubShelfNode) {
         toast.error("the name of the given sub shelf node is invalid");
         return;
       }
@@ -314,7 +266,7 @@ export const useSubShelfLogic = ({
         body: {
           subShelfId: editingSubShelfNode.id,
           values: {
-            name: editSubShelfNodeName,
+            name: editSubShelfName,
           },
         },
         affected: {
@@ -324,27 +276,57 @@ export const useSubShelfLogic = ({
       });
 
       // update the reference value stored in the useState value of `editingSubShelfNode`
-      editingSubShelfNode.name = editSubShelfNodeName;
+      editingSubShelfNode.name = editSubShelfName;
       setEditingSubShelfNode(prev =>
-        prev ? { ...prev, name: editSubShelfNodeName } : undefined
+        prev ? { ...prev, name: editSubShelfName } : undefined
       );
       forceUpdate();
     } catch (error) {
       throw error;
     } finally {
       setEditingSubShelfNode(undefined);
-      setEditSubShelfNodeName("");
-      setOriginalSubShelfNodeName("");
+      setEditSubShelfName("");
+      setOriginalSubShelfName("");
     }
   }, [
     editingSubShelfNode,
-    editSubShelfNodeName,
-    originalSubShelfNodeName,
+    editSubShelfName,
+    originalSubShelfName,
     setEditingSubShelfNode,
-    setEditSubShelfNodeName,
-    setOriginalSubShelfNodeName,
+    setEditSubShelfName,
+    setOriginalSubShelfName,
     updateSubShelfMutator,
   ]);
+
+  // trigger for listen and auto focus the input with ref of inputRef declared in the top
+  useEffect(() => {
+    // blur the focusing rename input if the user click other places in the screen
+    const handleClickOutside = async (event: MouseEvent) => {
+      if (
+        editingSubShelfNode &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        await renameEditingSubShelf();
+      }
+    };
+
+    if (editingSubShelfNode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // force to focus on the rename input after 500 ms
+    const focusInputBeforeRenameTimeout = setTimeout(() => {
+      if (editingSubShelfNode && inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 500);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      clearTimeout(focusInputBeforeRenameTimeout);
+    };
+  }, [editingSubShelfNode, renameEditingSubShelf]);
 
   const deleteSubShelf = useCallback(
     async (
@@ -481,9 +463,9 @@ export const useSubShelfLogic = ({
     expandSubShelf: expandSubShelf,
     toggleSubShelf: toggleSubShelf,
     createSubShelf: createSubShelf,
-    editSubShelfNodeName: editSubShelfNodeName,
-    setEditSubShelfNodeName: setEditSubShelfNodeName,
-    isNewSubShelfNodeName: isNewSubShelfNodeName,
+    editSubShelfName: editSubShelfName,
+    setEditSubShelfName: setEditSubShelfName,
+    isNewSubShelfName: isNewSubShelfName,
     isSubShelfNodeEditing: isSubShelfNodeEditing,
     isAnySubShelfNodeEditing: editingSubShelfNode !== undefined,
     startRenamingSubShelfNode: startRenamingSubShelfNode,

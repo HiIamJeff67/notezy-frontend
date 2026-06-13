@@ -5,6 +5,7 @@ import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.excep
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
   CreateRoutineTaskByStationId,
+  GetAllMyRoutineTasksByStationIds,
   GetMyRoutineTaskById,
   HardDeleteMyRoutineTaskById,
   HardDeleteMyRoutineTasksByIds,
@@ -15,6 +16,10 @@ import {
   CreateRoutineTaskByStationIdRequestSchema,
   CreateRoutineTaskByStationIdResponse,
   CreateRoutineTaskByStationIdResponseSchema,
+  GetAllMyRoutineTasksByStationIdsRequest,
+  GetAllMyRoutineTasksByStationIdsRequestSchema,
+  GetAllMyRoutineTasksByStationIdsResponse,
+  GetAllMyRoutineTasksByStationIdsResponseSchema,
   GetMyRoutineTaskByIdRequest,
   GetMyRoutineTaskByIdRequestSchema,
   GetMyRoutineTaskByIdResponse,
@@ -45,6 +50,37 @@ export const queryFnGetMyRoutineTaskById = async (
     return GetMyRoutineTaskByIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyRoutineTaskById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyRoutineTasksByStationIds = async (
+  request: GetAllMyRoutineTasksByStationIdsRequest
+): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+  try {
+    const validatedRequest =
+      GetAllMyRoutineTasksByStationIdsRequestSchema.parse(request);
+    const response = await GetAllMyRoutineTasksByStationIds({
+      data: validatedRequest,
+    });
+    return GetAllMyRoutineTasksByStationIdsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in queryFnGetAllMyRoutineTasksByStationIds",
+      error
+    );
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

@@ -11,6 +11,7 @@ import type {
   DeleteMyStationByIdResponse,
   DeleteMyStationsByIdsRequest,
   DeleteMyStationsByIdsResponse,
+  GetAllMyStationsResponse,
   GetMyStationByIdResponse,
   HardDeleteMyStationByIdRequest,
   HardDeleteMyStationByIdResponse,
@@ -100,6 +101,63 @@ export class StationLocalSynchronizer {
           set: {
             permission: response.data.permission,
             updatedAt: response.data.updatedAt,
+          },
+        });
+    });
+  };
+
+  static syncGetAllMyStations = async (
+    response: GetAllMyStationsResponse
+  ): Promise<void> => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    if (response.data.length === 0) return;
+
+    await localDB.transaction(async tx => {
+      await tx
+        .insert(Station)
+        .values(
+          response.data.map(station => ({
+            id: station.id,
+            name: station.name,
+            description: station.description,
+            icon: station.icon,
+            headerBackgroundURL: station.headerBackgroundURL,
+            routineCount: station.routineCount,
+            deletedAt: station.deletedAt,
+            updatedAt: station.updatedAt,
+            createdAt: station.createdAt,
+          }))
+        )
+        .onConflictDoUpdate({
+          target: Station.id,
+          set: {
+            name: sql`excluded.name`,
+            description: sql`excluded.description`,
+            icon: sql`excluded.icon`,
+            headerBackgroundURL: sql`excluded.header_background_url`,
+            routineCount: sql`excluded.routine_count`,
+            deletedAt: sql`excluded.deleted_at`,
+            updatedAt: sql`excluded.updated_at`,
+            createdAt: sql`excluded.created_at`,
+          },
+        });
+
+      await tx
+        .insert(UsersToStations)
+        .values(
+          response.data.map(station => ({
+            userPublicId: response.embedded.publicId,
+            stationId: station.id,
+            permission: station.permission,
+            updatedAt: station.updatedAt,
+            createdAt: station.createdAt,
+          }))
+        )
+        .onConflictDoUpdate({
+          target: [UsersToStations.userPublicId, UsersToStations.stationId],
+          set: {
+            permission: sql`excluded.permission`,
+            updatedAt: sql`excluded.updated_at`,
           },
         });
     });

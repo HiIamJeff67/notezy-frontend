@@ -3,7 +3,6 @@ import { MaterialContentType } from "@shared/api/interfaces/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { MaterialMeta } from "@shared/types/materialMeta.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import { cn } from "@shared/util/utils";
 import {
@@ -38,6 +37,7 @@ import {
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
+import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 
 interface MaterialViewerFrameProps {
   meta: MaterialMeta;

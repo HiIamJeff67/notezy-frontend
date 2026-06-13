@@ -41,6 +41,41 @@ export type GetMyRoutineTagByIdResponse = z.infer<
   typeof GetMyRoutineTagByIdResponseSchema
 >;
 
+/* ============================== GetAllMyRoutineTags ============================== */
+
+export const GetAllMyRoutineTagsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type GetAllMyRoutineTagsRequest = z.infer<
+  typeof GetAllMyRoutineTagsRequestSchema
+>;
+
+export const GetAllMyRoutineTagsResponseSchema = NotezyResponseSchema.extend({
+  data: z.array(
+    z.object({
+      id: z.uuidv4(),
+      name: z.string(),
+      color: z.string(),
+      icon: z.enum(AllSupportedIcons).nullable(),
+      updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
+    })
+  ),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type GetAllMyRoutineTagsResponse = z.infer<
+  typeof GetAllMyRoutineTagsResponseSchema
+>;
+
 /* ============================== CreateRoutineTag ============================== */
 
 export const CreateRoutineTagRequestSchema = NotezyRequestSchema.extend({
