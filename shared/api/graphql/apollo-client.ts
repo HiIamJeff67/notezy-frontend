@@ -73,6 +73,31 @@ export const createApolloClient = () => {
               return incoming;
             },
           },
+          searchItems: {
+            keyArgs: [
+              "input",
+              [
+                "query",
+                "sortBy",
+                "sortOrder",
+                "rootShelfId",
+                "parentSubShelfId",
+              ],
+            ],
+            merge(existing, incoming, { args }) {
+              if (!existing) return incoming;
+              if (args?.input?.after) {
+                return {
+                  ...incoming,
+                  searchEdges: [
+                    ...(existing.searchEdges || []),
+                    ...(incoming.searchEdges || []),
+                  ],
+                };
+              }
+              return incoming;
+            },
+          },
           searchStations: {
             keyArgs: ["input", ["query", "sortBy", "sortOrder"]],
             merge(existing, incoming, { args }) {
@@ -90,8 +115,21 @@ export const createApolloClient = () => {
             },
           },
           searchRoutines: {
-            keyArgs: ["input", ["query", "sortBy", "sortOrder", "stationId"]],
-            merge(_existing, incoming) {
+            keyArgs: [
+              "input",
+              ["query", "sortBy", "sortOrder", "stationId", "tagId"],
+            ],
+            merge(existing, incoming, { args }) {
+              if (!existing) return incoming;
+              if (args?.input?.after) {
+                return {
+                  ...incoming,
+                  searchEdges: [
+                    ...(existing.searchEdges || []),
+                    ...(incoming.searchEdges || []),
+                  ],
+                };
+              }
               return incoming;
             },
           },

@@ -139,6 +139,19 @@ export class RoutineLocalSimulator {
         )
       );
 
+    const routineIdsByTag =
+      input.tagId === undefined || input.tagId === null
+        ? null
+        : new Set(
+            (
+              await localDB
+                .select({
+                  routineId: RoutinesToTags.routineId,
+                })
+                .from(RoutinesToTags)
+                .where(eq(RoutinesToTags.tagId, input.tagId))
+            ).map(relation => relation.routineId)
+          );
     const normalizedQuery = input.query.trim().toLowerCase();
     const routines = accessibleRoutines.filter(routine => {
       if (routine.deletedAt !== null) return false;
@@ -149,6 +162,7 @@ export class RoutineLocalSimulator {
       ) {
         return false;
       }
+      if (routineIdsByTag && !routineIdsByTag.has(routine.id)) return false;
       if (normalizedQuery.length === 0) return true;
       return routine.title.toLowerCase().includes(normalizedQuery);
     });
@@ -181,8 +195,26 @@ export class RoutineLocalSimulator {
       return sortOrder === SearchSortOrder.Desc ? -comparison : comparison;
     });
 
+    let afterId: string | null = null;
+    if (input.after) {
+      try {
+        const decoded = JSON.parse(atob(input.after)) as {
+          id?: unknown;
+          fields?: { id?: unknown };
+        };
+        const decodedId = decoded.id ?? decoded.fields?.id;
+        afterId = typeof decodedId === "string" ? decodedId : null;
+      } catch {
+        afterId = null;
+      }
+    }
+    const afterIndex =
+      afterId === null
+        ? -1
+        : routines.findIndex(routine => routine.id === afterId);
+    const startIndex = afterIndex >= 0 ? afterIndex + 1 : 0;
     const first = Math.max(0, input.first ?? 10);
-    const pagedRoutines = routines.slice(0, first);
+    const pagedRoutines = routines.slice(startIndex, startIndex + first);
     const pagedRoutineIds = pagedRoutines.map(routine => routine.id);
     const linkedTags =
       pagedRoutineIds.length === 0
@@ -354,8 +386,8 @@ export class RoutineLocalSimulator {
       }),
       searchPageInfo: {
         __typename: "SearchPageInfo",
-        hasNextPage: first < routines.length,
-        hasPreviousPage: false,
+        hasNextPage: startIndex + pagedRoutines.length < routines.length,
+        hasPreviousPage: startIndex > 0,
         startEncodedSearchCursor:
           pagedRoutines.length > 0
             ? btoa(JSON.stringify({ id: pagedRoutines[0].id }))
@@ -369,7 +401,7 @@ export class RoutineLocalSimulator {
               )
             : null,
       },
-      totalCount: pagedRoutines.length,
+      totalCount: routines.length,
       searchTime: performance.now() - startedAt,
     } as unknown as SearchRoutinesQuery["searchRoutines"];
   };
@@ -411,7 +443,16 @@ export class RoutineLocalSimulator {
       .where(eq(Routine.id, request.param.routineId))
       .limit(1);
 
-    return routines[0] ?? null;
+    if (!routines[0]) return null;
+
+    const relations = await localDB
+      .select({ tagId: RoutinesToTags.tagId })
+      .from(RoutinesToTags)
+      .where(eq(RoutinesToTags.routineId, routines[0].id));
+    return {
+      ...routines[0],
+      tagIds: relations.map(relation => relation.tagId),
+    };
   };
 
   static simulateGetAllMyRoutinesByTimeRange = async (
@@ -423,7 +464,7 @@ export class RoutineLocalSimulator {
     });
     if (loggedInUser === undefined) return [];
 
-    return await localDB
+    const routines = await localDB
       .select({
         id: Routine.id,
         stationId: Routine.stationId,
@@ -463,6 +504,26 @@ export class RoutineLocalSimulator {
         asc(Routine.scheduledEndAt),
         asc(Routine.id)
       );
+    if (routines.length === 0) return [];
+
+    const relations = await localDB
+      .select({
+        routineId: RoutinesToTags.routineId,
+        tagId: RoutinesToTags.tagId,
+      })
+      .from(RoutinesToTags)
+      .where(
+        inArray(
+          RoutinesToTags.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
+    return routines.map(routine => ({
+      ...routine,
+      tagIds: relations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.tagId),
+    }));
   };
 
   static simulateCreateRoutineByStationId = async (

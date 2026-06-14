@@ -1,6 +1,4 @@
 import {
-  RoutinePeriod as GraphQLRoutinePeriod,
-  RoutineStatus as GraphQLRoutineStatus,
   SupportedIcon as GraphQLSupportedIcon,
   SearchRoutineTagSortBy,
   SearchSortOrder,
@@ -10,34 +8,28 @@ import {
   useCreateRoutineTag,
   useUpdateMyRoutineTagById,
 } from "@shared/api/hooks/routineTag.hook";
-import {
-  RoutinePeriod,
-  RoutineStatus,
-  SupportedIcon,
-} from "@shared/api/interfaces/enums";
+import { SupportedIcon } from "@shared/api/interfaces/enums";
 import { MaxSearchLimit } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { RoutineTagNode } from "@shared/types/routineTagNode.type";
-import type { StationNode } from "@shared/types/stationNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { type RefObject, useCallback, useEffect, useState } from "react";
 
 interface UseRoutineTagLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
-  stationsRef: RefObject<LRUCache<UUID, StationNode>>;
   routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
+  expandRoutinesByTagId: (routineTagId: UUID) => Promise<void>;
 }
 
 export const useRoutineTagLogic = ({
   inputRef,
-  stationsRef,
   routineTagsRef,
   forceUpdate,
+  expandRoutinesByTagId,
 }: UseRoutineTagLogicProps) => {
   const createRoutineTagMutator = useCreateRoutineTag();
   const updateRoutineTagMutator = useUpdateMyRoutineTagById();
@@ -59,106 +51,6 @@ export const useRoutineTagLogic = ({
   const [executeSearchRoutineTags, routineTagSearch] =
     useSearchRoutineTagsLazyQuery();
 
-  const expandRoutinesByTagId = useCallback(
-    async (routineTagId: UUID): Promise<void> => {
-      const routineTagNode = routineTagsRef.current.get(routineTagId);
-      if (!routineTagNode) throw new Error("routine tag does not exist");
-
-      const result = await executeSearchRoutineTags({
-        variables: {
-          input: {
-            query: routineTagNode.name,
-            first: MaxSearchLimit,
-            sortBy: SearchRoutineTagSortBy.Name,
-            sortOrder: SearchSortOrder.Asc,
-          },
-        },
-      }).retain();
-      const edge = result.data?.searchRoutineTags.searchEdges.find(
-        currentEdge =>
-          (currentEdge.node as unknown as { id: UUID }).id === routineTagId
-      );
-      if (!edge) return;
-
-      const node = edge.node as unknown as {
-        routines: Array<{
-          id: UUID;
-          stationId: UUID;
-          title: string;
-          description: string;
-          status: GraphQLRoutineStatus;
-          isPinned: boolean;
-          scheduledStartAt: Date | string | number;
-          scheduledEndAt: Date | string | number;
-          period: GraphQLRoutinePeriod | null;
-          timezone: string;
-          deletedAt: Date | string | number | null;
-          updatedAt: Date | string | number;
-          createdAt: Date | string | number;
-        }>;
-      };
-
-      routineTagNode.routines = node.routines.map(nodeRoutine => {
-        const stationNode = stationsRef.current.get(nodeRoutine.stationId);
-        const existingRoutine = stationNode?.routines.find(
-          routine => routine.id === nodeRoutine.id
-        );
-        if (existingRoutine) {
-          existingRoutine.routineTagIds = Array.from(
-            new Set([...existingRoutine.routineTagIds, routineTagId])
-          );
-          return existingRoutine;
-        }
-
-        const routineNode: RoutineNode = {
-          id: nodeRoutine.id,
-          stationId: nodeRoutine.stationId,
-          title: nodeRoutine.title,
-          description: nodeRoutine.description,
-          status:
-            nodeRoutine.status === GraphQLRoutineStatus.RoutineStatusCompleted
-              ? RoutineStatus.Completed
-              : nodeRoutine.status ===
-                  GraphQLRoutineStatus.RoutineStatusInProgress
-                ? RoutineStatus.InProgress
-                : nodeRoutine.status ===
-                    GraphQLRoutineStatus.RoutineStatusOverDue
-                  ? RoutineStatus.OverDue
-                  : RoutineStatus.Scheduled,
-          isPinned: nodeRoutine.isPinned,
-          scheduledStartAt: new Date(nodeRoutine.scheduledStartAt),
-          scheduledEndAt: new Date(nodeRoutine.scheduledEndAt),
-          period:
-            nodeRoutine.period === GraphQLRoutinePeriod.RoutinePeriodDaily
-              ? RoutinePeriod.Daily
-              : nodeRoutine.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
-                ? RoutinePeriod.Weekly
-                : nodeRoutine.period ===
-                    GraphQLRoutinePeriod.RoutinePeriodMonthly
-                  ? RoutinePeriod.Monthly
-                  : nodeRoutine.period ===
-                      GraphQLRoutinePeriod.RoutinePeriodYearly
-                    ? RoutinePeriod.Yearly
-                    : null,
-          timezone: nodeRoutine.timezone,
-          deletedAt:
-            nodeRoutine.deletedAt === null
-              ? null
-              : new Date(nodeRoutine.deletedAt),
-          updatedAt: new Date(nodeRoutine.updatedAt),
-          createdAt: new Date(nodeRoutine.createdAt),
-          isOpen: false,
-          routineTagIds: [routineTagId],
-          routineTasks: [],
-        };
-        if (stationNode) stationNode.routines.push(routineNode);
-        return routineNode;
-      });
-      forceUpdate();
-    },
-    [executeSearchRoutineTags, forceUpdate, routineTagsRef, stationsRef]
-  );
-
   const toggleRoutineTag = useCallback(
     async (routineTagId: UUID, reset = false) => {
       const routineTagNode = routineTagsRef.current.get(routineTagId);
@@ -172,7 +64,9 @@ export const useRoutineTagLogic = ({
 
       routineTagNode.isOpen = true;
       forceUpdate();
-      await expandRoutinesByTagId(routineTagId);
+      if (routineTagNode.routines.length < routineTagNode.routineCount) {
+        await expandRoutinesByTagId(routineTagId);
+      }
     },
     [expandRoutinesByTagId, forceUpdate, routineTagsRef]
   );
@@ -207,6 +101,7 @@ export const useRoutineTagLogic = ({
         updatedAt: response.data.createdAt,
         createdAt: response.data.createdAt,
         routines: [],
+        routineCount: 0,
         isOpen: false,
       };
       routineTagsRef.current.set(routineTagNode.id, routineTagNode);
@@ -367,6 +262,7 @@ export const useRoutineTagLogic = ({
         updatedAt: new Date(node.updatedAt),
         createdAt: new Date(node.createdAt),
         routines: existingRoutineTag?.routines ?? [],
+        routineCount: existingRoutineTag?.routineCount ?? 0,
         isOpen: existingRoutineTag?.isOpen ?? false,
       });
     }

@@ -1,4 +1,10 @@
 import {
+  type SearchItemInput,
+  SearchItemSortBy,
+  SearchSortOrder,
+} from "@shared/api/graphql/generated/graphql";
+import { useSearchItemsLazyQuery } from "@shared/api/graphql/hooks/useSearchItems";
+import {
   useCreateBlockPack,
   useDeleteMyBlockPackById,
   useUpdateMyBlockPackById,
@@ -8,6 +14,7 @@ import {
   useDeleteMyMaterialById,
   useUpdateMyMaterialById,
 } from "@shared/api/hooks/material.hook";
+import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -48,11 +55,56 @@ export const useItemLogic = ({
   const updateBlockPackMutator = useUpdateMyBlockPackById();
   const deleteBlockPackMutator = useDeleteMyBlockPackById();
 
+  const [searchItemsInput, setSearchItemsInput] = useState<SearchItemInput>({
+    query: "",
+    after: null,
+    rootShelfId: null,
+    parentSubShelfId: null,
+  });
   const [editingItemNode, setEditingItemNode] = useState<
     MaterialNode | BlockPackNode | undefined
   >(undefined);
   const [editItemName, setEditItemName] = useState<string>("");
   const [originalItemName, setOriginalItemName] = useState<string>("");
+
+  const [executeSearchItems, itemSearch] = useSearchItemsLazyQuery();
+
+  const searchItems = useCallback(
+    async (input?: Partial<SearchItemInput>): Promise<void> => {
+      await executeSearchItems({
+        variables: {
+          input: {
+            ...searchItemsInput,
+            ...input,
+            after: null,
+            first: MaxSearchLimit,
+            sortBy: SearchItemSortBy.Relevance,
+            sortOrder: SearchSortOrder.Desc,
+          },
+        },
+      }).retain();
+    },
+    [executeSearchItems, searchItemsInput]
+  );
+
+  const loadMoreItems = useCallback(async (): Promise<void> => {
+    const connection = itemSearch.data?.searchItems;
+    const pageInfo = connection?.searchPageInfo;
+    if (!pageInfo?.hasNextPage || !pageInfo.endEncodedSearchCursor) return;
+
+    const input = itemSearch.variables?.input ?? searchItemsInput;
+    await itemSearch.fetchMore({
+      variables: {
+        input: {
+          ...input,
+          after: pageInfo.endEncodedSearchCursor,
+          first: MaxSearchLimit,
+          sortBy: SearchItemSortBy.Relevance,
+          sortOrder: SearchSortOrder.Desc,
+        },
+      },
+    });
+  }, [itemSearch, searchItemsInput]);
 
   const isNewItemName = useCallback((): boolean => {
     return editItemName !== originalItemName && editItemName.trim() !== "";
@@ -473,6 +525,11 @@ export const useItemLogic = ({
   ]);
 
   return {
+    searchItemsInput,
+    setSearchItemsInput,
+    itemSearch,
+    searchItems,
+    loadMoreItems,
     editItemName: editItemName,
     setEditItemName: setEditItemName,
     isNewItemName: isNewItemName,

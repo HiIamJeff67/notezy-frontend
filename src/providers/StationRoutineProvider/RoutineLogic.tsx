@@ -76,13 +76,23 @@ export const useRoutineLogic = ({
   const [executeSearchRoutines, routineSearch] = useSearchRoutinesLazyQuery();
 
   const searchRoutines = useCallback(
-    async (query: string = "", stationId?: UUID): Promise<void> => {
+    async (
+      query: string = "",
+      stationId?: UUID,
+      after?: string,
+      tagId?: UUID
+    ): Promise<{
+      hasNextPage: boolean;
+      endEncodedSearchCursor: string | null;
+    }> => {
       const result = await executeSearchRoutines({
         variables: {
           input: {
             query,
+            after,
             first: MaxSearchLimit,
             stationId,
+            tagId,
             sortBy: SearchRoutineSortBy.Title,
             sortOrder: SearchSortOrder.Asc,
           },
@@ -314,10 +324,14 @@ export const useRoutineLogic = ({
             updatedAt: new Date(tag.updatedAt),
             createdAt: new Date(tag.createdAt),
             routines: existingRoutineTag?.routines ?? [],
+            routineCount: existingRoutineTag?.routineCount ?? 0,
             isOpen: existingRoutineTag?.isOpen ?? false,
           });
           return tag.id;
         });
+        if (tagId && !routineTagIds.includes(tagId)) {
+          routineTagIds.push(tagId);
+        }
 
         const existingRoutine = stationNode.routines.find(
           routine => routine.id === node.id
@@ -369,12 +383,15 @@ export const useRoutineLogic = ({
         for (const routineTagId of routineTagIds) {
           const routineTagNode = routineTagsRef.current.get(routineTagId);
           if (!routineTagNode) continue;
-          routineTagNode.routines = [
-            ...routineTagNode.routines.filter(
-              routine => routine.id !== currentRoutine.id
-            ),
-            currentRoutine,
-          ];
+          const wasLinked = routineTagNode.routines.some(
+            routine => routine.id === currentRoutine.id
+          );
+          if (!wasLinked) {
+            routineTagNode.routines.push(currentRoutine);
+          }
+          if (!tagId && !wasLinked) {
+            routineTagNode.routineCount++;
+          }
         }
       }
 
@@ -385,27 +402,72 @@ export const useRoutineLogic = ({
         const stationNode = stationsRef.current.get(searchedStationId);
         if (!stationNode) continue;
 
-        stationNode.routines =
-          stationId === searchedStationId
-            ? searchedRoutines
-            : [
-                ...stationNode.routines.filter(
-                  routine =>
-                    !searchedRoutines.some(
-                      searchedRoutine => searchedRoutine.id === routine.id
-                    )
-                ),
-                ...searchedRoutines,
-              ];
+        if (stationId === searchedStationId && after === undefined) {
+          stationNode.routines = searchedRoutines;
+        } else {
+          for (const searchedRoutine of searchedRoutines) {
+            if (
+              !stationNode.routines.some(
+                routine => routine.id === searchedRoutine.id
+              )
+            ) {
+              stationNode.routines.push(searchedRoutine);
+            }
+          }
+        }
         if (stationId === searchedStationId) {
           stationNode.routineCount =
             result.data?.searchRoutines.totalCount ?? searchedRoutines.length;
         }
       }
+
+      if (tagId) {
+        const routineTagNode = routineTagsRef.current.get(tagId);
+        if (routineTagNode) {
+          const searchedRoutines = Array.from(
+            searchedRoutinesByStationId.values()
+          ).flat();
+          routineTagNode.routines =
+            after === undefined
+              ? searchedRoutines
+              : [
+                  ...routineTagNode.routines.filter(
+                    routine =>
+                      !searchedRoutines.some(
+                        searchedRoutine => searchedRoutine.id === routine.id
+                      )
+                  ),
+                  ...searchedRoutines,
+                ];
+          routineTagNode.routineCount =
+            result.data?.searchRoutines.totalCount ?? searchedRoutines.length;
+        }
+      }
       forceUpdate();
+      return {
+        hasNextPage:
+          result.data?.searchRoutines.searchPageInfo.hasNextPage ?? false,
+        endEncodedSearchCursor:
+          result.data?.searchRoutines.searchPageInfo.endEncodedSearchCursor ??
+          null,
+      };
     },
     [executeSearchRoutines, forceUpdate, routineTagsRef, stationsRef]
   );
+
+  const loadMoreRoutines = useCallback(async (): Promise<void> => {
+    const connection = routineSearch.data?.searchRoutines;
+    const pageInfo = connection?.searchPageInfo;
+    if (!pageInfo?.hasNextPage || !pageInfo.endEncodedSearchCursor) return;
+
+    const input = routineSearch.variables?.input;
+    await searchRoutines(
+      input?.query ?? "",
+      (input?.stationId ?? undefined) as UUID | undefined,
+      pageInfo.endEncodedSearchCursor,
+      (input?.tagId ?? undefined) as UUID | undefined
+    );
+  }, [routineSearch.data, routineSearch.variables, searchRoutines]);
 
   const expandRoutinesByStationId = useCallback(
     async (stationId: UUID): Promise<void> => {
@@ -415,6 +477,16 @@ export const useRoutineLogic = ({
       await searchRoutines("", stationId);
     },
     [searchRoutines, stationsRef]
+  );
+
+  const expandRoutinesByTagId = useCallback(
+    async (tagId: UUID): Promise<void> => {
+      if (!routineTagsRef.current.has(tagId)) {
+        throw new Error("routine tag does not exist");
+      }
+      await searchRoutines("", undefined, undefined, tagId);
+    },
+    [routineTagsRef, searchRoutines]
   );
 
   const toggleRoutine = useCallback(
@@ -634,6 +706,9 @@ export const useRoutineLogic = ({
 
       const routineTagNode = routineTagsRef.current.get(routineTagId);
       if (routineTagNode && routineNode) {
+        const wasLinked = routineTagNode.routines.some(
+          routine => routine.id === routineId
+        );
         routineTagNode.routines = isUnlink
           ? routineTagNode.routines.filter(routine => routine.id !== routineId)
           : [
@@ -642,6 +717,14 @@ export const useRoutineLogic = ({
               ),
               routineNode,
             ];
+        if (isUnlink && wasLinked) {
+          routineTagNode.routineCount = Math.max(
+            0,
+            routineTagNode.routineCount - 1
+          );
+        } else if (!isUnlink && !wasLinked) {
+          routineTagNode.routineCount++;
+        }
       }
       forceUpdate();
       return response;
@@ -737,7 +820,9 @@ export const useRoutineLogic = ({
     renameEditingRoutine,
     routineSearch,
     searchRoutines,
+    loadMoreRoutines,
     expandRoutinesByStationId,
+    expandRoutinesByTagId,
     toggleRoutine,
     createRoutine,
     isCreatingRoutine: createRoutineMutator.isPending,

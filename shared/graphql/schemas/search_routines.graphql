@@ -13,7 +13,9 @@ enum SearchRoutineSortBy {
 
 input SearchRoutineInput {
   stationId: UUID
+  tagId: UUID
   query: String!
+  after: String
   first: Int = 10
   sortBy: SearchRoutineSortBy = RELEVANCE
   sortOrder: SearchSortOrder = DESC

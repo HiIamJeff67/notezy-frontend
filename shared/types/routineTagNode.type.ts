@@ -11,6 +11,7 @@ export interface RoutineTagNode {
   createdAt: Date;
 
   routines: RoutineNode[];
+  routineCount: number;
 
   isOpen: boolean;
 }
@@ -28,4 +29,5 @@ export const getDefaultRoutineTagNode = (
   isOpen: false,
 
   routines: [],
+  routineCount: 0,
 });

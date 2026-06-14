@@ -7,7 +7,6 @@ import {
   Link2,
   Pencil,
   SquarePen,
-  Tag,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
@@ -119,15 +118,14 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                   }}
                 >
                   {routineTag.isOpen ? <ChevronDown /> : <ChevronRight />}
-                  {routineTag.icon ? (
+                  <span
+                    className="size-3 shrink-0 rounded-[2px] border border-border/60"
+                    style={{ backgroundColor: routineTag.color }}
+                  />
+                  {routineTag.icon && (
                     <span className="shrink-0 select-none text-sm">
                       {routineTag.icon}
                     </span>
-                  ) : (
-                    <Tag
-                      className="size-4"
-                      style={{ color: routineTag.color }}
-                    />
                   )}
                   <span>{routineTag.name}</span>
                 </SidebarMenuButton>
@@ -224,7 +222,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
 
         {!routineManager.isRoutineTagEditing(routineTag.id) && (
           <>
-            <SidebarMenuBadge>{routineTag.routines.length}</SidebarMenuBadge>
+            <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
             <CollapsibleContent>
               <RoutineMenu routines={routineTag.routines} />
             </CollapsibleContent>

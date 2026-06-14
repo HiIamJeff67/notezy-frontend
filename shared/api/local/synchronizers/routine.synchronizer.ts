@@ -72,26 +72,11 @@ export class RoutineLocalSynchronizer {
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
-    await localDB
-      .insert(Routine)
-      .values({
-        id: response.data.id,
-        stationId: response.data.stationId,
-        title: response.data.title,
-        description: response.data.description,
-        status: response.data.status,
-        isPinned: response.data.isPinned,
-        scheduledStartAt: response.data.scheduledStartAt,
-        scheduledEndAt: response.data.scheduledEndAt,
-        period: response.data.period,
-        timezone: response.data.timezone,
-        deletedAt: response.data.deletedAt,
-        updatedAt: response.data.updatedAt,
-        createdAt: response.data.createdAt,
-      })
-      .onConflictDoUpdate({
-        target: Routine.id,
-        set: {
+    await localDB.transaction(async tx => {
+      await tx
+        .insert(Routine)
+        .values({
+          id: response.data.id,
           stationId: response.data.stationId,
           title: response.data.title,
           description: response.data.description,
@@ -104,8 +89,44 @@ export class RoutineLocalSynchronizer {
           deletedAt: response.data.deletedAt,
           updatedAt: response.data.updatedAt,
           createdAt: response.data.createdAt,
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: Routine.id,
+          set: {
+            stationId: response.data.stationId,
+            title: response.data.title,
+            description: response.data.description,
+            status: response.data.status,
+            isPinned: response.data.isPinned,
+            scheduledStartAt: response.data.scheduledStartAt,
+            scheduledEndAt: response.data.scheduledEndAt,
+            period: response.data.period,
+            timezone: response.data.timezone,
+            deletedAt: response.data.deletedAt,
+            updatedAt: response.data.updatedAt,
+            createdAt: response.data.createdAt,
+          },
+        });
+
+      await tx
+        .delete(RoutinesToTags)
+        .where(eq(RoutinesToTags.routineId, response.data.id));
+      if (response.data.tagIds.length === 0) return;
+
+      const routineTags = await tx
+        .select({ id: RoutineTag.id })
+        .from(RoutineTag)
+        .where(inArray(RoutineTag.id, response.data.tagIds));
+      if (routineTags.length === 0) return;
+
+      await tx.insert(RoutinesToTags).values(
+        routineTags.map(routineTag => ({
+          routineId: response.data.id,
+          tagId: routineTag.id,
+          createdAt: response.data.updatedAt,
+        }))
+      );
+    });
   };
 
   static syncGetAllMyRoutinesByTimeRange = async (
@@ -114,42 +135,74 @@ export class RoutineLocalSynchronizer {
     if (!localDB.isReady) await localDB.ensureReady();
     if (response.data.length === 0) return;
 
-    await localDB
-      .insert(Routine)
-      .values(
-        response.data.map(routine => ({
-          id: routine.id,
-          stationId: routine.stationId,
-          title: routine.title,
-          description: routine.description,
-          status: routine.status,
-          isPinned: routine.isPinned,
-          scheduledStartAt: routine.scheduledStartAt,
-          scheduledEndAt: routine.scheduledEndAt,
-          period: routine.period,
-          timezone: routine.timezone,
-          deletedAt: routine.deletedAt,
-          updatedAt: routine.updatedAt,
-          createdAt: routine.createdAt,
-        }))
-      )
-      .onConflictDoUpdate({
-        target: Routine.id,
-        set: {
-          stationId: sql`excluded.station_id`,
-          title: sql`excluded.title`,
-          description: sql`excluded.description`,
-          status: sql`excluded.status`,
-          isPinned: sql`excluded.is_pinned`,
-          scheduledStartAt: sql`excluded.scheduled_start_at`,
-          scheduledEndAt: sql`excluded.scheduled_end_at`,
-          period: sql`excluded.period`,
-          timezone: sql`excluded.timezone`,
-          deletedAt: sql`excluded.deleted_at`,
-          updatedAt: sql`excluded.updated_at`,
-          createdAt: sql`excluded.created_at`,
-        },
-      });
+    await localDB.transaction(async tx => {
+      await tx
+        .insert(Routine)
+        .values(
+          response.data.map(routine => ({
+            id: routine.id,
+            stationId: routine.stationId,
+            title: routine.title,
+            description: routine.description,
+            status: routine.status,
+            isPinned: routine.isPinned,
+            scheduledStartAt: routine.scheduledStartAt,
+            scheduledEndAt: routine.scheduledEndAt,
+            period: routine.period,
+            timezone: routine.timezone,
+            deletedAt: routine.deletedAt,
+            updatedAt: routine.updatedAt,
+            createdAt: routine.createdAt,
+          }))
+        )
+        .onConflictDoUpdate({
+          target: Routine.id,
+          set: {
+            stationId: sql`excluded.station_id`,
+            title: sql`excluded.title`,
+            description: sql`excluded.description`,
+            status: sql`excluded.status`,
+            isPinned: sql`excluded.is_pinned`,
+            scheduledStartAt: sql`excluded.scheduled_start_at`,
+            scheduledEndAt: sql`excluded.scheduled_end_at`,
+            period: sql`excluded.period`,
+            timezone: sql`excluded.timezone`,
+            deletedAt: sql`excluded.deleted_at`,
+            updatedAt: sql`excluded.updated_at`,
+            createdAt: sql`excluded.created_at`,
+          },
+        });
+
+      const routineIds = response.data.map(routine => routine.id);
+      await tx
+        .delete(RoutinesToTags)
+        .where(inArray(RoutinesToTags.routineId, routineIds));
+
+      const tagIds = [
+        ...new Set(response.data.flatMap(routine => routine.tagIds)),
+      ];
+      if (tagIds.length === 0) return;
+
+      const routineTags = await tx
+        .select({ id: RoutineTag.id })
+        .from(RoutineTag)
+        .where(inArray(RoutineTag.id, tagIds));
+      const existingRoutineTagIds = new Set(
+        routineTags.map(routineTag => routineTag.id)
+      );
+      const relations = response.data.flatMap(routine =>
+        routine.tagIds
+          .filter(tagId => existingRoutineTagIds.has(tagId))
+          .map(tagId => ({
+            routineId: routine.id,
+            tagId,
+            createdAt: routine.updatedAt,
+          }))
+      );
+      if (relations.length > 0) {
+        await tx.insert(RoutinesToTags).values(relations);
+      }
+    });
   };
 
   static syncSearchRoutines = async (

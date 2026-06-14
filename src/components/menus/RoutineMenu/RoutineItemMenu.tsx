@@ -1,12 +1,17 @@
+import { ItemType as GraphQLItemType } from "@shared/api/graphql/generated/graphql";
 import { ItemType } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
+import type { UUID } from "crypto";
 import {
   CheckIcon,
   ChevronDown,
   ChevronRight,
   ClipboardList,
+  FileText,
+  LoaderCircle,
+  Package,
   PackagePlus,
   Pencil,
   SquarePen,
@@ -58,34 +63,24 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
   const routineManager = useRoutine();
   const shelfItemManager = useShelfItem();
 
-  const availableItems: Array<{
-    id: RoutineNode["id"];
-    name: string;
-    type: ItemType;
-  }> = [];
-  for (const rootShelfId of shelfItemManager.expandedShelves.keys()) {
-    const shelfTreeSummary = shelfItemManager.expandedShelves.get(rootShelfId);
-    if (!shelfTreeSummary) continue;
-
-    const pendingSubShelves = Object.values(shelfTreeSummary.root.children);
-    while (pendingSubShelves.length > 0) {
-      const subShelf = pendingSubShelves.pop();
-      if (!subShelf) continue;
-      availableItems.push(
-        ...Object.values(subShelf.blockPackNodes).map(blockPack => ({
-          id: blockPack.id,
-          name: blockPack.name,
-          type: ItemType.BlockPack,
-        })),
-        ...Object.values(subShelf.materialNodes).map(material => ({
-          id: material.id,
-          name: material.name,
-          type: ItemType.Material,
-        }))
-      );
-      pendingSubShelves.push(...Object.values(subShelf.children));
-    }
-  }
+  const searchedItems =
+    shelfItemManager.itemSearch.data?.searchItems?.searchEdges?.map(edge => {
+      const item = edge.node as unknown as {
+        id: UUID;
+        type: GraphQLItemType;
+        rootShelf: { name: string };
+        parentSubShelf: { name: string };
+      };
+      return {
+        id: item.id,
+        type:
+          item.type === GraphQLItemType.ItemTypeBlockPack
+            ? ItemType.BlockPack
+            : ItemType.Material,
+        rootShelfName: item.rootShelf.name,
+        parentSubShelfName: item.parentSubShelf.name,
+      };
+    }) ?? [];
 
   const handleRenameRoutineOnSubmit = useCallback(
     async () =>
@@ -249,30 +244,74 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                 <ClipboardList className="mr-2 size-4" />
                 Tasks
               </ContextMenuItem>
-              <ContextMenuSub>
+              <ContextMenuSub
+                onOpenChange={open => {
+                  if (!open) return;
+                  void shelfItemManager
+                    .searchItems({
+                      query: "",
+                      rootShelfId: null,
+                      parentSubShelfId: null,
+                    })
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
                 <ContextMenuSubTrigger>
                   <PackagePlus className="mr-2 size-4" />
                   Items
                 </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {availableItems.length === 0 ? (
+                <ContextMenuSubContent className="max-h-80 min-w-64 overflow-y-auto">
+                  {shelfItemManager.itemSearch.loading &&
+                  searchedItems.length === 0 ? (
+                    <ContextMenuItem disabled>
+                      <LoaderCircle className="mr-2 size-4 animate-spin" />
+                      Loading
+                    </ContextMenuItem>
+                  ) : searchedItems.length === 0 ? (
                     <ContextMenuItem disabled>No items</ContextMenuItem>
                   ) : (
-                    availableItems.map(item => (
-                      <ContextMenuItem
-                        key={`${item.type}-${item.id}`}
-                        onClick={() => {
-                          void routineManager
-                            .linkRoutineItem(routine.id, item.id, item.type)
-                            .then(() => toast.success("Item connected"))
-                            .catch(error =>
-                              toast.error(languageManager.tError(error))
-                            );
-                        }}
-                      >
-                        {item.name}
-                      </ContextMenuItem>
-                    ))
+                    <>
+                      {searchedItems.map(item => (
+                        <ContextMenuItem
+                          key={`${item.type}-${item.id}`}
+                          onClick={() => {
+                            void routineManager
+                              .linkRoutineItem(routine.id, item.id, item.type)
+                              .then(() => toast.success("Item connected"))
+                              .catch(error =>
+                                toast.error(languageManager.tError(error))
+                              );
+                          }}
+                        >
+                          {item.type === ItemType.BlockPack ? (
+                            <Package className="mr-2 size-4" />
+                          ) : (
+                            <FileText className="mr-2 size-4" />
+                          )}
+                          <span className="min-w-0 truncate">
+                            {item.rootShelfName} / {item.parentSubShelfName} /{" "}
+                            {item.type} · {item.id.slice(0, 8)}
+                          </span>
+                        </ContextMenuItem>
+                      ))}
+                      {shelfItemManager.itemSearch.data?.searchItems
+                        ?.searchPageInfo?.hasNextPage && (
+                        <ContextMenuItem
+                          disabled={shelfItemManager.itemSearch.loading}
+                          onSelect={event => {
+                            event.preventDefault();
+                            void shelfItemManager
+                              .loadMoreItems()
+                              .catch(error =>
+                                toast.error(languageManager.tError(error))
+                              );
+                          }}
+                        >
+                          <PackagePlus className="mr-2 size-4" />
+                          More
+                        </ContextMenuItem>
+                      )}
+                    </>
                   )}
                 </ContextMenuSubContent>
               </ContextMenuSub>
