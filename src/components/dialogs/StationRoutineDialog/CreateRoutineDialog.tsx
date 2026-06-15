@@ -5,10 +5,9 @@ import {
 } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
-import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -20,11 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -177,162 +171,24 @@ const CreateRoutineDialog = ({
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Label>Starts</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-10 w-full justify-start rounded-sm bg-muted px-3 font-normal"
-                    >
-                      <CalendarIcon className="size-4 text-muted-foreground" />
-                      <span className="truncate">
-                        {scheduledStartAt
-                          ? `${scheduledStartAt.toDateString()} at ${scheduledStartAt
-                              .toTimeString()
-                              .slice(0, 5)}`
-                          : "Select start date and time"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="start"
-                    className="w-auto rounded-sm bg-muted p-0"
-                  >
-                    <Calendar
-                      mode="single"
-                      selected={scheduledStartAt}
-                      onSelect={date => {
-                        if (!date) {
-                          setScheduledStartAt(undefined);
-                          return;
-                        }
-
-                        date.setHours(
-                          scheduledStartAt?.getHours() ?? 0,
-                          scheduledStartAt?.getMinutes() ?? 0,
-                          0,
-                          0
-                        );
-                        setScheduledStartAt(date);
-                      }}
-                      className="bg-muted"
-                      initialFocus
-                    />
-                    <div className="flex items-center gap-2 border-t p-3">
-                      <ClockIcon className="size-4 text-muted-foreground" />
-                      <Input
-                        type="time"
-                        value={
-                          scheduledStartAt
-                            ? scheduledStartAt.toTimeString().slice(0, 5)
-                            : ""
-                        }
-                        autoComplete="off"
-                        disabled={!scheduledStartAt}
-                        onChange={event => {
-                          if (!scheduledStartAt || !event.currentTarget.value) {
-                            return;
-                          }
-
-                          setScheduledStartAt(
-                            new Date(
-                              scheduledStartAt.getFullYear(),
-                              scheduledStartAt.getMonth(),
-                              scheduledStartAt.getDate(),
-                              Number(event.currentTarget.value.slice(0, 2)),
-                              Number(event.currentTarget.value.slice(3, 5))
-                            )
-                          );
-                        }}
-                        className="h-9 rounded-sm bg-muted"
-                        aria-label="Start time"
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  value={scheduledStartAt}
+                  onValueChange={setScheduledStartAt}
+                  placeholder="Select start date and time"
+                />
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Label>Ends</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-10 w-full justify-start rounded-sm bg-muted px-3 font-normal"
-                      aria-invalid={hasInvalidSchedule}
-                    >
-                      <CalendarIcon className="size-4 text-muted-foreground" />
-                      <span className="truncate">
-                        {scheduledEndAt
-                          ? `${scheduledEndAt.toDateString()} at ${scheduledEndAt
-                              .toTimeString()
-                              .slice(0, 5)}`
-                          : "Select end date and time"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="start"
-                    className="w-auto rounded-sm bg-muted p-0"
-                  >
-                    <Calendar
-                      mode="single"
-                      selected={scheduledEndAt}
-                      onSelect={date => {
-                        if (!date) {
-                          setScheduledEndAt(undefined);
-                          return;
-                        }
-
-                        date.setHours(
-                          scheduledEndAt?.getHours() ?? 0,
-                          scheduledEndAt?.getMinutes() ?? 0,
-                          0,
-                          0
-                        );
-                        setScheduledEndAt(date);
-                      }}
-                      className="bg-muted"
-                      disabled={
-                        scheduledStartAt
-                          ? { before: scheduledStartAt }
-                          : undefined
-                      }
-                      initialFocus
-                    />
-                    <div className="flex items-center gap-2 border-t p-3">
-                      <ClockIcon className="size-4 text-muted-foreground" />
-                      <Input
-                        type="time"
-                        value={
-                          scheduledEndAt
-                            ? scheduledEndAt.toTimeString().slice(0, 5)
-                            : ""
-                        }
-                        autoComplete="off"
-                        disabled={!scheduledEndAt}
-                        onChange={event => {
-                          if (!scheduledEndAt || !event.currentTarget.value) {
-                            return;
-                          }
-
-                          setScheduledEndAt(
-                            new Date(
-                              scheduledEndAt.getFullYear(),
-                              scheduledEndAt.getMonth(),
-                              scheduledEndAt.getDate(),
-                              Number(event.currentTarget.value.slice(0, 2)),
-                              Number(event.currentTarget.value.slice(3, 5))
-                            )
-                          );
-                        }}
-                        className="h-9 rounded-sm bg-muted"
-                        aria-label="End time"
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  value={scheduledEndAt}
+                  onValueChange={setScheduledEndAt}
+                  disabled={
+                    scheduledStartAt ? { before: scheduledStartAt } : undefined
+                  }
+                  isInvalid={hasInvalidSchedule}
+                  placeholder="Select end date and time"
+                />
               </div>
             </div>
           )}

@@ -19,7 +19,9 @@ import {
 import {
   ContextMenu,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
+  ContextMenuLabel,
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
@@ -164,50 +166,55 @@ const RootShelfMenuItem = ({
             </SidebarMenuAction>
           )}
           <ContextMenuContent>
-            <ContextMenuItem
-              onClick={async () =>
-                await shelfItemManager.createSubShelf(
-                  summary.root.id,
-                  null,
-                  "new sub shelf"
-                )
-              }
-            >
-              Create Sub Shelf
-            </ContextMenuItem>
+            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={async () =>
+                  await shelfItemManager.createSubShelf(
+                    summary.root.id,
+                    null,
+                    "new sub shelf"
+                  )
+                }
+              >
+                Sub Shelf
+              </ContextMenuItem>
+            </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuItem
-              onClick={() =>
-                shelfItemManager.startRenamingRootShelfNode(summary.root)
-              }
-            >
-              Rename
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-            <ContextMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() =>
-                modalManager.open("DeleteShelfItemDialog", {
-                  dialogHeader: "Delete a root shelf",
-                  dialogDescription: `Are you sure about deleting the root shelf of "${summary.root.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
-                  confirmKeyword: "DELETE",
-                  inputPlaceholder: `Type "DELETE" here`,
-                  onDelete: async () =>
-                    await loadingManager.startAsyncTransactionLoading(
-                      async () => {
-                        await shelfItemManager
-                          .deleteRootShelf(summary.root)
-                          .catch(error =>
-                            toast.error(languageManager.tError(error))
-                          );
-                      }
-                    ),
-                  onCancel: modalManager.close,
-                })
-              }
-            >
-              Delete
-            </ContextMenuItem>
+            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={() =>
+                  shelfItemManager.startRenamingRootShelfNode(summary.root)
+                }
+              >
+                Rename
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() =>
+                  modalManager.open("DeleteShelfItemDialog", {
+                    dialogHeader: "Delete a root shelf",
+                    dialogDescription: `Are you sure about deleting the root shelf of "${summary.root.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
+                    confirmKeyword: "DELETE",
+                    inputPlaceholder: `Type "DELETE" here`,
+                    onDelete: async () =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () => {
+                          await shelfItemManager
+                            .deleteRootShelf(summary.root)
+                            .catch(error =>
+                              toast.error(languageManager.tError(error))
+                            );
+                        }
+                      ),
+                    onCancel: modalManager.close,
+                  })
+                }
+              >
+                Delete
+              </ContextMenuItem>
+            </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
         <CollapsibleContent>

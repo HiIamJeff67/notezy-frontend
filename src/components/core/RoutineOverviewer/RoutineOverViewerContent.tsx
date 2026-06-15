@@ -8,7 +8,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useBackgroundImages, useModal, useResizeSidebar } from "@/hooks";
 import RoutineScopeBar from "./RoutineScopeBar";
 
-const RoutineOverViewerContent = () => {
+const RoutineOverviewerContent = () => {
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
   const sidebarManager = useSidebar();
@@ -32,7 +32,7 @@ const RoutineOverViewerContent = () => {
     <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
       <header
         className="
-          fixed top-0 right-0 z-100 h-10
+          fixed top-0 right-0 z-20 h-10
           flex shrink-0 justify-between items-center 
           gap-2 bg-background/75 backdrop-blur-md border-background/10
         "
@@ -136,4 +136,4 @@ const RoutineOverViewerContent = () => {
   );
 };
 
-export default RoutineOverViewerContent;
+export default RoutineOverviewerContent;

@@ -1,21 +1,23 @@
-import originalToast, { Renderable, ToastOptions } from "react-hot-toast";
+import type { ReactNode } from "react";
+import { type ExternalToast, toast as sonner } from "sonner";
 
 const toast = {
-  ...originalToast,
+  ...sonner,
 
-  error: (message: Renderable, options?: ToastOptions) => {
+  error: (message: ReactNode, options?: ExternalToast) => {
     if (typeof message === "string" && message.trim() === "") {
       return "";
     }
 
-    return originalToast.error(message, options);
+    return sonner.error(message, options);
   },
 
-  success: (message: Renderable, options?: ToastOptions) => {
+  success: (message: ReactNode, options?: ExternalToast) => {
     if (typeof message === "string" && message.trim() === "") {
       return "";
     }
-    return originalToast.success(message, options);
+
+    return sonner.success(message, options);
   },
 };
 

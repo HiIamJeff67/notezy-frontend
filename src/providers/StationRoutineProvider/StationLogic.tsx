@@ -6,16 +6,19 @@ import {
 import { useSearchStationsLazyQuery } from "@shared/api/graphql/hooks/useSearchStations";
 import {
   useCreateStation,
+  useDeleteMyStationById,
   useUpdateMyStationById,
 } from "@shared/api/hooks/station.hook";
 import {
   AccessControlPermission,
   SupportedIcon,
 } from "@shared/api/interfaces/enums";
+import type { UpdateMyStationByIdRequest } from "@shared/api/interfaces/station.interface";
 import { MaxSearchLimit } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { RoutineTagNode } from "@shared/types/routineTagNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
@@ -24,17 +27,24 @@ import { type RefObject, useCallback, useEffect, useState } from "react";
 interface UseStationLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
   stationsRef: RefObject<LRUCache<UUID, StationNode>>;
+  routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
   expandRoutinesByStationId: (stationId: UUID) => Promise<void>;
+  selectedRoutineId: UUID | null;
+  selectRoutine: (routineId: UUID | null) => void;
 }
 
 export const useStationLogic = ({
   inputRef,
   stationsRef,
+  routineTagsRef,
   forceUpdate,
   expandRoutinesByStationId,
+  selectedRoutineId,
+  selectRoutine,
 }: UseStationLogicProps) => {
   const createStationMutator = useCreateStation();
+  const deleteStationMutator = useDeleteMyStationById();
   const updateStationMutator = useUpdateMyStationById();
 
   const [selectedStationId, selectStation] = useState<UUID | null>(null);
@@ -116,6 +126,98 @@ export const useStationLogic = ({
     [createStationMutator, forceUpdate, stationsRef]
   );
 
+  const updateStation = useCallback(
+    async (
+      stationId: UUID,
+      values: UpdateMyStationByIdRequest["body"]["values"],
+      setNull?: UpdateMyStationByIdRequest["body"]["setNull"]
+    ): Promise<StationNode> => {
+      const stationNode = stationsRef.current.get(stationId);
+      if (!stationNode) throw new Error("station does not exist");
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await updateStationMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          stationId,
+          values,
+          setNull,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      Object.assign(stationNode, values);
+      if (setNull?.icon) stationNode.icon = null;
+      if (setNull?.headerBackgroundURL) {
+        stationNode.headerBackgroundURL = null;
+      }
+      stationNode.updatedAt = response.data.updatedAt;
+      forceUpdate();
+      return stationNode;
+    },
+    [forceUpdate, stationsRef, updateStationMutator]
+  );
+
+  const deleteStation = useCallback(
+    async (stationId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await deleteStationMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          stationId,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      const stationNode = stationsRef.current.get(stationId);
+      if (stationNode) {
+        const deletedRoutineIds = new Set(
+          stationNode.routines.map(routine => routine.id)
+        );
+        for (const routineTagNode of routineTagsRef.current.values()) {
+          const previousRoutineCount = routineTagNode.routines.length;
+          routineTagNode.routines = routineTagNode.routines.filter(
+            routine => !deletedRoutineIds.has(routine.id)
+          );
+          routineTagNode.routineCount = Math.max(
+            0,
+            routineTagNode.routineCount -
+              (previousRoutineCount - routineTagNode.routines.length)
+          );
+        }
+      }
+
+      stationsRef.current.delete(stationId);
+      if (selectedStationId === stationId) selectStation(null);
+      if (
+        stationNode?.routines.some(routine => routine.id === selectedRoutineId)
+      ) {
+        selectRoutine(null);
+      }
+      forceUpdate();
+      return response;
+    },
+    [
+      deleteStationMutator,
+      forceUpdate,
+      routineTagsRef,
+      selectRoutine,
+      selectedRoutineId,
+      selectedStationId,
+      stationsRef,
+    ]
+  );
+
   const isStationEditing = useCallback(
     (stationId: UUID) =>
       !!editingStationNode && editingStationNode.id === stationId,
@@ -148,38 +250,13 @@ export const useStationLogic = ({
       if (!isNewStationName()) return;
 
       const name = editStationName.trim();
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await updateStationMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          stationId: editingStationNode.id,
-          values: {
-            name,
-          },
-        },
-      });
-      if (response.success === false) throw response.exception;
-
-      editingStationNode.name = name;
-      editingStationNode.updatedAt = response.data.updatedAt;
-      forceUpdate();
+      await updateStation(editingStationNode.id, { name });
     } finally {
       setEditingStationNode(null);
       setOriginalStationName("");
       setEditStationName("");
     }
-  }, [
-    editStationName,
-    editingStationNode,
-    forceUpdate,
-    isNewStationName,
-    updateStationMutator,
-  ]);
+  }, [editStationName, editingStationNode, isNewStationName, updateStation]);
 
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
@@ -340,5 +417,9 @@ export const useStationLogic = ({
     toggleStation,
     createStation,
     isCreatingStation: createStationMutator.isPending,
+    updateStation,
+    isUpdatingStation: updateStationMutator.isPending,
+    deleteStation,
+    isDeletingStation: deleteStationMutator.isPending,
   };
 };

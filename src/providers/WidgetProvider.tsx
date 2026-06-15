@@ -40,7 +40,7 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
   const languageManager = useLanguage();
   const userManager = useUser();
 
-  const [_, setUpdateTrigger] = useState(0);
+  const [_, setUpdateTrigger] = useState<number>(0);
   const widgetsRef = useRef<Widget[]>([]);
   const hasChangedRef = useRef<boolean>(false);
 
@@ -50,23 +50,22 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
 
   useEffect(() => {
     const initializeWidgets = async () => {
-      if (userManager.userData !== null) {
-        const widgetsEncoded = LocalStorageManipulator.getItemByKey(
-          LocalStorageKey.dashboardWidgets,
-          userManager.userData?.publicId
-        );
-        if (widgetsEncoded !== null) {
-          try {
-            widgetsRef.current = (
-              JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
-                ...widgetEncoded,
-                component: BasicPreviewWidgets[widgetEncoded.name]?.component,
-              })) as Partial<Widget>[]
-            ).filter(widget => widget.component !== undefined) as Widget[];
-            forceUpdate();
-          } catch (error) {
-            toast.error(languageManager.tError(error));
-          }
+      if (userManager.userData === null) return;
+      const widgetsEncoded = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.dashboardWidgets,
+        userManager.userData?.publicId
+      );
+      if (widgetsEncoded !== null) {
+        try {
+          widgetsRef.current = (
+            JSON.parse(widgetsEncoded).map((widgetEncoded: any) => ({
+              ...widgetEncoded,
+              component: BasicPreviewWidgets[widgetEncoded.name]?.component,
+            })) as Partial<Widget>[]
+          ).filter(widget => widget.component !== undefined) as Widget[];
+          forceUpdate();
+        } catch (error) {
+          toast.error(languageManager.tError(error));
         }
       }
     };

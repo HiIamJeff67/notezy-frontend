@@ -13,10 +13,7 @@ import {
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
-import type {
-  UpdateMyRoutineTaskByIdRequest,
-  UpdateMyRoutineTaskByIdResponse,
-} from "@shared/api/interfaces/routineTask.interface";
+import type { UpdateMyRoutineTaskByIdRequest } from "@shared/api/interfaces/routineTask.interface";
 import { MaxSearchLimit } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -199,6 +196,57 @@ export const useRoutineTaskLogic = ({
     [createRoutineTaskMutator, forceUpdate, stationsRef]
   );
 
+  const updateRoutineTask = useCallback(
+    async (
+      routineTaskId: UUID,
+      values: UpdateMyRoutineTaskByIdRequest["body"]["values"],
+      setNull?: UpdateMyRoutineTaskByIdRequest["body"]["setNull"]
+    ): Promise<RoutineTaskNode> => {
+      const routineTaskNodes = new Set<RoutineTaskNode>();
+      for (const stationNode of stationsRef.current.values()) {
+        const stationRoutineTaskNode = stationNode.routineTasks.find(
+          stationRoutineTask => stationRoutineTask.id === routineTaskId
+        );
+        if (stationRoutineTaskNode) {
+          routineTaskNodes.add(stationRoutineTaskNode);
+        }
+        for (const routineNode of stationNode.routines) {
+          const routineTaskNode = routineNode.routineTasks.find(
+            routineTask => routineTask.id === routineTaskId
+          );
+          if (routineTaskNode) routineTaskNodes.add(routineTaskNode);
+        }
+      }
+      if (routineTaskNodes.size === 0) {
+        throw new Error("routine task does not exist");
+      }
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await updateRoutineTaskMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          routineTaskId,
+          values,
+          setNull,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      for (const routineTaskNode of routineTaskNodes) {
+        Object.assign(routineTaskNode, values);
+        routineTaskNode.updatedAt = response.data.updatedAt;
+      }
+      forceUpdate();
+      return routineTaskNodes.values().next().value as RoutineTaskNode;
+    },
+    [forceUpdate, stationsRef, updateRoutineTaskMutator]
+  );
+
   return {
     selectedRoutineTaskId,
     selectRoutineTask,
@@ -206,9 +254,7 @@ export const useRoutineTaskLogic = ({
     searchRoutineTasksByStationId,
     createRoutineTask,
     isCreatingRoutineTask: createRoutineTaskMutator.isPending,
-    updateRoutineTaskById: (
-      request: UpdateMyRoutineTaskByIdRequest
-    ): Promise<UpdateMyRoutineTaskByIdResponse> =>
-      updateRoutineTaskMutator.mutateAsync(request),
+    updateRoutineTask,
+    isUpdatingRoutineTask: updateRoutineTaskMutator.isPending,
   };
 };

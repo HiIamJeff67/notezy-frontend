@@ -1,8 +1,4 @@
-import { useDeleteMyRoutineById } from "@shared/api/hooks/routine.hook";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage } from "@/hooks";
+import { useLanguage, useRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineDialogProps extends ModalProps {
@@ -31,27 +27,11 @@ const DeleteRoutineDialog = ({
   onDeleted,
 }: DeleteRoutineDialogProps) => {
   const languageManager = useLanguage();
-  const deleteRoutineMutator = useDeleteMyRoutineById();
+  const routineManager = useRoutine();
 
   const deleteRoutine = async () => {
     try {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await deleteRoutineMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId,
-        },
-      });
-      if (response.success === false) {
-        toast.error(languageManager.tError(response.exception));
-        return;
-      }
-
+      await routineManager.deleteRoutine(routineId);
       await onDeleted?.();
       toast.success("Routine deleted");
       onClose();
@@ -64,7 +44,7 @@ const DeleteRoutineDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !deleteRoutineMutator.isPending) onClose();
+        if (!open && !routineManager.isDeletingRoutine) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -79,7 +59,7 @@ const DeleteRoutineDialog = ({
           <Button
             type="button"
             variant="outline"
-            disabled={deleteRoutineMutator.isPending}
+            disabled={routineManager.isDeletingRoutine}
             onClick={onClose}
           >
             Cancel
@@ -87,10 +67,10 @@ const DeleteRoutineDialog = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={deleteRoutineMutator.isPending}
+            disabled={routineManager.isDeletingRoutine}
             onClick={deleteRoutine}
           >
-            {deleteRoutineMutator.isPending && <Spinner />}
+            {routineManager.isDeletingRoutine && <Spinner />}
             Delete
           </Button>
         </DialogFooter>

@@ -20,8 +20,13 @@ import {
 import {
   ContextMenu,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
+  ContextMenuLabel,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
@@ -192,48 +197,58 @@ const SubShelfMenuItem = ({
             </CollapsibleTrigger>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem onClick={handleCreateMaterial}>
-              Create Material
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleCreateBlockPack}>
-              Create Block Pack
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleCreateSubShelf}>
-              Create Sub Shelf
-            </ContextMenuItem>
+            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Items</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onClick={handleCreateMaterial}>
+                    Material
+                  </ContextMenuItem>
+                  <ContextMenuItem onClick={handleCreateBlockPack}>
+                    Block Pack
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuItem onClick={handleCreateSubShelf}>
+                Sub Shelf
+              </ContextMenuItem>
+            </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuItem
-              onClick={() =>
-                shelfItemManager.startRenamingSubShelfNode(current)
-              }
-            >
-              Rename
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-            <ContextMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() =>
-                modalManager.open("DeleteShelfItemDialog", {
-                  dialogHeader: "Delete a sub shelf",
-                  dialogDescription: `Are you sure about deleting the sub shelf of "${current.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
-                  confirmKeyword: "DELETE",
-                  inputPlaceholder: `Type "DELETE" here`,
-                  onDelete: async () =>
-                    await loadingManager.startAsyncTransactionLoading(
-                      async () => {
-                        await shelfItemManager
-                          .deleteSubShelf(prev, current)
-                          .catch(error =>
-                            toast.error(languageManager.tError(error))
-                          );
-                      }
-                    ),
-                  onCancel: modalManager.close,
-                })
-              }
-            >
-              Delete
-            </ContextMenuItem>
+            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={() =>
+                  shelfItemManager.startRenamingSubShelfNode(current)
+                }
+              >
+                Rename
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() =>
+                  modalManager.open("DeleteShelfItemDialog", {
+                    dialogHeader: "Delete a sub shelf",
+                    dialogDescription: `Are you sure about deleting the sub shelf of "${current.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
+                    confirmKeyword: "DELETE",
+                    inputPlaceholder: `Type "DELETE" here`,
+                    onDelete: async () =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () => {
+                          await shelfItemManager
+                            .deleteSubShelf(prev, current)
+                            .catch(error =>
+                              toast.error(languageManager.tError(error))
+                            );
+                        }
+                      ),
+                    onCancel: modalManager.close,
+                  })
+                }
+              >
+                Delete
+              </ContextMenuItem>
+            </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
         <CollapsibleContent>

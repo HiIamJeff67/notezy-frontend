@@ -10,6 +10,7 @@ import {
 import { useSearchRoutinesLazyQuery } from "@shared/api/graphql/hooks/useSearchRoutines";
 import {
   useCreateRoutineByStationId,
+  useDeleteMyRoutineById,
   useLinkRoutineItemById,
   useLinkRoutineTagById,
   useLinkRoutineTaskById,
@@ -48,6 +49,8 @@ export interface CreateRoutineValues {
   timezone?: string;
 }
 
+export type UpdateRoutineValues = UpdateMyRoutineByIdRequest["body"]["values"];
+
 interface UseRoutineLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
   stationsRef: RefObject<LRUCache<UUID, StationNode>>;
@@ -62,6 +65,7 @@ export const useRoutineLogic = ({
   forceUpdate,
 }: UseRoutineLogicProps) => {
   const createRoutineMutator = useCreateRoutineByStationId();
+  const deleteRoutineMutator = useDeleteMyRoutineById();
   const updateRoutineMutator = useUpdateMyRoutineById();
   const linkRoutineTagMutator = useLinkRoutineTagById();
   const linkRoutineTaskMutator = useLinkRoutineTaskById();
@@ -578,6 +582,122 @@ export const useRoutineLogic = ({
     [createRoutineMutator, forceUpdate, stationsRef]
   );
 
+  const deleteRoutine = useCallback(
+    async (routineId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await deleteRoutineMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          routineId,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      let routineNode: RoutineNode | undefined;
+      for (const stationNode of stationsRef.current.values()) {
+        routineNode = stationNode.routines.find(
+          routine => routine.id === routineId
+        );
+        if (routineNode) break;
+      }
+      if (!routineNode) {
+        for (const routineTagNode of routineTagsRef.current.values()) {
+          routineNode = routineTagNode.routines.find(
+            routine => routine.id === routineId
+          );
+          if (routineNode) break;
+        }
+      }
+
+      for (const stationNode of stationsRef.current.values()) {
+        stationNode.routines = stationNode.routines.filter(
+          routine => routine.id !== routineId
+        );
+        if (stationNode.id === routineNode?.stationId) {
+          stationNode.routineCount = Math.max(0, stationNode.routineCount - 1);
+        }
+      }
+      for (const routineTagNode of routineTagsRef.current.values()) {
+        const wasLinked =
+          routineNode?.routineTagIds.includes(routineTagNode.id) ??
+          routineTagNode.routines.some(routine => routine.id === routineId);
+        routineTagNode.routines = routineTagNode.routines.filter(
+          routine => routine.id !== routineId
+        );
+        if (wasLinked) {
+          routineTagNode.routineCount = Math.max(
+            0,
+            routineTagNode.routineCount - 1
+          );
+        }
+      }
+
+      if (selectedRoutineId === routineId) selectRoutine(null);
+      forceUpdate();
+      return response;
+    },
+    [
+      deleteRoutineMutator,
+      forceUpdate,
+      routineTagsRef,
+      selectedRoutineId,
+      stationsRef,
+    ]
+  );
+
+  const updateRoutine = useCallback(
+    async (
+      routineId: UUID,
+      values: UpdateRoutineValues,
+      setNull?: UpdateMyRoutineByIdRequest["body"]["setNull"]
+    ): Promise<RoutineNode> => {
+      const routineNodes = new Set<RoutineNode>();
+      for (const stationNode of stationsRef.current.values()) {
+        const routineNode = stationNode.routines.find(
+          stationRoutine => stationRoutine.id === routineId
+        );
+        if (routineNode) routineNodes.add(routineNode);
+      }
+      for (const routineTagNode of routineTagsRef.current.values()) {
+        const routineNode = routineTagNode.routines.find(
+          routine => routine.id === routineId
+        );
+        if (routineNode) routineNodes.add(routineNode);
+      }
+      if (routineNodes.size === 0) throw new Error("routine does not exist");
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await updateRoutineMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          routineId,
+          values,
+          setNull,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      for (const routineNode of routineNodes) {
+        Object.assign(routineNode, values);
+        if (setNull?.period) routineNode.period = null;
+        routineNode.updatedAt = response.data.updatedAt;
+      }
+      forceUpdate();
+      return routineNodes.values().next().value as RoutineNode;
+    },
+    [forceUpdate, routineTagsRef, stationsRef, updateRoutineMutator]
+  );
+
   const isRoutineEditing = useCallback(
     (routineId: UUID) => editingRoutineNode?.id === routineId,
     [editingRoutineNode]
@@ -609,38 +729,13 @@ export const useRoutineLogic = ({
       if (!isNewRoutineTitle()) return;
 
       const title = editRoutineTitle.trim();
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await updateRoutineMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId: editingRoutineNode.id,
-          values: {
-            title,
-          },
-        },
-      });
-      if (response.success === false) throw response.exception;
-
-      editingRoutineNode.title = title;
-      editingRoutineNode.updatedAt = response.data.updatedAt;
-      forceUpdate();
+      await updateRoutine(editingRoutineNode.id, { title });
     } finally {
       setEditingRoutineNode(null);
       setOriginalRoutineTitle("");
       setEditRoutineTitle("");
     }
-  }, [
-    editRoutineTitle,
-    editingRoutineNode,
-    forceUpdate,
-    isNewRoutineTitle,
-    updateRoutineMutator,
-  ]);
+  }, [editRoutineTitle, editingRoutineNode, isNewRoutineTitle, updateRoutine]);
 
   useEffect(() => {
     const handleClickOutside = async (event: MouseEvent) => {
@@ -826,8 +921,10 @@ export const useRoutineLogic = ({
     toggleRoutine,
     createRoutine,
     isCreatingRoutine: createRoutineMutator.isPending,
-    updateRoutineById: (request: UpdateMyRoutineByIdRequest) =>
-      updateRoutineMutator.mutateAsync(request),
+    deleteRoutine,
+    isDeletingRoutine: deleteRoutineMutator.isPending,
+    updateRoutine,
+    isUpdatingRoutine: updateRoutineMutator.isPending,
     linkRoutineTag,
     linkRoutineTask,
     linkRoutineItem,

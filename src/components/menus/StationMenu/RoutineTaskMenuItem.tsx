@@ -38,16 +38,23 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           </SidebarMenuSubButton>
         </ContextMenuTrigger>
         <ContextMenuContent className="min-w-36">
-          <ContextMenuLabel>Edit</ContextMenuLabel>
+          <ContextMenuLabel>View</ContextMenuLabel>
           <ContextMenuGroup>
             <ContextMenuItem
-              onClick={() => routineManager.selectRoutineTask(routineTask.id)}
+              onClick={() => {
+                routineManager.selectRoutineTask(routineTask.id);
+                routineManager.openInspector({
+                  type: "routineTask",
+                  id: routineTask.id,
+                });
+              }}
             >
               <SquarePen className="mr-2 size-4" />
               Open
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />
+          <ContextMenuLabel>Edit</ContextMenuLabel>
           <ContextMenuGroup>
             <ContextMenuItem
               className="text-destructive focus:text-destructive"

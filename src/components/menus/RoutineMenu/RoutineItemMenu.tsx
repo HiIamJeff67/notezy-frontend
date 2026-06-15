@@ -161,22 +161,42 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
           )}
 
           <ContextMenuContent className="min-w-44">
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>View</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
                   routineManager.selectStation(station.id);
                   routineManager.selectRoutine(routine.id);
+                  routineManager.openInspector({
+                    type: "routine",
+                    id: routine.id,
+                  });
                 }}
               >
                 <SquarePen className="mr-2 size-4" />
                 Open
               </ContextMenuItem>
+            </ContextMenuGroup>
+            <ContextMenuSeparator />
+            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuGroup>
               <ContextMenuItem
-                onClick={() => routineManager.startRenamingRoutine(routine)}
+                onClick={() =>
+                  modalManager.open("CreateRoutineTaskDialog", {
+                    stationId: station.id,
+                    stationName: station.name,
+                    onCreated: async routineTaskId => {
+                      await routineManager.linkRoutineTask(
+                        routine.id,
+                        routineTaskId
+                      );
+                      routine.isOpen = true;
+                    },
+                  })
+                }
               >
-                <Pencil className="mr-2 size-4" />
-                Rename
+                <ClipboardList className="mr-2 size-4" />
+                Task
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
@@ -196,7 +216,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   {routineManager.routineTags.length === 0 ? (
-                    <ContextMenuItem disabled>No tags</ContextMenuItem>
+                    <ContextMenuItem disabled>No Tags</ContextMenuItem>
                   ) : (
                     routineManager.routineTags.map(routineTag => {
                       const isLinked = routine.routineTagIds.includes(
@@ -226,24 +246,6 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                   )}
                 </ContextMenuSubContent>
               </ContextMenuSub>
-              <ContextMenuItem
-                onClick={() =>
-                  modalManager.open("CreateRoutineTaskDialog", {
-                    stationId: station.id,
-                    stationName: station.name,
-                    onCreated: async routineTaskId => {
-                      await routineManager.linkRoutineTask(
-                        routine.id,
-                        routineTaskId
-                      );
-                      routine.isOpen = true;
-                    },
-                  })
-                }
-              >
-                <ClipboardList className="mr-2 size-4" />
-                Tasks
-              </ContextMenuItem>
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
@@ -268,7 +270,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                       Loading
                     </ContextMenuItem>
                   ) : searchedItems.length === 0 ? (
-                    <ContextMenuItem disabled>No items</ContextMenuItem>
+                    <ContextMenuItem disabled>No Items</ContextMenuItem>
                   ) : (
                     <>
                       {searchedItems.map(item => (
@@ -317,19 +319,20 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
               </ContextMenuSub>
             </ContextMenuGroup>
             <ContextMenuSeparator />
+            <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={() => routineManager.startRenamingRoutine(routine)}
+              >
+                <Pencil className="mr-2 size-4" />
+                Rename
+              </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() =>
                   modalManager.open("DeleteRoutineDialog", {
                     routineId: routine.id,
                     routineTitle: routine.title,
-                    onDeleted: async () => {
-                      if (routineManager.selectedRoutineId === routine.id) {
-                        routineManager.selectRoutine(null);
-                      }
-                      await routineManager.refresh();
-                    },
                   })
                 }
               >

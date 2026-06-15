@@ -1,12 +1,12 @@
 import type { UUID } from "crypto";
-import StationRoutineOverviewer from "@/components/core/RoutineOverviewer/StationRoutineOverviewer";
+import RoutineViewer from "@/components/core/RoutineOverviewer/RoutineViewer/RoutineViewer";
 
 interface StationRoutinesPageProps {
   stationId: UUID;
 }
 
 const StationRoutinesPage = ({ stationId }: StationRoutinesPageProps) => {
-  return <StationRoutineOverviewer stationId={stationId} />;
+  return <RoutineViewer stationId={stationId} />;
 };
 
 export default StationRoutinesPage;

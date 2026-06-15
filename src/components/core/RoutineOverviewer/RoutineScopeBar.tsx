@@ -1,13 +1,16 @@
-import { cn } from "@shared/util/utils";
+import { ClipboardClock, ClipboardList, Search, Tags } from "lucide-react";
 import {
-  ClipboardClock,
-  ClipboardIcon,
-  ClipboardList,
-  Search,
-  Tags,
-} from "lucide-react";
+  type ComponentPropsWithoutRef,
+  forwardRef,
+  type ReactNode,
+} from "react";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -19,17 +22,18 @@ const RoutineScopeBar = () => {
   return (
     <div
       className="
+        @container
         flex h-full w-full min-w-0 items-center justify-between gap-4
         border-b border-border/40 bg-background/75 px-3 backdrop-blur-md
       "
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <div className="relative h-8 w-[220px] shrink-0">
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden @max-[600px]:hidden">
+        <div className="relative h-8 w-[220px] min-w-0 max-w-full">
           <Search className="-translate-y-1/2 pointer-events-none absolute left-2.5 top-1/2 size-4 text-muted-foreground" />
           <Input
-            value={routineManager.scope.query}
+            value={routineManager.presence.query}
             onChange={event =>
-              routineManager.setScopeQuery(event.currentTarget.value)
+              routineManager.setPresenceQuery(event.currentTarget.value)
             }
             placeholder="Search routines"
             className="
@@ -38,130 +42,136 @@ const RoutineScopeBar = () => {
             "
           />
         </div>
-
-        <Separator orientation="vertical" className="h-5 bg-border/60" />
-
-        <div className="flex min-w-0 items-center gap-1.5">
-          <TrainStationIcon
-            size={16}
-            className="shrink-0 text-muted-foreground"
-          />
-          <ToggleGroup
-            type="multiple"
-            value={routineManager.scope.stationIds}
-            onValueChange={values =>
-              routineManager.setStationScope(
-                values as typeof routineManager.scope.stationIds
-              )
-            }
-            className="min-w-0 max-w-[28vw] justify-start overflow-x-auto"
-          >
-            {routineManager.stations.map(station => (
-              <ToggleGroupItem
-                key={station.id}
-                value={station.id}
-                size="sm"
-                variant="outline"
-                className="
-                  h-7 shrink-0 rounded-sm border-border/60 bg-background/40
-                  px-2 text-xs data-[state=on]:border-primary/50
-                  data-[state=on]:bg-primary/10
-                "
-                onClick={() => routineManager.selectStation(station.id)}
-              >
-                <span className="flex max-w-28 items-center gap-1 truncate">
-                  {station.icon ? (
-                    <span className="shrink-0">{station.icon}</span>
-                  ) : (
-                    <TrainStationIcon size={14} />
-                  )}
-                  <span className="truncate">{station.name}</span>
-                </span>
-              </ToggleGroupItem>
-            ))}
-            {routineManager.stations.length === 0 && (
-              <span className="whitespace-nowrap px-2 text-xs text-muted-foreground">
-                All stations
-              </span>
-            )}
-          </ToggleGroup>
-        </div>
-
-        <Separator orientation="vertical" className="h-5 bg-border/60" />
-
-        <div className="flex min-w-0 items-center gap-1.5">
-          <Tags className="size-4 shrink-0 text-muted-foreground" />
-          <ToggleGroup
-            type="multiple"
-            value={routineManager.scope.routineTagIds}
-            onValueChange={values =>
-              routineManager.setRoutineTagScope(
-                values as typeof routineManager.scope.routineTagIds
-              )
-            }
-            className="min-w-0 max-w-[22vw] justify-start overflow-x-auto"
-          >
-            {routineManager.routineTags.map(routineTag => (
-              <ToggleGroupItem
-                key={routineTag.id}
-                value={routineTag.id}
-                size="sm"
-                variant="outline"
-                className="
-                  h-7 shrink-0 rounded-sm border-border/60 bg-background/40
-                  px-2 text-xs data-[state=on]:border-primary/50
-                  data-[state=on]:bg-primary/10
-                "
-                onClick={() => routineManager.selectRoutineTag(routineTag.id)}
-              >
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: routineTag.color }}
-                />
-                <span className="max-w-24 truncate">{routineTag.name}</span>
-              </ToggleGroupItem>
-            ))}
-            {routineManager.routineTags.length === 0 && (
-              <span className="whitespace-nowrap px-2 text-xs text-muted-foreground">
-                All tags
-              </span>
-            )}
-          </ToggleGroup>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-7 shrink-0 rounded-sm border-border/60 bg-background/40 px-2 text-xs",
-              routineManager.scope.showUntaggedRoutines &&
-                "border-primary/50 bg-primary/10"
-            )}
-            onClick={routineManager.toggleUntaggedRoutines}
-          >
-            Untagged
-          </Button>
-        </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <StatusPill
-            icon={<TrainStationIcon size={14} />}
-            label={routineManager.statusSummary.totalStations.toString()}
-            title="Stations"
-          />
+          <HoverCard openDelay={250} closeDelay={150}>
+            <HoverCardTrigger asChild>
+              <StatusPill
+                icon={<TrainStationIcon size={14} />}
+                presentCount={routineManager.visibleStations.length}
+                totalCount={routineManager.statusSummary.totalStations}
+                title="Stations"
+              />
+            </HoverCardTrigger>
+            <HoverCardContent align="end" className="w-72 rounded-sm p-0">
+              <div className="border-b px-3 py-2.5">
+                <p className="text-sm font-medium">Present stations</p>
+                <p className="text-xs text-muted-foreground">
+                  {routineManager.presence.stationIds.length} of{" "}
+                  {routineManager.stations.length} stations are shown
+                </p>
+              </div>
+              <div className="max-h-64 overflow-y-auto p-1.5">
+                {routineManager.stations.map(station => (
+                  <label
+                    key={station.id}
+                    className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
+                  >
+                    <Checkbox
+                      checked={routineManager.presence.stationIds.includes(
+                        station.id
+                      )}
+                      onCheckedChange={() =>
+                        routineManager.toggleStationPresence(station.id)
+                      }
+                    />
+                    {station.icon ? (
+                      <span className="shrink-0 text-sm">{station.icon}</span>
+                    ) : (
+                      <TrainStationIcon size={14} />
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm">
+                      {station.name}
+                    </span>
+                    <span className="tabular-nums text-xs text-muted-foreground">
+                      {station.routineCount}
+                    </span>
+                  </label>
+                ))}
+                {routineManager.stations.length === 0 && (
+                  <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                    No stations
+                  </p>
+                )}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
           <StatusPill
             icon={<ClipboardClock className="size-3.5" />}
-            label={routineManager.statusSummary.totalRoutines.toString()}
+            presentCount={routineManager.visibleRoutines.length}
+            totalCount={routineManager.statusSummary.totalRoutines}
             title="Routines"
           />
-          <StatusPill
-            icon={<Tags className="size-3.5" />}
-            label={routineManager.statusSummary.totalRoutineTags.toString()}
-            title="Routine tags"
-          />
+          <HoverCard openDelay={250} closeDelay={150}>
+            <HoverCardTrigger asChild>
+              <StatusPill
+                icon={<Tags className="size-3.5" />}
+                presentCount={routineManager.visibleRoutineTags.length}
+                totalCount={routineManager.statusSummary.totalRoutineTags}
+                title="Routine tags"
+              />
+            </HoverCardTrigger>
+            <HoverCardContent align="end" className="w-72 rounded-sm p-0">
+              <div className="border-b px-3 py-2.5">
+                <p className="text-sm font-medium">Present routine tags</p>
+                <p className="text-xs text-muted-foreground">
+                  {routineManager.presence.routineTagIds.length} of{" "}
+                  {routineManager.routineTags.length} tags are shown
+                </p>
+              </div>
+              <div className="max-h-64 overflow-y-auto p-1.5">
+                {routineManager.routineTags.map(routineTag => (
+                  <label
+                    key={routineTag.id}
+                    className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
+                  >
+                    <Checkbox
+                      checked={routineManager.presence.routineTagIds.includes(
+                        routineTag.id
+                      )}
+                      onCheckedChange={() =>
+                        routineManager.toggleRoutineTagPresence(routineTag.id)
+                      }
+                    />
+                    <span
+                      className="size-2.5 shrink-0 rounded-full border border-foreground/15"
+                      style={{ backgroundColor: routineTag.color }}
+                    />
+                    {routineTag.icon && (
+                      <span className="shrink-0 text-sm">
+                        {routineTag.icon}
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm">
+                      {routineTag.name}
+                    </span>
+                    <span className="tabular-nums text-xs text-muted-foreground">
+                      {routineTag.routineCount}
+                    </span>
+                  </label>
+                ))}
+                {routineManager.routineTags.length === 0 && (
+                  <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                    No routine tags
+                  </p>
+                )}
+                <Separator className="my-1.5" />
+                <label className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50">
+                  <Checkbox
+                    checked={routineManager.presence.showUntaggedRoutines}
+                    onCheckedChange={routineManager.toggleUntaggedRoutines}
+                  />
+                  <span className="text-sm">Untagged routines</span>
+                </label>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
           <StatusPill
             icon={<ClipboardList className="size-3.5" />}
-            label={routineManager.statusSummary.totalRoutineTasks.toString()}
+            presentCount={routineManager.visibleRoutineTasks.length}
+            totalCount={routineManager.statusSummary.totalRoutineTasks}
             title="Routine tasks"
           />
         </div>
@@ -181,21 +191,24 @@ const RoutineScopeBar = () => {
             size="sm"
             className="h-6 rounded-sm px-2 text-xs"
           >
-            Daily
+            <span className="@max-[480px]:hidden">Daily</span>
+            <span className="hidden @max-[480px]:inline">D</span>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="week"
             size="sm"
             className="h-6 rounded-sm px-2 text-xs"
           >
-            Weekly
+            <span className="@max-[480px]:hidden">Weekly</span>
+            <span className="hidden @max-[480px]:inline">W</span>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="month"
             size="sm"
             className="h-6 rounded-sm px-2 text-xs"
           >
-            Monthly
+            <span className="@max-[480px]:hidden">Monthly</span>
+            <span className="hidden @max-[480px]:inline">M</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
@@ -203,25 +216,29 @@ const RoutineScopeBar = () => {
   );
 };
 
-const StatusPill = ({
-  icon,
-  label,
-  title,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  title: string;
-}) => {
-  return (
-    <div
-      className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-background/40 px-2"
-      title={title}
-      aria-label={`${title}: ${label}`}
-    >
-      {icon}
-      <span className="tabular-nums">{label}</span>
+const StatusPill = forwardRef<
+  HTMLDivElement,
+  ComponentPropsWithoutRef<"div"> & {
+    icon: ReactNode;
+    presentCount: number;
+    totalCount: number;
+    title: string;
+  }
+>(({ icon, presentCount, totalCount, title, ...props }, ref) => (
+  <div
+    ref={ref}
+    {...props}
+    className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-background/40 px-2"
+    aria-label={`${title}: ${presentCount} of ${totalCount} present`}
+  >
+    {icon}
+    <div className="tabular-nums">
+      <span className="@max-[480px]:hidden">{presentCount}</span>
+      <span className="px-0.5 @max-[480px]:hidden">|</span>
+      {totalCount}
     </div>
-  );
-};
+  </div>
+));
+StatusPill.displayName = "StatusPill";
 
 export default RoutineScopeBar;

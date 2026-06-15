@@ -6,7 +6,10 @@ import { useCallback } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
@@ -53,22 +56,32 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
         </SidebarMenuButton>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem
-          onClick={() => shelfItemManager.startRenamingItemNode(current)}
-        >
-          Rename
-        </ContextMenuItem>
-        <ContextMenuItem
-          className="text-destructive focus:text-destructive"
-          onClick={async () => {
-            await shelfItemManager.deleteMaterial(parent, current);
-            if (current.id === (router.params.materialId as string)) {
-              router.push(WebURLPathDictionary.root.materialViewer._);
-            }
-          }}
-        >
-          Delete
-        </ContextMenuItem>
+        <ContextMenuLabel>View</ContextMenuLabel>
+        <ContextMenuGroup>
+          <ContextMenuItem onClick={handleMaterialOnClick}>
+            Open
+          </ContextMenuItem>
+        </ContextMenuGroup>
+        <ContextMenuSeparator />
+        <ContextMenuLabel>Edit</ContextMenuLabel>
+        <ContextMenuGroup>
+          <ContextMenuItem
+            onClick={() => shelfItemManager.startRenamingItemNode(current)}
+          >
+            Rename
+          </ContextMenuItem>
+          <ContextMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={async () => {
+              await shelfItemManager.deleteMaterial(parent, current);
+              if (current.id === (router.params.materialId as string)) {
+                router.push(WebURLPathDictionary.root.materialViewer._);
+              }
+            }}
+          >
+            Delete
+          </ContextMenuItem>
+        </ContextMenuGroup>
       </ContextMenuContent>
     </ContextMenu>
   );

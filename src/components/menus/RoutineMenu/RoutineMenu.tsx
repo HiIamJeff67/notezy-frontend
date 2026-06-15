@@ -17,17 +17,21 @@ const RoutineMenu = ({ routines, station }: RoutineMenuProps) => {
   return (
     <SidebarMenuSub>
       <Suspense fallback={<RoutineItemMenuSkeleton />}>
-        {routines.map(routine => {
-          const currentStation =
-            station ?? routineManager.getStationById(routine.stationId);
-          if (!currentStation) return null;
+        {[...routines]
+          .sort((leftRoutine, rightRoutine) =>
+            leftRoutine.title.localeCompare(rightRoutine.title)
+          )
+          .map(routine => {
+            const currentStation =
+              station ?? routineManager.getStationById(routine.stationId);
+            if (!currentStation) return null;
 
-          return (
-            <Suspense fallback={<RoutineItemMenuSkeleton />} key={routine.id}>
-              <RoutineItemMenu station={currentStation} routine={routine} />
-            </Suspense>
-          );
-        })}
+            return (
+              <Suspense fallback={<RoutineItemMenuSkeleton />} key={routine.id}>
+                <RoutineItemMenu station={currentStation} routine={routine} />
+              </Suspense>
+            );
+          })}
       </Suspense>
     </SidebarMenuSub>
   );

@@ -1,8 +1,4 @@
-import { useHardDeleteMyRoutineTagById } from "@shared/api/hooks/routineTag.hook";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage } from "@/hooks";
+import { useLanguage, useRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineTagDialogProps extends ModalProps {
@@ -31,27 +27,11 @@ const DeleteRoutineTagDialog = ({
   onDeleted,
 }: DeleteRoutineTagDialogProps) => {
   const languageManager = useLanguage();
-  const deleteRoutineTagMutator = useHardDeleteMyRoutineTagById();
+  const routineManager = useRoutine();
 
   const deleteRoutineTag = async () => {
     try {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await deleteRoutineTagMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineTagId,
-        },
-      });
-      if (response.success === false) {
-        toast.error(languageManager.tError(response.exception));
-        return;
-      }
-
+      await routineManager.hardDeleteRoutineTag(routineTagId);
       await onDeleted?.();
       toast.success("Routine tag deleted");
       onClose();
@@ -64,7 +44,7 @@ const DeleteRoutineTagDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !deleteRoutineTagMutator.isPending) onClose();
+        if (!open && !routineManager.isHardDeletingRoutineTag) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -81,7 +61,7 @@ const DeleteRoutineTagDialog = ({
           <Button
             type="button"
             variant="outline"
-            disabled={deleteRoutineTagMutator.isPending}
+            disabled={routineManager.isHardDeletingRoutineTag}
             onClick={onClose}
           >
             Cancel
@@ -89,10 +69,10 @@ const DeleteRoutineTagDialog = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={deleteRoutineTagMutator.isPending}
+            disabled={routineManager.isHardDeletingRoutineTag}
             onClick={deleteRoutineTag}
           >
-            {deleteRoutineTagMutator.isPending && <Spinner />}
+            {routineManager.isHardDeletingRoutineTag && <Spinner />}
             Delete
           </Button>
         </DialogFooter>

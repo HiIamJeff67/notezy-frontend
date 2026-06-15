@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import StationRoutineInspectorHost from "@/components/inspectors/StationRoutineInspectorHost";
 import { AppSidebar } from "@/components/sidebar/AppSidebar/AppSidebar";
 import AppSidebarInset from "@/components/sidebar/AppSidebar/AppSidebarInset";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -22,6 +23,7 @@ function RootRouteLayout() {
               <AppSidebarInset>
                 <Outlet />
               </AppSidebarInset>
+              <StationRoutineInspectorHost />
             </ModalProvider>
           </StationRoutineProvider>
         </ShelfItemProvider>

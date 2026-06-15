@@ -6,20 +6,24 @@ import {
 import { useSearchRoutineTagsLazyQuery } from "@shared/api/graphql/hooks/useSearchRoutineTags";
 import {
   useCreateRoutineTag,
+  useHardDeleteMyRoutineTagById,
   useUpdateMyRoutineTagById,
 } from "@shared/api/hooks/routineTag.hook";
 import { SupportedIcon } from "@shared/api/interfaces/enums";
+import type { UpdateMyRoutineTagByIdRequest } from "@shared/api/interfaces/routineTag.interface";
 import { MaxSearchLimit } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import type { RoutineTagNode } from "@shared/types/routineTagNode.type";
+import type { StationNode } from "@shared/types/stationNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { type RefObject, useCallback, useEffect, useState } from "react";
 
 interface UseRoutineTagLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
+  stationsRef: RefObject<LRUCache<UUID, StationNode>>;
   routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
   expandRoutinesByTagId: (routineTagId: UUID) => Promise<void>;
@@ -27,11 +31,13 @@ interface UseRoutineTagLogicProps {
 
 export const useRoutineTagLogic = ({
   inputRef,
+  stationsRef,
   routineTagsRef,
   forceUpdate,
   expandRoutinesByTagId,
 }: UseRoutineTagLogicProps) => {
   const createRoutineTagMutator = useCreateRoutineTag();
+  const hardDeleteRoutineTagMutator = useHardDeleteMyRoutineTagById();
   const updateRoutineTagMutator = useUpdateMyRoutineTagById();
 
   const [selectedRoutineTagId, selectRoutineTag] = useState<UUID | null>(null);
@@ -111,6 +117,84 @@ export const useRoutineTagLogic = ({
     [createRoutineTagMutator, forceUpdate, routineTagsRef]
   );
 
+  const updateRoutineTag = useCallback(
+    async (
+      routineTagId: UUID,
+      values: UpdateMyRoutineTagByIdRequest["body"]["values"],
+      setNull?: UpdateMyRoutineTagByIdRequest["body"]["setNull"]
+    ): Promise<RoutineTagNode> => {
+      const routineTagNode = routineTagsRef.current.get(routineTagId);
+      if (!routineTagNode) throw new Error("routine tag does not exist");
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await updateRoutineTagMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          routineTagId,
+          values,
+          setNull,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      Object.assign(routineTagNode, values);
+      if (setNull?.icon) routineTagNode.icon = null;
+      routineTagNode.updatedAt = response.data.updatedAt;
+      forceUpdate();
+      return routineTagNode;
+    },
+    [forceUpdate, routineTagsRef, updateRoutineTagMutator]
+  );
+
+  const hardDeleteRoutineTag = useCallback(
+    async (routineTagId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await hardDeleteRoutineTagMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          routineTagId,
+        },
+      });
+      if (response.success === false) throw response.exception;
+
+      for (const stationNode of stationsRef.current.values()) {
+        for (const routineNode of stationNode.routines) {
+          routineNode.routineTagIds = routineNode.routineTagIds.filter(
+            id => id !== routineTagId
+          );
+        }
+      }
+      for (const routineTagNode of routineTagsRef.current.values()) {
+        for (const routineNode of routineTagNode.routines) {
+          routineNode.routineTagIds = routineNode.routineTagIds.filter(
+            id => id !== routineTagId
+          );
+        }
+      }
+      routineTagsRef.current.delete(routineTagId);
+      if (selectedRoutineTagId === routineTagId) selectRoutineTag(null);
+      forceUpdate();
+      return response;
+    },
+    [
+      forceUpdate,
+      hardDeleteRoutineTagMutator,
+      routineTagsRef,
+      selectedRoutineTagId,
+      stationsRef,
+    ]
+  );
+
   const isRoutineTagEditing = useCallback(
     (routineTagId: UUID) => editingRoutineTagNode?.id === routineTagId,
     [editingRoutineTagNode]
@@ -145,26 +229,7 @@ export const useRoutineTagLogic = ({
       if (!isNewRoutineTagName()) return;
 
       const name = editRoutineTagName.trim();
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await updateRoutineTagMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineTagId: editingRoutineTagNode.id,
-          values: {
-            name,
-          },
-        },
-      });
-      if (response.success === false) throw response.exception;
-
-      editingRoutineTagNode.name = name;
-      editingRoutineTagNode.updatedAt = response.data.updatedAt;
-      forceUpdate();
+      await updateRoutineTag(editingRoutineTagNode.id, { name });
     } finally {
       setEditingRoutineTagNode(null);
       setOriginalRoutineTagName("");
@@ -173,9 +238,8 @@ export const useRoutineTagLogic = ({
   }, [
     editRoutineTagName,
     editingRoutineTagNode,
-    forceUpdate,
     isNewRoutineTagName,
-    updateRoutineTagMutator,
+    updateRoutineTag,
   ]);
 
   useEffect(() => {
@@ -330,5 +394,9 @@ export const useRoutineTagLogic = ({
     toggleRoutineTag,
     createRoutineTag,
     isCreatingRoutineTag: createRoutineTagMutator.isPending,
+    updateRoutineTag,
+    isUpdatingRoutineTag: updateRoutineTagMutator.isPending,
+    hardDeleteRoutineTag,
+    isHardDeletingRoutineTag: hardDeleteRoutineTagMutator.isPending,
   };
 };

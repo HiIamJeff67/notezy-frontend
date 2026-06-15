@@ -1,8 +1,4 @@
-import { useDeleteMyStationById } from "@shared/api/hooks/station.hook";
-import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
-import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,9 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage } from "@/hooks";
+import { useLanguage, useRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteStationDialogProps extends ModalProps {
@@ -34,7 +29,7 @@ const DeleteStationDialog = ({
   onDeleted,
 }: DeleteStationDialogProps) => {
   const languageManager = useLanguage();
-  const deleteStationMutator = useDeleteMyStationById();
+  const routineManager = useRoutine();
   const [confirmation, setConfirmation] = useState<string>("");
 
   useEffect(() => {
@@ -45,23 +40,7 @@ const DeleteStationDialog = ({
     if (confirmation !== stationName) return;
 
     try {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await deleteStationMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          stationId,
-        },
-      });
-      if (response.success === false) {
-        toast.error(languageManager.tError(response.exception));
-        return;
-      }
-
+      await routineManager.deleteStation(stationId);
       await onDeleted?.();
       toast.success("Station deleted");
       onClose();
@@ -74,7 +53,7 @@ const DeleteStationDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !deleteStationMutator.isPending) onClose();
+        if (!open && !routineManager.isDeletingStation) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -105,7 +84,7 @@ const DeleteStationDialog = ({
             <Button
               type="button"
               variant="outline"
-              disabled={deleteStationMutator.isPending}
+              disabled={routineManager.isDeletingStation}
               onClick={onClose}
             >
               Cancel
@@ -114,11 +93,11 @@ const DeleteStationDialog = ({
               type="button"
               variant="destructive"
               disabled={
-                deleteStationMutator.isPending || confirmation !== stationName
+                routineManager.isDeletingStation || confirmation !== stationName
               }
               onClick={deleteStation}
             >
-              {deleteStationMutator.isPending && <Spinner />}
+              {routineManager.isDeletingStation && <Spinner />}
               Delete
             </Button>
           </DialogFooter>

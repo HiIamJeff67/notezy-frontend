@@ -35,6 +35,12 @@ export interface StationRoutineInitialData {
   routineTasks: GetAllMyRoutineTasksByStationIdsResponse["data"];
 }
 
+export type StationRoutineInspectorTarget =
+  | { type: "station"; id: UUID }
+  | { type: "routine"; id: UUID }
+  | { type: "routineTag"; id: UUID }
+  | { type: "routineTask"; id: UUID };
+
 interface StationRoutineBaseContext {
   inputRef: RefObject<HTMLInputElement | null>;
   routineTitleInputRef: RefObject<HTMLInputElement | null>;
@@ -54,6 +60,7 @@ interface StationRoutineBaseContext {
   visibleStations: StationNode[];
   visibleRoutines: RoutineNode[];
   visibleRoutineTags: RoutineTagNode[];
+  visibleRoutineTasks: RoutineTaskNode[];
   timeRailStations: {
     station: StationNode;
     routines: RoutineNode[];
@@ -61,7 +68,7 @@ interface StationRoutineBaseContext {
     railCount: number;
   }[];
   unscheduledRoutines: RoutineNode[];
-  scope: {
+  presence: {
     stationIds: UUID[];
     routineTagIds: UUID[];
     showUntaggedRoutines: boolean;
@@ -83,17 +90,21 @@ interface StationRoutineBaseContext {
   getStationById: (stationId: UUID) => StationNode | undefined;
   getRoutineById: (routineId: UUID) => RoutineNode | undefined;
   getRoutineTagById: (routineTagId: UUID) => RoutineTagNode | undefined;
+  getRoutineTaskById: (routineTaskId: UUID) => RoutineTaskNode | undefined;
+  inspectorTarget: StationRoutineInspectorTarget | null;
+  openInspector: (target: StationRoutineInspectorTarget) => void;
+  closeInspector: () => void;
   setInitialData: (data: StationRoutineInitialData) => void;
   refresh: () => Promise<void>;
   setViewMode: (viewMode: "overview" | "station") => void;
   setActiveStationId: (stationId: UUID | null) => void;
-  setScopeQuery: (query: string) => void;
-  setStationScope: (stationIds: UUID[]) => void;
-  setRoutineTagScope: (routineTagIds: UUID[]) => void;
-  toggleStationScope: (stationId: UUID) => void;
-  toggleRoutineTagScope: (routineTagId: UUID) => void;
+  setPresenceQuery: (query: string) => void;
+  setStationPresence: (stationIds: UUID[]) => void;
+  setRoutineTagPresence: (routineTagIds: UUID[]) => void;
+  toggleStationPresence: (stationId: UUID) => void;
+  toggleRoutineTagPresence: (routineTagId: UUID) => void;
   toggleUntaggedRoutines: () => void;
-  resetScope: () => void;
+  resetPresence: () => void;
   setTimeWindow: (timeWindow: { startAt: Date; endAt: Date }) => void;
   moveTimeWindow: (direction: "previous" | "next") => void;
   setTimeRailScale: (scale: "day" | "week" | "month") => void;
@@ -137,7 +148,7 @@ export const StationRoutineProvider = ({
   const knownStationIdsRef = useRef<Set<UUID>>(new Set());
   const knownRoutineTagIdsRef = useRef<Set<UUID>>(new Set());
   const initializedUserPublicIdRef = useRef<string | null>(null);
-  const scopeRef = useRef<{
+  const presenceRef = useRef<{
     stationIds: UUID[];
     routineTagIds: UUID[];
     showUntaggedRoutines: boolean;
@@ -153,6 +164,8 @@ export const StationRoutineProvider = ({
   const [state, setState] = useState<"idle" | "loading" | "syncing">("idle");
   const [viewMode, setViewMode] = useState<"overview" | "station">("overview");
   const [activeStationId, setActiveStationId] = useState<UUID | null>(null);
+  const [inspectorTarget, setInspectorTarget] =
+    useState<StationRoutineInspectorTarget | null>(null);
   const [timeWindow, setTimeWindow] = useState<{ startAt: Date; endAt: Date }>({
     startAt: initialStartAt,
     endAt: initialEndAt,
@@ -174,11 +187,15 @@ export const StationRoutineProvider = ({
   const stationLogic = useStationLogic({
     inputRef,
     stationsRef,
+    routineTagsRef,
     forceUpdate,
     expandRoutinesByStationId: routineLogic.expandRoutinesByStationId,
+    selectedRoutineId: routineLogic.selectedRoutineId,
+    selectRoutine: routineLogic.selectRoutine,
   });
   const routineTagLogic = useRoutineTagLogic({
     inputRef: routineTagNameInputRef,
+    stationsRef,
     routineTagsRef,
     forceUpdate,
     expandRoutinesByTagId: routineLogic.expandRoutinesByTagId,
@@ -360,16 +377,16 @@ export const StationRoutineProvider = ({
     const currentStationIdSet = new Set(currentStationIds);
     const currentRoutineTagIdSet = new Set(currentRoutineTagIds);
 
-    scopeRef.current = {
-      ...scopeRef.current,
+    presenceRef.current = {
+      ...presenceRef.current,
       stationIds: [
-        ...scopeRef.current.stationIds.filter(stationId =>
+        ...presenceRef.current.stationIds.filter(stationId =>
           currentStationIdSet.has(stationId)
         ),
         ...newStationIds,
       ],
       routineTagIds: [
-        ...scopeRef.current.routineTagIds.filter(routineTagId =>
+        ...presenceRef.current.routineTagIds.filter(routineTagId =>
           currentRoutineTagIdSet.has(routineTagId)
         ),
         ...newRoutineTagIds,
@@ -523,11 +540,11 @@ export const StationRoutineProvider = ({
       routineTagsRef.current.clear();
       knownStationIdsRef.current.clear();
       knownRoutineTagIdsRef.current.clear();
-      scopeRef.current = {
+      presenceRef.current = {
         stationIds: [],
         routineTagIds: [],
         showUntaggedRoutines: true,
-        query: scopeRef.current.query,
+        query: presenceRef.current.query,
       };
       forceUpdate();
       const [stationsResponse, routineTagsResponse] = await Promise.all([
@@ -569,50 +586,50 @@ export const StationRoutineProvider = ({
     userManager.userData,
   ]);
 
-  const setScopeQuery = useCallback(
+  const setPresenceQuery = useCallback(
     (query: string) => {
-      scopeRef.current = { ...scopeRef.current, query };
+      presenceRef.current = { ...presenceRef.current, query };
       forceUpdate();
     },
     [forceUpdate]
   );
 
-  const setStationScope = useCallback(
+  const setStationPresence = useCallback(
     (stationIds: UUID[]) => {
-      scopeRef.current = { ...scopeRef.current, stationIds };
+      presenceRef.current = { ...presenceRef.current, stationIds };
       forceUpdate();
     },
     [forceUpdate]
   );
 
-  const setRoutineTagScope = useCallback(
+  const setRoutineTagPresence = useCallback(
     (routineTagIds: UUID[]) => {
-      scopeRef.current = { ...scopeRef.current, routineTagIds };
+      presenceRef.current = { ...presenceRef.current, routineTagIds };
       forceUpdate();
     },
     [forceUpdate]
   );
 
-  const toggleStationScope = useCallback(
+  const toggleStationPresence = useCallback(
     (stationId: UUID) => {
-      scopeRef.current = {
-        ...scopeRef.current,
-        stationIds: scopeRef.current.stationIds.includes(stationId)
-          ? scopeRef.current.stationIds.filter(id => id !== stationId)
-          : [...scopeRef.current.stationIds, stationId],
+      presenceRef.current = {
+        ...presenceRef.current,
+        stationIds: presenceRef.current.stationIds.includes(stationId)
+          ? presenceRef.current.stationIds.filter(id => id !== stationId)
+          : [...presenceRef.current.stationIds, stationId],
       };
       forceUpdate();
     },
     [forceUpdate]
   );
 
-  const toggleRoutineTagScope = useCallback(
+  const toggleRoutineTagPresence = useCallback(
     (routineTagId: UUID) => {
-      scopeRef.current = {
-        ...scopeRef.current,
-        routineTagIds: scopeRef.current.routineTagIds.includes(routineTagId)
-          ? scopeRef.current.routineTagIds.filter(id => id !== routineTagId)
-          : [...scopeRef.current.routineTagIds, routineTagId],
+      presenceRef.current = {
+        ...presenceRef.current,
+        routineTagIds: presenceRef.current.routineTagIds.includes(routineTagId)
+          ? presenceRef.current.routineTagIds.filter(id => id !== routineTagId)
+          : [...presenceRef.current.routineTagIds, routineTagId],
       };
       forceUpdate();
     },
@@ -620,15 +637,15 @@ export const StationRoutineProvider = ({
   );
 
   const toggleUntaggedRoutines = useCallback(() => {
-    scopeRef.current = {
-      ...scopeRef.current,
-      showUntaggedRoutines: !scopeRef.current.showUntaggedRoutines,
+    presenceRef.current = {
+      ...presenceRef.current,
+      showUntaggedRoutines: !presenceRef.current.showUntaggedRoutines,
     };
     forceUpdate();
   }, [forceUpdate]);
 
-  const resetScope = useCallback(() => {
-    scopeRef.current = {
+  const resetPresence = useCallback(() => {
+    presenceRef.current = {
       stationIds: stationsRef.current.keys() as UUID[],
       routineTagIds: routineTagsRef.current.keys() as UUID[],
       showUntaggedRoutines: true,
@@ -700,18 +717,21 @@ export const StationRoutineProvider = ({
     activeStationRoutineTagIds.has(routineTag.id)
   );
   const visibleRoutineTags = routineTags.filter(routineTag =>
-    scopeRef.current.routineTagIds.includes(routineTag.id)
+    presenceRef.current.routineTagIds.includes(routineTag.id)
   );
-  const query = scopeRef.current.query.trim().toLowerCase();
+  const query = presenceRef.current.query.trim().toLowerCase();
   const selectedStationIds = new Set(
     viewMode === "station" && activeStationId
       ? [activeStationId]
-      : scopeRef.current.stationIds
+      : presenceRef.current.stationIds
   );
   const visibleStations = stations.filter(station =>
     selectedStationIds.has(station.id)
   );
-  const selectedRoutineTagIds = new Set(scopeRef.current.routineTagIds);
+  const visibleRoutineTasks = routineTasks.filter(routineTask =>
+    selectedStationIds.has(routineTask.stationId)
+  );
+  const selectedRoutineTagIds = new Set(presenceRef.current.routineTagIds);
   const isAllRoutineTagsVisible =
     routineTags.length === selectedRoutineTagIds.size;
   const visibleRoutines = routines.filter(routine => {
@@ -722,7 +742,7 @@ export const StationRoutineProvider = ({
       if (!searchableText.includes(query)) return false;
     }
     if (routine.routineTagIds.length === 0) {
-      return scopeRef.current.showUntaggedRoutines;
+      return presenceRef.current.showUntaggedRoutines;
     }
     if (isAllRoutineTagsVisible) return true;
     return routine.routineTagIds.some(routineTagId =>
@@ -810,6 +830,18 @@ export const StationRoutineProvider = ({
     (routineTagId: UUID) => routineTagsRef.current.get(routineTagId),
     []
   );
+  const getRoutineTaskById = useCallback(
+    (routineTaskId: UUID) => routineTasksMap.get(routineTaskId),
+    [routineTasksMap]
+  );
+  const openInspector = useCallback((target: StationRoutineInspectorTarget) => {
+    window.setTimeout(() => {
+      setInspectorTarget(target);
+    }, 0);
+  }, []);
+  const closeInspector = useCallback(() => {
+    setInspectorTarget(null);
+  }, []);
 
   const contextValue: StationRoutineContextType = {
     inputRef,
@@ -830,26 +862,31 @@ export const StationRoutineProvider = ({
     visibleStations,
     visibleRoutines,
     visibleRoutineTags,
+    visibleRoutineTasks,
     timeRailStations,
     unscheduledRoutines,
-    scope: scopeRef.current,
+    presence: presenceRef.current,
     timeWindow,
     timeRailScale,
     statusSummary,
     getStationById,
     getRoutineById,
     getRoutineTagById,
+    getRoutineTaskById,
+    inspectorTarget,
+    openInspector,
+    closeInspector,
     setInitialData,
     refresh,
     setViewMode,
     setActiveStationId,
-    setScopeQuery,
-    setStationScope,
-    setRoutineTagScope,
-    toggleStationScope,
-    toggleRoutineTagScope,
+    setPresenceQuery,
+    setStationPresence,
+    setRoutineTagPresence,
+    toggleStationPresence,
+    toggleRoutineTagPresence,
     toggleUntaggedRoutines,
-    resetScope,
+    resetPresence,
     setTimeWindow,
     moveTimeWindow,
     setTimeRailScale,

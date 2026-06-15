@@ -6,8 +6,10 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   ClipboardClock,
+  ClipboardList,
   ExternalLink,
   Pencil,
+  SquarePen,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
@@ -27,6 +29,11 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import {
   useAppRouter,
@@ -130,20 +137,47 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             </ContextMenuTrigger>
           )}
           <ContextMenuContent className="min-w-40">
-            <ContextMenuLabel>Create</ContextMenuLabel>
+            <ContextMenuLabel>View</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
-                  modalManager.open("CreateRoutineDialog", {
-                    stationId: station.id,
-                    stationName: station.name,
-                    onCreated: async routineId => {
-                      station.isOpen = true;
-                      routineManager.selectStation(station.id);
-                      routineManager.selectRoutine(routineId);
-                    },
+                  router.push(
+                    WebURLPathDictionary.root.routines.byStationId(station.id)
+                  )
+                }
+              >
+                <ExternalLink className="mr-2 size-4" />
+                Overview
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() =>
+                  routineManager.openInspector({
+                    type: "station",
+                    id: station.id,
                   })
                 }
+              >
+                <SquarePen className="mr-2 size-4" />
+                Open
+              </ContextMenuItem>
+            </ContextMenuGroup>
+            <ContextMenuSeparator />
+            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuItem
+                onSelect={() => {
+                  window.setTimeout(() => {
+                    modalManager.open("CreateRoutineDialog", {
+                      stationId: station.id,
+                      stationName: station.name,
+                      onCreated: async routineId => {
+                        station.isOpen = true;
+                        routineManager.selectStation(station.id);
+                        routineManager.selectRoutine(routineId);
+                      },
+                    });
+                  }, 0);
+                }}
               >
                 <ClipboardClock className="mr-2 size-4" />
                 Routine
@@ -164,13 +198,6 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   modalManager.open("DeleteStationDialog", {
                     stationId: station.id,
                     stationName: station.name,
-                    onDeleted: async () => {
-                      if (routineManager.selectedStationId === station.id) {
-                        routineManager.selectStation(null);
-                        routineManager.selectRoutine(null);
-                      }
-                      await routineManager.refresh();
-                    },
                   })
                 }
               >
@@ -181,40 +208,47 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
           </ContextMenuContent>
         </ContextMenu>
         {!routineManager.isStationEditing(station.id) && (
-          <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center gap-1 text-xs text-foreground">
-            <button
-              type="button"
-              className="pointer-events-auto flex size-5 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100"
-              aria-label={`Open ${station.name} overview`}
-              title={`Open ${station.name} overview`}
-              onClick={event => {
-                event.preventDefault();
-                event.stopPropagation();
-                router.push(
-                  WebURLPathDictionary.root.routines.byStationId(station.id)
-                );
-              }}
-            >
-              <ExternalLink className="size-3.5" />
-            </button>
-            <span
-              className="min-w-4 text-center tabular-nums"
-              title={`${station.routineCount} routines`}
-            >
-              {station.routineCount}
-            </span>
+          <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                  {station.routineCount}
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="top"
+                align="center"
+                className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+              >
+                <ClipboardClock className="size-4 text-muted-foreground" />
+                <span className="text-xs">
+                  {station.routineCount} total routines
+                </span>
+              </HoverCardContent>
+            </HoverCard>
             <span
               className="font-bold text-muted-foreground"
               aria-hidden="true"
             >
               ·
             </span>
-            <span
-              className="min-w-4 text-center tabular-nums"
-              title={`${routineTaskCount} routine tasks`}
-            >
-              {routineTaskCount}
-            </span>
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                  {routineTaskCount}
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="top"
+                align="center"
+                className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+              >
+                <ClipboardList className="size-4 text-muted-foreground" />
+                <span className="text-xs">
+                  {routineTaskCount} total routine tasks
+                </span>
+              </HoverCardContent>
+            </HoverCard>
           </div>
         )}
         <CollapsibleContent>

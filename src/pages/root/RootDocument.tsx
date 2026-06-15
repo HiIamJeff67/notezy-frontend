@@ -1,6 +1,6 @@
 import { HeadContent, Outlet, Scripts } from "@tanstack/react-router";
-import { Toaster } from "react-hot-toast";
 import LoadingOverlay from "@/components/covers/LoadingCover/LoadingCover";
+import { Toaster } from "@/components/ui/sonner";
 import Providers from "@/providers/Providers";
 
 export function RootDocument() {

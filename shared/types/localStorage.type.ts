@@ -8,6 +8,7 @@ export enum LocalStorageKey {
   lastVisitedAt = "last_visited_at",
   sidebarWidth = "sidebar_width",
   dashboardWidgets = "dashboard_widgets",
+  colors = "colors",
 }
 
 export interface LocalStorageItem {
@@ -17,4 +18,5 @@ export interface LocalStorageItem {
   [LocalStorageKey.accessToken]: string | null;
   [LocalStorageKey.sidebarWidth]: string | null;
   [LocalStorageKey.dashboardWidgets]: string | null;
+  [LocalStorageKey.colors]: string | null;
 }
