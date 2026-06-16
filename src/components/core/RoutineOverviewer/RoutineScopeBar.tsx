@@ -14,10 +14,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
 
 const RoutineScopeBar = () => {
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   return (
     <div
@@ -31,9 +31,9 @@ const RoutineScopeBar = () => {
         <div className="relative h-8 w-[220px] min-w-0 max-w-full">
           <Search className="-translate-y-1/2 pointer-events-none absolute left-2.5 top-1/2 size-4 text-muted-foreground" />
           <Input
-            value={routineManager.presence.query}
+            value={stationRoutineManager.presence.query}
             onChange={event =>
-              routineManager.setPresenceQuery(event.currentTarget.value)
+              stationRoutineManager.setPresenceQuery(event.currentTarget.value)
             }
             placeholder="Search routines"
             className="
@@ -50,8 +50,8 @@ const RoutineScopeBar = () => {
             <HoverCardTrigger asChild>
               <StatusPill
                 icon={<TrainStationIcon size={14} />}
-                presentCount={routineManager.visibleStations.length}
-                totalCount={routineManager.statusSummary.totalStations}
+                presentCount={stationRoutineManager.visibleStations.length}
+                totalCount={stationRoutineManager.statusSummary.totalStations}
                 title="Stations"
               />
             </HoverCardTrigger>
@@ -59,22 +59,22 @@ const RoutineScopeBar = () => {
               <div className="border-b px-3 py-2.5">
                 <p className="text-sm font-medium">Present stations</p>
                 <p className="text-xs text-muted-foreground">
-                  {routineManager.presence.stationIds.length} of{" "}
-                  {routineManager.stations.length} stations are shown
+                  {stationRoutineManager.presence.stationIds.length} of{" "}
+                  {stationRoutineManager.stations.length} stations are shown
                 </p>
               </div>
               <div className="max-h-64 overflow-y-auto p-1.5">
-                {routineManager.stations.map(station => (
+                {stationRoutineManager.stations.map(station => (
                   <label
                     key={station.id}
                     className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
                   >
                     <Checkbox
-                      checked={routineManager.presence.stationIds.includes(
+                      checked={stationRoutineManager.presence.stationIds.includes(
                         station.id
                       )}
                       onCheckedChange={() =>
-                        routineManager.toggleStationPresence(station.id)
+                        stationRoutineManager.toggleStationPresence(station.id)
                       }
                     />
                     {station.icon ? (
@@ -90,7 +90,7 @@ const RoutineScopeBar = () => {
                     </span>
                   </label>
                 ))}
-                {routineManager.stations.length === 0 && (
+                {stationRoutineManager.stations.length === 0 && (
                   <p className="px-2 py-3 text-center text-xs text-muted-foreground">
                     No stations
                   </p>
@@ -100,16 +100,16 @@ const RoutineScopeBar = () => {
           </HoverCard>
           <StatusPill
             icon={<ClipboardClock className="size-3.5" />}
-            presentCount={routineManager.visibleRoutines.length}
-            totalCount={routineManager.statusSummary.totalRoutines}
+            presentCount={stationRoutineManager.visibleRoutines.length}
+            totalCount={stationRoutineManager.statusSummary.totalRoutines}
             title="Routines"
           />
           <HoverCard openDelay={250} closeDelay={150}>
             <HoverCardTrigger asChild>
               <StatusPill
                 icon={<Tags className="size-3.5" />}
-                presentCount={routineManager.visibleRoutineTags.length}
-                totalCount={routineManager.statusSummary.totalRoutineTags}
+                presentCount={stationRoutineManager.visibleRoutineTags.length}
+                totalCount={stationRoutineManager.statusSummary.totalRoutineTags}
                 title="Routine tags"
               />
             </HoverCardTrigger>
@@ -117,22 +117,22 @@ const RoutineScopeBar = () => {
               <div className="border-b px-3 py-2.5">
                 <p className="text-sm font-medium">Present routine tags</p>
                 <p className="text-xs text-muted-foreground">
-                  {routineManager.presence.routineTagIds.length} of{" "}
-                  {routineManager.routineTags.length} tags are shown
+                  {stationRoutineManager.presence.routineTagIds.length} of{" "}
+                  {stationRoutineManager.routineTags.length} tags are shown
                 </p>
               </div>
               <div className="max-h-64 overflow-y-auto p-1.5">
-                {routineManager.routineTags.map(routineTag => (
+                {stationRoutineManager.routineTags.map(routineTag => (
                   <label
                     key={routineTag.id}
                     className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
                   >
                     <Checkbox
-                      checked={routineManager.presence.routineTagIds.includes(
+                      checked={stationRoutineManager.presence.routineTagIds.includes(
                         routineTag.id
                       )}
                       onCheckedChange={() =>
-                        routineManager.toggleRoutineTagPresence(routineTag.id)
+                        stationRoutineManager.toggleRoutineTagPresence(routineTag.id)
                       }
                     />
                     <span
@@ -152,7 +152,7 @@ const RoutineScopeBar = () => {
                     </span>
                   </label>
                 ))}
-                {routineManager.routineTags.length === 0 && (
+                {stationRoutineManager.routineTags.length === 0 && (
                   <p className="px-2 py-3 text-center text-xs text-muted-foreground">
                     No routine tags
                   </p>
@@ -160,8 +160,8 @@ const RoutineScopeBar = () => {
                 <Separator className="my-1.5" />
                 <label className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50">
                   <Checkbox
-                    checked={routineManager.presence.showUntaggedRoutines}
-                    onCheckedChange={routineManager.toggleUntaggedRoutines}
+                    checked={stationRoutineManager.presence.showUntaggedRoutines}
+                    onCheckedChange={stationRoutineManager.toggleUntaggedRoutines}
                   />
                   <span className="text-sm">Untagged routines</span>
                 </label>
@@ -170,18 +170,18 @@ const RoutineScopeBar = () => {
           </HoverCard>
           <StatusPill
             icon={<ClipboardList className="size-3.5" />}
-            presentCount={routineManager.visibleRoutineTasks.length}
-            totalCount={routineManager.statusSummary.totalRoutineTasks}
+            presentCount={stationRoutineManager.visibleRoutineTasks.length}
+            totalCount={stationRoutineManager.statusSummary.totalRoutineTasks}
             title="Routine tasks"
           />
         </div>
 
         <ToggleGroup
           type="single"
-          value={routineManager.timeRailScale}
+          value={stationRoutineManager.timeRailScale}
           onValueChange={value => {
             if (value === "day" || value === "week" || value === "month") {
-              routineManager.setTimeRailScale(value);
+              stationRoutineManager.setTimeRailScale(value);
             }
           }}
           className="rounded-sm border border-border/60 bg-background/40 p-0.5"

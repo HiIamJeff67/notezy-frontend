@@ -54,7 +54,12 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
   const userPublicId = "notezy-123456";
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={open => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="min-w-4/5 p-0 overflow-hidden">
         <div className="flex h-[520px]">
           {/* Sidebar */}

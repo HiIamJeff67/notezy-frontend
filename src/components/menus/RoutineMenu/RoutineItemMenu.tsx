@@ -47,8 +47,8 @@ import {
   useLanguage,
   useLoading,
   useModal,
-  useRoutine,
   useShelfItem,
+  useStationRoutine,
 } from "@/hooks";
 
 interface RoutineItemMenuProps {
@@ -60,7 +60,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
   const languageManager = useLanguage();
   const loadingManager = useLoading();
   const modalManager = useModal();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
   const shelfItemManager = useShelfItem();
 
   const searchedItems =
@@ -81,31 +81,36 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
         parentSubShelfName: item.parentSubShelf.name,
       };
     }) ?? [];
+  const searchedRoutineTasks = stationRoutineManager.routineTasks.filter(
+    routineTask => routineTask.stationId === station.id
+  );
 
   const handleRenameRoutineOnSubmit = useCallback(
     async () =>
       await loadingManager.startAsyncTransactionLoading(async () => {
-        await routineManager
+        await stationRoutineManager
           .renameEditingRoutine()
           .catch(error => toast.error(languageManager.tError(error)));
       }),
-    [languageManager, loadingManager, routineManager]
+    [languageManager, loadingManager, stationRoutineManager]
   );
 
   return (
     <Collapsible open={routine.isOpen}>
       <SidebarMenuSubItem>
         <ContextMenu>
-          {routineManager.isRoutineEditing(routine.id) ? (
+          {stationRoutineManager.isRoutineEditing(routine.id) ? (
             <div className="relative flex h-7 items-center justify-end rounded-sm bg-muted px-2">
               <input
-                ref={routineManager.routineTitleInputRef}
+                ref={stationRoutineManager.routineTitleInputRef}
                 type="text"
-                value={routineManager.editRoutineTitle}
+                value={stationRoutineManager.editRoutineTitle}
                 maxLength={128}
                 className="h-6 min-w-0 flex-1 bg-transparent pr-6 text-sm outline-none"
                 onChange={event =>
-                  routineManager.setEditRoutineTitle(event.currentTarget.value)
+                  stationRoutineManager.setEditRoutineTitle(
+                    event.currentTarget.value
+                  )
                 }
                 onKeyDown={async event => {
                   if (event.key === "Enter") {
@@ -115,11 +120,11 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                   } else if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopPropagation();
-                    routineManager.cancelRenamingRoutine();
+                    stationRoutineManager.cancelRenamingRoutine();
                   }
                 }}
               />
-              {routineManager.isNewRoutineTitle() && (
+              {stationRoutineManager.isNewRoutineTitle() && (
                 <button
                   type="button"
                   className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
@@ -141,12 +146,14 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
             <ContextMenuTrigger asChild>
               <CollapsibleTrigger asChild>
                 <SidebarMenuSubButton
-                  isActive={routineManager.selectedRoutineId === routine.id}
+                  isActive={
+                    stationRoutineManager.selectedRoutineId === routine.id
+                  }
                   className="cursor-pointer select-none"
                   onClick={() => {
-                    routineManager.selectStation(station.id);
-                    routineManager.selectRoutine(routine.id);
-                    void routineManager
+                    stationRoutineManager.selectStation(station.id);
+                    stationRoutineManager.selectRoutine(routine.id);
+                    void stationRoutineManager
                       .toggleRoutine(station.id, routine.id)
                       .catch(error =>
                         toast.error(languageManager.tError(error))
@@ -165,9 +172,9 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
-                  routineManager.selectStation(station.id);
-                  routineManager.selectRoutine(routine.id);
-                  routineManager.openInspector({
+                  stationRoutineManager.selectStation(station.id);
+                  stationRoutineManager.selectRoutine(routine.id);
+                  stationRoutineManager.openInspector({
                     type: "routine",
                     id: routine.id,
                   });
@@ -186,7 +193,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                     stationId: station.id,
                     stationName: station.name,
                     onCreated: async routineTaskId => {
-                      await routineManager.linkRoutineTask(
+                      await stationRoutineManager.linkRoutineTask(
                         routine.id,
                         routineTaskId
                       );
@@ -205,7 +212,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
-                  void routineManager
+                  void stationRoutineManager
                     .searchRoutineTags()
                     .catch(error => toast.error(languageManager.tError(error)));
                 }}
@@ -214,11 +221,32 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                   <Tags className="mr-2 size-4" />
                   Tags
                 </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {routineManager.routineTags.length === 0 ? (
+                <ContextMenuSubContent
+                  className="max-h-72 min-w-48 overflow-y-auto"
+                  onScroll={event => {
+                    const target = event.currentTarget;
+                    const pageInfo =
+                      stationRoutineManager.searchRoutineTagsData
+                        ?.searchRoutineTags?.searchPageInfo;
+                    if (
+                      target.scrollTop + target.clientHeight <
+                        target.scrollHeight - 16 ||
+                      !pageInfo?.hasNextPage ||
+                      stationRoutineManager.isSearchingRoutineTags
+                    ) {
+                      return;
+                    }
+                    void stationRoutineManager
+                      .loadMoreRoutineTags()
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }}
+                >
+                  {stationRoutineManager.routineTags.length === 0 ? (
                     <ContextMenuItem disabled>No Tags</ContextMenuItem>
                   ) : (
-                    routineManager.routineTags.map(routineTag => {
+                    stationRoutineManager.routineTags.map(routineTag => {
                       const isLinked = routine.routineTagIds.includes(
                         routineTag.id
                       );
@@ -228,7 +256,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                           checked={isLinked}
                           onSelect={event => event.preventDefault()}
                           onCheckedChange={() => {
-                            void routineManager
+                            void stationRoutineManager
                               .linkRoutineTag(
                                 routine.id,
                                 routineTag.id,
@@ -240,6 +268,80 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                           }}
                         >
                           {routineTag.name}
+                        </ContextMenuCheckboxItem>
+                      );
+                    })
+                  )}
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuSub
+                onOpenChange={open => {
+                  if (!open) return;
+                  void stationRoutineManager
+                    .searchRoutineTasksByStationId(station.id)
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <ContextMenuSubTrigger>
+                  <ClipboardList className="mr-2 size-4" />
+                  Tasks
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent
+                  className="max-h-80 min-w-64 overflow-y-auto"
+                  onScroll={event => {
+                    const target = event.currentTarget;
+                    const pageInfo =
+                      stationRoutineManager.searchRoutineTasksData
+                        ?.searchRoutineTasks?.searchPageInfo;
+                    if (
+                      target.scrollTop + target.clientHeight <
+                        target.scrollHeight - 16 ||
+                      !pageInfo?.hasNextPage ||
+                      stationRoutineManager.isSearchingRoutineTasks
+                    ) {
+                      return;
+                    }
+                    void stationRoutineManager
+                      .loadMoreRoutineTasks()
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }}
+                >
+                  {stationRoutineManager.isSearchingRoutineTasks &&
+                  searchedRoutineTasks.length === 0 ? (
+                    <ContextMenuItem disabled>
+                      <LoaderCircle className="mr-2 size-4 animate-spin" />
+                      Loading
+                    </ContextMenuItem>
+                  ) : searchedRoutineTasks.length === 0 ? (
+                    <ContextMenuItem disabled>No Tasks</ContextMenuItem>
+                  ) : (
+                    searchedRoutineTasks.map(routineTask => {
+                      const isLinked = routine.routineTasks.some(
+                        linkedRoutineTask =>
+                          linkedRoutineTask.id === routineTask.id
+                      );
+                      return (
+                        <ContextMenuCheckboxItem
+                          key={routineTask.id}
+                          checked={isLinked}
+                          onSelect={event => event.preventDefault()}
+                          onCheckedChange={() => {
+                            void stationRoutineManager
+                              .linkRoutineTask(
+                                routine.id,
+                                routineTask.id,
+                                isLinked
+                              )
+                              .catch(error =>
+                                toast.error(languageManager.tError(error))
+                              );
+                          }}
+                        >
+                          <span className="min-w-0 truncate">
+                            {routineTask.title}
+                          </span>
                         </ContextMenuCheckboxItem>
                       );
                     })
@@ -262,7 +364,28 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                   <PackagePlus className="mr-2 size-4" />
                   Items
                 </ContextMenuSubTrigger>
-                <ContextMenuSubContent className="max-h-80 min-w-64 overflow-y-auto">
+                <ContextMenuSubContent
+                  className="max-h-80 min-w-64 overflow-y-auto"
+                  onScroll={event => {
+                    const target = event.currentTarget;
+                    const pageInfo =
+                      shelfItemManager.itemSearch.data?.searchItems
+                        ?.searchPageInfo;
+                    if (
+                      target.scrollTop + target.clientHeight <
+                        target.scrollHeight - 16 ||
+                      !pageInfo?.hasNextPage ||
+                      shelfItemManager.itemSearch.loading
+                    ) {
+                      return;
+                    }
+                    void shelfItemManager
+                      .loadMoreItems()
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }}
+                >
                   {shelfItemManager.itemSearch.loading &&
                   searchedItems.length === 0 ? (
                     <ContextMenuItem disabled>
@@ -277,7 +400,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                         <ContextMenuItem
                           key={`${item.type}-${item.id}`}
                           onClick={() => {
-                            void routineManager
+                            void stationRoutineManager
                               .linkRoutineItem(routine.id, item.id, item.type)
                               .then(() => toast.success("Item connected"))
                               .catch(error =>
@@ -296,23 +419,6 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                           </span>
                         </ContextMenuItem>
                       ))}
-                      {shelfItemManager.itemSearch.data?.searchItems
-                        ?.searchPageInfo?.hasNextPage && (
-                        <ContextMenuItem
-                          disabled={shelfItemManager.itemSearch.loading}
-                          onSelect={event => {
-                            event.preventDefault();
-                            void shelfItemManager
-                              .loadMoreItems()
-                              .catch(error =>
-                                toast.error(languageManager.tError(error))
-                              );
-                          }}
-                        >
-                          <PackagePlus className="mr-2 size-4" />
-                          More
-                        </ContextMenuItem>
-                      )}
                     </>
                   )}
                 </ContextMenuSubContent>
@@ -322,7 +428,9 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
-                onClick={() => routineManager.startRenamingRoutine(routine)}
+                onClick={() =>
+                  stationRoutineManager.startRenamingRoutine(routine)
+                }
               >
                 <Pencil className="mr-2 size-4" />
                 Rename
@@ -343,7 +451,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
           </ContextMenuContent>
         </ContextMenu>
 
-        {!routineManager.isRoutineEditing(routine.id) && (
+        {!stationRoutineManager.isRoutineEditing(routine.id) && (
           <CollapsibleContent>
             <SidebarMenuSub>
               {routine.routineTasks.map(routineTask => (

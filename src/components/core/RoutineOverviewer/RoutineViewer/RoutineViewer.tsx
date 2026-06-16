@@ -1,7 +1,7 @@
 import type { UUID } from "crypto";
 import { Suspense, useEffect } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import { useRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
 import RoutineOverviewerContent from "../RoutineOverviewerContent";
 
 interface RoutineViewerProps {
@@ -9,15 +9,15 @@ interface RoutineViewerProps {
 }
 
 const RoutineViewer = ({ stationId }: RoutineViewerProps) => {
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   useEffect(() => {
-    routineManager.setViewMode("station");
-    routineManager.setActiveStationId(stationId);
+    stationRoutineManager.setViewMode("station");
+    stationRoutineManager.setActiveStationId(stationId);
 
     return () => {
-      routineManager.setViewMode("overview");
-      routineManager.setActiveStationId(null);
+      stationRoutineManager.setViewMode("overview");
+      stationRoutineManager.setActiveStationId(null);
     };
   }, [stationId]);
 

@@ -1,13 +1,13 @@
 import RoutineTagMenuItem from "@/components/menus/RoutineTagMenu/RoutineTagMenuItem";
 import { SidebarMenu } from "@/components/ui/sidebar";
-import { useRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
 
 const RoutineTagMenu = () => {
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   return (
     <SidebarMenu className="overflow-hidden">
-      {routineManager.routineTags.map(routineTag => (
+      {stationRoutineManager.routineTags.map(routineTag => (
         <RoutineTagMenuItem key={routineTag.id} routineTag={routineTag} />
       ))}
     </SidebarMenu>

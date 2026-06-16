@@ -16,7 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 
 interface RoutineTagInspectorProps {
   routineTagId: UUID;
@@ -30,8 +30,8 @@ const RoutineTagInspector = ({
   onClose,
 }: RoutineTagInspectorProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
-  const routineTagNode = routineManager.getRoutineTagById(routineTagId);
+  const stationRoutineManager = useStationRoutine();
+  const routineTagNode = stationRoutineManager.getRoutineTagById(routineTagId);
   const [values, setValues] = useState<{
     name: string;
     color: string;
@@ -56,7 +56,7 @@ const RoutineTagInspector = ({
     if (name.length === 0) return;
 
     try {
-      await routineManager.updateRoutineTag(
+      await stationRoutineManager.updateRoutineTag(
         routineTagId,
         {
           name,
@@ -80,7 +80,7 @@ const RoutineTagInspector = ({
     <Sheet
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isUpdatingRoutineTag) onClose();
+        if (!open && !stationRoutineManager.isUpdatingRoutineTag) onClose();
       }}
     >
       <SheetContent
@@ -133,7 +133,7 @@ const RoutineTagInspector = ({
                   onValueChange={color =>
                     setValues(current => ({ ...current, color }))
                   }
-                  disabled={routineManager.isUpdatingRoutineTag}
+                  disabled={stationRoutineManager.isUpdatingRoutineTag}
                   className="bg-muted"
                 />
               </div>
@@ -145,7 +145,7 @@ const RoutineTagInspector = ({
                   onValueChange={icon =>
                     setValues(current => ({ ...current, icon }))
                   }
-                  disabled={routineManager.isUpdatingRoutineTag}
+                  disabled={stationRoutineManager.isUpdatingRoutineTag}
                   className="bg-muted"
                 />
               </div>
@@ -157,18 +157,18 @@ const RoutineTagInspector = ({
               type="submit"
               className="w-full"
               disabled={
-                routineManager.isUpdatingRoutineTag ||
+                stationRoutineManager.isUpdatingRoutineTag ||
                 values.name.trim().length === 0
               }
             >
-              {routineManager.isUpdatingRoutineTag && <Spinner />}
+              {stationRoutineManager.isUpdatingRoutineTag && <Spinner />}
               Save
             </Button>
             <Button
               type="button"
               variant="destructive"
               className="w-full"
-              disabled={routineManager.isUpdatingRoutineTag}
+              disabled={stationRoutineManager.isUpdatingRoutineTag}
               onClick={onClose}
             >
               Cancel

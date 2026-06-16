@@ -1,5 +1,5 @@
 import type { UUID } from "crypto";
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
 import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
@@ -102,9 +102,43 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeModals, setActiveModals] = useState<
     { type: ModalType; props?: any }[]
   >([]);
+  const openTimerIdsRef = useRef<number[]>([]);
 
-  const open = <T extends ModalType>(type: T, props?: any) =>
-    setActiveModals(prev => [...prev, { type, props }]);
+  useEffect(
+    () => () => {
+      for (const timerId of openTimerIdsRef.current) {
+        window.clearTimeout(timerId);
+      }
+      openTimerIdsRef.current = [];
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (activeModals.length > 0 || typeof document === "undefined") return;
+
+    const timerId = window.setTimeout(() => {
+      document.body.style.pointerEvents = "";
+    }, 0);
+
+    return () => window.clearTimeout(timerId);
+  }, [activeModals.length]);
+
+  const open = <T extends ModalType>(type: T, props?: any) => {
+    if (typeof window === "undefined") {
+      setActiveModals(prev => [...prev, { type, props }]);
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      openTimerIdsRef.current = openTimerIdsRef.current.filter(
+        id => id !== timerId
+      );
+      setActiveModals(prev => [...prev, { type, props }]);
+    }, 0);
+
+    openTimerIdsRef.current = [...openTimerIdsRef.current, timerId];
+  };
 
   const close = () => setActiveModals(prev => prev.slice(0, -1));
 

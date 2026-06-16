@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateStationDialogProps extends ModalProps {
@@ -29,7 +29,7 @@ const CreateStationDialog = ({
   onCreated,
 }: CreateStationDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -51,7 +51,7 @@ const CreateStationDialog = ({
     if (trimmedName.length === 0) return;
 
     try {
-      const stationNode = await routineManager.createStation(
+      const stationNode = await stationRoutineManager.createStation(
         trimmedName,
         trimmedDescription,
         icon,
@@ -71,7 +71,7 @@ const CreateStationDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isCreatingStation) onClose();
+        if (!open && !stationRoutineManager.isCreatingStation) onClose();
       }}
     >
       <DialogContent className="max-h-[85vh] overflow-y-auto rounded-sm bg-muted sm:max-w-xl">
@@ -121,7 +121,7 @@ const CreateStationDialog = ({
               <SupportedIconTable
                 value={icon}
                 onValueChange={setIcon}
-                disabled={routineManager.isCreatingStation}
+                disabled={stationRoutineManager.isCreatingStation}
                 className="bg-muted"
               />
             </div>
@@ -145,7 +145,7 @@ const CreateStationDialog = ({
             <Button
               type="button"
               variant="destructive"
-              disabled={routineManager.isCreatingStation}
+              disabled={stationRoutineManager.isCreatingStation}
               onClick={onClose}
             >
               Cancel
@@ -154,10 +154,10 @@ const CreateStationDialog = ({
               type="submit"
               variant="default"
               disabled={
-                routineManager.isCreatingStation || name.trim().length === 0
+                stationRoutineManager.isCreatingStation || name.trim().length === 0
               }
             >
-              {routineManager.isCreatingStation && <Spinner />}
+              {stationRoutineManager.isCreatingStation && <Spinner />}
               Create station
             </Button>
           </DialogFooter>

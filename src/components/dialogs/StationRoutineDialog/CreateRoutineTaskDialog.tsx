@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateRoutineTaskDialogProps extends ModalProps {
@@ -42,7 +42,7 @@ const CreateRoutineTaskDialog = ({
   onCreated,
 }: CreateRoutineTaskDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const [title, setTitle] = useState<string>("");
   const [purpose, setPurpose] = useState<RoutineTaskPurpose>(
@@ -88,7 +88,7 @@ const CreateRoutineTaskDialog = ({
     }
 
     try {
-      const routineTaskNode = await routineManager.createRoutineTask(
+      const routineTaskNode = await stationRoutineManager.createRoutineTask(
         stationId,
         trimmedTitle,
         purpose,
@@ -108,7 +108,7 @@ const CreateRoutineTaskDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isCreatingRoutineTask) onClose();
+        if (!open && !stationRoutineManager.isCreatingRoutineTask) onClose();
       }}
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-sm bg-muted sm:max-w-2xl">
@@ -213,7 +213,7 @@ const CreateRoutineTaskDialog = ({
             <Button
               type="button"
               variant="destructive"
-              disabled={routineManager.isCreatingRoutineTask}
+              disabled={stationRoutineManager.isCreatingRoutineTask}
               onClick={onClose}
             >
               Cancel
@@ -222,11 +222,11 @@ const CreateRoutineTaskDialog = ({
               type="submit"
               variant="default"
               disabled={
-                routineManager.isCreatingRoutineTask ||
+                stationRoutineManager.isCreatingRoutineTask ||
                 title.trim().length === 0
               }
             >
-              {routineManager.isCreatingRoutineTask && <Spinner />}
+              {stationRoutineManager.isCreatingRoutineTask && <Spinner />}
               Create
             </Button>
           </DialogFooter>

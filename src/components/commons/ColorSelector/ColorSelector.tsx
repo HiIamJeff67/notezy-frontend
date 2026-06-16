@@ -134,6 +134,7 @@ const ColorSelector = ({
 
   return (
     <Popover
+      modal
       open={isOpen}
       onOpenChange={open => {
         setIsOpen(open);
@@ -167,7 +168,10 @@ const ColorSelector = ({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className={cn("flex w-72 flex-col gap-3 rounded-sm p-3", className)}
+        className={cn(
+          "z-[120] flex w-72 flex-col gap-3 rounded-sm p-3",
+          className
+        )}
       >
         <div className="flex flex-wrap gap-1">
           {colorsRef.current.map((color, index) => (

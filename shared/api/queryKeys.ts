@@ -132,6 +132,7 @@ export const queryKeys = {
   },
   routineTask: {
     all: () => ["routineTask"] as const,
+    myAll: () => ["routineTask", "myAll"] as const,
     oneById: (routineTaskId?: UUID) =>
       ["routineTask", "oneById", routineTaskId] as const,
     manyByStationId: (stationId?: UUID) =>

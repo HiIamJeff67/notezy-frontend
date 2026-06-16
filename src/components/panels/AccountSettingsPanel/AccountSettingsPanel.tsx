@@ -138,9 +138,14 @@ const AccountSettingsPanel = ({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogTitle />
+    <Dialog
+      open={isOpen}
+      onOpenChange={open => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="min-w-4/5 p-0 overflow-hidden border-none">
+        <DialogTitle className="visibility: hidden"></DialogTitle>
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
           <div className="flex-1 h-[520px]">

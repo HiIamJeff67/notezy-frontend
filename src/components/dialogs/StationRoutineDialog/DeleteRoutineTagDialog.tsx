@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineTagDialogProps extends ModalProps {
@@ -27,11 +27,11 @@ const DeleteRoutineTagDialog = ({
   onDeleted,
 }: DeleteRoutineTagDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const deleteRoutineTag = async () => {
     try {
-      await routineManager.hardDeleteRoutineTag(routineTagId);
+      await stationRoutineManager.hardDeleteRoutineTag(routineTagId);
       await onDeleted?.();
       toast.success("Routine tag deleted");
       onClose();
@@ -44,7 +44,7 @@ const DeleteRoutineTagDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isHardDeletingRoutineTag) onClose();
+        if (!open && !stationRoutineManager.isHardDeletingRoutineTag) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -61,7 +61,7 @@ const DeleteRoutineTagDialog = ({
           <Button
             type="button"
             variant="outline"
-            disabled={routineManager.isHardDeletingRoutineTag}
+            disabled={stationRoutineManager.isHardDeletingRoutineTag}
             onClick={onClose}
           >
             Cancel
@@ -69,10 +69,10 @@ const DeleteRoutineTagDialog = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={routineManager.isHardDeletingRoutineTag}
+            disabled={stationRoutineManager.isHardDeletingRoutineTag}
             onClick={deleteRoutineTag}
           >
-            {routineManager.isHardDeletingRoutineTag && <Spinner />}
+            {stationRoutineManager.isHardDeletingRoutineTag && <Spinner />}
             Delete
           </Button>
         </DialogFooter>

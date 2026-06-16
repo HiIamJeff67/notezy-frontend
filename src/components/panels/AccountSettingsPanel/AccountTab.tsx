@@ -110,10 +110,7 @@ const AccountTab = memo(() => {
       <form
         className="w-full h-full overflow-hidden flex flex-col"
         method="POST"
-        onSubmit={async e => {
-          e.preventDefault();
-          await userForm.handleSubmit(handleSaveUserOnSubmit);
-        }}
+        onSubmit={userForm.handleSubmit(handleSaveUserOnSubmit)}
       >
         <div
           className="
@@ -156,6 +153,7 @@ const AccountTab = memo(() => {
                   <FormControl>
                     <Input
                       {...field}
+                      value={field.value ?? ""}
                       placeholder="設定顯示名稱"
                       className="w-[200px]"
                     />

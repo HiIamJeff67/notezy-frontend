@@ -40,7 +40,7 @@ import {
   useLanguage,
   useLoading,
   useModal,
-  useRoutine,
+  useStationRoutine,
 } from "@/hooks";
 
 interface StationMenuItemProps {
@@ -52,33 +52,33 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
   const loadingManager = useLoading();
   const modalManager = useModal();
   const router = useAppRouter();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
   const routineTaskCount = station.routineTasks.length;
 
   const handleRenameStationOnSubmit = useCallback(
     async () =>
       await loadingManager.startAsyncTransactionLoading(async () => {
-        await routineManager
+        await stationRoutineManager
           .renameEditingStation()
           .catch(error => toast.error(languageManager.tError(error)));
       }),
-    [languageManager, loadingManager, routineManager]
+    [languageManager, loadingManager, stationRoutineManager]
   );
 
   return (
     <Collapsible open={station.isOpen}>
       <SidebarMenuItem>
         <ContextMenu>
-          {routineManager.isStationEditing(station.id) ? (
+          {stationRoutineManager.isStationEditing(station.id) ? (
             <div className="relative flex h-8 items-center justify-end rounded-sm bg-muted px-2">
               <input
-                ref={routineManager.inputRef}
+                ref={stationRoutineManager.inputRef}
                 type="text"
-                value={routineManager.editStationName}
+                value={stationRoutineManager.editStationName}
                 maxLength={128}
                 className="h-6 min-w-0 flex-1 bg-transparent pr-6 text-sm text-ellipsis outline-none"
                 onChange={event =>
-                  routineManager.setEditStationName(event.currentTarget.value)
+                  stationRoutineManager.setEditStationName(event.currentTarget.value)
                 }
                 onKeyDown={async event => {
                   if (event.key === "Enter") {
@@ -88,11 +88,11 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   } else if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopPropagation();
-                    routineManager.cancelRenamingStation();
+                    stationRoutineManager.cancelRenamingStation();
                   }
                 }}
               />
-              {routineManager.isNewStationName() && (
+              {stationRoutineManager.isNewStationName() && (
                 <button
                   type="button"
                   className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
@@ -116,7 +116,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 <SidebarMenuButton
                   className="w-full rounded-sm pr-24"
                   onClick={() => {
-                    void routineManager
+                    void stationRoutineManager
                       .toggleStation(station.id)
                       .catch(error =>
                         toast.error(languageManager.tError(error))
@@ -151,7 +151,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
-                  routineManager.openInspector({
+                  stationRoutineManager.openInspector({
                     type: "station",
                     id: station.id,
                   })
@@ -172,8 +172,8 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                       stationName: station.name,
                       onCreated: async routineId => {
                         station.isOpen = true;
-                        routineManager.selectStation(station.id);
-                        routineManager.selectRoutine(routineId);
+                        stationRoutineManager.selectStation(station.id);
+                        stationRoutineManager.selectRoutine(routineId);
                       },
                     });
                   }, 0);
@@ -187,7 +187,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
-                onClick={() => routineManager.startRenamingStation(station)}
+                onClick={() => stationRoutineManager.startRenamingStation(station)}
               >
                 <Pencil className="mr-2 size-4" />
                 Rename
@@ -207,7 +207,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
-        {!routineManager.isStationEditing(station.id) && (
+        {!stationRoutineManager.isStationEditing(station.id) && (
           <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
             <HoverCard openDelay={250} closeDelay={100}>
               <HoverCardTrigger asChild>

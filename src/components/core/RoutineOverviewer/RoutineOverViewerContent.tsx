@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useBackgroundImages, useModal, useResizeSidebar } from "@/hooks";
 import RoutineScopeBar from "./RoutineScopeBar";
+import RoutineTable from "./RoutineTable";
+import RoutineTaskTable from "./RoutineTaskTable";
+import TimeRail from "./TimeRail";
 
 const RoutineOverviewerContent = () => {
   const modalManager = useModal();
@@ -29,7 +32,7 @@ const RoutineOverviewerContent = () => {
   }, [backgroundImagesManager.currentBackgroundImage]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
+    <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-cover bg-center bg-no-repeat">
       <header
         className="
           fixed top-0 right-0 z-20 h-10
@@ -47,8 +50,8 @@ const RoutineOverviewerContent = () => {
       >
         <RoutineScopeBar />
       </header>
-      <div className="w-full h-full">
-        <div className="!w-full !h-60 relative z-10">
+      <div className="custom-scrollbar flex h-full min-h-0 w-full flex-col overflow-x-hidden overflow-y-auto pt-10">
+        <div className="relative z-10 h-60 w-full shrink-0">
           {isHeaderBackgroundImageEditing ? (
             <Button
               variant="ghost"
@@ -110,26 +113,10 @@ const RoutineOverviewerContent = () => {
             </ProgressiveBackground>
           )}
         </div>
-        <div className="w-full px-4 pb-8">
-          <section
-            className="
-              mt-4 flex min-h-72 w-full flex-col border-y border-border/60
-              bg-background/45 backdrop-blur-sm
-            "
-          >
-            <div className="flex h-10 items-center justify-between border-b border-border/50 px-3">
-              <span className="text-sm font-medium">TimeRails</span>
-            </div>
-            <div className="grid flex-1 grid-cols-[160px_1fr]">
-              <div className="border-r border-border/50 bg-muted/10" />
-              <div
-                className="
-                  bg-[linear-gradient(to_right,hsl(var(--border)/0.35)_1px,transparent_1px)]
-                  bg-[length:72px_100%]
-                "
-              />
-            </div>
-          </section>
+        <div className="flex w-full flex-col gap-4 overflow-x-hidden px-2 py-2">
+          <TimeRail />
+          <RoutineTable />
+          <RoutineTaskTable />
         </div>
       </div>
     </div>

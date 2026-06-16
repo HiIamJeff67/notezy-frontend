@@ -4,6 +4,11 @@ import { CalendarIcon } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface DatePickerProps {
@@ -78,30 +83,60 @@ const DatePicker = ({
         setIsOpen(open);
       }}
     >
-      <PopoverPrimitive.Trigger asChild>
-        <Button
-          ref={triggerRef}
-          type="button"
-          variant="outline"
-          data-empty={!value}
-          aria-invalid={isInvalid}
-          className={cn(
-            "h-10 w-full justify-start rounded-sm bg-muted px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
-            className
-          )}
+      <HoverCard openDelay={250} closeDelay={150}>
+        <HoverCardTrigger asChild>
+          <PopoverPrimitive.Trigger asChild>
+            <Button
+              ref={triggerRef}
+              type="button"
+              variant="outline"
+              data-empty={!value}
+              aria-invalid={isInvalid}
+              className={cn(
+                "h-10 w-full bg-muted justify-start rounded-sm px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
+                className
+              )}
+            >
+              <CalendarIcon className="size-4 shrink-0" />
+              <span className="truncate">
+                {value
+                  ? `${value.toDateString()} at ${value.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: hourCycle === "12",
+                    })}`
+                  : placeholder}
+              </span>
+            </Button>
+          </PopoverPrimitive.Trigger>
+        </HoverCardTrigger>
+        <HoverCardContent
+          align="start"
+          className="z-[130] w-72 rounded-sm bg-popover p-3"
         >
-          <CalendarIcon className="size-4 shrink-0" />
-          <span className="truncate">
-            {value
-              ? `${value.toDateString()} at ${value.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: hourCycle === "12",
-                })}`
-              : placeholder}
-          </span>
-        </Button>
-      </PopoverPrimitive.Trigger>
+          <div className="flex items-start gap-3">
+            <CalendarIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-sm font-medium">
+                {value ? value.toLocaleDateString() : placeholder}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {value
+                  ? value.toLocaleString([], {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: hourCycle === "12",
+                    })
+                  : "No date and time selected"}
+              </p>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
       <PopoverPrimitive.Portal container={portalContainer}>
         <PopoverPrimitive.Content
           align="start"

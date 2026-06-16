@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateRoutineTagDialogProps extends ModalProps {
@@ -29,7 +29,7 @@ const CreateRoutineTagDialog = ({
   onCreated,
 }: CreateRoutineTagDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const [name, setName] = useState<string>("");
   const [color, setColor] = useState<string>("#6b7280");
@@ -47,7 +47,7 @@ const CreateRoutineTagDialog = ({
     if (trimmedName.length === 0) return;
 
     try {
-      const routineTagNode = await routineManager.createRoutineTag(
+      const routineTagNode = await stationRoutineManager.createRoutineTag(
         trimmedName,
         color,
         icon
@@ -64,7 +64,7 @@ const CreateRoutineTagDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isCreatingRoutineTag) onClose();
+        if (!open && !stationRoutineManager.isCreatingRoutineTag) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -102,7 +102,7 @@ const CreateRoutineTagDialog = ({
               <SupportedIconTable
                 value={icon}
                 onValueChange={setIcon}
-                disabled={routineManager.isCreatingRoutineTag}
+                disabled={stationRoutineManager.isCreatingRoutineTag}
                 className="bg-muted"
               />
             </div>
@@ -112,7 +112,7 @@ const CreateRoutineTagDialog = ({
               <ColorSelector
                 value={color}
                 onValueChange={setColor}
-                disabled={routineManager.isCreatingRoutineTag}
+                disabled={stationRoutineManager.isCreatingRoutineTag}
                 className="bg-muted"
               />
             </div>
@@ -122,7 +122,7 @@ const CreateRoutineTagDialog = ({
             <Button
               type="button"
               variant="destructive"
-              disabled={routineManager.isCreatingRoutineTag}
+              disabled={stationRoutineManager.isCreatingRoutineTag}
               onClick={onClose}
             >
               Cancel
@@ -131,10 +131,10 @@ const CreateRoutineTagDialog = ({
               type="submit"
               variant="default"
               disabled={
-                routineManager.isCreatingRoutineTag || name.trim().length === 0
+                stationRoutineManager.isCreatingRoutineTag || name.trim().length === 0
               }
             >
-              {routineManager.isCreatingRoutineTag && <Spinner />}
+              {stationRoutineManager.isCreatingRoutineTag && <Spinner />}
               Create
             </Button>
           </DialogFooter>

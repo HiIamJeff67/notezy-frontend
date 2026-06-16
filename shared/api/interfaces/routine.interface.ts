@@ -44,6 +44,7 @@ export const GetMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
     tagIds: z.array(z.uuidv4()),
+    taskIds: z.array(z.uuidv4()),
   }),
   embedded: z.object({
     publicId: z.string(),
@@ -93,6 +94,7 @@ export const GetAllMyRoutinesByTimeRangeResponseSchema =
         updatedAt: z.coerce.date(),
         createdAt: z.coerce.date(),
         tagIds: z.array(z.uuidv4()),
+        taskIds: z.array(z.uuidv4()),
       })
     ),
     embedded: z.object({

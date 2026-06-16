@@ -29,7 +29,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateRoutineDialogProps extends ModalProps {
@@ -46,7 +46,7 @@ const CreateRoutineDialog = ({
   onCreated,
 }: CreateRoutineDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -82,7 +82,7 @@ const CreateRoutineDialog = ({
     if (trimmedTitle.length === 0 || hasInvalidSchedule) return;
 
     try {
-      const routineNode = await routineManager.createRoutine(stationId, {
+      const routineNode = await stationRoutineManager.createRoutine(stationId, {
         title: trimmedTitle,
         description: description.trim(),
         status: RoutineStatus.Scheduled,
@@ -108,7 +108,7 @@ const CreateRoutineDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isCreatingRoutine) onClose();
+        if (!open && !stationRoutineManager.isCreatingRoutine) onClose();
       }}
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-sm bg-muted sm:max-w-2xl">
@@ -233,7 +233,7 @@ const CreateRoutineDialog = ({
             <Button
               type="button"
               variant="destructive"
-              disabled={routineManager.isCreatingRoutine}
+              disabled={stationRoutineManager.isCreatingRoutine}
               onClick={onClose}
             >
               Cancel
@@ -242,12 +242,12 @@ const CreateRoutineDialog = ({
               type="submit"
               variant="default"
               disabled={
-                routineManager.isCreatingRoutine ||
+                stationRoutineManager.isCreatingRoutine ||
                 title.trim().length === 0 ||
                 hasInvalidSchedule
               }
             >
-              {routineManager.isCreatingRoutine && <Spinner />}
+              {stationRoutineManager.isCreatingRoutine && <Spinner />}
               Create
             </Button>
           </DialogFooter>

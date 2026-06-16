@@ -36,6 +36,7 @@ import {
   Routine,
   RoutinesToItems,
   RoutinesToTags,
+  RoutinesToTasks,
   RoutineTag,
   Station,
   Transaction,
@@ -449,9 +450,14 @@ export class RoutineLocalSimulator {
       .select({ tagId: RoutinesToTags.tagId })
       .from(RoutinesToTags)
       .where(eq(RoutinesToTags.routineId, routines[0].id));
+    const taskRelations = await localDB
+      .select({ taskId: RoutinesToTasks.taskId })
+      .from(RoutinesToTasks)
+      .where(eq(RoutinesToTasks.routineId, routines[0].id));
     return {
       ...routines[0],
       tagIds: relations.map(relation => relation.tagId),
+      taskIds: taskRelations.map(relation => relation.taskId),
     };
   };
 
@@ -518,11 +524,26 @@ export class RoutineLocalSimulator {
           routines.map(routine => routine.id)
         )
       );
+    const taskRelations = await localDB
+      .select({
+        routineId: RoutinesToTasks.routineId,
+        taskId: RoutinesToTasks.taskId,
+      })
+      .from(RoutinesToTasks)
+      .where(
+        inArray(
+          RoutinesToTasks.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
     return routines.map(routine => ({
       ...routine,
       tagIds: relations
         .filter(relation => relation.routineId === routine.id)
         .map(relation => relation.tagId),
+      taskIds: taskRelations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.taskId),
     }));
   };
 

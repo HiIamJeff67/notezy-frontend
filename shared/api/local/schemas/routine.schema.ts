@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { RoutinesToItems } from "./routinesToItems.schema";
 import { RoutinesToTags } from "./routinesToTags.schema";
+import { RoutinesToTasks } from "./routinesToTasks.schema";
 import { Station } from "./station.schema";
 
 export const Routine = sqliteTable("RoutineTable", {
@@ -40,5 +41,6 @@ export const RoutineRelations = relations(Routine, ({ one, many }) => ({
     references: [Station.id],
   }),
   routinesToTags: many(RoutinesToTags),
+  routinesToTasks: many(RoutinesToTasks),
   routinesToItems: many(RoutinesToItems),
 }));

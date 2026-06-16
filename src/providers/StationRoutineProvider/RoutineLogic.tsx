@@ -77,7 +77,18 @@ export const useRoutineLogic = ({
   const [originalRoutineTitle, setOriginalRoutineTitle] = useState<string>("");
   const [editRoutineTitle, setEditRoutineTitle] = useState<string>("");
 
-  const [executeSearchRoutines, routineSearch] = useSearchRoutinesLazyQuery();
+  const [
+    executeSearch,
+    {
+      data: searchRoutinesData,
+      loading: isSearchingRoutines,
+      variables: searchRoutinesVariables,
+      fetchMore: fetchMoreRoutines,
+    },
+  ] = useSearchRoutinesLazyQuery({
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
 
   const searchRoutines = useCallback(
     async (
@@ -89,7 +100,7 @@ export const useRoutineLogic = ({
       hasNextPage: boolean;
       endEncodedSearchCursor: string | null;
     }> => {
-      const result = await executeSearchRoutines({
+      const result = await executeSearch({
         variables: {
           input: {
             query,
@@ -218,6 +229,9 @@ export const useRoutineLogic = ({
           stationsRef.current.set(stationNode.id, stationNode);
         }
 
+        const existingRoutine = stationNode.routines.find(
+          routine => routine.id === node.id
+        );
         const routineTasks = node.tasks.map(task => {
           const existingRoutineTask = stationNode.routineTasks.find(
             routineTask => routineTask.id === task.id
@@ -282,7 +296,7 @@ export const useRoutineLogic = ({
           return routineTask;
         });
 
-        const routineTagIds = node.tags.map(tag => {
+        const searchedRoutineTagIds = node.tags.map(tag => {
           const existingRoutineTag = routineTagsRef.current.get(tag.id);
           const icon = (() => {
             switch (tag.icon) {
@@ -333,13 +347,18 @@ export const useRoutineLogic = ({
           });
           return tag.id;
         });
+        const routineTagIds =
+          node.tags.length === 0 && existingRoutine?.routineTagIds.length
+            ? [...existingRoutine.routineTagIds]
+            : searchedRoutineTagIds;
         if (tagId && !routineTagIds.includes(tagId)) {
           routineTagIds.push(tagId);
         }
 
-        const existingRoutine = stationNode.routines.find(
-          routine => routine.id === node.id
-        );
+        const mergedRoutineTasks =
+          node.tasks.length === 0 && existingRoutine?.routineTasks.length
+            ? existingRoutine.routineTasks
+            : routineTasks;
         const routineNode: RoutineNode = {
           id: node.id,
           stationId: node.stationId,
@@ -372,7 +391,7 @@ export const useRoutineLogic = ({
           createdAt: new Date(node.createdAt),
           isOpen: existingRoutine?.isOpen ?? false,
           routineTagIds,
-          routineTasks,
+          routineTasks: mergedRoutineTasks,
         };
 
         if (existingRoutine) {
@@ -407,7 +426,15 @@ export const useRoutineLogic = ({
         if (!stationNode) continue;
 
         if (stationId === searchedStationId && after === undefined) {
-          stationNode.routines = searchedRoutines;
+          stationNode.routines = [
+            ...searchedRoutines,
+            ...stationNode.routines.filter(
+              routine =>
+                !searchedRoutines.some(
+                  searchedRoutine => searchedRoutine.id === routine.id
+                )
+            ),
+          ];
         } else {
           for (const searchedRoutine of searchedRoutines) {
             if (
@@ -456,22 +483,22 @@ export const useRoutineLogic = ({
           null,
       };
     },
-    [executeSearchRoutines, forceUpdate, routineTagsRef, stationsRef]
+    [executeSearch, forceUpdate, routineTagsRef, stationsRef]
   );
 
   const loadMoreRoutines = useCallback(async (): Promise<void> => {
-    const connection = routineSearch.data?.searchRoutines;
+    const connection = searchRoutinesData?.searchRoutines;
     const pageInfo = connection?.searchPageInfo;
     if (!pageInfo?.hasNextPage || !pageInfo.endEncodedSearchCursor) return;
 
-    const input = routineSearch.variables?.input;
+    const input = searchRoutinesVariables?.input;
     await searchRoutines(
       input?.query ?? "",
       (input?.stationId ?? undefined) as UUID | undefined,
       pageInfo.endEncodedSearchCursor,
       (input?.tagId ?? undefined) as UUID | undefined
     );
-  }, [routineSearch.data, routineSearch.variables, searchRoutines]);
+  }, [searchRoutines, searchRoutinesData, searchRoutinesVariables]);
 
   const expandRoutinesByStationId = useCallback(
     async (stationId: UUID): Promise<void> => {
@@ -498,7 +525,7 @@ export const useRoutineLogic = ({
       const stationNode = stationsRef.current.get(stationId);
       if (!stationNode) throw new Error("station does not exist");
 
-      let routineNode = stationNode.routines.find(
+      const routineNode = stationNode.routines.find(
         routine => routine.id === routineId
       );
       if (!routineNode) throw new Error("routine does not exist");
@@ -509,16 +536,10 @@ export const useRoutineLogic = ({
         return;
       }
 
-      if (routineNode.routineTasks.length === 0) {
-        await expandRoutinesByStationId(stationId);
-        routineNode =
-          stationNode.routines.find(routine => routine.id === routineId) ??
-          routineNode;
-      }
       routineNode.isOpen = true;
       forceUpdate();
     },
-    [expandRoutinesByStationId, forceUpdate, stationsRef]
+    [forceUpdate, stationsRef]
   );
 
   const createRoutine = useCallback(
@@ -913,7 +934,10 @@ export const useRoutineLogic = ({
     startRenamingRoutine,
     cancelRenamingRoutine,
     renameEditingRoutine,
-    routineSearch,
+    executeSearchRoutines: executeSearch,
+    searchRoutinesData,
+    isSearchingRoutines,
+    fetchMoreRoutines,
     searchRoutines,
     loadMoreRoutines,
     expandRoutinesByStationId,

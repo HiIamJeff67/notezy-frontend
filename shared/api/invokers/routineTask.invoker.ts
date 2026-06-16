@@ -5,6 +5,7 @@ import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.excep
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
   CreateRoutineTaskByStationId,
+  GetAllMyRoutineTasks,
   GetAllMyRoutineTasksByStationIds,
   GetMyRoutineTaskById,
   HardDeleteMyRoutineTaskById,
@@ -20,6 +21,10 @@ import {
   GetAllMyRoutineTasksByStationIdsRequestSchema,
   GetAllMyRoutineTasksByStationIdsResponse,
   GetAllMyRoutineTasksByStationIdsResponseSchema,
+  GetAllMyRoutineTasksRequest,
+  GetAllMyRoutineTasksRequestSchema,
+  GetAllMyRoutineTasksResponse,
+  GetAllMyRoutineTasksResponseSchema,
   GetMyRoutineTaskByIdRequest,
   GetMyRoutineTaskByIdRequestSchema,
   GetMyRoutineTaskByIdResponse,
@@ -81,6 +86,33 @@ export const queryFnGetAllMyRoutineTasksByStationIds = async (
       "error happening in queryFnGetAllMyRoutineTasksByStationIds",
       error
     );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetAllMyRoutineTasks = async (
+  request: GetAllMyRoutineTasksRequest
+): Promise<GetAllMyRoutineTasksResponse> => {
+  try {
+    const validatedRequest = GetAllMyRoutineTasksRequestSchema.parse(request);
+    const response = await GetAllMyRoutineTasks({
+      data: validatedRequest,
+    });
+    return GetAllMyRoutineTasksResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetAllMyRoutineTasks", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

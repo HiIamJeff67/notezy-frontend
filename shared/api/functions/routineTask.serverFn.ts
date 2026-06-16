@@ -6,6 +6,8 @@ import {
   CreateRoutineTaskByStationIdResponse,
   GetAllMyRoutineTasksByStationIdsRequest,
   GetAllMyRoutineTasksByStationIdsResponse,
+  GetAllMyRoutineTasksRequest,
+  GetAllMyRoutineTasksResponse,
   GetMyRoutineTaskByIdRequest,
   GetMyRoutineTaskByIdResponse,
   HardDeleteMyRoutineTaskByIdRequest,
@@ -134,6 +136,51 @@ export const GetAllMyRoutineTasksByStationIds = createServerFn({
       return formattedResponse;
     }
   );
+
+export const GetAllMyRoutineTasks = createServerFn({
+  method: "GET",
+})
+  .inputValidator((data: GetAllMyRoutineTasksRequest) => data)
+  .handler(async ({ data: request }): Promise<GetAllMyRoutineTasksResponse> => {
+    const url =
+      import.meta.env.VITE_API_DOMAIN_URL +
+      "/" +
+      CurrentAPIBaseURL +
+      "/" +
+      APIURLPathDictionary.routineTask.getAllMyRoutineTasks;
+    const inboundCookie = getRequestHeader("cookie");
+    const userAgent =
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": userAgent,
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      credentials: "include",
+    });
+
+    if (!isJsonResponse(response)) {
+      throw new Error(tKey.error.encounterUnknownError);
+    }
+    forwardUpstreamSetCookies(response);
+    const formattedResponse =
+      (await response.json()) as GetAllMyRoutineTasksResponse;
+    if (formattedResponse.exception != null) {
+      throw new NotezyAPIError(
+        new NotezyException(formattedResponse.exception)
+      );
+    }
+    AccessTokenCookieHandler.ensure(
+      formattedResponse.refreshableTokens?.newAccessToken
+    );
+
+    return formattedResponse;
+  });
 
 export const CreateRoutineTaskByStationId = createServerFn({ method: "POST" })
   .inputValidator((data: CreateRoutineTaskByStationIdRequest) => data)

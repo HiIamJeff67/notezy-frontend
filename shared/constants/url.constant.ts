@@ -222,6 +222,7 @@ export const APIURLPathDictionary = {
     getMyRoutineTaskById: "routineTask/getMyRoutineTaskById",
     getAllMyRoutineTasksByStationIds:
       "routineTask/getAllMyRoutineTasksByStationIds",
+    getAllMyRoutineTasks: "routineTask/getAllMyRoutineTasks",
     createRoutineTaskByStationId: "routineTask/createRoutineTaskByStationId",
     updateMyRoutineTaskById: "routineTask/updateMyRoutineTaskById",
     hardDeleteMyRoutineTaskById: "routineTask/hardDeleteMyRoutineTaskById",

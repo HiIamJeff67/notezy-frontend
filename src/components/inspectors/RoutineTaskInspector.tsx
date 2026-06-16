@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 
 interface RoutineTaskInspectorProps {
   routineTaskId: UUID;
@@ -36,8 +36,8 @@ const RoutineTaskInspector = ({
   onClose,
 }: RoutineTaskInspectorProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
-  const routineTaskNode = routineManager.getRoutineTaskById(routineTaskId);
+  const stationRoutineManager = useStationRoutine();
+  const routineTaskNode = stationRoutineManager.getRoutineTaskById(routineTaskId);
   const [values, setValues] = useState<{
     title: string;
     purpose: RoutineTaskPurpose;
@@ -68,7 +68,7 @@ const RoutineTaskInspector = ({
     if (title.length === 0) return;
 
     try {
-      await routineManager.updateRoutineTask(routineTaskId, {
+      await stationRoutineManager.updateRoutineTask(routineTaskId, {
         title,
         purpose: values.purpose,
         payload:
@@ -89,7 +89,7 @@ const RoutineTaskInspector = ({
     <Sheet
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isUpdatingRoutineTask) onClose();
+        if (!open && !stationRoutineManager.isUpdatingRoutineTask) onClose();
       }}
     >
       <SheetContent
@@ -239,18 +239,18 @@ const RoutineTaskInspector = ({
               type="submit"
               className="w-full"
               disabled={
-                routineManager.isUpdatingRoutineTask ||
+                stationRoutineManager.isUpdatingRoutineTask ||
                 values.title.trim().length === 0
               }
             >
-              {routineManager.isUpdatingRoutineTask && <Spinner />}
+              {stationRoutineManager.isUpdatingRoutineTask && <Spinner />}
               Save
             </Button>
             <Button
               type="button"
               variant="destructive"
               className="w-full"
-              disabled={routineManager.isUpdatingRoutineTask}
+              disabled={stationRoutineManager.isUpdatingRoutineTask}
               onClick={onClose}
             >
               Cancel

@@ -43,6 +43,7 @@ const SupportedIconTable = ({
 
   return (
     <Popover
+      modal
       open={isOpen}
       onOpenChange={open => {
         setIsOpen(open);
@@ -55,7 +56,7 @@ const SupportedIconTable = ({
           variant="outline"
           size="icon"
           disabled={disabled}
-          className="size-10 shrink-0 rounded-sm bg-transparent text-lg"
+          className="size-10 shrink-0 cursor-pointer rounded-sm bg-transparent text-lg"
           aria-label={value ? "Change icon" : "Select icon"}
         >
           {value ?? <SmilePlusIcon className="text-muted-foreground" />}
@@ -65,7 +66,10 @@ const SupportedIconTable = ({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className={cn("flex w-80 flex-col gap-3 rounded-sm p-3", className)}
+        className={cn(
+          "z-[120] flex w-80 flex-col gap-3 rounded-sm p-3",
+          className
+        )}
       >
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
@@ -105,32 +109,33 @@ const SupportedIconTable = ({
 
         {filteredIcons.length > 0 ? (
           <div className="flex max-h-52 flex-wrap content-start gap-1 overflow-y-auto">
-            {filteredIcons.map(([iconName, supportedIcon]) => (
-              <Tooltip key={iconName}>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant={value === supportedIcon ? "secondary" : "ghost"}
-                    size="icon"
-                    className="relative size-8 shrink-0 rounded-sm text-base"
-                    aria-label={iconName.replace(/([a-z0-9])([A-Z])/g, "$1 $2")}
-                    onClick={() => {
-                      onValueChange(supportedIcon);
-                      setSearchQuery("");
-                      setIsOpen(false);
-                    }}
-                  >
-                    {supportedIcon}
-                    {value === supportedIcon && (
-                      <CheckIcon className="absolute right-0 bottom-0 size-3 rounded-sm bg-primary p-0.5 text-primary-foreground" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {iconName.replace(/([a-z0-9])([A-Z])/g, "$1 $2")}
-                </TooltipContent>
-              </Tooltip>
-            ))}
+            {filteredIcons.map(([iconName, supportedIcon]) => {
+              const readableIconName = iconName.replace(
+                /([a-z0-9])([A-Z])/g,
+                "$1 $2"
+              );
+              return (
+                <Button
+                  key={iconName}
+                  type="button"
+                  variant={value === supportedIcon ? "secondary" : "ghost"}
+                  size="icon"
+                  className="relative size-8 shrink-0 cursor-pointer rounded-sm text-base"
+                  title={readableIconName}
+                  aria-label={readableIconName}
+                  onClick={() => {
+                    onValueChange(supportedIcon);
+                    setSearchQuery("");
+                    setIsOpen(false);
+                  }}
+                >
+                  {supportedIcon}
+                  {value === supportedIcon && (
+                    <CheckIcon className="absolute right-0 bottom-0 size-3 rounded-sm bg-primary p-0.5 text-primary-foreground" />
+                  )}
+                </Button>
+              );
+            })}
           </div>
         ) : (
           <div className="flex h-20 items-center justify-center text-xs text-muted-foreground">

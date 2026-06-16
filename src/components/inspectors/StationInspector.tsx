@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 
 interface StationInspectorProps {
   stationId: UUID;
@@ -30,8 +30,8 @@ const StationInspector = ({
   onClose,
 }: StationInspectorProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
-  const stationNode = routineManager.getStationById(stationId);
+  const stationRoutineManager = useStationRoutine();
+  const stationNode = stationRoutineManager.getStationById(stationId);
   const [values, setValues] = useState<{
     name: string;
     description: string;
@@ -61,7 +61,7 @@ const StationInspector = ({
     if (name.length === 0) return;
 
     try {
-      await routineManager.updateStation(
+      await stationRoutineManager.updateStation(
         stationId,
         {
           name,
@@ -87,7 +87,7 @@ const StationInspector = ({
     <Sheet
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isUpdatingStation) onClose();
+        if (!open && !stationRoutineManager.isUpdatingStation) onClose();
       }}
     >
       <SheetContent
@@ -156,7 +156,7 @@ const StationInspector = ({
                   onValueChange={icon =>
                     setValues(current => ({ ...current, icon }))
                   }
-                  disabled={routineManager.isUpdatingStation}
+                  disabled={stationRoutineManager.isUpdatingStation}
                   className="bg-muted"
                 />
               </div>
@@ -187,18 +187,18 @@ const StationInspector = ({
               type="submit"
               className="w-full"
               disabled={
-                routineManager.isUpdatingStation ||
+                stationRoutineManager.isUpdatingStation ||
                 values.name.trim().length === 0
               }
             >
-              {routineManager.isUpdatingStation && <Spinner />}
+              {stationRoutineManager.isUpdatingStation && <Spinner />}
               Save
             </Button>
             <Button
               type="button"
               variant="destructive"
               className="w-full"
-              disabled={routineManager.isUpdatingStation}
+              disabled={stationRoutineManager.isUpdatingStation}
               onClick={onClose}
             >
               Cancel

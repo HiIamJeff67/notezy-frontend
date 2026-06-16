@@ -1,4 +1,5 @@
 import type { UUID } from "node:crypto";
+import { useApolloClient } from "@apollo/client/react";
 import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import {
@@ -210,6 +211,7 @@ export const useGetAllMyStations = (
 
 export const useCreateStation = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateStationRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -239,6 +241,8 @@ export const useCreateStation = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncCreateStation(request, response);
     },
     onError: async (error, request) => {
@@ -257,6 +261,7 @@ export const useCreateStation = () => {
 
 export const useCreateStations = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateStationsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -286,6 +291,8 @@ export const useCreateStations = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncCreateStations(request, response);
     },
     onError: async (error, request) => {
@@ -304,6 +311,7 @@ export const useCreateStations = () => {
 
 export const useUpdateMyStationById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyStationByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -333,6 +341,10 @@ export const useUpdateMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncUpdateMyStationById(request, response);
     },
     onError: async (error, request) => {
@@ -351,6 +363,7 @@ export const useUpdateMyStationById = () => {
 
 export const useUpdateMyStationsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyStationsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -382,6 +395,10 @@ export const useUpdateMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncUpdateMyStationsByIds(
         request,
         response
@@ -403,6 +420,7 @@ export const useUpdateMyStationsByIds = () => {
 
 export const useRestoreMyStationById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: RestoreMyStationByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -432,6 +450,10 @@ export const useRestoreMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncRestoreMyStationById(
         request,
         response
@@ -453,6 +475,7 @@ export const useRestoreMyStationById = () => {
 
 export const useRestoreMyStationsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: RestoreMyStationsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -484,6 +507,10 @@ export const useRestoreMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncRestoreMyStationsByIds(
         request,
         response
@@ -505,6 +532,7 @@ export const useRestoreMyStationsByIds = () => {
 
 export const useDeleteMyStationById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: DeleteMyStationByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -534,6 +562,10 @@ export const useDeleteMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncDeleteMyStationById(request, response);
     },
     onError: async (error, request) => {
@@ -552,6 +584,7 @@ export const useDeleteMyStationById = () => {
 
 export const useDeleteMyStationsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: DeleteMyStationsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -583,6 +616,10 @@ export const useDeleteMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncDeleteMyStationsByIds(
         request,
         response
@@ -604,6 +641,7 @@ export const useDeleteMyStationsByIds = () => {
 
 export const useHardDeleteMyStationById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyStationByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -633,6 +671,10 @@ export const useHardDeleteMyStationById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncHardDeleteMyStationById(
         request,
         response
@@ -654,6 +696,7 @@ export const useHardDeleteMyStationById = () => {
 
 export const useHardDeleteMyStationsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyStationsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -685,6 +728,10 @@ export const useHardDeleteMyStationsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
       await StationLocalSynchronizer.syncHardDeleteMyStationsByIds(
         request,
         response

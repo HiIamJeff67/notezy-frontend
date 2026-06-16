@@ -2,6 +2,7 @@ import { SupportedIcon } from "@shared/api/interfaces/enums";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { Routine } from "./routine.schema";
+import { RoutineTask } from "./routineTask.schema";
 import { UsersToStations } from "./usersToStations.schema";
 
 export const Station = sqliteTable("StationTable", {
@@ -23,4 +24,5 @@ export const Station = sqliteTable("StationTable", {
 export const StationRelations = relations(Station, ({ many }) => ({
   usersToStations: many(UsersToStations),
   routines: many(Routine),
+  routineTasks: many(RoutineTask),
 }));

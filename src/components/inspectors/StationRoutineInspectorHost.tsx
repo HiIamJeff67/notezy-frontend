@@ -1,49 +1,49 @@
-import { useRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
 import RoutineInspector from "./RoutineInspector";
 import RoutineTagInspector from "./RoutineTagInspector";
 import RoutineTaskInspector from "./RoutineTaskInspector";
 import StationInspector from "./StationInspector";
 
 const StationRoutineInspectorHost = () => {
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
-  if (routineManager.inspectorTarget === null) return null;
+  if (stationRoutineManager.inspectorTarget === null) return null;
 
-  if (routineManager.inspectorTarget.type === "station") {
+  if (stationRoutineManager.inspectorTarget.type === "station") {
     return (
       <StationInspector
-        stationId={routineManager.inspectorTarget.id}
+        stationId={stationRoutineManager.inspectorTarget.id}
         isOpen
-        onClose={routineManager.closeInspector}
+        onClose={stationRoutineManager.closeInspector}
       />
     );
   }
 
-  if (routineManager.inspectorTarget.type === "routine") {
+  if (stationRoutineManager.inspectorTarget.type === "routine") {
     return (
       <RoutineInspector
-        routineId={routineManager.inspectorTarget.id}
+        routineId={stationRoutineManager.inspectorTarget.id}
         isOpen
-        onClose={routineManager.closeInspector}
+        onClose={stationRoutineManager.closeInspector}
       />
     );
   }
 
-  if (routineManager.inspectorTarget.type === "routineTag") {
+  if (stationRoutineManager.inspectorTarget.type === "routineTag") {
     return (
       <RoutineTagInspector
-        routineTagId={routineManager.inspectorTarget.id}
+        routineTagId={stationRoutineManager.inspectorTarget.id}
         isOpen
-        onClose={routineManager.closeInspector}
+        onClose={stationRoutineManager.closeInspector}
       />
     );
   }
 
   return (
     <RoutineTaskInspector
-      routineTaskId={routineManager.inspectorTarget.id}
+      routineTaskId={stationRoutineManager.inspectorTarget.id}
       isOpen
-      onClose={routineManager.closeInspector}
+      onClose={stationRoutineManager.closeInspector}
     />
   );
 };

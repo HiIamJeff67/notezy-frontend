@@ -54,8 +54,14 @@ export const useRoutineTagLogic = ({
     after: null,
   });
 
-  const [executeSearchRoutineTags, routineTagSearch] =
-    useSearchRoutineTagsLazyQuery();
+  const [
+    executeSearch,
+    {
+      data: searchRoutineTagsData,
+      loading: isSearchingRoutineTags,
+      fetchMore: fetchMoreRoutineTags,
+    },
+  ] = useSearchRoutineTagsLazyQuery();
 
   const toggleRoutineTag = useCallback(
     async (routineTagId: UUID, reset = false) => {
@@ -271,7 +277,7 @@ export const useRoutineTagLogic = ({
 
   useEffect(() => {
     const searchEdges =
-      routineTagSearch.data?.searchRoutineTags?.searchEdges ?? [];
+      searchRoutineTagsData?.searchRoutineTags?.searchEdges ?? [];
     for (const edge of searchEdges) {
       const node = edge.node as unknown as {
         id: UUID;
@@ -331,10 +337,10 @@ export const useRoutineTagLogic = ({
       });
     }
     if (searchEdges.length > 0) forceUpdate();
-  }, [forceUpdate, routineTagSearch.data, routineTagsRef]);
+  }, [forceUpdate, routineTagsRef, searchRoutineTagsData]);
 
   const searchRoutineTags = useCallback(async (): Promise<void> => {
-    await executeSearchRoutineTags({
+    await executeSearch({
       variables: {
         input: {
           query: searchRoutineTagsInput.query,
@@ -344,14 +350,14 @@ export const useRoutineTagLogic = ({
         },
       },
     }).retain();
-  }, [executeSearchRoutineTags, searchRoutineTagsInput.query]);
+  }, [executeSearch, searchRoutineTagsInput.query]);
 
   const loadMoreRoutineTags = useCallback(async (): Promise<void> => {
-    const connection = routineTagSearch.data?.searchRoutineTags;
+    const connection = searchRoutineTagsData?.searchRoutineTags;
     const pageInfo = connection?.searchPageInfo;
     if (!pageInfo?.hasNextPage || !pageInfo.endEncodedSearchCursor) return;
 
-    await routineTagSearch.fetchMore({
+    await fetchMoreRoutineTags({
       variables: {
         input: {
           query: searchRoutineTagsInput.query,
@@ -372,7 +378,11 @@ export const useRoutineTagLogic = ({
         },
       }),
     });
-  }, [routineTagSearch, searchRoutineTagsInput.query]);
+  }, [
+    fetchMoreRoutineTags,
+    searchRoutineTagsData,
+    searchRoutineTagsInput.query,
+  ]);
 
   return {
     selectedRoutineTagId,
@@ -387,7 +397,10 @@ export const useRoutineTagLogic = ({
     renameEditingRoutineTag,
     searchRoutineTagsInput,
     setSearchRoutineTagsInput,
-    routineTagSearch,
+    executeSearchRoutineTags: executeSearch,
+    searchRoutineTagsData,
+    isSearchingRoutineTags,
+    fetchMoreRoutineTags,
     searchRoutineTags,
     loadMoreRoutineTags,
     expandRoutinesByTagId,

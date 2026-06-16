@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineDialogProps extends ModalProps {
@@ -27,11 +27,11 @@ const DeleteRoutineDialog = ({
   onDeleted,
 }: DeleteRoutineDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   const deleteRoutine = async () => {
     try {
-      await routineManager.deleteRoutine(routineId);
+      await stationRoutineManager.deleteRoutine(routineId);
       await onDeleted?.();
       toast.success("Routine deleted");
       onClose();
@@ -44,7 +44,7 @@ const DeleteRoutineDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isDeletingRoutine) onClose();
+        if (!open && !stationRoutineManager.isDeletingRoutine) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -59,7 +59,7 @@ const DeleteRoutineDialog = ({
           <Button
             type="button"
             variant="outline"
-            disabled={routineManager.isDeletingRoutine}
+            disabled={stationRoutineManager.isDeletingRoutine}
             onClick={onClose}
           >
             Cancel
@@ -67,10 +67,10 @@ const DeleteRoutineDialog = ({
           <Button
             type="button"
             variant="destructive"
-            disabled={routineManager.isDeletingRoutine}
+            disabled={stationRoutineManager.isDeletingRoutine}
             onClick={deleteRoutine}
           >
-            {routineManager.isDeletingRoutine && <Spinner />}
+            {stationRoutineManager.isDeletingRoutine && <Spinner />}
             Delete
           </Button>
         </DialogFooter>

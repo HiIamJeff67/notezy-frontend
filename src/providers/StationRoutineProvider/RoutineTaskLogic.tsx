@@ -17,6 +17,7 @@ import type { UpdateMyRoutineTaskByIdRequest } from "@shared/api/interfaces/rout
 import { MaxSearchLimit } from "@shared/constants";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
+import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
@@ -40,18 +41,45 @@ export const useRoutineTaskLogic = ({
     null
   );
 
-  const [executeSearchRoutineTasks, routineTaskSearch] =
-    useSearchRoutineTasksLazyQuery();
+  const [
+    executeSearch,
+    {
+      data: searchRoutineTasksData,
+      loading: isSearchingRoutineTasks,
+      variables: searchRoutineTasksVariables,
+      fetchMore: fetchMoreRoutineTasks,
+    },
+  ] = useSearchRoutineTasksLazyQuery({
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
 
   const searchRoutineTasksByStationId = useCallback(
-    async (stationId: UUID, query: string = ""): Promise<void> => {
+    async (
+      stationId: UUID,
+      query: string = "",
+      after?: string
+    ): Promise<{
+      hasNextPage: boolean;
+      endEncodedSearchCursor: string | null;
+    }> => {
       const stationNode = stationsRef.current.get(stationId);
       if (!stationNode) throw new Error("station does not exist");
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        toast.error(
+          "You're only available to see routine tasks when you're online."
+        );
+        return {
+          hasNextPage: false,
+          endEncodedSearchCursor: null,
+        };
+      }
 
-      const result = await executeSearchRoutineTasks({
+      const result = await executeSearch({
         variables: {
           input: {
             query,
+            after,
             first: MaxSearchLimit,
             stationId,
             sortBy: SearchRoutineTaskSortBy.Title,
@@ -60,7 +88,7 @@ export const useRoutineTaskLogic = ({
         },
       }).retain();
       const searchEdges = result.data?.searchRoutineTasks.searchEdges ?? [];
-      stationNode.routineTasks = searchEdges.map(edge => {
+      const searchedRoutineTasks = searchEdges.map(edge => {
         const node = edge.node as unknown as {
           id: UUID;
           stationId: UUID;
@@ -76,6 +104,9 @@ export const useRoutineTaskLogic = ({
           actualEndedAt: Date | string | number | null;
           updatedAt: Date | string | number;
           createdAt: Date | string | number;
+          routines?: Array<{
+            id: UUID;
+          }>;
         };
         const existingRoutineTask = stationNode.routineTasks.find(
           routineTask => routineTask.id === node.id
@@ -133,14 +164,98 @@ export const useRoutineTaskLogic = ({
         };
         if (existingRoutineTask) {
           Object.assign(existingRoutineTask, routineTaskNode);
-          return existingRoutineTask;
+          return {
+            routineTask: existingRoutineTask,
+            linkedRoutineIds: (node.routines ?? []).map(routine => routine.id),
+          };
         }
-        return routineTaskNode;
+        return {
+          routineTask: routineTaskNode,
+          linkedRoutineIds: (node.routines ?? []).map(routine => routine.id),
+        };
       });
+      const searchedRoutineTaskNodes = searchedRoutineTasks.map(
+        searchedRoutineTask => searchedRoutineTask.routineTask
+      );
+      stationNode.routineTasks =
+        after === undefined
+          ? [
+              ...searchedRoutineTaskNodes,
+              ...stationNode.routineTasks.filter(
+                routineTask =>
+                  !searchedRoutineTaskNodes.some(
+                    searchedRoutineTask =>
+                      searchedRoutineTask.id === routineTask.id
+                  )
+              ),
+            ]
+          : [
+              ...stationNode.routineTasks.filter(
+                routineTask =>
+                  !searchedRoutineTaskNodes.some(
+                    searchedRoutineTask =>
+                      searchedRoutineTask.id === routineTask.id
+                  )
+              ),
+              ...searchedRoutineTaskNodes,
+            ];
+      const searchedRoutineTaskIds = new Set(
+        searchedRoutineTaskNodes.map(routineTask => routineTask.id)
+      );
+      for (const routineNode of stationNode.routines) {
+        routineNode.routineTasks = routineNode.routineTasks.filter(
+          routineTask => !searchedRoutineTaskIds.has(routineTask.id)
+        );
+      }
+      for (const searchedRoutineTask of searchedRoutineTasks) {
+        for (const linkedRoutineId of searchedRoutineTask.linkedRoutineIds) {
+          const routineNode = stationNode.routines.find(
+            routine => routine.id === linkedRoutineId
+          );
+          if (!routineNode) continue;
+          routineNode.routineTasks = [
+            ...routineNode.routineTasks.filter(
+              routineTask =>
+                routineTask.id !== searchedRoutineTask.routineTask.id
+            ),
+            searchedRoutineTask.routineTask,
+          ];
+        }
+      }
       forceUpdate();
+      return {
+        hasNextPage:
+          result.data?.searchRoutineTasks.searchPageInfo.hasNextPage ?? false,
+        endEncodedSearchCursor:
+          result.data?.searchRoutineTasks.searchPageInfo
+            .endEncodedSearchCursor ?? null,
+      };
     },
-    [executeSearchRoutineTasks, forceUpdate, stationsRef]
+    [executeSearch, forceUpdate, stationsRef]
   );
+
+  const loadMoreRoutineTasks = useCallback(async (): Promise<void> => {
+    const connection = searchRoutineTasksData?.searchRoutineTasks;
+    const pageInfo = connection?.searchPageInfo;
+    const input = searchRoutineTasksVariables?.input;
+    if (
+      !pageInfo?.hasNextPage ||
+      !pageInfo.endEncodedSearchCursor ||
+      !input?.stationId
+    ) {
+      return;
+    }
+
+    await searchRoutineTasksByStationId(
+      input.stationId as UUID,
+      input.query,
+      pageInfo.endEncodedSearchCursor
+    );
+  }, [
+    searchRoutineTasksByStationId,
+    searchRoutineTasksData,
+    searchRoutineTasksVariables,
+  ]);
 
   const createRoutineTask = useCallback(
     async (
@@ -250,8 +365,12 @@ export const useRoutineTaskLogic = ({
   return {
     selectedRoutineTaskId,
     selectRoutineTask,
-    routineTaskSearch,
+    executeSearchRoutineTasks: executeSearch,
+    searchRoutineTasksData,
+    isSearchingRoutineTasks,
+    fetchMoreRoutineTasks,
     searchRoutineTasksByStationId,
+    loadMoreRoutineTasks,
     createRoutineTask,
     isCreatingRoutineTask: createRoutineTaskMutator.isPending,
     updateRoutineTask,

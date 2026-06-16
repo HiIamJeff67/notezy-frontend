@@ -56,8 +56,8 @@ import {
   useLanguage,
   useLoading,
   useResizeSidebar,
-  useRoutine,
   useShelfItem,
+  useStationRoutine,
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useUser } from "@/hooks/useUser";
@@ -75,17 +75,24 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const modalManager = useModal();
   const sidebarManager = useSidebar();
   const resizableSidebarManager = useResizeSidebar();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
   const shelfItemManager = useShelfItem();
 
   useEffect(() => {
-    const initialSearchRootShelves = async () =>
+    if (!userManager.userData) return;
+
+    const initiallySearchRootShelves = async () =>
       await shelfItemManager
         .searchRootShelves()
         .catch(error => toast.error(languageManager.tError(error)));
-    initialSearchRootShelves();
-  }, []);
+    const initiallyLoadStationRoutineData = async () =>
+      await stationRoutineManager
+        .initializeStationRoutineData()
+        .catch(error => toast.error(languageManager.tError(error)));
+    initiallySearchRootShelves();
+    initiallyLoadStationRoutineData();
+  }, [userManager.userData?.publicId]);
 
   return (
     <ResizableSidebar
@@ -243,7 +250,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                               onClick={() =>
                                 modalManager.open("CreateRoutineTagDialog", {
                                   onCreated: async routineTagId => {
-                                    routineManager.selectRoutineTag(
+                                    stationRoutineManager.selectRoutineTag(
                                       routineTagId
                                     );
                                   },
@@ -294,7 +301,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
               <MenubarContent className="w-64 bg-popover border-border">
                 <MenubarItem
                   className="cursor-pointer"
-                  onClick={() => modalManager.open("AccountSettingsPanel")}
+                  onSelect={() => modalManager.open("AccountSettingsPanel")}
                 >
                   <span>
                     {languageManager.t(tKey.settings.accountSettings)}
@@ -302,7 +309,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 </MenubarItem>
                 <MenubarItem
                   className="cursor-pointer"
-                  onClick={() => modalManager.open("PreferencesPanel")}
+                  onSelect={() => modalManager.open("PreferencesPanel")}
                 >
                   <span>{languageManager.t(tKey.settings.preferences)}</span>
                 </MenubarItem>
@@ -312,7 +319,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 </MenubarItem>
                 <MenubarItem
                   className="cursor-pointer text-destructive focus:text-destructive"
-                  onClick={async () => {
+                  onSelect={async () => {
                     router.push(WebURLPathDictionary.home);
                     await userManager.logout();
                     toast.success("Logout successfully, see you next time ~");

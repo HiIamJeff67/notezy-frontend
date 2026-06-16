@@ -33,7 +33,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useModal, useRoutine } from "@/hooks";
+import { useLanguage, useLoading, useModal, useStationRoutine } from "@/hooks";
 
 interface RoutineTagMenuItemProps {
   routineTag: RoutineTagNode;
@@ -43,33 +43,33 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
   const languageManager = useLanguage();
   const loadingManager = useLoading();
   const modalManager = useModal();
-  const routineManager = useRoutine();
-  const availableRoutines = routineManager.routines;
+  const stationRoutineManager = useStationRoutine();
+  const availableRoutines = stationRoutineManager.routines;
 
   const handleRenameRoutineTagOnSubmit = useCallback(
     async () =>
       await loadingManager.startAsyncTransactionLoading(async () => {
-        await routineManager
+        await stationRoutineManager
           .renameEditingRoutineTag()
           .catch(error => toast.error(languageManager.tError(error)));
       }),
-    [languageManager, loadingManager, routineManager]
+    [languageManager, loadingManager, stationRoutineManager]
   );
 
   return (
     <Collapsible open={routineTag.isOpen}>
       <SidebarMenuItem>
         <ContextMenu>
-          {routineManager.isRoutineTagEditing(routineTag.id) ? (
+          {stationRoutineManager.isRoutineTagEditing(routineTag.id) ? (
             <div className="relative flex h-8 items-center justify-end rounded-sm bg-muted px-2">
               <input
-                ref={routineManager.routineTagNameInputRef}
+                ref={stationRoutineManager.routineTagNameInputRef}
                 type="text"
-                value={routineManager.editRoutineTagName}
+                value={stationRoutineManager.editRoutineTagName}
                 maxLength={128}
                 className="h-6 min-w-0 flex-1 bg-transparent pr-6 text-sm outline-none"
                 onChange={event =>
-                  routineManager.setEditRoutineTagName(
+                  stationRoutineManager.setEditRoutineTagName(
                     event.currentTarget.value
                   )
                 }
@@ -81,11 +81,11 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                   } else if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopPropagation();
-                    routineManager.cancelRenamingRoutineTag();
+                    stationRoutineManager.cancelRenamingRoutineTag();
                   }
                 }}
               />
-              {routineManager.isNewRoutineTagName() && (
+              {stationRoutineManager.isNewRoutineTagName() && (
                 <button
                   type="button"
                   className="absolute right-1 flex size-5 items-center justify-center rounded-sm hover:bg-primary/60"
@@ -109,8 +109,8 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 <SidebarMenuButton
                   className="w-full rounded-sm"
                   onClick={() => {
-                    routineManager.selectRoutineTag(routineTag.id);
-                    void routineManager
+                    stationRoutineManager.selectRoutineTag(routineTag.id);
+                    void stationRoutineManager
                       .toggleRoutineTag(routineTag.id)
                       .catch(error =>
                         toast.error(languageManager.tError(error))
@@ -138,8 +138,8 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
-                  routineManager.selectRoutineTag(routineTag.id);
-                  routineManager.openInspector({
+                  stationRoutineManager.selectRoutineTag(routineTag.id);
+                  stationRoutineManager.openInspector({
                     type: "routineTag",
                     id: routineTag.id,
                   });
@@ -155,7 +155,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
-                  void routineManager
+                  void stationRoutineManager
                     .searchRoutines()
                     .catch(error => toast.error(languageManager.tError(error)));
                 }}
@@ -177,7 +177,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                           key={routine.id}
                           disabled={isLinked}
                           onClick={() => {
-                            void routineManager
+                            void stationRoutineManager
                               .linkRoutineTag(routine.id, routineTag.id)
                               .catch(error =>
                                 toast.error(languageManager.tError(error))
@@ -197,7 +197,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
-                  routineManager.startRenamingRoutineTag(routineTag)
+                  stationRoutineManager.startRenamingRoutineTag(routineTag)
                 }
               >
                 <Pencil className="mr-2 size-4" />
@@ -219,7 +219,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
           </ContextMenuContent>
         </ContextMenu>
 
-        {!routineManager.isRoutineTagEditing(routineTag.id) && (
+        {!stationRoutineManager.isRoutineTagEditing(routineTag.id) && (
           <>
             <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
             <CollapsibleContent>

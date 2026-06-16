@@ -1,4 +1,5 @@
 import type { UUID } from "node:crypto";
+import { useApolloClient } from "@apollo/client/react";
 import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import {
@@ -202,6 +203,7 @@ export const useGetAllMyRoutineTags = (
 
 export const useCreateRoutineTag = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateRoutineTagRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -231,6 +233,9 @@ export const useCreateRoutineTag = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncCreateRoutineTag(request, response);
     },
     onError: async (error, request) => {
@@ -249,6 +254,7 @@ export const useCreateRoutineTag = () => {
 
 export const useCreateRoutineTags = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateRoutineTagsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -280,6 +286,9 @@ export const useCreateRoutineTags = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncCreateRoutineTags(
         request,
         response
@@ -301,6 +310,7 @@ export const useCreateRoutineTags = () => {
 
 export const useUpdateMyRoutineTagById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyRoutineTagByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -330,6 +340,9 @@ export const useUpdateMyRoutineTagById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncUpdateMyRoutineTagById(
         request,
         response
@@ -351,6 +364,7 @@ export const useUpdateMyRoutineTagById = () => {
 
 export const useUpdateMyRoutineTagsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyRoutineTagsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -382,6 +396,9 @@ export const useUpdateMyRoutineTagsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncUpdateMyRoutineTagsByIds(
         request,
         response
@@ -405,6 +422,7 @@ export const useUpdateMyRoutineTagsByIds = () => {
 
 export const useHardDeleteMyRoutineTagById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyRoutineTagByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -434,6 +452,9 @@ export const useHardDeleteMyRoutineTagById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncHardDeleteMyRoutineTagById(
         request,
         response
@@ -457,6 +478,7 @@ export const useHardDeleteMyRoutineTagById = () => {
 
 export const useHardDeleteMyRoutineTagsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyRoutineTagsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -491,6 +513,9 @@ export const useHardDeleteMyRoutineTagsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.gc();
       await RoutineTagLocalSynchronizer.syncHardDeleteMyRoutineTagsByIds(
         request,
         response

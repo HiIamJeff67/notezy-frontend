@@ -63,7 +63,7 @@ export const UpdateMeRequestSchema = NotezyRequestSchema.extend({
           .string()
           .min(6)
           .max(32)
-          .regex(/^[0-9]+/),
+          .regex(/^(?=.*[a-zA-Z])(?=.*\d).+$/),
         status: z.enum(UserStatus),
       })
       .partial(),

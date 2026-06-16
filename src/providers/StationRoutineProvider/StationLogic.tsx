@@ -60,7 +60,14 @@ export const useStationLogic = ({
     after: null,
   });
 
-  const [executeSearchStations, stationSearch] = useSearchStationsLazyQuery();
+  const [
+    executeSearch,
+    {
+      data: searchStationsData,
+      loading: isSearchingStations,
+      fetchMore: fetchMoreStations,
+    },
+  ] = useSearchStationsLazyQuery();
 
   const toggleStation = useCallback(
     async (stationId: UUID, reset: boolean = false) => {
@@ -286,7 +293,7 @@ export const useStationLogic = ({
   }, [editingStationNode, renameEditingStation]);
 
   useEffect(() => {
-    const searchEdges = stationSearch.data?.searchStations?.searchEdges ?? [];
+    const searchEdges = searchStationsData?.searchStations?.searchEdges ?? [];
     for (const edge of searchEdges) {
       const node = edge.node as unknown as {
         id: UUID;
@@ -355,10 +362,10 @@ export const useStationLogic = ({
       });
     }
     if (searchEdges.length > 0) forceUpdate();
-  }, [forceUpdate, stationSearch.data, stationsRef]);
+  }, [forceUpdate, searchStationsData, stationsRef]);
 
   const searchStations = useCallback(async (): Promise<void> => {
-    await executeSearchStations({
+    await executeSearch({
       variables: {
         input: {
           query: searchStationsInput.query,
@@ -368,14 +375,14 @@ export const useStationLogic = ({
         },
       },
     }).retain();
-  }, [executeSearchStations, searchStationsInput.query]);
+  }, [executeSearch, searchStationsInput.query]);
 
   const loadMoreStations = useCallback(async (): Promise<void> => {
-    const connection = stationSearch.data?.searchStations;
+    const connection = searchStationsData?.searchStations;
     const pageInfo = connection?.searchPageInfo;
     if (!pageInfo?.hasNextPage || !pageInfo.endEncodedSearchCursor) return;
 
-    await stationSearch.fetchMore({
+    await fetchMoreStations({
       variables: {
         input: {
           query: searchStationsInput.query,
@@ -396,7 +403,7 @@ export const useStationLogic = ({
         },
       }),
     });
-  }, [searchStationsInput.query, stationSearch]);
+  }, [fetchMoreStations, searchStationsData, searchStationsInput.query]);
 
   return {
     selectedStationId,
@@ -411,7 +418,10 @@ export const useStationLogic = ({
     renameEditingStation,
     searchStationsInput,
     setSearchStationsInput,
-    stationSearch,
+    executeSearchStations: executeSearch,
+    searchStationsData,
+    isSearchingStations,
+    fetchMoreStations,
     searchStations,
     loadMoreStations,
     toggleStation,

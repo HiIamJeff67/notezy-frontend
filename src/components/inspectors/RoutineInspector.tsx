@@ -21,7 +21,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 
 interface RoutineInspectorProps {
   routineId: UUID;
@@ -35,8 +35,8 @@ const RoutineInspector = ({
   onClose,
 }: RoutineInspectorProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
-  const routineNode = routineManager.getRoutineById(routineId);
+  const stationRoutineManager = useStationRoutine();
+  const routineNode = stationRoutineManager.getRoutineById(routineId);
   const [values, setValues] = useState<{
     title: string;
     description: string;
@@ -84,7 +84,7 @@ const RoutineInspector = ({
     }
 
     try {
-      await routineManager.updateRoutine(
+      await stationRoutineManager.updateRoutine(
         routineId,
         {
           title,
@@ -113,7 +113,7 @@ const RoutineInspector = ({
     <Sheet
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isUpdatingRoutine) onClose();
+        if (!open && !stationRoutineManager.isUpdatingRoutine) onClose();
       }}
     >
       <SheetContent
@@ -308,19 +308,19 @@ const RoutineInspector = ({
               type="submit"
               className="w-full"
               disabled={
-                routineManager.isUpdatingRoutine ||
+                stationRoutineManager.isUpdatingRoutine ||
                 values.title.trim().length === 0 ||
                 !SupportedTimezones.includes(values.timezone)
               }
             >
-              {routineManager.isUpdatingRoutine && <Spinner />}
+              {stationRoutineManager.isUpdatingRoutine && <Spinner />}
               Save
             </Button>
             <Button
               type="button"
               variant="destructive"
               className="w-full"
-              disabled={routineManager.isUpdatingRoutine}
+              disabled={stationRoutineManager.isUpdatingRoutine}
               onClick={onClose}
             >
               Cancel

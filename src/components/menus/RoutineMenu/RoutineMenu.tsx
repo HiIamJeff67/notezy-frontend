@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import RoutineItemMenu from "@/components/menus/RoutineMenu/RoutineItemMenu";
 import RoutineItemMenuSkeleton from "@/components/menus/RoutineMenu/RoutineItemMenuSkeleton";
 import { SidebarMenuSub } from "@/components/ui/sidebar";
-import { useRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
 
 interface RoutineMenuProps {
   routines: RoutineNode[];
@@ -12,7 +12,7 @@ interface RoutineMenuProps {
 }
 
 const RoutineMenu = ({ routines, station }: RoutineMenuProps) => {
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
 
   return (
     <SidebarMenuSub>
@@ -23,7 +23,7 @@ const RoutineMenu = ({ routines, station }: RoutineMenuProps) => {
           )
           .map(routine => {
             const currentStation =
-              station ?? routineManager.getStationById(routine.stationId);
+              station ?? stationRoutineManager.getStationById(routine.stationId);
             if (!currentStation) return null;
 
             return (

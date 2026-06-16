@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteStationDialogProps extends ModalProps {
@@ -29,7 +29,7 @@ const DeleteStationDialog = ({
   onDeleted,
 }: DeleteStationDialogProps) => {
   const languageManager = useLanguage();
-  const routineManager = useRoutine();
+  const stationRoutineManager = useStationRoutine();
   const [confirmation, setConfirmation] = useState<string>("");
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const DeleteStationDialog = ({
     if (confirmation !== stationName) return;
 
     try {
-      await routineManager.deleteStation(stationId);
+      await stationRoutineManager.deleteStation(stationId);
       await onDeleted?.();
       toast.success("Station deleted");
       onClose();
@@ -53,7 +53,7 @@ const DeleteStationDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open && !routineManager.isDeletingStation) onClose();
+        if (!open && !stationRoutineManager.isDeletingStation) onClose();
       }}
     >
       <DialogContent className="rounded-sm bg-muted sm:max-w-md">
@@ -84,7 +84,7 @@ const DeleteStationDialog = ({
             <Button
               type="button"
               variant="outline"
-              disabled={routineManager.isDeletingStation}
+              disabled={stationRoutineManager.isDeletingStation}
               onClick={onClose}
             >
               Cancel
@@ -93,11 +93,11 @@ const DeleteStationDialog = ({
               type="button"
               variant="destructive"
               disabled={
-                routineManager.isDeletingStation || confirmation !== stationName
+                stationRoutineManager.isDeletingStation || confirmation !== stationName
               }
               onClick={deleteStation}
             >
-              {routineManager.isDeletingStation && <Spinner />}
+              {stationRoutineManager.isDeletingStation && <Spinner />}
               Delete
             </Button>
           </DialogFooter>

@@ -100,6 +100,49 @@ export type GetAllMyRoutineTasksByStationIdsResponse = z.infer<
   typeof GetAllMyRoutineTasksByStationIdsResponseSchema
 >;
 
+/* ============================== GetAllMyRoutineTasks ============================== */
+
+export const GetAllMyRoutineTasksRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type GetAllMyRoutineTasksRequest = z.infer<
+  typeof GetAllMyRoutineTasksRequestSchema
+>;
+
+export const GetAllMyRoutineTasksResponseSchema = NotezyResponseSchema.extend({
+  data: z.array(
+    z.object({
+      id: z.uuidv4(),
+      stationId: z.uuidv4(),
+      title: z.string(),
+      purpose: z.enum(AllRoutineTaskPurposes),
+      payload: z.any(),
+      priority: z.int32(),
+      status: z.enum(AllRoutineTaskStatuses),
+      attempts: z.int32(),
+      maxAttempts: z.int32(),
+      scheduledAt: z.coerce.date(),
+      actualStartedAt: z.coerce.date().nullable(),
+      actualEndedAt: z.coerce.date().nullable(),
+      updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
+    })
+  ),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
+
+export type GetAllMyRoutineTasksResponse = z.infer<
+  typeof GetAllMyRoutineTasksResponseSchema
+>;
+
 /* ============================== CreateRoutineTaskByStationId ============================== */
 
 export const CreateRoutineTaskByStationIdRequestSchema =

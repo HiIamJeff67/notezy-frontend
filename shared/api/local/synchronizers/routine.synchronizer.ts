@@ -41,7 +41,9 @@ import {
   Routine,
   RoutinesToItems,
   RoutinesToTags,
+  RoutinesToTasks,
   RoutineTag,
+  RoutineTask,
   Station,
   User,
   UsersToStations,
@@ -111,21 +113,43 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTags)
         .where(eq(RoutinesToTags.routineId, response.data.id));
-      if (response.data.tagIds.length === 0) return;
+      await tx
+        .delete(RoutinesToTasks)
+        .where(eq(RoutinesToTasks.routineId, response.data.id));
 
-      const routineTags = await tx
-        .select({ id: RoutineTag.id })
-        .from(RoutineTag)
-        .where(inArray(RoutineTag.id, response.data.tagIds));
-      if (routineTags.length === 0) return;
+      if (response.data.tagIds.length > 0) {
+        const routineTags = await tx
+          .select({ id: RoutineTag.id })
+          .from(RoutineTag)
+          .where(inArray(RoutineTag.id, response.data.tagIds));
 
-      await tx.insert(RoutinesToTags).values(
-        routineTags.map(routineTag => ({
-          routineId: response.data.id,
-          tagId: routineTag.id,
-          createdAt: response.data.updatedAt,
-        }))
-      );
+        if (routineTags.length > 0) {
+          await tx.insert(RoutinesToTags).values(
+            routineTags.map(routineTag => ({
+              routineId: response.data.id,
+              tagId: routineTag.id,
+              createdAt: response.data.updatedAt,
+            }))
+          );
+        }
+      }
+
+      if (response.data.taskIds.length > 0) {
+        const routineTasks = await tx
+          .select({ id: RoutineTask.id })
+          .from(RoutineTask)
+          .where(inArray(RoutineTask.id, response.data.taskIds));
+
+        if (routineTasks.length > 0) {
+          await tx.insert(RoutinesToTasks).values(
+            routineTasks.map(routineTask => ({
+              routineId: response.data.id,
+              taskId: routineTask.id,
+              createdAt: response.data.updatedAt,
+            }))
+          );
+        }
+      }
     });
   };
 
@@ -177,30 +201,59 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.routineId, routineIds));
+      await tx
+        .delete(RoutinesToTasks)
+        .where(inArray(RoutinesToTasks.routineId, routineIds));
 
       const tagIds = [
         ...new Set(response.data.flatMap(routine => routine.tagIds)),
       ];
-      if (tagIds.length === 0) return;
+      const taskIds = [
+        ...new Set(response.data.flatMap(routine => routine.taskIds)),
+      ];
 
-      const routineTags = await tx
-        .select({ id: RoutineTag.id })
-        .from(RoutineTag)
-        .where(inArray(RoutineTag.id, tagIds));
-      const existingRoutineTagIds = new Set(
-        routineTags.map(routineTag => routineTag.id)
-      );
-      const relations = response.data.flatMap(routine =>
-        routine.tagIds
-          .filter(tagId => existingRoutineTagIds.has(tagId))
-          .map(tagId => ({
-            routineId: routine.id,
-            tagId,
-            createdAt: routine.updatedAt,
-          }))
-      );
-      if (relations.length > 0) {
-        await tx.insert(RoutinesToTags).values(relations);
+      if (tagIds.length > 0) {
+        const routineTags = await tx
+          .select({ id: RoutineTag.id })
+          .from(RoutineTag)
+          .where(inArray(RoutineTag.id, tagIds));
+        const existingRoutineTagIds = new Set(
+          routineTags.map(routineTag => routineTag.id)
+        );
+        const relations = response.data.flatMap(routine =>
+          routine.tagIds
+            .filter(tagId => existingRoutineTagIds.has(tagId))
+            .map(tagId => ({
+              routineId: routine.id,
+              tagId,
+              createdAt: routine.updatedAt,
+            }))
+        );
+        if (relations.length > 0) {
+          await tx.insert(RoutinesToTags).values(relations);
+        }
+      }
+
+      if (taskIds.length > 0) {
+        const routineTasks = await tx
+          .select({ id: RoutineTask.id })
+          .from(RoutineTask)
+          .where(inArray(RoutineTask.id, taskIds));
+        const existingRoutineTaskIds = new Set(
+          routineTasks.map(routineTask => routineTask.id)
+        );
+        const relations = response.data.flatMap(routine =>
+          routine.taskIds
+            .filter(taskId => existingRoutineTaskIds.has(taskId))
+            .map(taskId => ({
+              routineId: routine.id,
+              taskId,
+              createdAt: routine.updatedAt,
+            }))
+        );
+        if (relations.length > 0) {
+          await tx.insert(RoutinesToTasks).values(relations);
+        }
       }
     });
   };

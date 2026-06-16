@@ -1,4 +1,5 @@
 import type { UUID } from "node:crypto";
+import { useApolloClient } from "@apollo/client/react";
 import { NotezyFetchError } from "@shared/api/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/errors/validation.error";
 import {
@@ -232,6 +233,7 @@ export const useGetAllMyRoutinesByTimeRange = (
 
 export const useCreateRoutineByStationId = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateRoutineByStationIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -256,6 +258,7 @@ export const useCreateRoutineByStationId = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         queryKeys.routine.oneById(response.data.id as UUID),
         queryKeys.station.oneById(request.body.stationId as UUID),
         queryKeys.routine.manyByStationId(request.body.stationId as UUID),
@@ -263,6 +266,10 @@ export const useCreateRoutineByStationId = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncCreateRoutineByStationId(
         request,
         response
@@ -284,6 +291,7 @@ export const useCreateRoutineByStationId = () => {
 
 export const useCreateRoutinesByStationIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: CreateRoutinesByStationIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -308,6 +316,7 @@ export const useCreateRoutinesByStationIds = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         ...response.data.ids.map(id => queryKeys.routine.oneById(id as UUID)),
         ...request.body.createdRoutines.map(routine =>
           queryKeys.station.oneById(routine.stationId as UUID)
@@ -319,6 +328,10 @@ export const useCreateRoutinesByStationIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncCreateRoutinesByStationIds(
         request,
         response
@@ -340,6 +353,7 @@ export const useCreateRoutinesByStationIds = () => {
 
 export const useUpdateMyRoutineById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyRoutineByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -364,11 +378,15 @@ export const useUpdateMyRoutineById = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         queryKeys.routine.oneById(request.body.routineId as UUID),
       ];
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncUpdateMyRoutineById(request, response);
     },
     onError: async (error, request) => {
@@ -387,6 +405,7 @@ export const useUpdateMyRoutineById = () => {
 
 export const useUpdateMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: UpdateMyRoutinesByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -418,6 +437,9 @@ export const useUpdateMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncUpdateMyRoutinesByIds(
         request,
         response
@@ -439,6 +461,7 @@ export const useUpdateMyRoutinesByIds = () => {
 
 export const useLinkRoutineTagById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: LinkRoutineTagByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -469,6 +492,9 @@ export const useLinkRoutineTagById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineTagById(request, response);
     },
     onError: async (error, request) => {
@@ -487,6 +513,7 @@ export const useLinkRoutineTagById = () => {
 
 export const useBulkLinkRoutineTagsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: BulkLinkRoutineTagsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -521,6 +548,9 @@ export const useBulkLinkRoutineTagsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncBulkLinkRoutineTagsByIds(
         request,
         response
@@ -542,6 +572,7 @@ export const useBulkLinkRoutineTagsByIds = () => {
 
 export const useLinkRoutineTaskById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: mutationFnLinkRoutineTaskById,
@@ -564,6 +595,9 @@ export const useLinkRoutineTaskById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
     },
     onError: error => {},
   });
@@ -573,6 +607,7 @@ export const useLinkRoutineTaskById = () => {
 
 export const useBulkLinkRoutineTasksByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const mutation = useMutation({
     mutationFn: mutationFnBulkLinkRoutineTasksByIds,
@@ -599,6 +634,9 @@ export const useBulkLinkRoutineTasksByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      apolloClient.cache.gc();
     },
     onError: error => {},
   });
@@ -608,6 +646,7 @@ export const useBulkLinkRoutineTasksByIds = () => {
 
 export const useLinkRoutineItemById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: LinkRoutineItemByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -638,6 +677,9 @@ export const useLinkRoutineItemById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchItems" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineItemById(request, response);
     },
     onError: async (error, request) => {
@@ -656,6 +698,7 @@ export const useLinkRoutineItemById = () => {
 
 export const useBulkLinkRoutineItemsByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: BulkLinkRoutineItemsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -687,6 +730,9 @@ export const useBulkLinkRoutineItemsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchItems" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncBulkLinkRoutineItemsByIds(
         request,
         response
@@ -708,6 +754,7 @@ export const useBulkLinkRoutineItemsByIds = () => {
 
 export const useRestoreMyRoutineById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: RestoreMyRoutineByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -737,6 +784,10 @@ export const useRestoreMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncRestoreMyRoutineById(
         request,
         response
@@ -758,6 +809,7 @@ export const useRestoreMyRoutineById = () => {
 
 export const useRestoreMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: RestoreMyRoutinesByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -782,6 +834,7 @@ export const useRestoreMyRoutinesByIds = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         ...request.body.routineIds.map(routineId =>
           queryKeys.routine.oneById(routineId as UUID)
         ),
@@ -789,6 +842,10 @@ export const useRestoreMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncRestoreMyRoutinesByIds(
         request,
         response
@@ -810,6 +867,7 @@ export const useRestoreMyRoutinesByIds = () => {
 
 export const useDeleteMyRoutineById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: DeleteMyRoutineByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -834,11 +892,16 @@ export const useDeleteMyRoutineById = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         queryKeys.routine.oneById(request.body.routineId as UUID),
       ];
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncDeleteMyRoutineById(request, response);
     },
     onError: async (error, request) => {
@@ -857,6 +920,7 @@ export const useDeleteMyRoutineById = () => {
 
 export const useDeleteMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: DeleteMyRoutinesByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -881,6 +945,7 @@ export const useDeleteMyRoutinesByIds = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         ...request.body.routineIds.map(routineId =>
           queryKeys.routine.oneById(routineId as UUID)
         ),
@@ -888,6 +953,10 @@ export const useDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncDeleteMyRoutinesByIds(
         request,
         response
@@ -909,6 +978,7 @@ export const useDeleteMyRoutinesByIds = () => {
 
 export const useHardDeleteMyRoutineById = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyRoutineByIdRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -933,11 +1003,16 @@ export const useHardDeleteMyRoutineById = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         queryKeys.routine.oneById(request.body.routineId as UUID),
       ];
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncHardDeleteMyRoutineById(
         request,
         response
@@ -959,6 +1034,7 @@ export const useHardDeleteMyRoutineById = () => {
 
 export const useHardDeleteMyRoutinesByIds = () => {
   const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
 
   const perform = async (request: HardDeleteMyRoutinesByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -983,6 +1059,7 @@ export const useHardDeleteMyRoutinesByIds = () => {
       );
       const targetKeys = [
         queryKeys.routine.all(),
+        queryKeys.station.all(),
         ...request.body.routineIds.map(routineId =>
           queryKeys.routine.oneById(routineId as UUID)
         ),
@@ -990,6 +1067,10 @@ export const useHardDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
+      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      apolloClient.cache.evict({ fieldName: "searchStations" });
+      apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
+      apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncHardDeleteMyRoutinesByIds(
         request,
         response
