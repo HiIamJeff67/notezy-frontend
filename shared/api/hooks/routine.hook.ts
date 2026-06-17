@@ -216,6 +216,47 @@ export const useGetAllMyRoutinesByTimeRange = (
   const fetch = async (
     callbackRequest: GetAllMyRoutinesByTimeRangeRequest
   ): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
+    const requestedFromTime = callbackRequest.param.from.getTime();
+    const requestedToTime = callbackRequest.param.to.getTime();
+    const requestedStationIdsKey = callbackRequest.param.stationIds
+      .slice()
+      .sort()
+      .join(",");
+    const coveredCachedQuery = queryClient
+      .getQueryCache()
+      .findAll({ queryKey: queryKeys.routine.all() })
+      .find(query => {
+        const queryKey = query.queryKey as readonly unknown[];
+        if (queryKey[1] !== "manyByTimeRange") return false;
+        if (query.state.isInvalidated || !query.state.data) return false;
+        if (queryKey[4] !== requestedStationIdsKey) return false;
+
+        const cachedFromTime =
+          typeof queryKey[2] === "number"
+            ? queryKey[2]
+            : typeof queryKey[2] === "string"
+              ? new Date(queryKey[2]).getTime()
+              : Number.NaN;
+        const cachedToTime =
+          typeof queryKey[3] === "number"
+            ? queryKey[3]
+            : typeof queryKey[3] === "string"
+              ? new Date(queryKey[3]).getTime()
+              : Number.NaN;
+
+        return (
+          Number.isFinite(cachedFromTime) &&
+          Number.isFinite(cachedToTime) &&
+          cachedFromTime <= requestedFromTime &&
+          cachedToTime >= requestedToTime
+        );
+      });
+
+    if (coveredCachedQuery?.state.data) {
+      return coveredCachedQuery.state
+        .data as GetAllMyRoutinesByTimeRangeResponse;
+    }
+
     return queryClient.fetchQuery({
       queryKey: queryKeys.routine.manyByTimeRange(
         callbackRequest.param.from,

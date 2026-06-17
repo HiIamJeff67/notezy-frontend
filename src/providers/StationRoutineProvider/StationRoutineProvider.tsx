@@ -128,9 +128,7 @@ export const StationRoutineProvider = ({
 }) => {
   const userManager = useUser();
   const getAllStationsQuerier = useGetAllMyStations();
-  const getAllRoutinesQuerier = useGetAllMyRoutinesByTimeRange(undefined, {
-    staleTime: 0,
-  });
+  const getAllRoutinesQuerier = useGetAllMyRoutinesByTimeRange();
   const getAllRoutineTagsQuerier = useGetAllMyRoutineTags(undefined, {
     staleTime: 0,
   });
@@ -138,8 +136,9 @@ export const StationRoutineProvider = ({
 
   const initialStartAt = new Date();
   initialStartAt.setHours(0, 0, 0, 0);
+  initialStartAt.setDate(initialStartAt.getDate() - 15);
   const initialEndAt = new Date(initialStartAt);
-  initialEndAt.setDate(initialEndAt.getDate() + 7);
+  initialEndAt.setDate(initialEndAt.getDate() + 31);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const routineTitleInputRef = useRef<HTMLInputElement>(null);
@@ -333,26 +332,11 @@ export const StationRoutineProvider = ({
       getAllRoutineTagsQuerier.fetch({}),
     ])
       .then(async ([stationsResponse, routineTagsResponse]) => {
-        const stationIds = stationsResponse.data.map(
-          station => station.id as UUID
-        );
         const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-        const routines =
-          stationIds.length === 0
-            ? []
-            : (
-                await getAllRoutinesQuerier.fetch({
-                  param: {
-                    from: userData.createdAt,
-                    to: new Date(),
-                    stationIds,
-                  },
-                })
-              ).data;
 
         setInitialData({
           stations: stationsResponse.data,
-          routines,
+          routines: [],
           routineTags: routineTagsResponse.data,
           routineTasks: routineTasksResponse.data,
         });
@@ -371,7 +355,6 @@ export const StationRoutineProvider = ({
     await initializationPromiseRef.current;
   }, [
     setInitialData,
-    userManager.userData?.createdAt,
     userManager.userData?.publicId,
   ]);
 
@@ -385,6 +368,23 @@ export const StationRoutineProvider = ({
   const routineTagIdsSignature = routineTags
     .map(routineTag => routineTag.id)
     .join(",");
+  const routineTimePageSignature = (() => {
+    const anchorMonth = new Date(
+      (timeWindow.startAt.getTime() + timeWindow.endAt.getTime()) / 2
+    );
+    anchorMonth.setDate(1);
+    anchorMonth.setHours(0, 0, 0, 0);
+    anchorMonth.setMonth(anchorMonth.getMonth() - 1);
+
+    const monthKeys: string[] = [];
+    const cursor = new Date(anchorMonth);
+    for (let index = 0; index < 3; index++) {
+      monthKeys.push(`${cursor.getFullYear()}-${cursor.getMonth()}`);
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+
+    return monthKeys.join("|");
+  })();
 
   useEffect(() => {
     const currentStationIds = stationsRef.current.keys() as UUID[];
@@ -425,21 +425,54 @@ export const StationRoutineProvider = ({
     let cancelled = false;
     setState("loading");
     void (async () => {
+      const monthRanges = (() => {
+        const anchorMonth = new Date(
+          (timeWindow.startAt.getTime() + timeWindow.endAt.getTime()) / 2
+        );
+        anchorMonth.setDate(1);
+        anchorMonth.setHours(0, 0, 0, 0);
+        anchorMonth.setMonth(anchorMonth.getMonth() - 1);
+
+        const ranges: { from: Date; to: Date }[] = [];
+        const cursor = new Date(anchorMonth);
+        for (let index = 0; index < 3; index++) {
+          const from = new Date(cursor);
+          const to = new Date(cursor);
+          to.setMonth(to.getMonth() + 1);
+          ranges.push({ from, to });
+          cursor.setMonth(cursor.getMonth() + 1);
+        }
+
+        return ranges;
+      })();
       const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-      const routinesResponse = await getAllRoutinesQuerier.fetch({
-        param: {
-          from: timeWindow.startAt,
-          to: timeWindow.endAt,
-          stationIds,
-        },
-      });
-      return [routinesResponse, routineTasksResponse] as const;
+      const routineResponses = await Promise.all(
+        monthRanges.map(monthRange =>
+          getAllRoutinesQuerier.fetch({
+            param: {
+              from: monthRange.from,
+              to: monthRange.to,
+              stationIds,
+            },
+          })
+        )
+      );
+      return [routineResponses, routineTasksResponse] as const;
     })()
-      .then(([routinesResponse, routineTasksResponse]) => {
+      .then(([routineResponses, routineTasksResponse]) => {
         if (cancelled) return;
 
         const routineTasksById = new Map<UUID, RoutineTaskNode>();
         const routineTasksByStationId = new Map<UUID, RoutineTaskNode[]>();
+        const routinesById = new Map<
+          UUID,
+          GetAllMyRoutinesByTimeRangeResponse["data"][number]
+        >();
+        for (const routinesResponse of routineResponses) {
+          for (const routine of routinesResponse.data) {
+            routinesById.set(routine.id as UUID, routine);
+          }
+        }
         for (const routineTask of routineTasksResponse.data) {
           const stationId = routineTask.stationId as UUID;
           const stationNode = stationsRef.current.get(stationId);
@@ -480,7 +513,7 @@ export const StationRoutineProvider = ({
           const stationNode = stationsRef.current.get(stationId);
           if (!stationNode) continue;
 
-          for (const routine of routinesResponse.data.filter(
+          for (const routine of [...routinesById.values()].filter(
             responseRoutine => responseRoutine.stationId === stationId
           )) {
             const existingRoutine = stationNode.routines.find(
@@ -555,6 +588,7 @@ export const StationRoutineProvider = ({
         }
         routineTasksById.clear();
         routineTasksByStationId.clear();
+        routinesById.clear();
         forceUpdate();
       })
       .catch(error => {
@@ -569,7 +603,7 @@ export const StationRoutineProvider = ({
     return () => {
       cancelled = true;
     };
-  }, [forceUpdate, stationIdsSignature, timeWindow.endAt, timeWindow.startAt]);
+  }, [forceUpdate, routineTimePageSignature, stationIdsSignature]);
 
   const refresh = useCallback(async () => {
     setState("syncing");
@@ -591,32 +625,17 @@ export const StationRoutineProvider = ({
         }),
         getAllRoutineTagsQuerier.fetch({}),
       ]);
-      const stationIds = stationsResponse.data.map(
-        station => station.id as UUID
-      );
       const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-      const routines =
-        stationIds.length === 0 || !userManager.userData
-          ? []
-          : (
-              await getAllRoutinesQuerier.fetch({
-                param: {
-                  from: userManager.userData.createdAt,
-                  to: new Date(),
-                  stationIds,
-                },
-              })
-            ).data;
       setInitialData({
         stations: stationsResponse.data,
-        routines,
+        routines: [],
         routineTags: routineTagsResponse.data,
         routineTasks: routineTasksResponse.data,
       });
     } finally {
       setState("idle");
     }
-  }, [forceUpdate, setInitialData, userManager.userData]);
+  }, [forceUpdate, setInitialData]);
 
   const setPresenceQuery = useCallback(
     (query: string) => {

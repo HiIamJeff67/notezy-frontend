@@ -9,7 +9,7 @@ import { useBackgroundImages, useModal, useResizeSidebar } from "@/hooks";
 import RoutineScopeBar from "./RoutineScopeBar";
 import RoutineTable from "./RoutineTable";
 import RoutineTaskTable from "./RoutineTaskTable";
-import TimeRail from "./TimeRail";
+import TimeRails from "./TimeRails/TimeRails";
 
 const RoutineOverviewerContent = () => {
   const modalManager = useModal();
@@ -113,8 +113,8 @@ const RoutineOverviewerContent = () => {
             </ProgressiveBackground>
           )}
         </div>
-        <div className="flex w-full flex-col gap-4 overflow-x-hidden px-2 py-2">
-          <TimeRail />
+        <div className="flex w-full flex-col gap-4 overflow-x-hidden p-4">
+          <TimeRails />
           <RoutineTable />
           <RoutineTaskTable />
         </div>

@@ -9,6 +9,7 @@ export enum LocalStorageKey {
   sidebarWidth = "sidebar_width",
   dashboardWidgets = "dashboard_widgets",
   colors = "colors",
+  timeRailsStationIndexes = "timeRailsStationIndexes",
 }
 
 export interface LocalStorageItem {
@@ -19,4 +20,5 @@ export interface LocalStorageItem {
   [LocalStorageKey.sidebarWidth]: string | null;
   [LocalStorageKey.dashboardWidgets]: string | null;
   [LocalStorageKey.colors]: string | null;
+  [LocalStorageKey.timeRailsStationIndexes]: string | null;
 }

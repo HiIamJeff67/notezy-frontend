@@ -117,8 +117,8 @@ export const queryKeys = {
       [
         "routine",
         "manyByTimeRange",
-        from?.toISOString(),
-        to?.toISOString(),
+        from?.getTime(),
+        to?.getTime(),
         stationIds && stationIds.length > 0
           ? stationIds.slice().sort().join(",")
           : undefined,

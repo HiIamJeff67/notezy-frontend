@@ -79,7 +79,7 @@ const RoutineTaskTable = () => {
 
   return (
     <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-      <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[760px]:flex-col @max-[760px]:items-start">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[760px]:flex-col @max-[760px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <ClipboardList className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
@@ -154,7 +154,7 @@ const RoutineTaskTable = () => {
 
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <Table className="table-fixed text-xs">
-          <TableHeader className="[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card">
+          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card">
             <TableRow className="bg-muted/15">
               <TableHead className="h-9 w-[19%] px-2">Task</TableHead>
               <TableHead className="h-9 w-[10%] px-2">Station</TableHead>
