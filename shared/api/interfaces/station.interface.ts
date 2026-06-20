@@ -19,11 +19,11 @@ export const GetMyStationByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     stationId: z.uuidv4(),
-    onlyDeleted: z.number().int().min(0).max(2).optional(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyStationByIdRequest = z.infer<
+export type GetMyStationByIdRequest = z.input<
   typeof GetMyStationByIdRequestSchema
 >;
 
@@ -58,12 +58,15 @@ export const GetAllMyStationsRequestSchema = NotezyRequestSchema.extend({
       authorization: z.string().optional(),
     })
     .optional(),
-  param: z.object({
-    onlyDeleted: z.number().int().min(0).max(2).optional(),
-  }),
+  param: z
+    .object({
+      areDeleted: z.boolean().optional().default(false),
+    })
+    .optional()
+    .default({ areDeleted: false }),
 });
 
-export type GetAllMyStationsRequest = z.infer<
+export type GetAllMyStationsRequest = z.input<
   typeof GetAllMyStationsRequestSchema
 >;
 
@@ -72,7 +75,6 @@ export const GetAllMyStationsResponseSchema = NotezyResponseSchema.extend({
     z.object({
       id: z.uuidv4(),
       name: z.string(),
-      description: z.string(),
       icon: z.enum(AllSupportedIcons).nullable(),
       headerBackgroundURL: z.url().nullable(),
       permission: z.enum(AllAccessControlPermissions),

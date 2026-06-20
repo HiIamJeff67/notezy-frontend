@@ -123,6 +123,26 @@ export const useRoutineTagLogic = ({
     [createRoutineTagMutator, forceUpdate, routineTagsRef]
   );
 
+  const upsertRoutineTagNode = useCallback(
+    (routineTagNode: RoutineTagNode): RoutineTagNode => {
+      const existingRoutineTag = routineTagsRef.current.get(routineTagNode.id);
+      if (existingRoutineTag) {
+        Object.assign(existingRoutineTag, {
+          ...routineTagNode,
+          isOpen: existingRoutineTag.isOpen,
+          routines: existingRoutineTag.routines,
+          routineCount: existingRoutineTag.routineCount,
+        });
+      } else {
+        routineTagsRef.current.set(routineTagNode.id, routineTagNode);
+      }
+
+      forceUpdate();
+      return existingRoutineTag ?? routineTagNode;
+    },
+    [forceUpdate, routineTagsRef]
+  );
+
   const updateRoutineTag = useCallback(
     async (
       routineTagId: UUID,
@@ -275,72 +295,81 @@ export const useRoutineTagLogic = ({
     };
   }, [editingRoutineTagNode, renameEditingRoutineTag]);
 
+  const mergeSearchedRoutineTags = useCallback(
+    (searchEdges: Array<{ node?: unknown } | null> = []) => {
+      for (const edge of searchEdges) {
+        if (!edge?.node) continue;
+
+        const node = edge.node as unknown as {
+          id: UUID;
+          name: string;
+          color: string;
+          icon: GraphQLSupportedIcon | null;
+          updatedAt: Date | string | number;
+          createdAt: Date | string | number;
+        };
+        const existingRoutineTag = routineTagsRef.current.get(node.id);
+        const icon = (() => {
+          switch (node.icon) {
+            case GraphQLSupportedIcon.SupportedIconBooks:
+              return SupportedIcon.Books;
+            case GraphQLSupportedIcon.SupportedIconCalendar:
+              return SupportedIcon.Calendar;
+            case GraphQLSupportedIcon.SupportedIconCheckMark:
+              return SupportedIcon.CheckMark;
+            case GraphQLSupportedIcon.SupportedIconClock:
+              return SupportedIcon.Clock;
+            case GraphQLSupportedIcon.SupportedIconFire:
+              return SupportedIcon.Fire;
+            case GraphQLSupportedIcon.SupportedIconFolderOpen:
+              return SupportedIcon.FolderOpen;
+            case GraphQLSupportedIcon.SupportedIconGrinningFace:
+              return SupportedIcon.GrinningFace;
+            case GraphQLSupportedIcon.SupportedIconLightbulb:
+              return SupportedIcon.Lightbulb;
+            case GraphQLSupportedIcon.SupportedIconNotebook:
+              return SupportedIcon.Notebook;
+            case GraphQLSupportedIcon.SupportedIconPencilPaper:
+              return SupportedIcon.PencilPaper;
+            case GraphQLSupportedIcon.SupportedIconPin:
+              return SupportedIcon.Pin;
+            case GraphQLSupportedIcon.SupportedIconRedHeart:
+              return SupportedIcon.RedHeart;
+            case GraphQLSupportedIcon.SupportedIconRocket:
+              return SupportedIcon.Rocket;
+            case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
+              return SupportedIcon.SmilingFaceWithSmilingEyes;
+            case GraphQLSupportedIcon.SupportedIconStar:
+              return SupportedIcon.Star;
+            default:
+              return null;
+          }
+        })();
+        routineTagsRef.current.set(node.id, {
+          id: node.id,
+          name: node.name,
+          color: node.color,
+          icon,
+          updatedAt: new Date(node.updatedAt),
+          createdAt: new Date(node.createdAt),
+          routines: existingRoutineTag?.routines ?? [],
+          routineCount: existingRoutineTag?.routineCount ?? 0,
+          isOpen: existingRoutineTag?.isOpen ?? false,
+        });
+      }
+      if (searchEdges.length > 0) forceUpdate();
+    },
+    [forceUpdate, routineTagsRef]
+  );
+
   useEffect(() => {
-    const searchEdges =
-      searchRoutineTagsData?.searchRoutineTags?.searchEdges ?? [];
-    for (const edge of searchEdges) {
-      const node = edge.node as unknown as {
-        id: UUID;
-        name: string;
-        color: string;
-        icon: GraphQLSupportedIcon | null;
-        updatedAt: Date | string | number;
-        createdAt: Date | string | number;
-      };
-      const existingRoutineTag = routineTagsRef.current.get(node.id);
-      const icon = (() => {
-        switch (node.icon) {
-          case GraphQLSupportedIcon.SupportedIconBooks:
-            return SupportedIcon.Books;
-          case GraphQLSupportedIcon.SupportedIconCalendar:
-            return SupportedIcon.Calendar;
-          case GraphQLSupportedIcon.SupportedIconCheckMark:
-            return SupportedIcon.CheckMark;
-          case GraphQLSupportedIcon.SupportedIconClock:
-            return SupportedIcon.Clock;
-          case GraphQLSupportedIcon.SupportedIconFire:
-            return SupportedIcon.Fire;
-          case GraphQLSupportedIcon.SupportedIconFolderOpen:
-            return SupportedIcon.FolderOpen;
-          case GraphQLSupportedIcon.SupportedIconGrinningFace:
-            return SupportedIcon.GrinningFace;
-          case GraphQLSupportedIcon.SupportedIconLightbulb:
-            return SupportedIcon.Lightbulb;
-          case GraphQLSupportedIcon.SupportedIconNotebook:
-            return SupportedIcon.Notebook;
-          case GraphQLSupportedIcon.SupportedIconPencilPaper:
-            return SupportedIcon.PencilPaper;
-          case GraphQLSupportedIcon.SupportedIconPin:
-            return SupportedIcon.Pin;
-          case GraphQLSupportedIcon.SupportedIconRedHeart:
-            return SupportedIcon.RedHeart;
-          case GraphQLSupportedIcon.SupportedIconRocket:
-            return SupportedIcon.Rocket;
-          case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
-            return SupportedIcon.SmilingFaceWithSmilingEyes;
-          case GraphQLSupportedIcon.SupportedIconStar:
-            return SupportedIcon.Star;
-          default:
-            return null;
-        }
-      })();
-      routineTagsRef.current.set(node.id, {
-        id: node.id,
-        name: node.name,
-        color: node.color,
-        icon,
-        updatedAt: new Date(node.updatedAt),
-        createdAt: new Date(node.createdAt),
-        routines: existingRoutineTag?.routines ?? [],
-        routineCount: existingRoutineTag?.routineCount ?? 0,
-        isOpen: existingRoutineTag?.isOpen ?? false,
-      });
-    }
-    if (searchEdges.length > 0) forceUpdate();
-  }, [forceUpdate, routineTagsRef, searchRoutineTagsData]);
+    mergeSearchedRoutineTags(
+      searchRoutineTagsData?.searchRoutineTags?.searchEdges ?? []
+    );
+  }, [mergeSearchedRoutineTags, searchRoutineTagsData]);
 
   const searchRoutineTags = useCallback(async (): Promise<void> => {
-    await executeSearch({
+    const result = await executeSearch({
       variables: {
         input: {
           query: searchRoutineTagsInput.query,
@@ -350,7 +379,8 @@ export const useRoutineTagLogic = ({
         },
       },
     }).retain();
-  }, [executeSearch, searchRoutineTagsInput.query]);
+    mergeSearchedRoutineTags(result.data?.searchRoutineTags.searchEdges ?? []);
+  }, [executeSearch, mergeSearchedRoutineTags, searchRoutineTagsInput.query]);
 
   const loadMoreRoutineTags = useCallback(async (): Promise<void> => {
     const connection = searchRoutineTagsData?.searchRoutineTags;
@@ -406,6 +436,7 @@ export const useRoutineTagLogic = ({
     expandRoutinesByTagId,
     toggleRoutineTag,
     createRoutineTag,
+    upsertRoutineTagNode,
     isCreatingRoutineTag: createRoutineTagMutator.isPending,
     updateRoutineTag,
     isUpdatingRoutineTag: updateRoutineTagMutator.isPending,

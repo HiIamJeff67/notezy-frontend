@@ -126,7 +126,8 @@ export const useGetMySubShelfById = (
 
   const query = useQuery<GetMySubShelfByIdResponse, Error>({
     queryKey: queryKeys.subShelf.oneById(
-      hookRequest?.param.subShelfId as UUID | undefined
+      hookRequest?.param.subShelfId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -141,7 +142,8 @@ export const useGetMySubShelfById = (
   ): Promise<GetMySubShelfByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.oneById(
-        callbackRequest.param.subShelfId as UUID | undefined
+        callbackRequest.param.subShelfId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -212,7 +214,8 @@ export const useGetMySubShelvesByPrevSubShelfId = (
 
   const query = useQuery<GetMySubShelvesByPrevSubShelfIdResponse, Error>({
     queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-      hookRequest?.param.prevSubShelfId as UUID | undefined
+      hookRequest?.param.prevSubShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -227,7 +230,8 @@ export const useGetMySubShelvesByPrevSubShelfId = (
   ): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-        callbackRequest.param.prevSubShelfId as UUID | undefined
+        callbackRequest.param.prevSubShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -298,7 +302,8 @@ export const useGetAllMySubShelvesByRootShelfId = (
 
   const query = useQuery<GetAllMySubShelvesByRootShelfIdResponse, Error>({
     queryKey: queryKeys.subShelf.manyByRootShelfId(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest?.param.rootShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: options?.staleTime ?? UseQueryDefaultOptions.staleTime,
@@ -313,7 +318,8 @@ export const useGetAllMySubShelvesByRootShelfId = (
   ): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.manyByRootShelfId(
-        callbackRequest.param.rootShelfId as UUID | undefined
+        callbackRequest.param.rootShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -388,7 +394,8 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
     Error
   >({
     queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-      hookRequest?.param.prevSubShelfId as UUID | undefined
+      hookRequest?.param.prevSubShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -403,7 +410,8 @@ export const useGetMySubShelvesAndItemsByPrevSubShelfId = (
   ): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-        callbackRequest.param.prevSubShelfId as UUID | undefined
+        callbackRequest.param.prevSubShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

@@ -221,7 +221,9 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
 
         {!stationRoutineManager.isRoutineTagEditing(routineTag.id) && (
           <>
-            <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
+            {routineTag.routineCount > 0 && (
+              <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
+            )}
             <CollapsibleContent>
               <RoutineMenu routines={routineTag.routines} />
             </CollapsibleContent>

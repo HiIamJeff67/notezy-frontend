@@ -1,5 +1,10 @@
+import { useGetMyRoutineTagById } from "@shared/api/hooks/routineTag.hook";
 import type { SupportedIcon } from "@shared/api/interfaces/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { RoutineTagNode } from "@shared/types/routineTagNode.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import ColorSelector from "@/components/commons/ColorSelector/ColorSelector";
@@ -31,7 +36,10 @@ const RoutineTagInspector = ({
 }: RoutineTagInspectorProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
-  const routineTagNode = stationRoutineManager.getRoutineTagById(routineTagId);
+  const getRoutineTagQuerier = useGetMyRoutineTagById();
+
+  const [isLoadingRoutineTagDetail, setIsLoadingRoutineTagDetail] =
+    useState(false);
   const [values, setValues] = useState<{
     name: string;
     color: string;
@@ -43,13 +51,59 @@ const RoutineTagInspector = ({
   });
 
   useEffect(() => {
-    if (!isOpen || !routineTagNode) return;
+    if (!isOpen) return;
+    let cancelled = false;
     setValues({
-      name: routineTagNode.name,
-      color: routineTagNode.color,
-      icon: routineTagNode.icon,
+      name: "",
+      color: "#64748b",
+      icon: null,
     });
-  }, [isOpen, routineTagNode]);
+
+    setIsLoadingRoutineTagDetail(true);
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+    getRoutineTagQuerier
+      .fetch({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          routineTagId,
+        },
+      })
+      .then(response => {
+        if (cancelled || response.success === false || !response.data) return;
+        const routineTagNode: RoutineTagNode = {
+          id: response.data.id as UUID,
+          name: response.data.name,
+          color: response.data.color,
+          icon: response.data.icon,
+          updatedAt: response.data.updatedAt,
+          createdAt: response.data.createdAt,
+          routines: [],
+          routineCount: 0,
+          isOpen: false,
+        };
+        stationRoutineManager.upsertRoutineTagNode(routineTagNode);
+        setValues({
+          name: response.data.name,
+          color: response.data.color,
+          icon: response.data.icon,
+        });
+      })
+      .catch(error => {
+        if (!cancelled) toast.error(languageManager.tError(error));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingRoutineTagDetail(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, routineTagId]);
 
   const saveRoutineTag = async () => {
     const name = values.name.trim();
@@ -74,8 +128,6 @@ const RoutineTagInspector = ({
     }
   };
 
-  if (!routineTagNode) return null;
-
   return (
     <Sheet
       open={isOpen}
@@ -91,12 +143,18 @@ const RoutineTagInspector = ({
           <SheetTitle className="flex min-w-0 items-center gap-2">
             <span className="shrink-0">Edit routine tag of </span>
             <span className="min-w-0 truncate text-foreground">
-              "{routineTagNode.name}"
+              "{values.name || "Routine tag"}"
             </span>
           </SheetTitle>
           <SheetDescription>
             Change the classification used to group routines.
           </SheetDescription>
+          {isLoadingRoutineTagDetail && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Spinner />
+              Loading routine tag details
+            </div>
+          )}
         </SheetHeader>
 
         <form
@@ -116,12 +174,13 @@ const RoutineTagInspector = ({
                 autoComplete="off"
                 maxLength={128}
                 autoFocus
-                onChange={event =>
+                onChange={event => {
+                  const name = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    name: event.currentTarget.value,
-                  }))
-                }
+                    name,
+                  }));
+                }}
               />
             </div>
 
@@ -158,6 +217,7 @@ const RoutineTagInspector = ({
               className="w-full"
               disabled={
                 stationRoutineManager.isUpdatingRoutineTag ||
+                isLoadingRoutineTagDetail ||
                 values.name.trim().length === 0
               }
             >

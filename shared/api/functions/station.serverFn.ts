@@ -47,7 +47,11 @@ export const GetMyStationById = createServerFn({ method: "GET" })
         },
         {}
       )
-    ).toString();
+    );
+    if (request.param?.isDeleted === undefined) {
+      params.set("isDeleted", "false");
+    }
+    const query = params.toString();
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
@@ -55,7 +59,7 @@ export const GetMyStationById = createServerFn({ method: "GET" })
       "/" +
       APIURLPathDictionary.station.getMyStationById +
       "?" +
-      params;
+      query;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -94,9 +98,7 @@ export const GetAllMyStations = createServerFn({ method: "GET" })
   .inputValidator((data: GetAllMyStationsRequest) => data)
   .handler(async ({ data: request }): Promise<GetAllMyStationsResponse> => {
     const params = new URLSearchParams();
-    if (request.param?.onlyDeleted !== undefined) {
-      params.set("onlyDeleted", String(request.param.onlyDeleted));
-    }
+    params.set("areDeleted", String(request.param?.areDeleted ?? false));
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +

@@ -16,10 +16,11 @@ export const GetMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     rootShelfId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyRootShelfByIdRequest = z.infer<
+export type GetMyRootShelfByIdRequest = z.input<
   typeof GetMyRootShelfByIdRequestSchema
 >;
 

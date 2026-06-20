@@ -107,7 +107,8 @@ export const useGetMyStationById = (
 
   const query = useQuery<GetMyStationByIdResponse, Error>({
     queryKey: queryKeys.station.oneById(
-      hookRequest?.param.stationId as UUID | undefined
+      hookRequest?.param.stationId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -122,7 +123,8 @@ export const useGetMyStationById = (
   ): Promise<GetMyStationByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.station.oneById(
-        callbackRequest.param.stationId as UUID | undefined
+        callbackRequest.param.stationId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -186,7 +188,7 @@ export const useGetAllMyStations = (
   };
 
   const query = useQuery<GetAllMyStationsResponse, Error>({
-    queryKey: queryKeys.station.myAll(hookRequest?.param.onlyDeleted),
+    queryKey: queryKeys.station.myAll(hookRequest?.param?.areDeleted ?? false),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
@@ -199,7 +201,9 @@ export const useGetAllMyStations = (
     callbackRequest: GetAllMyStationsRequest
   ): Promise<GetAllMyStationsResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.station.myAll(callbackRequest.param.onlyDeleted),
+      queryKey: queryKeys.station.myAll(
+        callbackRequest.param?.areDeleted ?? false
+      ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       ...options,

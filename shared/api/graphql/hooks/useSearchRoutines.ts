@@ -2,17 +2,11 @@ import { useLazyQuery, useQuery } from "@apollo/client/react";
 import {
   RoutinePeriod as GraphQLRoutinePeriod,
   RoutineStatus as GraphQLRoutineStatus,
-  SupportedIcon as GraphQLSupportedIcon,
   SearchRoutinesDocument,
   type SearchRoutinesQuery,
   type SearchRoutinesQueryVariables,
 } from "@shared/api/graphql/generated/graphql";
-import {
-  AccessControlPermission,
-  RoutinePeriod,
-  RoutineStatus,
-  SupportedIcon,
-} from "@shared/api/interfaces/enums";
+import { RoutinePeriod, RoutineStatus } from "@shared/api/interfaces/enums";
 import { RoutineLocalSimulator } from "@shared/api/local/simulators/routine.simulator";
 import { RoutineLocalSynchronizer } from "@shared/api/local/synchronizers/routine.synchronizer";
 import { useEffect, useMemo, useRef } from "react";
@@ -24,7 +18,6 @@ const alignSearchedRoutines = (
   id: string;
   stationId: string;
   title: string;
-  description: string;
   status: RoutineStatus;
   isPinned: boolean;
   scheduledStartAt: Date;
@@ -34,33 +27,15 @@ const alignSearchedRoutines = (
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  station: {
-    id: string;
-    name: string;
-    description: string;
-    icon: SupportedIcon | null;
-    headerBackgroundURL: string | null;
-    permission: AccessControlPermission;
-    routineCount: number;
-    deletedAt: Date | null;
-    updatedAt: Date;
-    createdAt: Date;
-  };
-  tags: Array<{
-    id: string;
-    name: string;
-    color: string;
-    icon: SupportedIcon | null;
-    updatedAt: Date;
-    createdAt: Date;
-  }>;
+  tagIds: string[];
+  taskIds: string[];
+  itemIds: string[];
 }> =>
   data?.searchRoutines.searchEdges.map(edge => {
     const node = edge.node as unknown as {
       id: string;
       stationId: string;
       title: string;
-      description: string;
       status: GraphQLRoutineStatus;
       isPinned: boolean;
       scheduledStartAt: Date | string | number;
@@ -70,26 +45,9 @@ const alignSearchedRoutines = (
       deletedAt: Date | string | number | null;
       updatedAt: Date | string | number;
       createdAt: Date | string | number;
-      station: {
-        id: string;
-        name: string;
-        description: string;
-        icon: GraphQLSupportedIcon | null;
-        headerBackgroundURL: string | null;
-        permission: AccessControlPermission;
-        routineCount: number;
-        deletedAt: Date | string | number | null;
-        updatedAt: Date | string | number;
-        createdAt: Date | string | number;
-      };
-      tags: Array<{
-        id: string;
-        name: string;
-        color: string;
-        icon: GraphQLSupportedIcon | null;
-        updatedAt: Date | string | number;
-        createdAt: Date | string | number;
-      }>;
+      tagIds?: string[];
+      taskIds?: string[];
+      itemIds?: string[];
     };
 
     const status = (() => {
@@ -118,48 +76,10 @@ const alignSearchedRoutines = (
           return null;
       }
     })();
-    const stationIcon = (() => {
-      switch (node.station.icon) {
-        case GraphQLSupportedIcon.SupportedIconBooks:
-          return SupportedIcon.Books;
-        case GraphQLSupportedIcon.SupportedIconCalendar:
-          return SupportedIcon.Calendar;
-        case GraphQLSupportedIcon.SupportedIconCheckMark:
-          return SupportedIcon.CheckMark;
-        case GraphQLSupportedIcon.SupportedIconClock:
-          return SupportedIcon.Clock;
-        case GraphQLSupportedIcon.SupportedIconFire:
-          return SupportedIcon.Fire;
-        case GraphQLSupportedIcon.SupportedIconFolderOpen:
-          return SupportedIcon.FolderOpen;
-        case GraphQLSupportedIcon.SupportedIconGrinningFace:
-          return SupportedIcon.GrinningFace;
-        case GraphQLSupportedIcon.SupportedIconLightbulb:
-          return SupportedIcon.Lightbulb;
-        case GraphQLSupportedIcon.SupportedIconNotebook:
-          return SupportedIcon.Notebook;
-        case GraphQLSupportedIcon.SupportedIconPencilPaper:
-          return SupportedIcon.PencilPaper;
-        case GraphQLSupportedIcon.SupportedIconPin:
-          return SupportedIcon.Pin;
-        case GraphQLSupportedIcon.SupportedIconRedHeart:
-          return SupportedIcon.RedHeart;
-        case GraphQLSupportedIcon.SupportedIconRocket:
-          return SupportedIcon.Rocket;
-        case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
-          return SupportedIcon.SmilingFaceWithSmilingEyes;
-        case GraphQLSupportedIcon.SupportedIconStar:
-          return SupportedIcon.Star;
-        default:
-          return null;
-      }
-    })();
-
     return {
       id: node.id,
       stationId: node.stationId,
       title: node.title,
-      description: node.description,
       status,
       isPinned: node.isPinned,
       scheduledStartAt: new Date(node.scheduledStartAt ?? 0),
@@ -169,69 +89,9 @@ const alignSearchedRoutines = (
       deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt ?? 0),
       updatedAt: new Date(node.updatedAt ?? 0),
       createdAt: new Date(node.createdAt ?? 0),
-      station: {
-        id: node.station.id,
-        name: node.station.name,
-        description: node.station.description,
-        icon: stationIcon,
-        headerBackgroundURL: node.station.headerBackgroundURL,
-        permission: node.station
-          .permission as unknown as AccessControlPermission,
-        routineCount: node.station.routineCount,
-        deletedAt:
-          node.station.deletedAt === null
-            ? null
-            : new Date(node.station.deletedAt ?? 0),
-        updatedAt: new Date(node.station.updatedAt ?? 0),
-        createdAt: new Date(node.station.createdAt ?? 0),
-      },
-      tags: node.tags.map(tag => {
-        const icon = (() => {
-          switch (tag.icon) {
-            case GraphQLSupportedIcon.SupportedIconBooks:
-              return SupportedIcon.Books;
-            case GraphQLSupportedIcon.SupportedIconCalendar:
-              return SupportedIcon.Calendar;
-            case GraphQLSupportedIcon.SupportedIconCheckMark:
-              return SupportedIcon.CheckMark;
-            case GraphQLSupportedIcon.SupportedIconClock:
-              return SupportedIcon.Clock;
-            case GraphQLSupportedIcon.SupportedIconFire:
-              return SupportedIcon.Fire;
-            case GraphQLSupportedIcon.SupportedIconFolderOpen:
-              return SupportedIcon.FolderOpen;
-            case GraphQLSupportedIcon.SupportedIconGrinningFace:
-              return SupportedIcon.GrinningFace;
-            case GraphQLSupportedIcon.SupportedIconLightbulb:
-              return SupportedIcon.Lightbulb;
-            case GraphQLSupportedIcon.SupportedIconNotebook:
-              return SupportedIcon.Notebook;
-            case GraphQLSupportedIcon.SupportedIconPencilPaper:
-              return SupportedIcon.PencilPaper;
-            case GraphQLSupportedIcon.SupportedIconPin:
-              return SupportedIcon.Pin;
-            case GraphQLSupportedIcon.SupportedIconRedHeart:
-              return SupportedIcon.RedHeart;
-            case GraphQLSupportedIcon.SupportedIconRocket:
-              return SupportedIcon.Rocket;
-            case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
-              return SupportedIcon.SmilingFaceWithSmilingEyes;
-            case GraphQLSupportedIcon.SupportedIconStar:
-              return SupportedIcon.Star;
-            default:
-              return null;
-          }
-        })();
-
-        return {
-          id: tag.id,
-          name: tag.name,
-          color: tag.color,
-          icon,
-          updatedAt: new Date(tag.updatedAt ?? 0),
-          createdAt: new Date(tag.createdAt ?? 0),
-        };
-      }),
+      tagIds: node.tagIds ?? [],
+      taskIds: node.taskIds ?? [],
+      itemIds: node.itemIds ?? [],
     };
   }) ?? [];
 
@@ -263,12 +123,18 @@ export const useSearchRoutinesLazyQuery = (
             id: string;
             stationId: string;
             updatedAt: Date | string | number;
+            tagIds?: string[];
+            taskIds?: string[];
+            itemIds?: string[];
           };
           return {
             cursor: edge.encodedSearchCursor,
             id: node.id,
             stationId: node.stationId,
             updatedAt: new Date(node.updatedAt ?? 0).getTime(),
+            tagIds: node.tagIds ?? [],
+            taskIds: node.taskIds ?? [],
+            itemIds: node.itemIds ?? [],
           };
         }) ?? [],
     });
@@ -401,12 +267,18 @@ export const useSearchRoutinesQuery = (
             id: string;
             stationId: string;
             updatedAt: Date | string | number;
+            tagIds?: string[];
+            taskIds?: string[];
+            itemIds?: string[];
           };
           return {
             cursor: edge.encodedSearchCursor,
             id: node.id,
             stationId: node.stationId,
             updatedAt: new Date(node.updatedAt ?? 0).getTime(),
+            tagIds: node.tagIds ?? [],
+            taskIds: node.taskIds ?? [],
+            itemIds: node.itemIds ?? [],
           };
         }) ?? [],
     });

@@ -93,7 +93,11 @@ export class BlockPackLocalSimulator {
       )
       .limit(1);
 
-    return rows[0] ?? null;
+    const blockPack = rows[0];
+    if (!blockPack) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    return (blockPack.deletedAt !== null) === isDeleted ? blockPack : null;
   };
 
   static simulateGetMyBlockPackAndItsParentById = async (
@@ -144,7 +148,11 @@ export class BlockPackLocalSimulator {
       )
       .limit(1);
 
-    return rows[0] ?? null;
+    const blockPack = rows[0];
+    if (!blockPack) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    return (blockPack.deletedAt !== null) === isDeleted ? blockPack : null;
   };
 
   static simulateGetMyBlockPacksByParentSubShelfId = async (
@@ -157,7 +165,7 @@ export class BlockPackLocalSimulator {
     });
     if (!loggedInUser) return [];
 
-    return await localDB
+    const blockPacks = await localDB
       .select({
         id: BlockPack.id,
         parentSubShelfId: BlockPack.parentSubShelfId,
@@ -186,6 +194,11 @@ export class BlockPackLocalSimulator {
           )
         )
       );
+
+    const areDeleted = request.param.areDeleted ?? false;
+    return blockPacks.filter(
+      blockPack => (blockPack.deletedAt !== null) === areDeleted
+    );
   };
 
   static simulateGetAllMyBlockPacksByRootShelfId = async (
@@ -198,7 +211,7 @@ export class BlockPackLocalSimulator {
     });
     if (!loggedInUser) return [];
 
-    return await localDB
+    const blockPacks = await localDB
       .select({
         id: BlockPack.id,
         parentSubShelfId: BlockPack.parentSubShelfId,
@@ -228,6 +241,11 @@ export class BlockPackLocalSimulator {
           )
         )
       );
+
+    const areDeleted = request.param.areDeleted ?? false;
+    return blockPacks.filter(
+      blockPack => (blockPack.deletedAt !== null) === areDeleted
+    );
   };
 
   static simulateCreateBlockPack = async (

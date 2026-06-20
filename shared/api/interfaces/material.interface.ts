@@ -16,10 +16,11 @@ export const GetMyMaterialByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     materialId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyMaterialByIdRequest = z.infer<
+export type GetMyMaterialByIdRequest = z.input<
   typeof GetMyMaterialByIdRequestSchema
 >;
 
@@ -57,10 +58,11 @@ export const GetMyMaterialAndItsParentByIdRequestSchema =
       .optional(),
     param: z.object({
       materialId: z.uuidv4(),
+      isDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMyMaterialAndItsParentByIdRequest = z.infer<
+export type GetMyMaterialAndItsParentByIdRequest = z.input<
   typeof GetMyMaterialAndItsParentByIdRequestSchema
 >;
 
@@ -106,10 +108,11 @@ export const GetMyMaterialsByParentSubShelfIdRequestSchema =
       .optional(),
     param: z.object({
       parentSubShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMyMaterialsByParentSubShelfIdRequest = z.infer<
+export type GetMyMaterialsByParentSubShelfIdRequest = z.input<
   typeof GetMyMaterialsByParentSubShelfIdRequestSchema
 >;
 
@@ -150,10 +153,11 @@ export const GetAllMyMaterialsByRootShelfIdRequestSchema =
       .optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMyMaterialsByRootShelfIdRequest = z.infer<
+export type GetAllMyMaterialsByRootShelfIdRequest = z.input<
   typeof GetAllMyMaterialsByRootShelfIdRequestSchema
 >;
 

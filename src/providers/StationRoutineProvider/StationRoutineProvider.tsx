@@ -1,12 +1,6 @@
 import { useGetAllMyRoutinesByTimeRange } from "@shared/api/hooks/routine.hook";
-import { useGetAllMyRoutineTags } from "@shared/api/hooks/routineTag.hook";
-import { useGetAllMyRoutineTasks } from "@shared/api/hooks/routineTask.hook";
-import { useGetAllMyStations } from "@shared/api/hooks/station.hook";
 import { RoutineStatus, RoutineTaskStatus } from "@shared/api/interfaces/enums";
 import type { GetAllMyRoutinesByTimeRangeResponse } from "@shared/api/interfaces/routine.interface";
-import type { GetAllMyRoutineTagsResponse } from "@shared/api/interfaces/routineTag.interface";
-import type { GetAllMyRoutineTasksResponse } from "@shared/api/interfaces/routineTask.interface";
-import type { GetAllMyStationsResponse } from "@shared/api/interfaces/station.interface";
 import { MaxTriggerValue } from "@shared/constants/triggerLimitations.constant";
 import { LRUCache } from "@shared/lib/LRUCache";
 import type { RoutineNode } from "@shared/types/routineNode.type";
@@ -27,13 +21,6 @@ import { useRoutineLogic } from "./RoutineLogic";
 import { useRoutineTagLogic } from "./RoutineTagLogic";
 import { useRoutineTaskLogic } from "./RoutineTaskLogic";
 import { useStationLogic } from "./StationLogic";
-
-export interface StationRoutineInitialData {
-  stations: GetAllMyStationsResponse["data"];
-  routines: GetAllMyRoutinesByTimeRangeResponse["data"];
-  routineTags: GetAllMyRoutineTagsResponse["data"];
-  routineTasks: GetAllMyRoutineTasksResponse["data"];
-}
 
 export type StationRoutineInspectorTarget =
   | { type: "station"; id: UUID }
@@ -94,7 +81,6 @@ interface StationRoutineBaseContext {
   inspectorTarget: StationRoutineInspectorTarget | null;
   openInspector: (target: StationRoutineInspectorTarget) => void;
   closeInspector: () => void;
-  setInitialData: (data: StationRoutineInitialData) => void;
   initializeStationRoutineData: () => Promise<void>;
   refresh: () => Promise<void>;
   setViewMode: (viewMode: "overview" | "station") => void;
@@ -102,8 +88,6 @@ interface StationRoutineBaseContext {
   setPresenceQuery: (query: string) => void;
   setStationPresence: (stationIds: UUID[]) => void;
   setRoutineTagPresence: (routineTagIds: UUID[]) => void;
-  toggleStationPresence: (stationId: UUID) => void;
-  toggleRoutineTagPresence: (routineTagId: UUID) => void;
   toggleUntaggedRoutines: () => void;
   resetPresence: () => void;
   setTimeWindow: (timeWindow: { startAt: Date; endAt: Date }) => void;
@@ -127,12 +111,7 @@ export const StationRoutineProvider = ({
   children: React.ReactNode;
 }) => {
   const userManager = useUser();
-  const getAllStationsQuerier = useGetAllMyStations();
   const getAllRoutinesQuerier = useGetAllMyRoutinesByTimeRange();
-  const getAllRoutineTagsQuerier = useGetAllMyRoutineTags(undefined, {
-    staleTime: 0,
-  });
-  const getAllRoutineTasksQuerier = useGetAllMyRoutineTasks();
 
   const initialStartAt = new Date();
   initialStartAt.setHours(0, 0, 0, 0);
@@ -192,6 +171,8 @@ export const StationRoutineProvider = ({
     stationsRef,
     routineTagsRef,
     forceUpdate,
+    getAllRoutineTasksByStationId:
+      routineTaskLogic.getAllRoutineTasksByStationId,
   });
   const stationLogic = useStationLogic({
     inputRef,
@@ -199,6 +180,8 @@ export const StationRoutineProvider = ({
     routineTagsRef,
     forceUpdate,
     expandRoutinesByStationId: routineLogic.expandRoutinesByStationId,
+    getAllRoutineTasksByStationId:
+      routineTaskLogic.getAllRoutineTasksByStationId,
     selectedRoutineId: routineLogic.selectedRoutineId,
     selectRoutine: routineLogic.selectRoutine,
   });
@@ -209,114 +192,6 @@ export const StationRoutineProvider = ({
     forceUpdate,
     expandRoutinesByTagId: routineLogic.expandRoutinesByTagId,
   });
-  const setInitialData = useCallback(
-    (data: StationRoutineInitialData) => {
-      const tasksByStationId = new Map<UUID, RoutineTaskNode[]>();
-      const routineTasksById = new Map<UUID, RoutineTaskNode>();
-      const routinesByTagId = new Map<UUID, RoutineNode[]>();
-      for (const routineTask of data.routineTasks) {
-        const stationId = routineTask.stationId as UUID;
-        const stationTasks = tasksByStationId.get(stationId) ?? [];
-        const routineTaskNode = {
-          id: routineTask.id as UUID,
-          stationId,
-          title: routineTask.title,
-          purpose: routineTask.purpose,
-          payload: routineTask.payload,
-          priority: routineTask.priority,
-          status: routineTask.status,
-          attempts: routineTask.attempts,
-          maxAttempts: routineTask.maxAttempts,
-          scheduledAt: routineTask.scheduledAt,
-          actualStartedAt: routineTask.actualStartedAt,
-          actualEndedAt: routineTask.actualEndedAt,
-          updatedAt: routineTask.updatedAt,
-          createdAt: routineTask.createdAt,
-        };
-        stationTasks.push(routineTaskNode);
-        routineTasksById.set(routineTaskNode.id, routineTaskNode);
-        tasksByStationId.set(stationId, stationTasks);
-      }
-
-      for (const station of data.stations) {
-        const stationId = station.id as UUID;
-        const existingStation = stationsRef.current.get(stationId);
-        const routines = data.routines
-          .filter(routine => routine.stationId === station.id)
-          .map(routine => {
-            const existingRoutine = existingStation?.routines.find(
-              stationRoutine => stationRoutine.id === routine.id
-            );
-            const routineNode: RoutineNode = {
-              id: routine.id as UUID,
-              stationId,
-              title: routine.title,
-              description: routine.description,
-              status: routine.status,
-              isPinned: routine.isPinned,
-              scheduledStartAt: routine.scheduledStartAt,
-              scheduledEndAt: routine.scheduledEndAt,
-              period: routine.period,
-              timezone: routine.timezone,
-              deletedAt: routine.deletedAt,
-              updatedAt: routine.updatedAt,
-              createdAt: routine.createdAt,
-              isOpen: existingRoutine?.isOpen ?? false,
-              routineTagIds: routine.tagIds as UUID[],
-              routineTasks: routine.taskIds
-                .map(taskId => routineTasksById.get(taskId as UUID))
-                .filter(
-                  (routineTask): routineTask is RoutineTaskNode =>
-                    routineTask !== undefined
-                ),
-            };
-            for (const routineTagId of routineNode.routineTagIds) {
-              const tagRoutines = routinesByTagId.get(routineTagId) ?? [];
-              tagRoutines.push(routineNode);
-              routinesByTagId.set(routineTagId, tagRoutines);
-            }
-            return routineNode;
-          });
-        stationsRef.current.set(stationId, {
-          id: stationId,
-          name: station.name,
-          description: station.description,
-          icon: station.icon,
-          headerBackgroundURL: station.headerBackgroundURL,
-          permission: station.permission,
-          routineCount: routines.length,
-          deletedAt: station.deletedAt,
-          updatedAt: station.updatedAt,
-          createdAt: station.createdAt,
-          isOpen: existingStation?.isOpen ?? false,
-          routines,
-          routineTasks: tasksByStationId.get(stationId) ?? [],
-        });
-      }
-
-      for (const routineTag of data.routineTags) {
-        const routineTagId = routineTag.id as UUID;
-        const existingRoutineTag = routineTagsRef.current.get(routineTagId);
-        routineTagsRef.current.set(routineTagId, {
-          id: routineTagId,
-          name: routineTag.name,
-          color: routineTag.color,
-          icon: routineTag.icon,
-          updatedAt: routineTag.updatedAt,
-          createdAt: routineTag.createdAt,
-          routines: routinesByTagId.get(routineTagId) ?? [],
-          routineCount: routinesByTagId.get(routineTagId)?.length ?? 0,
-          isOpen: existingRoutineTag?.isOpen ?? false,
-        });
-      }
-      tasksByStationId.clear();
-      routineTasksById.clear();
-      routinesByTagId.clear();
-      forceUpdate();
-    },
-    [forceUpdate]
-  );
-
   const initializeStationRoutineData = useCallback(async (): Promise<void> => {
     const userData = userManager.userData;
     if (!userData) return;
@@ -328,18 +203,10 @@ export const StationRoutineProvider = ({
 
     setState("loading");
     initializationPromiseRef.current = Promise.all([
-      getAllStationsQuerier.fetch({ param: {} }),
-      getAllRoutineTagsQuerier.fetch({}),
+      stationLogic.searchStations(""),
+      routineTagLogic.searchRoutineTags(),
     ])
-      .then(async ([stationsResponse, routineTagsResponse]) => {
-        const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-
-        setInitialData({
-          stations: stationsResponse.data,
-          routines: [],
-          routineTags: routineTagsResponse.data,
-          routineTasks: routineTasksResponse.data,
-        });
+      .then(() => {
         initializedUserPublicIdRef.current = userData.publicId;
       })
       .catch(error => {
@@ -354,7 +221,8 @@ export const StationRoutineProvider = ({
 
     await initializationPromiseRef.current;
   }, [
-    setInitialData,
+    routineTagLogic.searchRoutineTags,
+    stationLogic.searchStations,
     userManager.userData?.publicId,
   ]);
 
@@ -425,7 +293,7 @@ export const StationRoutineProvider = ({
     let cancelled = false;
     setState("loading");
     void (async () => {
-      const monthRanges = (() => {
+      const timeRange = (() => {
         const anchorMonth = new Date(
           (timeWindow.startAt.getTime() + timeWindow.endAt.getTime()) / 2
         );
@@ -433,80 +301,29 @@ export const StationRoutineProvider = ({
         anchorMonth.setHours(0, 0, 0, 0);
         anchorMonth.setMonth(anchorMonth.getMonth() - 1);
 
-        const ranges: { from: Date; to: Date }[] = [];
-        const cursor = new Date(anchorMonth);
-        for (let index = 0; index < 3; index++) {
-          const from = new Date(cursor);
-          const to = new Date(cursor);
-          to.setMonth(to.getMonth() + 1);
-          ranges.push({ from, to });
-          cursor.setMonth(cursor.getMonth() + 1);
-        }
+        const from = new Date(anchorMonth);
+        const to = new Date(anchorMonth);
+        to.setMonth(to.getMonth() + 3);
 
-        return ranges;
+        return { from, to };
       })();
-      const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-      const routineResponses = await Promise.all(
-        monthRanges.map(monthRange =>
-          getAllRoutinesQuerier.fetch({
-            param: {
-              from: monthRange.from,
-              to: monthRange.to,
-              stationIds,
-            },
-          })
-        )
-      );
-      return [routineResponses, routineTasksResponse] as const;
+      return await getAllRoutinesQuerier.fetch({
+        param: {
+          from: timeRange.from,
+          to: timeRange.to,
+          stationIds,
+        },
+      });
     })()
-      .then(([routineResponses, routineTasksResponse]) => {
+      .then(routineResponse => {
         if (cancelled) return;
 
-        const routineTasksById = new Map<UUID, RoutineTaskNode>();
-        const routineTasksByStationId = new Map<UUID, RoutineTaskNode[]>();
         const routinesById = new Map<
           UUID,
           GetAllMyRoutinesByTimeRangeResponse["data"][number]
         >();
-        for (const routinesResponse of routineResponses) {
-          for (const routine of routinesResponse.data) {
-            routinesById.set(routine.id as UUID, routine);
-          }
-        }
-        for (const routineTask of routineTasksResponse.data) {
-          const stationId = routineTask.stationId as UUID;
-          const stationNode = stationsRef.current.get(stationId);
-          const existingRoutineTask = stationNode?.routineTasks.find(
-            stationRoutineTask => stationRoutineTask.id === routineTask.id
-          );
-          const routineTaskNode: RoutineTaskNode = {
-            id: routineTask.id as UUID,
-            stationId,
-            title: routineTask.title,
-            purpose: routineTask.purpose,
-            payload: routineTask.payload,
-            priority: routineTask.priority,
-            status: routineTask.status,
-            attempts: routineTask.attempts,
-            maxAttempts: routineTask.maxAttempts,
-            scheduledAt: routineTask.scheduledAt,
-            actualStartedAt: routineTask.actualStartedAt,
-            actualEndedAt: routineTask.actualEndedAt,
-            updatedAt: routineTask.updatedAt,
-            createdAt: routineTask.createdAt,
-          };
-          if (existingRoutineTask) {
-            Object.assign(existingRoutineTask, routineTaskNode);
-          }
-          const currentRoutineTask = existingRoutineTask ?? routineTaskNode;
-          const stationTasks =
-            routineTasksByStationId.get(currentRoutineTask.stationId) ?? [];
-          stationTasks.push(currentRoutineTask);
-          routineTasksByStationId.set(
-            currentRoutineTask.stationId,
-            stationTasks
-          );
-          routineTasksById.set(currentRoutineTask.id, currentRoutineTask);
+        for (const routine of routineResponse.data) {
+          routinesById.set(routine.id as UUID, routine);
         }
 
         for (const stationId of stationIds) {
@@ -524,7 +341,7 @@ export const StationRoutineProvider = ({
               id: routine.id as UUID,
               stationId,
               title: routine.title,
-              description: routine.description,
+              description: existingRoutine?.description ?? "",
               status: routine.status,
               isPinned: routine.isPinned,
               scheduledStartAt: routine.scheduledStartAt,
@@ -536,8 +353,20 @@ export const StationRoutineProvider = ({
               createdAt: routine.createdAt,
               isOpen: existingRoutine?.isOpen ?? false,
               routineTagIds: routine.tagIds as UUID[],
+              routineTaskIds: routine.taskIds as UUID[],
+              itemIds: routine.itemIds as UUID[],
               routineTasks: routine.taskIds
-                .map(taskId => routineTasksById.get(taskId as UUID))
+                .map(taskId => {
+                  const routineTaskId = taskId as UUID;
+                  const existingRoutineTask =
+                    existingRoutine?.routineTasks.find(
+                      routineTask => routineTask.id === routineTaskId
+                    ) ??
+                    stationNode.routineTasks.find(
+                      routineTask => routineTask.id === routineTaskId
+                    );
+                  return existingRoutineTask;
+                })
                 .filter(
                   (routineTask): routineTask is RoutineTaskNode =>
                     routineTask !== undefined
@@ -581,13 +410,7 @@ export const StationRoutineProvider = ({
               }
             }
           }
-
-          stationNode.routineTasks =
-            routineTasksByStationId.get(stationId) ?? [];
-          stationNode.routineCount = stationNode.routines.length;
         }
-        routineTasksById.clear();
-        routineTasksByStationId.clear();
         routinesById.clear();
         forceUpdate();
       })
@@ -619,23 +442,18 @@ export const StationRoutineProvider = ({
         query: presenceRef.current.query,
       };
       forceUpdate();
-      const [stationsResponse, routineTagsResponse] = await Promise.all([
-        getAllStationsQuerier.fetch({
-          param: {},
-        }),
-        getAllRoutineTagsQuerier.fetch({}),
+      await Promise.all([
+        stationLogic.searchStations(""),
+        routineTagLogic.searchRoutineTags(),
       ]);
-      const routineTasksResponse = await getAllRoutineTasksQuerier.fetch({});
-      setInitialData({
-        stations: stationsResponse.data,
-        routines: [],
-        routineTags: routineTagsResponse.data,
-        routineTasks: routineTasksResponse.data,
-      });
     } finally {
       setState("idle");
     }
-  }, [forceUpdate, setInitialData]);
+  }, [
+    forceUpdate,
+    routineTagLogic.searchRoutineTags,
+    stationLogic.searchStations,
+  ]);
 
   const setPresenceQuery = useCallback(
     (query: string) => {
@@ -656,32 +474,6 @@ export const StationRoutineProvider = ({
   const setRoutineTagPresence = useCallback(
     (routineTagIds: UUID[]) => {
       presenceRef.current = { ...presenceRef.current, routineTagIds };
-      forceUpdate();
-    },
-    [forceUpdate]
-  );
-
-  const toggleStationPresence = useCallback(
-    (stationId: UUID) => {
-      presenceRef.current = {
-        ...presenceRef.current,
-        stationIds: presenceRef.current.stationIds.includes(stationId)
-          ? presenceRef.current.stationIds.filter(id => id !== stationId)
-          : [...presenceRef.current.stationIds, stationId],
-      };
-      forceUpdate();
-    },
-    [forceUpdate]
-  );
-
-  const toggleRoutineTagPresence = useCallback(
-    (routineTagId: UUID) => {
-      presenceRef.current = {
-        ...presenceRef.current,
-        routineTagIds: presenceRef.current.routineTagIds.includes(routineTagId)
-          ? presenceRef.current.routineTagIds.filter(id => id !== routineTagId)
-          : [...presenceRef.current.routineTagIds, routineTagId],
-      };
       forceUpdate();
     },
     [forceUpdate]
@@ -788,8 +580,7 @@ export const StationRoutineProvider = ({
   const visibleRoutines = routines.filter(routine => {
     if (!selectedStationIds.has(routine.stationId)) return false;
     if (query.length > 0) {
-      const searchableText =
-        `${routine.title} ${routine.description}`.toLowerCase();
+      const searchableText = routine.title.toLowerCase();
       if (!searchableText.includes(query)) return false;
     }
     if (routine.routineTagIds.length === 0) {
@@ -927,7 +718,6 @@ export const StationRoutineProvider = ({
     inspectorTarget,
     openInspector,
     closeInspector,
-    setInitialData,
     initializeStationRoutineData,
     refresh,
     setViewMode,
@@ -935,8 +725,6 @@ export const StationRoutineProvider = ({
     setPresenceQuery,
     setStationPresence,
     setRoutineTagPresence,
-    toggleStationPresence,
-    toggleRoutineTagPresence,
     toggleUntaggedRoutines,
     resetPresence,
     setTimeWindow,

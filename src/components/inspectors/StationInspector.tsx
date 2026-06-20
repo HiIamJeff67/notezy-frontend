@@ -1,5 +1,13 @@
-import type { SupportedIcon } from "@shared/api/interfaces/enums";
+import { useGetMyStationById } from "@shared/api/hooks/station.hook";
+import type {
+  AccessControlPermission,
+  SupportedIcon,
+} from "@shared/api/interfaces/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { StationNode } from "@shared/types/stationNode.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
@@ -31,7 +39,9 @@ const StationInspector = ({
 }: StationInspectorProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
-  const stationNode = stationRoutineManager.getStationById(stationId);
+  const getStationQuerier = useGetMyStationById();
+
+  const [isLoadingStationDetail, setIsLoadingStationDetail] = useState(false);
   const [values, setValues] = useState<{
     name: string;
     description: string;
@@ -45,14 +55,65 @@ const StationInspector = ({
   });
 
   useEffect(() => {
-    if (!isOpen || !stationNode) return;
+    if (!isOpen) return;
+    let cancelled = false;
     setValues({
-      name: stationNode.name,
-      description: stationNode.description,
-      icon: stationNode.icon,
-      headerBackgroundURL: stationNode.headerBackgroundURL ?? "",
+      name: "",
+      description: "",
+      icon: null,
+      headerBackgroundURL: "",
     });
-  }, [isOpen, stationNode]);
+
+    setIsLoadingStationDetail(true);
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+    getStationQuerier
+      .fetch({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          stationId,
+        },
+      })
+      .then(response => {
+        if (cancelled || response.success === false || !response.data) return;
+        const stationNode: StationNode = {
+          id: response.data.id as UUID,
+          name: response.data.name,
+          description: response.data.description,
+          icon: response.data.icon,
+          headerBackgroundURL: response.data.headerBackgroundURL,
+          permission: response.data.permission as AccessControlPermission,
+          routineCount: response.data.routineCount,
+          deletedAt: response.data.deletedAt,
+          updatedAt: response.data.updatedAt,
+          createdAt: response.data.createdAt,
+          isOpen: false,
+          routines: [],
+          routineTasks: [],
+        };
+        stationRoutineManager.upsertStationNode(stationNode);
+        setValues({
+          name: response.data.name,
+          description: response.data.description,
+          icon: response.data.icon,
+          headerBackgroundURL: response.data.headerBackgroundURL ?? "",
+        });
+      })
+      .catch(error => {
+        if (!cancelled) toast.error(languageManager.tError(error));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingStationDetail(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, stationId]);
 
   const saveStation = async () => {
     const name = values.name.trim();
@@ -81,8 +142,6 @@ const StationInspector = ({
     }
   };
 
-  if (!stationNode) return null;
-
   return (
     <Sheet
       open={isOpen}
@@ -98,12 +157,18 @@ const StationInspector = ({
           <SheetTitle className="flex min-w-0 items-center gap-2">
             <span className="shrink-0">Edit station of</span>
             <span className="min-w-0 truncate text-foreground">
-              "{stationNode.name}"
+              "{values.name || "Station"}"
             </span>
           </SheetTitle>
           <SheetDescription>
             Update how this station is named and presented.
           </SheetDescription>
+          {isLoadingStationDetail && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Spinner />
+              Loading station details
+            </div>
+          )}
         </SheetHeader>
 
         <form
@@ -123,12 +188,13 @@ const StationInspector = ({
                 autoComplete="off"
                 maxLength={128}
                 autoFocus
-                onChange={event =>
+                onChange={event => {
+                  const name = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    name: event.currentTarget.value,
-                  }))
-                }
+                    name,
+                  }));
+                }}
               />
             </div>
 
@@ -139,12 +205,13 @@ const StationInspector = ({
                 value={values.description}
                 maxLength={1024}
                 className="min-h-48 max-h-72 resize-y overflow-y-auto"
-                onChange={event =>
+                onChange={event => {
+                  const description = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    description: event.currentTarget.value,
-                  }))
-                }
+                    description,
+                  }));
+                }}
               />
             </div>
 
@@ -171,12 +238,13 @@ const StationInspector = ({
                   value={values.headerBackgroundURL}
                   autoComplete="off"
                   placeholder="https://"
-                  onChange={event =>
+                  onChange={event => {
+                    const headerBackgroundURL = event.currentTarget.value;
                     setValues(current => ({
                       ...current,
-                      headerBackgroundURL: event.currentTarget.value,
-                    }))
-                  }
+                      headerBackgroundURL,
+                    }));
+                  }}
                 />
               </div>
             </div>
@@ -188,6 +256,7 @@ const StationInspector = ({
               className="w-full"
               disabled={
                 stationRoutineManager.isUpdatingStation ||
+                isLoadingStationDetail ||
                 values.name.trim().length === 0
               }
             >

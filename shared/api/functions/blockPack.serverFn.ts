@@ -45,8 +45,11 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 export const GetMyBlockPackById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockPackByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockPackByIdResponse> => {
-    const { blockPackId } = request.param;
-    const params = new URLSearchParams({ blockPackId: blockPackId }).toString();
+    const { blockPackId, isDeleted = false } = request.param;
+    const params = new URLSearchParams({
+      blockPackId: blockPackId,
+      isDeleted: String(isDeleted),
+    }).toString();
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
@@ -90,9 +93,10 @@ export const GetMyBlockPackAndItsParentById = createServerFn({
     async ({
       data: request,
     }): Promise<GetMyBlockPackAndItsParentByIdResponse> => {
-      const { blockPackId } = request.param;
+      const { blockPackId, isDeleted = false } = request.param;
       const params = new URLSearchParams({
         blockPackId: blockPackId,
+        isDeleted: String(isDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackAndItsParentById}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
@@ -140,9 +144,10 @@ export const GetMyBlockPacksByParentSubShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
-      const { parentSubShelfId } = request.param;
+      const { parentSubShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         parentSubShelfId: parentSubShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPacksByParentSubShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
@@ -190,9 +195,10 @@ export const GetAllMyBlockPacksByRootShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
-      const { rootShelfId } = request.param;
+      const { rootShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         rootShelfId: rootShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getAllMyBlockPacksByRootShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");

@@ -26,7 +26,9 @@ export const prefetchGetMyBlockPackById = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.blockPack.oneById(
-        prefetchRequest.param.blockPackId as UUID
+        prefetchRequest.param.blockPackId as UUID,
+        false,
+        prefetchRequest.param.isDeleted ?? false
       ),
       queryFn: async () => await queryFnGetMyBlockPackById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
@@ -50,7 +52,9 @@ export const prefetchGetMyBlockPackAndItsParentById = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.blockPack.oneById(
-        prefetchRequest.param.blockPackId as UUID
+        prefetchRequest.param.blockPackId as UUID,
+        true,
+        prefetchRequest.param.isDeleted ?? false
       ),
       queryFn: async () =>
         await queryFnGetMyBlockPackAndItsParentById(prefetchRequest),
@@ -75,7 +79,8 @@ export const prefetchGetMyBlockPacksByParentSubShelfId = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.blockPack.manyByParentSubShelfId(
-        prefetchRequest.param.parentSubShelfId as UUID
+        prefetchRequest.param.parentSubShelfId as UUID,
+        prefetchRequest.param.areDeleted ?? false
       ),
       queryFn: async () =>
         await queryFnGetMyBlockPacksByParentSubShelfId(prefetchRequest),
@@ -100,7 +105,8 @@ export const prefetchGetAllMyBlockPacksByRootShelfId = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.blockPack.manyByRootShelfId(
-        prefetchRequest.param.rootShelfId as UUID
+        prefetchRequest.param.rootShelfId as UUID,
+        prefetchRequest.param.areDeleted ?? false
       ),
       queryFn: async () =>
         await queryFnGetAllMyBlockPacksByRootShelfId(prefetchRequest),

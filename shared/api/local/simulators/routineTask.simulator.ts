@@ -4,6 +4,7 @@ import {
 } from "@shared/api/interfaces/enums";
 import type {
   GetAllMyRoutineTasksByStationIdsRequest,
+  GetAllMyRoutineTasksRequest,
   GetMyRoutineTaskByIdRequest,
 } from "@shared/api/interfaces/routineTask.interface";
 import { localDB } from "@shared/api/local/db";
@@ -43,6 +44,8 @@ export class RoutineTaskLocalSimulator {
     });
     if (loggedInUser === undefined) return null;
 
+    if (request.param.isDeleted === true) return null;
+
     const routineTasks = await localDB
       .select()
       .from(RoutineTask)
@@ -66,6 +69,8 @@ export class RoutineTaskLocalSimulator {
   static simulateGetAllMyRoutineTasksByStationIds = async (
     request: GetAllMyRoutineTasksByStationIdsRequest
   ) => {
+    if (request.param.areDeleted === true) return [];
+
     if (!localDB.isReady) await localDB.ensureReady();
     const loggedInUser = await localDB.query.User.findFirst({
       where: eq(User.isLoggedIn, true),
@@ -78,7 +83,6 @@ export class RoutineTaskLocalSimulator {
         stationId: RoutineTask.stationId,
         title: RoutineTask.title,
         purpose: RoutineTask.purpose,
-        payload: RoutineTask.payload,
         priority: RoutineTask.priority,
         status: RoutineTask.status,
         attempts: RoutineTask.attempts,
@@ -109,7 +113,11 @@ export class RoutineTaskLocalSimulator {
       );
   };
 
-  static simulateGetAllMyRoutineTasks = async () => {
+  static simulateGetAllMyRoutineTasks = async (
+    request?: GetAllMyRoutineTasksRequest
+  ) => {
+    if (request?.param?.areDeleted === true) return [];
+
     if (!localDB.isReady) await localDB.ensureReady();
     const loggedInUser = await localDB.query.User.findFirst({
       where: eq(User.isLoggedIn, true),

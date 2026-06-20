@@ -22,7 +22,8 @@ export const prefetchGetMySubShelfById = (initialQueryClient?: QueryClient) => {
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.subShelf.oneById(
-        prefetchRequest.param.subShelfId as UUID
+        prefetchRequest.param.subShelfId as UUID,
+        prefetchRequest.param.isDeleted ?? false
       ),
       queryFn: async () => await queryFnGetMySubShelfById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,
@@ -46,7 +47,8 @@ export const prefetchGetMySubShelvesByPrevSubShelfId = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.subShelf.manyByPrevSubShelfId(
-        prefetchRequest.param.prevSubShelfId as UUID
+        prefetchRequest.param.prevSubShelfId as UUID,
+        prefetchRequest.param.areDeleted ?? false
       ),
       queryFn: async () =>
         await queryFnGetMySubShelvesByPrevSubShelfId(prefetchRequest),
@@ -71,7 +73,8 @@ export const prefetchGetAllMySubShelvesByRootShelfId = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.subShelf.manyByRootShelfId(
-        prefetchRequest.param.rootShelfId as UUID
+        prefetchRequest.param.rootShelfId as UUID,
+        prefetchRequest.param.areDeleted ?? false
       ),
       queryFn: async () =>
         await queryFnGetAllMySubShelvesByRootShelfId(prefetchRequest),

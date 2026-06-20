@@ -75,7 +75,9 @@ export const useGetMyMaterialById = (
 
   const query = useQuery<GetMyMaterialByIdResponse, Error>({
     queryKey: queryKeys.material.oneById(
-      hookRequest?.param.materialId as UUID | undefined
+      hookRequest?.param.materialId as UUID | undefined,
+      false,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -90,7 +92,9 @@ export const useGetMyMaterialById = (
   ): Promise<GetMyMaterialByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.material.oneById(
-        callbackRequest.param.materialId as UUID | undefined
+        callbackRequest.param.materialId as UUID | undefined,
+        false,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -135,7 +139,8 @@ export const useGetMyMaterialAndItsParentById = (
   const query = useQuery<GetMyMaterialAndItsParentByIdResponse, Error>({
     queryKey: queryKeys.material.oneById(
       hookRequest?.param.materialId as UUID | undefined,
-      true
+      true,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -151,7 +156,8 @@ export const useGetMyMaterialAndItsParentById = (
     return queryClient.fetchQuery({
       queryKey: queryKeys.material.oneById(
         callbackRequest.param.materialId as UUID | undefined,
-        true
+        true,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -195,7 +201,8 @@ export const useGetMyMaterialsByParentSubShelfId = (
 
   const query = useQuery<GetMyMaterialsByParentSubShelfIdResponse, Error>({
     queryKey: queryKeys.material.manyByParentSubShelfId(
-      hookRequest?.param.parentSubShelfId as UUID | undefined
+      hookRequest?.param.parentSubShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -210,7 +217,8 @@ export const useGetMyMaterialsByParentSubShelfId = (
   ): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.material.manyByParentSubShelfId(
-        callbackRequest.param.parentSubShelfId as UUID | undefined
+        callbackRequest.param.parentSubShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -254,7 +262,8 @@ export const useGetAllMyMaterialsByRootShelfId = (
 
   const query = useQuery<GetAllMyMaterialsByRootShelfIdResponse, Error>({
     queryKey: queryKeys.material.manyByRootShelfId(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest?.param.rootShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -269,7 +278,8 @@ export const useGetAllMyMaterialsByRootShelfId = (
   ): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.material.manyByRootShelfId(
-        callbackRequest.param.rootShelfId as UUID | undefined
+        callbackRequest.param.rootShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

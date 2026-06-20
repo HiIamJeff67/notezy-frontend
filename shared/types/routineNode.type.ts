@@ -20,6 +20,8 @@ export interface RoutineNode {
   isOpen: boolean;
 
   routineTagIds: UUID[];
+  routineTaskIds: UUID[];
+  itemIds: UUID[];
   routineTasks: RoutineTaskNode[];
 }
 
@@ -44,5 +46,7 @@ export const getDefaultRoutineNode = (
   isOpen: false,
 
   routineTagIds: [],
+  routineTaskIds: [],
+  itemIds: [],
   routineTasks: [],
 });

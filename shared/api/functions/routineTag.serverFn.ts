@@ -39,7 +39,11 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
         },
         {}
       )
-    ).toString();
+    );
+    if (request.param?.isDeleted === undefined) {
+      params.set("isDeleted", "false");
+    }
+    const query = params.toString();
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
@@ -47,7 +51,7 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
       "/" +
       APIURLPathDictionary.routineTag.getMyRoutineTagById +
       "?" +
-      params;
+      query;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -85,12 +89,17 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
 export const GetAllMyRoutineTags = createServerFn({ method: "GET" })
   .inputValidator((data: GetAllMyRoutineTagsRequest) => data)
   .handler(async ({ data: request }): Promise<GetAllMyRoutineTagsResponse> => {
+    const params = new URLSearchParams({
+      areDeleted: String(request.param?.areDeleted ?? false),
+    });
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routineTag.getAllMyRoutineTags;
+      APIURLPathDictionary.routineTag.getAllMyRoutineTags +
+      "?" +
+      params.toString();
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";

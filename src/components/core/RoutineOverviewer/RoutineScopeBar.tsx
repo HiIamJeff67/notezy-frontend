@@ -3,8 +3,11 @@ import {
   type ComponentPropsWithoutRef,
   forwardRef,
   type ReactNode,
+  useEffect,
+  useState,
 } from "react";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   HoverCard,
@@ -18,6 +21,28 @@ import { useStationRoutine } from "@/hooks";
 
 const RoutineScopeBar = () => {
   const stationRoutineManager = useStationRoutine();
+  const [pendingStationIds, setPendingStationIds] = useState(
+    stationRoutineManager.presence.stationIds
+  );
+  const [pendingRoutineTagIds, setPendingRoutineTagIds] = useState(
+    stationRoutineManager.presence.routineTagIds
+  );
+  const [pendingShowUntaggedRoutines, setPendingShowUntaggedRoutines] =
+    useState(stationRoutineManager.presence.showUntaggedRoutines);
+
+  useEffect(() => {
+    setPendingStationIds(stationRoutineManager.presence.stationIds);
+  }, [stationRoutineManager.presence.stationIds]);
+
+  useEffect(() => {
+    setPendingRoutineTagIds(stationRoutineManager.presence.routineTagIds);
+    setPendingShowUntaggedRoutines(
+      stationRoutineManager.presence.showUntaggedRoutines
+    );
+  }, [
+    stationRoutineManager.presence.routineTagIds,
+    stationRoutineManager.presence.showUntaggedRoutines,
+  ]);
 
   return (
     <div
@@ -35,6 +60,10 @@ const RoutineScopeBar = () => {
             onChange={event =>
               stationRoutineManager.setPresenceQuery(event.currentTarget.value)
             }
+            onKeyDown={event => {
+              if (event.key !== "Enter") return;
+              event.currentTarget.blur();
+            }}
             placeholder="Search routines"
             className="
               h-8 rounded-sm border-border/60 bg-background/60 pl-8
@@ -46,7 +75,14 @@ const RoutineScopeBar = () => {
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <HoverCard openDelay={250} closeDelay={150}>
+          <HoverCard
+            openDelay={250}
+            closeDelay={150}
+            onOpenChange={open => {
+              if (!open) return;
+              setPendingStationIds(stationRoutineManager.presence.stationIds);
+            }}
+          >
             <HoverCardTrigger asChild>
               <StatusPill
                 icon={<TrainStationIcon size={14} />}
@@ -70,12 +106,14 @@ const RoutineScopeBar = () => {
                     className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
                   >
                     <Checkbox
-                      checked={stationRoutineManager.presence.stationIds.includes(
-                        station.id
-                      )}
-                      onCheckedChange={() =>
-                        stationRoutineManager.toggleStationPresence(station.id)
-                      }
+                      checked={pendingStationIds.includes(station.id)}
+                      onCheckedChange={() => {
+                        setPendingStationIds(previousStationIds =>
+                          previousStationIds.includes(station.id)
+                            ? previousStationIds.filter(id => id !== station.id)
+                            : [...previousStationIds, station.id]
+                        );
+                      }}
                     />
                     {station.icon ? (
                       <span className="shrink-0 text-sm">{station.icon}</span>
@@ -96,6 +134,43 @@ const RoutineScopeBar = () => {
                   </p>
                 )}
               </div>
+              <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 rounded-sm px-2 text-xs"
+                  onClick={() =>
+                    setPendingStationIds(
+                      stationRoutineManager.presence.stationIds
+                    )
+                  }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 rounded-sm px-2 text-xs"
+                  onClick={() => {
+                    const currentStationIds = [
+                      ...stationRoutineManager.presence.stationIds,
+                    ].sort();
+                    const nextStationIds = [...pendingStationIds].sort();
+                    const hasChanged =
+                      currentStationIds.length !== nextStationIds.length ||
+                      currentStationIds.some(
+                        (stationId, index) =>
+                          stationId !== nextStationIds[index]
+                      );
+                    if (!hasChanged) return;
+
+                    stationRoutineManager.setStationPresence(pendingStationIds);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
             </HoverCardContent>
           </HoverCard>
           <StatusPill
@@ -104,12 +179,26 @@ const RoutineScopeBar = () => {
             totalCount={stationRoutineManager.statusSummary.totalRoutines}
             title="Routines"
           />
-          <HoverCard openDelay={250} closeDelay={150}>
+          <HoverCard
+            openDelay={250}
+            closeDelay={150}
+            onOpenChange={open => {
+              if (!open) return;
+              setPendingRoutineTagIds(
+                stationRoutineManager.presence.routineTagIds
+              );
+              setPendingShowUntaggedRoutines(
+                stationRoutineManager.presence.showUntaggedRoutines
+              );
+            }}
+          >
             <HoverCardTrigger asChild>
               <StatusPill
                 icon={<Tags className="size-3.5" />}
                 presentCount={stationRoutineManager.visibleRoutineTags.length}
-                totalCount={stationRoutineManager.statusSummary.totalRoutineTags}
+                totalCount={
+                  stationRoutineManager.statusSummary.totalRoutineTags
+                }
                 title="Routine tags"
               />
             </HoverCardTrigger>
@@ -128,12 +217,16 @@ const RoutineScopeBar = () => {
                     className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
                   >
                     <Checkbox
-                      checked={stationRoutineManager.presence.routineTagIds.includes(
-                        routineTag.id
-                      )}
-                      onCheckedChange={() =>
-                        stationRoutineManager.toggleRoutineTagPresence(routineTag.id)
-                      }
+                      checked={pendingRoutineTagIds.includes(routineTag.id)}
+                      onCheckedChange={() => {
+                        setPendingRoutineTagIds(previousRoutineTagIds =>
+                          previousRoutineTagIds.includes(routineTag.id)
+                            ? previousRoutineTagIds.filter(
+                                id => id !== routineTag.id
+                              )
+                            : [...previousRoutineTagIds, routineTag.id]
+                        );
+                      }}
                     />
                     <span
                       className="size-2.5 shrink-0 rounded-full border border-foreground/15"
@@ -160,11 +253,66 @@ const RoutineScopeBar = () => {
                 <Separator className="my-1.5" />
                 <label className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50">
                   <Checkbox
-                    checked={stationRoutineManager.presence.showUntaggedRoutines}
-                    onCheckedChange={stationRoutineManager.toggleUntaggedRoutines}
+                    checked={pendingShowUntaggedRoutines}
+                    onCheckedChange={() =>
+                      setPendingShowUntaggedRoutines(
+                        currentValue => !currentValue
+                      )
+                    }
                   />
                   <span className="text-sm">Untagged routines</span>
                 </label>
+              </div>
+              <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 rounded-sm px-2 text-xs"
+                  onClick={() => {
+                    setPendingRoutineTagIds(
+                      stationRoutineManager.presence.routineTagIds
+                    );
+                    setPendingShowUntaggedRoutines(
+                      stationRoutineManager.presence.showUntaggedRoutines
+                    );
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 rounded-sm px-2 text-xs"
+                  onClick={() => {
+                    const currentRoutineTagIds = [
+                      ...stationRoutineManager.presence.routineTagIds,
+                    ].sort();
+                    const nextRoutineTagIds = [...pendingRoutineTagIds].sort();
+                    const hasChanged =
+                      currentRoutineTagIds.length !==
+                        nextRoutineTagIds.length ||
+                      currentRoutineTagIds.some(
+                        (routineTagId, index) =>
+                          routineTagId !== nextRoutineTagIds[index]
+                      ) ||
+                      stationRoutineManager.presence.showUntaggedRoutines !==
+                        pendingShowUntaggedRoutines;
+                    if (!hasChanged) return;
+
+                    stationRoutineManager.setRoutineTagPresence(
+                      pendingRoutineTagIds
+                    );
+                    if (
+                      stationRoutineManager.presence.showUntaggedRoutines !==
+                      pendingShowUntaggedRoutines
+                    ) {
+                      stationRoutineManager.toggleUntaggedRoutines();
+                    }
+                  }}
+                >
+                  Confirm
+                </Button>
               </div>
             </HoverCardContent>
           </HoverCard>

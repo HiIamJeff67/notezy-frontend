@@ -44,14 +44,30 @@ export class RoutineTaskLocalSynchronizer {
 
     await localDB
       .insert(RoutineTask)
-      .values(response.data)
+      .values(
+        response.data.map(routineTask => ({
+          id: routineTask.id,
+          stationId: routineTask.stationId,
+          title: routineTask.title,
+          purpose: routineTask.purpose,
+          payload: {},
+          priority: routineTask.priority,
+          status: routineTask.status,
+          attempts: routineTask.attempts,
+          maxAttempts: routineTask.maxAttempts,
+          scheduledAt: routineTask.scheduledAt,
+          actualStartedAt: routineTask.actualStartedAt,
+          actualEndedAt: routineTask.actualEndedAt,
+          updatedAt: routineTask.updatedAt,
+          createdAt: routineTask.createdAt,
+        }))
+      )
       .onConflictDoUpdate({
         target: RoutineTask.id,
         set: {
           stationId: sql`excluded.station_id`,
           title: sql`excluded.title`,
           purpose: sql`excluded.purpose`,
-          payload: sql`excluded.payload`,
           priority: sql`excluded.priority`,
           status: sql`excluded.status`,
           attempts: sql`excluded.attempts`,

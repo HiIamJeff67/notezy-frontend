@@ -89,7 +89,6 @@ export class StationLocalSimulator {
       .select({
         id: Station.id,
         name: Station.name,
-        description: Station.description,
         icon: Station.icon,
         headerBackgroundURL: Station.headerBackgroundURL,
         permission: UsersToStations.permission,
@@ -203,7 +202,6 @@ export class StationLocalSimulator {
             __typename: "PrivateStation",
             id: station.id,
             name: station.name,
-            description: station.description,
             icon,
             headerBackgroundURL: station.headerBackgroundURL,
             permission: station.permission,
@@ -282,7 +280,11 @@ export class StationLocalSimulator {
       .where(eq(Station.id, request.param.stationId))
       .limit(1);
 
-    return stations[0] ?? null;
+    const station = stations[0];
+    if (!station) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    return (station.deletedAt !== null) === isDeleted ? station : null;
   };
 
   static simulateGetAllMyStations = async (
@@ -298,7 +300,6 @@ export class StationLocalSimulator {
       .select({
         id: Station.id,
         name: Station.name,
-        description: Station.description,
         icon: Station.icon,
         headerBackgroundURL: Station.headerBackgroundURL,
         permission: UsersToStations.permission,
@@ -317,12 +318,10 @@ export class StationLocalSimulator {
         )
       );
 
-    const onlyDeleted = request.param.onlyDeleted ?? 2;
-    if (onlyDeleted === 0) {
-      return stations.filter(station => station.deletedAt !== null);
-    }
-    if (onlyDeleted === 1) return stations;
-    return stations.filter(station => station.deletedAt === null);
+    const areDeleted = request.param?.areDeleted ?? false;
+    return stations.filter(
+      station => (station.deletedAt !== null) === areDeleted
+    );
   };
 
   static simulateCreateStation = async (

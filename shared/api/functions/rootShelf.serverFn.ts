@@ -32,9 +32,10 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 export const GetMyRootShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyRootShelfByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyRootShelfByIdResponse> => {
-    const { rootShelfId } = request.param;
+    const { rootShelfId, isDeleted = false } = request.param;
     const params = new URLSearchParams({
       rootShelfId: rootShelfId,
+      isDeleted: String(isDeleted),
     }).toString();
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");

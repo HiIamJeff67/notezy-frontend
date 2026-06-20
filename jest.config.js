@@ -1,6 +1,7 @@
-module.exports = {
+export default {
   preset: "ts-jest",
   testEnvironment: "node",
+  watchman: false,
   roots: ["<rootDir>/src", "<rootDir>/test"],
   testMatch: ["**/__tests__/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
   transform: {

@@ -1,5 +1,10 @@
+import { useGetMyRoutineTaskById } from "@shared/api/hooks/routineTask.hook";
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -37,7 +42,13 @@ const RoutineTaskInspector = ({
 }: RoutineTaskInspectorProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
-  const routineTaskNode = stationRoutineManager.getRoutineTaskById(routineTaskId);
+  const getRoutineTaskQuerier = useGetMyRoutineTaskById();
+
+  const routineTaskNode =
+    stationRoutineManager.getRoutineTaskById(routineTaskId);
+
+  const [isLoadingRoutineTaskDetail, setIsLoadingRoutineTaskDetail] =
+    useState(false);
   const [values, setValues] = useState<{
     title: string;
     purpose: RoutineTaskPurpose;
@@ -53,15 +64,68 @@ const RoutineTaskInspector = ({
   });
 
   useEffect(() => {
-    if (!isOpen || !routineTaskNode) return;
+    if (!isOpen) return;
+    let cancelled = false;
     setValues({
-      title: routineTaskNode.title,
-      purpose: routineTaskNode.purpose,
-      payload: JSON.stringify(routineTaskNode.payload ?? {}, null, 2),
-      priority: routineTaskNode.priority,
-      maxAttempts: routineTaskNode.maxAttempts,
+      title: "",
+      purpose: RoutineTaskPurpose.CreateBlockPack,
+      payload: "{}",
+      priority: 0,
+      maxAttempts: 1,
     });
-  }, [isOpen, routineTaskNode]);
+
+    setIsLoadingRoutineTaskDetail(true);
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+    getRoutineTaskQuerier
+      .fetch({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          routineTaskId,
+        },
+      })
+      .then(response => {
+        if (cancelled || !response.data) return;
+        const routineTaskNode: RoutineTaskNode = {
+          id: response.data.id as UUID,
+          stationId: response.data.stationId as UUID,
+          title: response.data.title,
+          purpose: response.data.purpose,
+          payload: response.data.payload,
+          priority: response.data.priority,
+          status: response.data.status,
+          attempts: response.data.attempts,
+          maxAttempts: response.data.maxAttempts,
+          scheduledAt: response.data.scheduledAt,
+          actualStartedAt: response.data.actualStartedAt,
+          actualEndedAt: response.data.actualEndedAt,
+          updatedAt: response.data.updatedAt,
+          createdAt: response.data.createdAt,
+        };
+        stationRoutineManager.upsertRoutineTaskNode(routineTaskNode);
+        setValues({
+          title: response.data.title,
+          purpose: response.data.purpose,
+          payload: JSON.stringify(response.data.payload ?? {}, null, 2),
+          priority: response.data.priority,
+          maxAttempts: response.data.maxAttempts,
+        });
+      })
+      .catch(error => {
+        if (!cancelled) toast.error(languageManager.tError(error));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingRoutineTaskDetail(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, routineTaskId]);
 
   const saveRoutineTask = async () => {
     const title = values.title.trim();
@@ -83,8 +147,6 @@ const RoutineTaskInspector = ({
     }
   };
 
-  if (!routineTaskNode) return null;
-
   return (
     <Sheet
       open={isOpen}
@@ -100,12 +162,18 @@ const RoutineTaskInspector = ({
           <SheetTitle className="flex min-w-0 items-center gap-2">
             <span className="shrink-0">Edit routine task of</span>
             <span className="min-w-0 truncate text-foreground">
-              "{routineTaskNode.title}"
+              "{values.title || "Routine task"}"
             </span>
           </SheetTitle>
           <SheetDescription>
             Configure the action this routine task will execute.
           </SheetDescription>
+          {isLoadingRoutineTaskDetail && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Spinner />
+              Loading routine task details
+            </div>
+          )}
         </SheetHeader>
 
         <form
@@ -125,12 +193,13 @@ const RoutineTaskInspector = ({
                 autoComplete="off"
                 maxLength={128}
                 autoFocus
-                onChange={event =>
+                onChange={event => {
+                  const title = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    title: event.currentTarget.value,
-                  }))
-                }
+                    title,
+                  }));
+                }}
               />
             </div>
 
@@ -178,12 +247,13 @@ const RoutineTaskInspector = ({
                   type="number"
                   min={0}
                   value={values.priority}
-                  onChange={event =>
+                  onChange={event => {
+                    const priority = event.currentTarget.valueAsNumber;
                     setValues(current => ({
                       ...current,
-                      priority: Math.max(0, event.currentTarget.valueAsNumber),
-                    }))
-                  }
+                      priority: Math.max(0, priority),
+                    }));
+                  }}
                 />
               </div>
 
@@ -197,15 +267,13 @@ const RoutineTaskInspector = ({
                   min={1}
                   max={20}
                   value={values.maxAttempts}
-                  onChange={event =>
+                  onChange={event => {
+                    const maxAttempts = event.currentTarget.valueAsNumber;
                     setValues(current => ({
                       ...current,
-                      maxAttempts: Math.min(
-                        20,
-                        Math.max(1, event.currentTarget.valueAsNumber)
-                      ),
-                    }))
-                  }
+                      maxAttempts: Math.min(20, Math.max(1, maxAttempts)),
+                    }));
+                  }}
                 />
               </div>
             </div>
@@ -219,18 +287,21 @@ const RoutineTaskInspector = ({
                 value={values.payload}
                 spellCheck={false}
                 className="min-h-64 max-h-96 resize-y overflow-y-auto font-mono text-xs"
-                onChange={event =>
+                onChange={event => {
+                  const payload = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    payload: event.currentTarget.value,
-                  }))
-                }
+                    payload,
+                  }));
+                }}
               />
             </div>
 
             <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3 text-sm">
               <span className="text-muted-foreground">Current status</span>
-              <span className="font-medium">{routineTaskNode.status}</span>
+              <span className="font-medium">
+                {routineTaskNode?.status ?? "Loading"}
+              </span>
             </div>
           </div>
 
@@ -240,6 +311,7 @@ const RoutineTaskInspector = ({
               className="w-full"
               disabled={
                 stationRoutineManager.isUpdatingRoutineTask ||
+                isLoadingRoutineTaskDetail ||
                 values.title.trim().length === 0
               }
             >

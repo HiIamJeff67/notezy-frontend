@@ -19,7 +19,6 @@ const alignSearchedStations = (
 ): Array<{
   id: string;
   name: string;
-  description: string;
   icon: SupportedIcon | null;
   headerBackgroundURL: string | null;
   permission: AccessControlPermission;
@@ -32,7 +31,6 @@ const alignSearchedStations = (
     const node = edge.node as unknown as {
       id: string;
       name: string;
-      description: string;
       icon: GraphQLSupportedIcon | null;
       headerBackgroundURL: string | null;
       permission: AccessControlPermission;
@@ -82,7 +80,6 @@ const alignSearchedStations = (
     return {
       id: node.id,
       name: node.name,
-      description: node.description,
       icon,
       headerBackgroundURL: node.headerBackgroundURL,
       permission: node.permission as unknown as AccessControlPermission,

@@ -20,11 +20,11 @@ export const GetMyRoutineByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     routineId: z.uuidv4(),
-    onlyDeleted: z.number().int().min(0).max(2).optional(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyRoutineByIdRequest = z.infer<
+export type GetMyRoutineByIdRequest = z.input<
   typeof GetMyRoutineByIdRequestSchema
 >;
 
@@ -45,6 +45,7 @@ export const GetMyRoutineByIdResponseSchema = NotezyResponseSchema.extend({
     createdAt: z.coerce.date(),
     tagIds: z.array(z.uuidv4()),
     taskIds: z.array(z.uuidv4()),
+    itemIds: z.array(z.uuidv4()),
   }),
   embedded: z.object({
     publicId: z.string(),
@@ -69,10 +70,11 @@ export const GetAllMyRoutinesByTimeRangeRequestSchema =
       from: z.coerce.date(),
       to: z.coerce.date(),
       stationIds: z.array(z.uuidv4()).min(1).max(1024),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMyRoutinesByTimeRangeRequest = z.infer<
+export type GetAllMyRoutinesByTimeRangeRequest = z.input<
   typeof GetAllMyRoutinesByTimeRangeRequestSchema
 >;
 
@@ -83,7 +85,6 @@ export const GetAllMyRoutinesByTimeRangeResponseSchema =
         id: z.uuidv4(),
         stationId: z.uuidv4(),
         title: z.string(),
-        description: z.string(),
         status: z.enum(AllRoutineStatuses),
         isPinned: z.boolean(),
         scheduledStartAt: z.coerce.date(),
@@ -95,6 +96,7 @@ export const GetAllMyRoutinesByTimeRangeResponseSchema =
         createdAt: z.coerce.date(),
         tagIds: z.array(z.uuidv4()),
         taskIds: z.array(z.uuidv4()),
+        itemIds: z.array(z.uuidv4()),
       })
     ),
     embedded: z.object({

@@ -36,9 +36,10 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 export const GetMyMaterialById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyMaterialByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyMaterialByIdResponse> => {
-    const { materialId } = request.param;
+    const { materialId, isDeleted = false } = request.param;
     const params = new URLSearchParams({
       materialId: materialId,
+      isDeleted: String(isDeleted),
     }).toString();
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
@@ -83,9 +84,10 @@ export const GetMyMaterialAndItsParentById = createServerFn({
     async ({
       data: request,
     }): Promise<GetMyMaterialAndItsParentByIdResponse> => {
-      const { materialId } = request.param;
+      const { materialId, isDeleted = false } = request.param;
       const params = new URLSearchParams({
         materialId: materialId,
+        isDeleted: String(isDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.getMyMaterialAndItsParentById}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
@@ -133,9 +135,10 @@ export const GetMyMaterialsByParentSubShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetMyMaterialsByParentSubShelfIdResponse> => {
-      const { parentSubShelfId } = request.param;
+      const { parentSubShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         parentSubShelfId: parentSubShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
@@ -185,9 +188,10 @@ export const GetAllMyMaterialsByRootShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetAllMyMaterialsByRootShelfIdResponse> => {
-      const { rootShelfId } = request.param;
+      const { rootShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         rootShelfId: rootShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
@@ -256,9 +260,12 @@ export const CreateMyMaterial = createServerFn({ method: "POST" })
       throw new Error(tKey.error.encounterUnknownError);
     }
     forwardUpstreamSetCookies(response);
-    const formattedResponse = (await response.json()) as CreateMyMaterialResponse;
+    const formattedResponse =
+      (await response.json()) as CreateMyMaterialResponse;
     if (formattedResponse.exception != null) {
-      throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
+      throw new NotezyAPIError(
+        new NotezyException(formattedResponse.exception)
+      );
     }
     AccessTokenCookieHandler.ensure(
       formattedResponse.refreshableTokens?.newAccessToken

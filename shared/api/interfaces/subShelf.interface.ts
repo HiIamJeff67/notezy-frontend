@@ -19,10 +19,11 @@ export const GetMySubShelfByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     subShelfId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMySubShelfByIdRequest = z.infer<
+export type GetMySubShelfByIdRequest = z.input<
   typeof GetMySubShelfByIdRequestSchema
 >;
 
@@ -58,10 +59,11 @@ export const GetMySubShelvesByPrevSubShelfIdRequestSchema =
       .optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMySubShelvesByPrevSubShelfIdRequest = z.infer<
+export type GetMySubShelvesByPrevSubShelfIdRequest = z.input<
   typeof GetMySubShelvesByPrevSubShelfIdRequestSchema
 >;
 
@@ -100,10 +102,11 @@ export const GetAllMySubShelvesByRootShelfIdRequestSchema =
       .optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMySubShelvesByRootShelfIdRequest = z.infer<
+export type GetAllMySubShelvesByRootShelfIdRequest = z.input<
   typeof GetAllMySubShelvesByRootShelfIdRequestSchema
 >;
 
@@ -142,10 +145,11 @@ export const GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema =
       .optional(),
     param: z.object({
       prevSubShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMySubShelvesAndItemsByPrevSubShelfIdRequest = z.infer<
+export type GetMySubShelvesAndItemsByPrevSubShelfIdRequest = z.input<
   typeof GetMySubShelvesAndItemsByPrevSubShelfIdRequestSchema
 >;
 

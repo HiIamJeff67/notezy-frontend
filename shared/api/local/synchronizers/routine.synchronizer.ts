@@ -2,7 +2,6 @@ import {
   AccessControlPermission,
   RoutinePeriod,
   RoutineStatus,
-  SupportedIcon,
 } from "@shared/api/interfaces/enums";
 import type {
   BulkLinkRoutineItemsByIdsRequest,
@@ -38,6 +37,7 @@ import type {
 } from "@shared/api/interfaces/routine.interface";
 import { localDB } from "@shared/api/local/db";
 import {
+  Item,
   Routine,
   RoutinesToItems,
   RoutinesToTags,
@@ -116,6 +116,9 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTasks)
         .where(eq(RoutinesToTasks.routineId, response.data.id));
+      await tx
+        .delete(RoutinesToItems)
+        .where(eq(RoutinesToItems.routineId, response.data.id));
 
       if (response.data.tagIds.length > 0) {
         const routineTags = await tx
@@ -150,6 +153,22 @@ export class RoutineLocalSynchronizer {
           );
         }
       }
+
+      if (response.data.itemIds.length > 0) {
+        const items = await tx
+          .select({ id: Item.id })
+          .from(Item)
+          .where(inArray(Item.id, response.data.itemIds));
+
+        if (items.length > 0) {
+          await tx.insert(RoutinesToItems).values(
+            items.map(item => ({
+              routineId: response.data.id,
+              itemId: item.id,
+            }))
+          );
+        }
+      }
     });
   };
 
@@ -167,7 +186,6 @@ export class RoutineLocalSynchronizer {
             id: routine.id,
             stationId: routine.stationId,
             title: routine.title,
-            description: routine.description,
             status: routine.status,
             isPinned: routine.isPinned,
             scheduledStartAt: routine.scheduledStartAt,
@@ -184,7 +202,6 @@ export class RoutineLocalSynchronizer {
           set: {
             stationId: sql`excluded.station_id`,
             title: sql`excluded.title`,
-            description: sql`excluded.description`,
             status: sql`excluded.status`,
             isPinned: sql`excluded.is_pinned`,
             scheduledStartAt: sql`excluded.scheduled_start_at`,
@@ -204,12 +221,18 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTasks)
         .where(inArray(RoutinesToTasks.routineId, routineIds));
+      await tx
+        .delete(RoutinesToItems)
+        .where(inArray(RoutinesToItems.routineId, routineIds));
 
       const tagIds = [
         ...new Set(response.data.flatMap(routine => routine.tagIds)),
       ];
       const taskIds = [
         ...new Set(response.data.flatMap(routine => routine.taskIds)),
+      ];
+      const itemIds = [
+        ...new Set(response.data.flatMap(routine => routine.itemIds)),
       ];
 
       if (tagIds.length > 0) {
@@ -255,6 +278,25 @@ export class RoutineLocalSynchronizer {
           await tx.insert(RoutinesToTasks).values(relations);
         }
       }
+
+      if (itemIds.length > 0) {
+        const items = await tx
+          .select({ id: Item.id })
+          .from(Item)
+          .where(inArray(Item.id, itemIds));
+        const existingItemIds = new Set(items.map(item => item.id));
+        const relations = response.data.flatMap(routine =>
+          routine.itemIds
+            .filter(itemId => existingItemIds.has(itemId))
+            .map(itemId => ({
+              routineId: routine.id,
+              itemId,
+            }))
+        );
+        if (relations.length > 0) {
+          await tx.insert(RoutinesToItems).values(relations);
+        }
+      }
     });
   };
 
@@ -263,7 +305,6 @@ export class RoutineLocalSynchronizer {
       id: string;
       stationId: string;
       title: string;
-      description: string;
       status: RoutineStatus;
       isPinned: boolean;
       scheduledStartAt: Date;
@@ -273,26 +314,9 @@ export class RoutineLocalSynchronizer {
       deletedAt: Date | null;
       updatedAt: Date;
       createdAt: Date;
-      station: {
-        id: string;
-        name: string;
-        description: string;
-        icon: SupportedIcon | null;
-        headerBackgroundURL: string | null;
-        permission: AccessControlPermission;
-        routineCount: number;
-        deletedAt: Date | null;
-        updatedAt: Date;
-        createdAt: Date;
-      };
-      tags: Array<{
-        id: string;
-        name: string;
-        color: string;
-        icon: SupportedIcon | null;
-        updatedAt: Date;
-        createdAt: Date;
-      }>;
+      tagIds: string[];
+      taskIds: string[];
+      itemIds: string[];
     }>
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
@@ -304,57 +328,6 @@ export class RoutineLocalSynchronizer {
       });
       if (loggedInUser === undefined) return;
 
-      const stations = [
-        ...new Map(
-          searchedRoutines.map(routine => [routine.station.id, routine.station])
-        ).values(),
-      ];
-      await tx
-        .insert(Station)
-        .values(
-          stations.map(station => ({
-            id: station.id,
-            name: station.name,
-            description: station.description,
-            icon: station.icon,
-            headerBackgroundURL: station.headerBackgroundURL,
-            routineCount: station.routineCount,
-            deletedAt: station.deletedAt,
-            updatedAt: station.updatedAt,
-            createdAt: station.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: Station.id,
-          set: {
-            name: sql`excluded.name`,
-            description: sql`excluded.description`,
-            icon: sql`excluded.icon`,
-            headerBackgroundURL: sql`excluded.header_background_url`,
-            routineCount: sql`excluded.routine_count`,
-            deletedAt: sql`excluded.deleted_at`,
-            updatedAt: sql`excluded.updated_at`,
-            createdAt: sql`excluded.created_at`,
-          },
-        });
-      await tx
-        .insert(UsersToStations)
-        .values(
-          stations.map(station => ({
-            userPublicId: loggedInUser.publicId,
-            stationId: station.id,
-            permission: station.permission,
-            updatedAt: station.updatedAt,
-            createdAt: station.createdAt,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: [UsersToStations.userPublicId, UsersToStations.stationId],
-          set: {
-            permission: sql`excluded.permission`,
-            updatedAt: sql`excluded.updated_at`,
-          },
-        });
       await tx
         .insert(Routine)
         .values(
@@ -362,7 +335,6 @@ export class RoutineLocalSynchronizer {
             id: routine.id,
             stationId: routine.stationId,
             title: routine.title,
-            description: routine.description,
             status: routine.status,
             isPinned: routine.isPinned,
             scheduledStartAt: routine.scheduledStartAt,
@@ -379,7 +351,6 @@ export class RoutineLocalSynchronizer {
           set: {
             stationId: sql`excluded.station_id`,
             title: sql`excluded.title`,
-            description: sql`excluded.description`,
             status: sql`excluded.status`,
             isPinned: sql`excluded.is_pinned`,
             scheduledStartAt: sql`excluded.scheduled_start_at`,
@@ -392,41 +363,90 @@ export class RoutineLocalSynchronizer {
           },
         });
 
-      const tags = [
-        ...new Map(
-          searchedRoutines
-            .flatMap(routine => routine.tags)
-            .map(tag => [tag.id, tag])
-        ).values(),
-      ];
-      if (tags.length > 0) {
-        await tx
-          .insert(RoutineTag)
-          .values(tags)
-          .onConflictDoUpdate({
-            target: RoutineTag.id,
-            set: {
-              name: sql`excluded.name`,
-              color: sql`excluded.color`,
-              icon: sql`excluded.icon`,
-              updatedAt: sql`excluded.updated_at`,
-              createdAt: sql`excluded.created_at`,
-            },
-          });
-      }
-
       const routineIds = searchedRoutines.map(routine => routine.id);
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.routineId, routineIds));
-      const relations = searchedRoutines.flatMap(routine =>
-        routine.tags.map(tag => ({
-          routineId: routine.id,
-          tagId: tag.id,
-        }))
+      await tx
+        .delete(RoutinesToTasks)
+        .where(inArray(RoutinesToTasks.routineId, routineIds));
+      await tx
+        .delete(RoutinesToItems)
+        .where(inArray(RoutinesToItems.routineId, routineIds));
+      const tagIds = [
+        ...new Set(searchedRoutines.flatMap(routine => routine.tagIds)),
+      ];
+      const taskIds = [
+        ...new Set(searchedRoutines.flatMap(routine => routine.taskIds)),
+      ];
+      const itemIds = [
+        ...new Set(searchedRoutines.flatMap(routine => routine.itemIds)),
+      ];
+      const existingRoutineTagIds =
+        tagIds.length === 0
+          ? new Set<string>()
+          : new Set(
+              (
+                await tx
+                  .select({ id: RoutineTag.id })
+                  .from(RoutineTag)
+                  .where(inArray(RoutineTag.id, tagIds))
+              ).map(routineTag => routineTag.id)
+            );
+      const existingRoutineTaskIds =
+        taskIds.length === 0
+          ? new Set<string>()
+          : new Set(
+              (
+                await tx
+                  .select({ id: RoutineTask.id })
+                  .from(RoutineTask)
+                  .where(inArray(RoutineTask.id, taskIds))
+              ).map(routineTask => routineTask.id)
+            );
+      const existingItemIds =
+        itemIds.length === 0
+          ? new Set<string>()
+          : new Set(
+              (
+                await tx
+                  .select({ id: Item.id })
+                  .from(Item)
+                  .where(inArray(Item.id, itemIds))
+              ).map(item => item.id)
+            );
+      const tagRelations = searchedRoutines.flatMap(routine =>
+        routine.tagIds
+          .filter(tagId => existingRoutineTagIds.has(tagId))
+          .map(tagId => ({
+            routineId: routine.id,
+            tagId,
+          }))
       );
-      if (relations.length > 0) {
-        await tx.insert(RoutinesToTags).values(relations);
+      const taskRelations = searchedRoutines.flatMap(routine =>
+        routine.taskIds
+          .filter(taskId => existingRoutineTaskIds.has(taskId))
+          .map(taskId => ({
+            routineId: routine.id,
+            taskId,
+          }))
+      );
+      const itemRelations = searchedRoutines.flatMap(routine =>
+        routine.itemIds
+          .filter(itemId => existingItemIds.has(itemId))
+          .map(itemId => ({
+            routineId: routine.id,
+            itemId,
+          }))
+      );
+      if (tagRelations.length > 0) {
+        await tx.insert(RoutinesToTags).values(tagRelations);
+      }
+      if (taskRelations.length > 0) {
+        await tx.insert(RoutinesToTasks).values(taskRelations);
+      }
+      if (itemRelations.length > 0) {
+        await tx.insert(RoutinesToItems).values(itemRelations);
       }
     });
   };

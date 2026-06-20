@@ -99,7 +99,8 @@ export const useGetMyRoutineTagById = (
 
   const query = useQuery<GetMyRoutineTagByIdResponse, Error>({
     queryKey: queryKeys.routineTag.oneById(
-      hookRequest?.param.routineTagId as UUID | undefined
+      hookRequest?.param.routineTagId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -114,7 +115,8 @@ export const useGetMyRoutineTagById = (
   ): Promise<GetMyRoutineTagByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.routineTag.oneById(
-        callbackRequest.param.routineTagId as UUID | undefined
+        callbackRequest.param.routineTagId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -164,7 +166,7 @@ export const useGetAllMyRoutineTags = (
         error instanceof NotezyFetchError
       ) {
         const routineTags =
-          await RoutineTagLocalSimulator.simulateGetAllMyRoutineTags();
+          await RoutineTagLocalSimulator.simulateGetAllMyRoutineTags(request);
         return {
           success: false,
           data: routineTags,
@@ -178,7 +180,9 @@ export const useGetAllMyRoutineTags = (
   };
 
   const query = useQuery<GetAllMyRoutineTagsResponse, Error>({
-    queryKey: queryKeys.routineTag.myAll(),
+    queryKey: queryKeys.routineTag.myAll(
+      hookRequest?.param?.areDeleted ?? false
+    ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
@@ -191,7 +195,9 @@ export const useGetAllMyRoutineTags = (
     callbackRequest: GetAllMyRoutineTagsRequest
   ): Promise<GetAllMyRoutineTagsResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.routineTag.myAll(),
+      queryKey: queryKeys.routineTag.myAll(
+        callbackRequest.param?.areDeleted ?? false
+      ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       ...options,

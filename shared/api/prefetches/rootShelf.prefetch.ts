@@ -16,7 +16,8 @@ export const prefetchGetMyRootShelfById = (
   ): Promise<void> => {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.rootShelf.oneById(
-        prefetchRequest?.param.rootShelfId as UUID | undefined
+        prefetchRequest?.param.rootShelfId as UUID | undefined,
+        prefetchRequest.param.isDeleted ?? false
       ),
       queryFn: async () => await queryFnGetMyRootShelfById(prefetchRequest),
       staleTime: PrefetchQueryDefaultOptions.staleTime as number,

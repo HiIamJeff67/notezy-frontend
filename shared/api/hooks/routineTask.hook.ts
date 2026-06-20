@@ -95,7 +95,8 @@ export const useGetMyRoutineTaskById = (
 
   const query = useQuery<GetMyRoutineTaskByIdResponse, Error>({
     queryKey: queryKeys.routineTask.oneById(
-      hookRequest?.param.routineTaskId as UUID | undefined
+      hookRequest?.param.routineTaskId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -110,7 +111,8 @@ export const useGetMyRoutineTaskById = (
   ): Promise<GetMyRoutineTaskByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.routineTask.oneById(
-        callbackRequest.param.routineTaskId as UUID | undefined
+        callbackRequest.param.routineTaskId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -181,7 +183,8 @@ export const useGetAllMyRoutineTasksByStationIds = (
 
   const query = useQuery<GetAllMyRoutineTasksByStationIdsResponse, Error>({
     queryKey: queryKeys.routineTask.manyByStationIds(
-      hookRequest?.param.stationIds as UUID[] | undefined
+      hookRequest?.param.stationIds as UUID[] | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -196,7 +199,8 @@ export const useGetAllMyRoutineTasksByStationIds = (
   ): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.routineTask.manyByStationIds(
-        callbackRequest.param.stationIds as UUID[]
+        callbackRequest.param.stationIds as UUID[],
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -246,7 +250,7 @@ export const useGetAllMyRoutineTasks = (
         error instanceof NotezyFetchError
       ) {
         const routineTasks =
-          await RoutineTaskLocalSimulator.simulateGetAllMyRoutineTasks();
+          await RoutineTaskLocalSimulator.simulateGetAllMyRoutineTasks(request);
         return {
           success: false,
           data: routineTasks,
@@ -260,7 +264,9 @@ export const useGetAllMyRoutineTasks = (
   };
 
   const query = useQuery<GetAllMyRoutineTasksResponse, Error>({
-    queryKey: queryKeys.routineTask.myAll(),
+    queryKey: queryKeys.routineTask.myAll(
+      hookRequest?.param?.areDeleted ?? false
+    ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
     refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
@@ -273,7 +279,9 @@ export const useGetAllMyRoutineTasks = (
     callbackRequest: GetAllMyRoutineTasksRequest
   ): Promise<GetAllMyRoutineTasksResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.routineTask.myAll(),
+      queryKey: queryKeys.routineTask.myAll(
+        callbackRequest.param?.areDeleted ?? false
+      ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       ...options,

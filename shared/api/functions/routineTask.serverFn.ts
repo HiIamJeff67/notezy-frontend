@@ -37,7 +37,11 @@ export const GetMyRoutineTaskById = createServerFn({ method: "GET" })
         },
         {}
       )
-    ).toString();
+    );
+    if (request.param?.isDeleted === undefined) {
+      params.set("isDeleted", "false");
+    }
+    const query = params.toString();
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
@@ -45,7 +49,7 @@ export const GetMyRoutineTaskById = createServerFn({ method: "GET" })
       "/" +
       APIURLPathDictionary.routineTask.getMyRoutineTaskById +
       "?" +
-      params;
+      query;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -92,6 +96,7 @@ export const GetAllMyRoutineTasksByStationIds = createServerFn({
       for (const stationId of request.param.stationIds) {
         params.append("stationIds", stationId);
       }
+      params.set("areDeleted", String(request.param.areDeleted ?? false));
       const url =
         import.meta.env.VITE_API_DOMAIN_URL +
         "/" +
@@ -142,12 +147,17 @@ export const GetAllMyRoutineTasks = createServerFn({
 })
   .inputValidator((data: GetAllMyRoutineTasksRequest) => data)
   .handler(async ({ data: request }): Promise<GetAllMyRoutineTasksResponse> => {
+    const params = new URLSearchParams({
+      areDeleted: String(request.param?.areDeleted ?? false),
+    });
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routineTask.getAllMyRoutineTasks;
+      APIURLPathDictionary.routineTask.getAllMyRoutineTasks +
+      "?" +
+      params.toString();
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";

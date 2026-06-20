@@ -92,7 +92,11 @@ export class SubShelfLocalSimulator {
       )
       .limit(1);
 
-    return rows[0] ?? null;
+    const subShelf = rows[0];
+    if (!subShelf) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    return (subShelf.deletedAt !== null) === isDeleted ? subShelf : null;
   };
 
   static simulateGetMySubShelvesByPrevSubShelfId = async (
@@ -105,7 +109,7 @@ export class SubShelfLocalSimulator {
     });
     if (!loggedInUser) return [];
 
-    return await localDB
+    const subShelves = await localDB
       .select({
         id: SubShelf.id,
         name: SubShelf.name,
@@ -132,6 +136,11 @@ export class SubShelfLocalSimulator {
           )
         )
       );
+
+    const areDeleted = request.param.areDeleted ?? false;
+    return subShelves.filter(
+      subShelf => (subShelf.deletedAt !== null) === areDeleted
+    );
   };
 
   static simulateGetAllMySubShelvesByRootShelfId = async (
@@ -144,7 +153,7 @@ export class SubShelfLocalSimulator {
     });
     if (!loggedInUser) return [];
 
-    return await localDB
+    const subShelves = await localDB
       .select({
         id: SubShelf.id,
         name: SubShelf.name,
@@ -172,6 +181,11 @@ export class SubShelfLocalSimulator {
           )
         )
       );
+
+    const areDeleted = request.param.areDeleted ?? false;
+    return subShelves.filter(
+      subShelf => (subShelf.deletedAt !== null) === areDeleted
+    );
   };
 
   static simulateGetMySubShelvesAndItemsByPrevSubShelfId = async (
@@ -241,10 +255,16 @@ export class SubShelfLocalSimulator {
               )
             );
 
+    const areDeleted = request.param.areDeleted ?? false;
+
     return {
-      subShelves,
+      subShelves: subShelves.filter(
+        subShelf => (subShelf.deletedAt !== null) === areDeleted
+      ),
       materials: [],
-      blockPacks,
+      blockPacks: blockPacks.filter(
+        blockPack => (blockPack.deletedAt !== null) === areDeleted
+      ),
     };
   };
 
@@ -673,7 +693,8 @@ export class SubShelfLocalSimulator {
 
       for (const movedSubShelf of request.body.movedSubShelves) {
         if (
-          movedSubShelf.sourceRootShelfId !== movedSubShelf.destinationRootShelfId
+          movedSubShelf.sourceRootShelfId !==
+          movedSubShelf.destinationRootShelfId
         ) {
           await tx
             .update(RootShelf)

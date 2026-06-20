@@ -1,13 +1,29 @@
 import {
+  RoutinePeriod as GraphQLRoutinePeriod,
+  RoutineStatus as GraphQLRoutineStatus,
+  SearchRoutineSortBy,
+  SearchSortOrder,
+} from "@shared/api/graphql/generated/graphql";
+import { useSearchRoutinesLazyQuery } from "@shared/api/graphql/hooks/useSearchRoutines";
+import {
   AllRoutineStatuses,
+  RoutinePeriod,
   RoutineStatus,
+  RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
+import type { RoutineNode } from "@shared/types/routineNode.type";
+import type { UUID } from "crypto";
 import { ClipboardClock, SquarePen } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import WideBookmarkIcon from "@/components/icons/WideBookmarkIcon";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   Select,
   SelectContent,
@@ -27,13 +43,235 @@ import { useStationRoutine } from "@/hooks";
 
 const RoutineTable = () => {
   const stationRoutineManager = useStationRoutine();
+  const [executeSearchRoutines] = useSearchRoutinesLazyQuery({
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
+  const [routines, setRoutines] = useState<
+    Array<RoutineNode & { routineTaskIds: UUID[] }>
+  >([]);
+  const [routineTotalCount, setRoutineTotalCount] = useState<number>(0);
+  const [routineSearchCursor, setRoutineSearchCursor] = useState<string | null>(
+    null
+  );
+  const [hasMoreRoutines, setHasMoreRoutines] = useState<boolean>(true);
+  const [isSearchingRoutines, setIsSearchingRoutines] =
+    useState<boolean>(false);
+  const isSearchingRoutinesRef = useRef<boolean>(false);
   const [status, setStatus] = useState<RoutineStatus | "All">("All");
   const [startsAfter, setStartsAfter] = useState<Date | undefined>();
   const [endsBefore, setEndsBefore] = useState<Date | undefined>();
   const [showUnscheduled, setShowUnscheduled] = useState<boolean>(true);
+  const stationPresenceSignature =
+    stationRoutineManager.presence.stationIds.join("|");
+  const routineTagPresenceSignature =
+    stationRoutineManager.presence.routineTagIds.join("|");
+
+  const searchRoutines = useCallback(
+    async (reset: boolean): Promise<void> => {
+      if (isSearchingRoutinesRef.current) return;
+      if (!reset && (!hasMoreRoutines || !routineSearchCursor)) return;
+      if (
+        stationRoutineManager.stations.length > 0 &&
+        stationRoutineManager.presence.stationIds.length === 0
+      ) {
+        if (reset) {
+          setRoutines([]);
+          setRoutineTotalCount(0);
+          setRoutineSearchCursor(null);
+          setHasMoreRoutines(false);
+        }
+        return;
+      }
+      if (
+        stationRoutineManager.routineTags.length > 0 &&
+        stationRoutineManager.presence.routineTagIds.length === 0 &&
+        !stationRoutineManager.presence.showUntaggedRoutines
+      ) {
+        if (reset) {
+          setRoutines([]);
+          setRoutineTotalCount(0);
+          setRoutineSearchCursor(null);
+          setHasMoreRoutines(false);
+        }
+        return;
+      }
+
+      isSearchingRoutinesRef.current = true;
+      setIsSearchingRoutines(true);
+      try {
+        const isAllStationsSelected =
+          stationRoutineManager.stations.length === 0 ||
+          stationRoutineManager.presence.stationIds.length ===
+            stationRoutineManager.stations.length;
+        const isAllRoutineTagsSelected =
+          stationRoutineManager.routineTags.length === 0 ||
+          stationRoutineManager.presence.routineTagIds.length ===
+            stationRoutineManager.routineTags.length;
+        const shouldFilterRoutineTagsInView =
+          stationRoutineManager.routineTags.length > 0 &&
+          stationRoutineManager.presence.showUntaggedRoutines &&
+          !isAllRoutineTagsSelected;
+        const shouldShowOnlyUntaggedRoutines =
+          stationRoutineManager.routineTags.length > 0 &&
+          stationRoutineManager.presence.showUntaggedRoutines &&
+          stationRoutineManager.presence.routineTagIds.length === 0;
+        const result = await executeSearchRoutines({
+          variables: {
+            input: {
+              query: stationRoutineManager.presence.query,
+              after: reset ? undefined : (routineSearchCursor ?? undefined),
+              first: reset ? 20 : 10,
+              stationIds: isAllStationsSelected
+                ? []
+                : stationRoutineManager.presence.stationIds,
+              tagIds:
+                shouldFilterRoutineTagsInView ||
+                shouldShowOnlyUntaggedRoutines ||
+                isAllRoutineTagsSelected
+                  ? []
+                  : stationRoutineManager.presence.routineTagIds,
+              sortBy: SearchRoutineSortBy.Title,
+              sortOrder: SearchSortOrder.Asc,
+            },
+          },
+        }).retain();
+        const searchedRoutines = (result.data?.searchRoutines.searchEdges ?? [])
+          .map(edge => {
+            const node = edge.node as unknown as {
+              id: UUID;
+              stationId: UUID;
+              title: string;
+              status: GraphQLRoutineStatus;
+              isPinned: boolean;
+              scheduledStartAt: Date | string | number;
+              scheduledEndAt: Date | string | number;
+              period: GraphQLRoutinePeriod | null;
+              timezone: string;
+              deletedAt: Date | string | number | null;
+              updatedAt: Date | string | number;
+              createdAt: Date | string | number;
+              tagIds?: UUID[];
+              taskIds?: UUID[];
+              itemIds?: UUID[];
+            };
+            const routineTagIds = node.tagIds ?? [];
+            if (shouldShowOnlyUntaggedRoutines && routineTagIds.length > 0) {
+              return null;
+            }
+            if (
+              shouldFilterRoutineTagsInView &&
+              routineTagIds.length > 0 &&
+              !routineTagIds.some(routineTagId =>
+                stationRoutineManager.presence.routineTagIds.includes(
+                  routineTagId
+                )
+              )
+            ) {
+              return null;
+            }
+
+            const routineTaskIds = node.taskIds ?? [];
+            const routine: RoutineNode & { routineTaskIds: UUID[] } = {
+              id: node.id,
+              stationId: node.stationId,
+              title: node.title,
+              description: "",
+              status:
+                node.status === GraphQLRoutineStatus.RoutineStatusCompleted
+                  ? RoutineStatus.Completed
+                  : node.status === GraphQLRoutineStatus.RoutineStatusInProgress
+                    ? RoutineStatus.InProgress
+                    : node.status === GraphQLRoutineStatus.RoutineStatusOverDue
+                      ? RoutineStatus.OverDue
+                      : RoutineStatus.Scheduled,
+              isPinned: node.isPinned,
+              scheduledStartAt: new Date(node.scheduledStartAt),
+              scheduledEndAt: new Date(node.scheduledEndAt),
+              period:
+                node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
+                  ? RoutinePeriod.Daily
+                  : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
+                    ? RoutinePeriod.Weekly
+                    : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
+                      ? RoutinePeriod.Monthly
+                      : node.period === GraphQLRoutinePeriod.RoutinePeriodYearly
+                        ? RoutinePeriod.Yearly
+                        : null,
+              timezone: node.timezone,
+              deletedAt:
+                node.deletedAt === null ? null : new Date(node.deletedAt),
+              updatedAt: new Date(node.updatedAt),
+              createdAt: new Date(node.createdAt),
+              isOpen: false,
+              routineTagIds,
+              itemIds: node.itemIds ?? [],
+              routineTasks: routineTaskIds.flatMap(routineTaskId => {
+                const routineTask =
+                  stationRoutineManager.getRoutineTaskById(routineTaskId);
+                return routineTask ? [routineTask] : [];
+              }),
+              routineTaskIds,
+            };
+            return routine;
+          })
+          .filter(
+            (routine): routine is RoutineNode & { routineTaskIds: UUID[] } =>
+              routine !== null
+          );
+        setRoutines(previousRoutines => {
+          if (reset) return searchedRoutines;
+          const searchedRoutineIds = new Set(
+            searchedRoutines.map(routine => routine.id)
+          );
+          return [
+            ...previousRoutines.filter(
+              routine => !searchedRoutineIds.has(routine.id)
+            ),
+            ...searchedRoutines,
+          ];
+        });
+        setRoutineTotalCount(result.data?.searchRoutines.totalCount ?? 0);
+        setRoutineSearchCursor(
+          result.data?.searchRoutines.searchPageInfo.endEncodedSearchCursor ??
+            null
+        );
+        setHasMoreRoutines(
+          result.data?.searchRoutines.searchPageInfo.hasNextPage ?? false
+        );
+      } finally {
+        isSearchingRoutinesRef.current = false;
+        setIsSearchingRoutines(false);
+      }
+    },
+    [
+      executeSearchRoutines,
+      hasMoreRoutines,
+      routineSearchCursor,
+      stationRoutineManager.getRoutineTaskById,
+      stationRoutineManager.presence.query,
+      stationRoutineManager.presence.routineTagIds,
+      stationRoutineManager.presence.showUntaggedRoutines,
+      stationRoutineManager.presence.stationIds,
+      stationRoutineManager.routineTags.length,
+      stationRoutineManager.stations.length,
+    ]
+  );
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      void searchRoutines(true);
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [
+    stationRoutineManager.presence.query,
+    stationRoutineManager.presence.showUntaggedRoutines,
+    stationPresenceSignature,
+    routineTagPresenceSignature,
+  ]);
 
   const filteredRoutines = useMemo(() => {
-    return stationRoutineManager.visibleRoutines.filter(routine => {
+    return routines.filter(routine => {
       if (status !== "All" && routine.status !== status) return false;
 
       const isScheduled =
@@ -51,13 +289,7 @@ const RoutineTable = () => {
       }
       return true;
     });
-  }, [
-    endsBefore,
-    showUnscheduled,
-    startsAfter,
-    stationRoutineManager.visibleRoutines,
-    status,
-  ]);
+  }, [endsBefore, routines, showUnscheduled, startsAfter, status]);
 
   return (
     <section className="@container flex max-h-[640px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
@@ -70,7 +302,7 @@ const RoutineTable = () => {
           <span className="text-xs tabular-nums text-muted-foreground">
             {filteredRoutines.length}
             <span className="px-0.5">|</span>
-            {stationRoutineManager.visibleRoutines.length}
+            {routineTotalCount}
           </span>
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 @max-[760px]:w-full @max-[760px]:justify-start">
@@ -117,7 +349,16 @@ const RoutineTable = () => {
         </div>
       </div>
 
-      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div
+        className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        onScroll={event => {
+          if (isSearchingRoutines || !hasMoreRoutines) return;
+
+          const { clientHeight, scrollHeight, scrollTop } = event.currentTarget;
+          if (scrollTop + clientHeight < scrollHeight * 0.55) return;
+          void searchRoutines(false);
+        }}
+      >
         <Table className="table-fixed">
           <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card">
             <TableRow className="bg-muted/15">
@@ -135,13 +376,24 @@ const RoutineTable = () => {
               const station = stationRoutineManager.getStationById(
                 routine.stationId
               );
-              const routineTags = routine.routineTagIds.flatMap(
-                routineTagId => {
+              const routineTags = routine.routineTagIds
+                .flatMap(routineTagId => {
                   const routineTag =
                     stationRoutineManager.getRoutineTagById(routineTagId);
                   return routineTag ? [routineTag] : [];
-                }
-              );
+                })
+                .sort((left, right) => {
+                  const nameComparison = left.name.localeCompare(right.name);
+                  return nameComparison === 0
+                    ? left.id.localeCompare(right.id)
+                    : nameComparison;
+                });
+              const presentRoutineTags = routineTags.slice(0, 3);
+              const hiddenRoutineTags = routineTags.slice(3);
+              const routineTaskCount =
+                routine.routineTaskIds.length > 0
+                  ? routine.routineTaskIds.length
+                  : routine.routineTasks.length;
               const isScheduled =
                 routine.scheduledStartAt instanceof Date &&
                 routine.scheduledEndAt instanceof Date &&
@@ -199,23 +451,130 @@ const RoutineTable = () => {
                           {routine.routineTagIds.length > 1 ? "s" : ""}
                         </span>
                       ) : (
-                        routineTags.map(routineTag => (
-                          <span
-                            key={routineTag.id}
-                            className="inline-flex h-5 items-center gap-1 rounded-sm border border-border/60 px-1.5 text-xs"
-                          >
+                        <>
+                          {presentRoutineTags.map(routineTag => (
                             <span
-                              className="size-2 rounded-full"
-                              style={{ backgroundColor: routineTag.color }}
-                            />
-                            {routineTag.name}
-                          </span>
-                        ))
+                              key={routineTag.id}
+                              className="inline-flex h-5 max-w-full items-center gap-1 rounded-sm border border-border/60 px-1.5 text-xs"
+                            >
+                              <span
+                                className="size-2 shrink-0 rounded-full"
+                                style={{ backgroundColor: routineTag.color }}
+                              />
+                              <span className="truncate">
+                                {routineTag.name}
+                              </span>
+                            </span>
+                          ))}
+                          {hiddenRoutineTags.length > 0 && (
+                            <HoverCard openDelay={180} closeDelay={120}>
+                              <HoverCardTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex h-5 items-center rounded-sm border border-border/60 px-1.5 text-xs text-muted-foreground hover:bg-accent/50"
+                                >
+                                  ...
+                                </button>
+                              </HoverCardTrigger>
+                              <HoverCardContent
+                                align="start"
+                                className="w-72 rounded-sm p-3"
+                              >
+                                <div className="flex flex-col gap-2">
+                                  <p className="text-sm font-medium">
+                                    Routine Tags
+                                  </p>
+                                  <div className="flex max-h-52 flex-col gap-1.5 overflow-y-auto">
+                                    {routineTags.map(routineTag => (
+                                      <div
+                                        key={routineTag.id}
+                                        className="flex min-w-0 items-center gap-2 text-sm"
+                                      >
+                                        <span
+                                          className="size-2.5 shrink-0 rounded-full"
+                                          style={{
+                                            backgroundColor: routineTag.color,
+                                          }}
+                                        />
+                                        <span className="truncate">
+                                          {routineTag.name}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          )}
+                        </>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="tabular-nums">
-                    {routine.routineTasks.length}
+                    {routineTaskCount === 0 ? (
+                      0
+                    ) : (
+                      <HoverCard openDelay={180} closeDelay={120}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            type="button"
+                            className="rounded-sm px-1 tabular-nums hover:bg-accent/50"
+                          >
+                            {routineTaskCount}
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent
+                          align="start"
+                          className="w-80 rounded-sm p-3"
+                        >
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm font-medium">Routine Tasks</p>
+                            {routine.routineTasks.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                {routineTaskCount} linked task
+                                {routineTaskCount > 1 ? "s" : ""}. Task names
+                                are not loaded yet.
+                              </p>
+                            ) : (
+                              <div className="flex max-h-56 flex-col gap-1.5 overflow-y-auto">
+                                {routine.routineTasks.map(routineTask => (
+                                  <div
+                                    key={routineTask.id}
+                                    className="flex min-w-0 items-center gap-2 text-sm"
+                                  >
+                                    <span
+                                      className={`size-2.5 shrink-0 rounded-full ${
+                                        routineTask.status ===
+                                        RoutineTaskStatus.Success
+                                          ? "bg-emerald-500"
+                                          : routineTask.status ===
+                                                RoutineTaskStatus.Fail ||
+                                              routineTask.status ===
+                                                RoutineTaskStatus.Cancel
+                                            ? "bg-destructive"
+                                            : routineTask.status ===
+                                                RoutineTaskStatus.Running
+                                              ? "bg-sky-500"
+                                              : routineTask.status ===
+                                                  RoutineTaskStatus.Pause
+                                                ? "bg-amber-500"
+                                                : "bg-muted-foreground"
+                                      }`}
+                                    />
+                                    <span className="min-w-0 flex-1 truncate">
+                                      {routineTask.title}
+                                    </span>
+                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                      {routineTask.status}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    )}
                   </TableCell>
                   <TableCell className="px-2 py-3">
                     <Button
@@ -242,7 +601,9 @@ const RoutineTable = () => {
                   colSpan={7}
                   className="h-28 text-center text-sm text-muted-foreground"
                 >
-                  No routines match the current filters.
+                  {isSearchingRoutines
+                    ? "Loading routines..."
+                    : "No routines match the current filters."}
                 </TableCell>
               </TableRow>
             )}

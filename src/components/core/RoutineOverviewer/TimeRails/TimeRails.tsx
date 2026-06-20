@@ -1,6 +1,6 @@
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import type { RoutineNode } from "@shared/types/routineNode.type";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
 import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
@@ -33,9 +33,11 @@ const TimeRails = () => {
   const userManager = useUser();
 
   const previousScaleRef = useRef(stationRoutineManager.timeRailScale);
+  const timeRailsBodyRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingScrollAdjustmentRef = useRef<number | null>(null);
   const pendingWheelDeltaRef = useRef<number>(0);
+  const viewportUpdateAnimationRef = useRef<number | null>(null);
   const shouldSuppressRoutineOpenRef = useRef<boolean>(false);
   const shouldCenterDayScrollRef = useRef<boolean>(false);
   const shouldCenterWeekScrollRef = useRef<boolean>(true);
@@ -61,6 +63,10 @@ const TimeRails = () => {
     originalWidth: number;
   } | null>(null);
   const [columnWidths, setColumnWidths] = useState<Record<number, number>>({});
+  const [viewportWindow, setViewportWindow] = useState<{
+    startAt: Date;
+    endAt: Date;
+  } | null>(null);
   const [routineResizePreview, setRoutineResizePreview] = useState<
     Partial<
       Record<
@@ -92,22 +98,19 @@ const TimeRails = () => {
       timeRailStation => timeRailStation.station.id
     );
     const publicId = userManager.userData?.publicId;
-    if (stationIds.length === 0) return;
+    if (stationIds.length === 0 || !publicId) return;
 
     setStationPositions(previousStationPositions => {
       const currentStationIdSet = new Set(stationIds);
+      let baseStationPositions = previousStationPositions;
 
-      const getBaseStationPositions = () => {
-        if (stationPositionsPublicIdRef.current !== publicId) {
-          stationPositionsPublicIdRef.current = publicId;
-          hasLoadedStationPositionsRef.current = false;
-          return [];
-        }
+      if (stationPositionsPublicIdRef.current !== publicId) {
+        stationPositionsPublicIdRef.current = publicId;
+        hasLoadedStationPositionsRef.current = false;
+        baseStationPositions = [];
+      }
 
-        return previousStationPositions;
-      };
-
-      const loadStoredStationPositions = () => {
+      if (!hasLoadedStationPositionsRef.current) {
         const storedStationPositionsEncoded =
           LocalStorageManipulator.getItemByKey(
             LocalStorageKey.timeRailsStationIndexes,
@@ -125,17 +128,19 @@ const TimeRails = () => {
         }
 
         if (!Array.isArray(storedStationPositions)) {
-          return [];
+          baseStationPositions = [];
+        } else {
+          baseStationPositions = storedStationPositions.filter(
+            stationId =>
+              typeof stationId === "string" &&
+              currentStationIdSet.has(stationId as UUID)
+          ) as UUID[];
         }
 
-        return storedStationPositions.filter(
-          stationId =>
-            typeof stationId === "string" &&
-            currentStationIdSet.has(stationId as UUID)
-        ) as UUID[];
-      };
+        hasLoadedStationPositionsRef.current = true;
+      }
 
-      const buildNextStationPositions = (baseStationPositions: UUID[]) => [
+      const nextStationPositions = [
         ...baseStationPositions.filter(stationId =>
           currentStationIdSet.has(stationId)
         ),
@@ -143,16 +148,6 @@ const TimeRails = () => {
           stationId => !baseStationPositions.includes(stationId)
         ),
       ];
-
-      let baseStationPositions = getBaseStationPositions();
-
-      if (!hasLoadedStationPositionsRef.current) {
-        baseStationPositions = loadStoredStationPositions();
-        hasLoadedStationPositionsRef.current = true;
-      }
-
-      const nextStationPositions =
-        buildNextStationPositions(baseStationPositions);
 
       if (
         nextStationPositions.length === previousStationPositions.length &&
@@ -165,12 +160,20 @@ const TimeRails = () => {
 
       LocalStorageManipulator.setItem(
         LocalStorageKey.timeRailsStationIndexes,
-        JSON.stringify(nextStationPositions),
+        nextStationPositions,
         publicId
       );
       return nextStationPositions;
     });
   }, [stationRoutineManager.timeRailStations, userManager.userData?.publicId]);
+
+  useEffect(() => {
+    return () => {
+      if (viewportUpdateAnimationRef.current !== null) {
+        window.cancelAnimationFrame(viewportUpdateAnimationRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const previousScale = previousScaleRef.current;
@@ -179,57 +182,49 @@ const TimeRails = () => {
     }
     previousScaleRef.current = stationRoutineManager.timeRailScale;
 
-    const getVisibleDateFromPreviousScale = () => {
-      const visibleDate = new Date(stationRoutineManager.timeWindow.startAt);
-      if (previousScale === "day") {
-        visibleDate.setDate(visibleDate.getDate() + 1);
-      }
-      if (previousScale === "week") {
-        visibleDate.setDate(visibleDate.getDate() + 6);
-      }
-      if (previousScale === "month") {
-        visibleDate.setMonth(visibleDate.getMonth() + 1, 1);
-      }
-      visibleDate.setHours(0, 0, 0, 0);
-      return visibleDate;
-    };
+    const visibleDate = new Date(stationRoutineManager.timeWindow.startAt);
+    if (previousScale === "day") {
+      visibleDate.setDate(visibleDate.getDate() + 1);
+    }
+    if (previousScale === "week") {
+      visibleDate.setDate(visibleDate.getDate() + 6);
+    }
+    if (previousScale === "month") {
+      visibleDate.setMonth(visibleDate.getMonth() + 1, 1);
+    }
+    visibleDate.setHours(0, 0, 0, 0);
 
-    const buildTimeWindowForCurrentScale = (visibleDate: Date) => {
-      const nextStartAt = new Date(visibleDate);
-      const nextEndAt = new Date(nextStartAt);
+    const nextStartAt = new Date(visibleDate);
+    const nextEndAt = new Date(nextStartAt);
 
-      if (stationRoutineManager.timeRailScale === "day") {
-        nextStartAt.setHours(nextStartAt.getHours() - DayBufferHours);
-        nextEndAt.setTime(nextStartAt.getTime());
-        nextEndAt.setHours(nextEndAt.getHours() + DayBufferHours * 3);
-        shouldCenterDayScrollRef.current = true;
-      }
-      if (stationRoutineManager.timeRailScale === "week") {
-        nextStartAt.setDate(
-          nextStartAt.getDate() -
-            WeekBufferDays -
-            Math.floor(WeekVisibleDays / 2)
-        );
-        nextEndAt.setTime(nextStartAt.getTime());
-        nextEndAt.setDate(
-          nextEndAt.getDate() + WeekVisibleDays + WeekBufferDays * 2
-        );
-        shouldCenterWeekScrollRef.current = true;
-      }
-      if (stationRoutineManager.timeRailScale === "month") {
-        nextStartAt.setDate(1);
-        nextStartAt.setMonth(nextStartAt.getMonth() - 1);
-        nextEndAt.setTime(nextStartAt.getTime());
-        nextEndAt.setMonth(nextEndAt.getMonth() + 3, 1);
-        shouldCenterMonthScrollRef.current = true;
-      }
+    if (stationRoutineManager.timeRailScale === "day") {
+      nextStartAt.setHours(nextStartAt.getHours() - DayBufferHours);
+      nextEndAt.setTime(nextStartAt.getTime());
+      nextEndAt.setHours(nextEndAt.getHours() + DayBufferHours * 3);
+      shouldCenterDayScrollRef.current = true;
+    }
+    if (stationRoutineManager.timeRailScale === "week") {
+      nextStartAt.setDate(
+        nextStartAt.getDate() - WeekBufferDays - Math.floor(WeekVisibleDays / 2)
+      );
+      nextEndAt.setTime(nextStartAt.getTime());
+      nextEndAt.setDate(
+        nextEndAt.getDate() + WeekVisibleDays + WeekBufferDays * 2
+      );
+      shouldCenterWeekScrollRef.current = true;
+    }
+    if (stationRoutineManager.timeRailScale === "month") {
+      nextStartAt.setDate(1);
+      nextStartAt.setMonth(nextStartAt.getMonth() - 1);
+      nextEndAt.setTime(nextStartAt.getTime());
+      nextEndAt.setMonth(nextEndAt.getMonth() + 3, 1);
+      shouldCenterMonthScrollRef.current = true;
+    }
 
-      return { startAt: nextStartAt, endAt: nextEndAt };
-    };
-
-    stationRoutineManager.setTimeWindow(
-      buildTimeWindowForCurrentScale(getVisibleDateFromPreviousScale())
-    );
+    stationRoutineManager.setTimeWindow({
+      startAt: nextStartAt,
+      endAt: nextEndAt,
+    });
   }, [
     stationRoutineManager.timeRailScale,
     stationRoutineManager.timeWindow.startAt,
@@ -308,13 +303,136 @@ const TimeRails = () => {
     return contentWidth;
   };
 
+  const getDateFromPosition = useCallback(
+    (position: number) => {
+      if (tickMetrics.length === 0) {
+        return new Date(timeWindowStartMs);
+      }
+
+      const clampedPosition = Math.min(contentWidth, Math.max(0, position));
+      for (let index = 0; index < tickMetrics.length; index++) {
+        const tickMetric = tickMetrics[index];
+        const nextTickTime =
+          tickMetrics[index + 1]?.tick.getTime() ?? timeWindowEndMs;
+        const tickRight = tickMetric.left + tickMetric.width;
+
+        if (
+          clampedPosition >= tickMetric.left &&
+          clampedPosition <= tickRight
+        ) {
+          const positionRatio =
+            (clampedPosition - tickMetric.left) / tickMetric.width;
+          return new Date(
+            tickMetric.tick.getTime() +
+              positionRatio * (nextTickTime - tickMetric.tick.getTime())
+          );
+        }
+      }
+
+      return new Date(timeWindowEndMs);
+    },
+    [contentWidth, tickMetrics, timeWindowEndMs, timeWindowStartMs]
+  );
+
+  const updateViewportWindow = useCallback(
+    (scrollContainer: HTMLDivElement) => {
+      if (viewportUpdateAnimationRef.current !== null) {
+        window.cancelAnimationFrame(viewportUpdateAnimationRef.current);
+      }
+
+      viewportUpdateAnimationRef.current = window.requestAnimationFrame(() => {
+        viewportUpdateAnimationRef.current = null;
+        const nextStartAt = getDateFromPosition(scrollContainer.scrollLeft);
+        const nextEndAt = getDateFromPosition(
+          scrollContainer.scrollLeft + scrollContainer.clientWidth
+        );
+
+        if (stationRoutineManager.timeRailScale === "day") {
+          nextStartAt.setHours(nextStartAt.getHours() - 1);
+          nextEndAt.setHours(nextEndAt.getHours() + 1);
+        }
+        if (stationRoutineManager.timeRailScale === "week") {
+          nextStartAt.setDate(nextStartAt.getDate() - 1);
+          nextEndAt.setDate(nextEndAt.getDate() + 1);
+        }
+        if (stationRoutineManager.timeRailScale === "month") {
+          nextStartAt.setMonth(nextStartAt.getMonth() - 1);
+          nextEndAt.setMonth(nextEndAt.getMonth() + 1);
+        }
+
+        setViewportWindow(previousViewportWindow => {
+          if (
+            previousViewportWindow &&
+            previousViewportWindow.startAt.getTime() ===
+              nextStartAt.getTime() &&
+            previousViewportWindow.endAt.getTime() === nextEndAt.getTime()
+          ) {
+            return previousViewportWindow;
+          }
+
+          return {
+            startAt: nextStartAt,
+            endAt: nextEndAt,
+          };
+        });
+      });
+    },
+    [getDateFromPosition, stationRoutineManager.timeRailScale]
+  );
+
+  const routineVisibilityWindow = useMemo(() => {
+    if (viewportWindow) {
+      return viewportWindow;
+    }
+
+    const startAt = new Date(stationRoutineManager.timeWindow.startAt);
+    const endAt = new Date(startAt);
+
+    if (stationRoutineManager.timeRailScale === "day") {
+      startAt.setHours(startAt.getHours() + DayBufferHours - 1);
+      endAt.setTime(startAt.getTime());
+      endAt.setHours(endAt.getHours() + 26);
+    }
+    if (stationRoutineManager.timeRailScale === "week") {
+      startAt.setDate(startAt.getDate() + WeekBufferDays - 1);
+      endAt.setTime(startAt.getTime());
+      endAt.setDate(endAt.getDate() + WeekVisibleDays + 2);
+    }
+    if (stationRoutineManager.timeRailScale === "month") {
+      startAt.setMonth(startAt.getMonth(), 1);
+      endAt.setTime(startAt.getTime());
+      endAt.setMonth(endAt.getMonth() + 3, 1);
+    }
+
+    return {
+      startAt,
+      endAt,
+    };
+  }, [
+    stationRoutineManager.timeRailScale,
+    stationRoutineManager.timeWindow.startAt,
+    viewportWindow,
+  ]);
+
   const renderedTimeRailStations = useMemo(() => {
     return orderedTimeRailStations.map(timeRailStation => {
+      const visibleRoutines = timeRailStation.routines.filter(routine => {
+        const preview = routineResizePreview[routine.id];
+        const scheduledStartAt =
+          preview?.scheduledStartAt ?? routine.scheduledStartAt;
+        const scheduledEndAt =
+          preview?.scheduledEndAt ?? routine.scheduledEndAt;
+
+        return (
+          scheduledStartAt < routineVisibilityWindow.endAt &&
+          scheduledEndAt > routineVisibilityWindow.startAt
+        );
+      });
       const routineLayouts = new Map<
         UUID,
         { left: number; width: number; railIndex: number }
       >();
-      const routineVisualLayouts = timeRailStation.routines
+      const routineVisualLayouts = visibleRoutines
         .map(routine => {
           const preview = routineResizePreview[routine.id];
           const scheduledStartAt =
@@ -373,9 +491,7 @@ const TimeRails = () => {
           railRightPosition => railRightPosition <= routineVisualLayout.left
         );
         const railIndex =
-          targetRailIndex === -1
-            ? railRightPositions.length
-            : targetRailIndex;
+          targetRailIndex === -1 ? railRightPositions.length : targetRailIndex;
 
         railRightPositions[railIndex] = visualRight;
         routineLayouts.set(routineVisualLayout.routine.id, {
@@ -387,6 +503,7 @@ const TimeRails = () => {
 
       return {
         ...timeRailStation,
+        routines: visibleRoutines,
         railCount: Math.max(railRightPositions.length, 1),
         routineLayouts,
       };
@@ -394,6 +511,7 @@ const TimeRails = () => {
   }, [
     contentWidth,
     orderedTimeRailStations,
+    routineVisibilityWindow,
     routineResizePreview,
     stationRoutineManager.timeRailScale,
     tickMetrics,
@@ -410,6 +528,7 @@ const TimeRails = () => {
     }
 
     setStationPositions(previousStationPositions => {
+      const publicId = userManager.userData?.publicId;
       const nextStationPositions = [...previousStationPositions];
       const draggedIndex = nextStationPositions.indexOf(draggedStationId);
       const targetIndex = nextStationPositions.indexOf(targetStationId);
@@ -419,11 +538,13 @@ const TimeRails = () => {
 
       nextStationPositions.splice(draggedIndex, 1);
       nextStationPositions.splice(targetIndex, 0, draggedStationId);
-      LocalStorageManipulator.setItem(
-        LocalStorageKey.timeRailsStationIndexes,
-        JSON.stringify(nextStationPositions),
-        userManager.userData?.publicId
-      );
+      if (publicId) {
+        LocalStorageManipulator.setItem(
+          LocalStorageKey.timeRailsStationIndexes,
+          nextStationPositions,
+          publicId
+        );
+      }
       return nextStationPositions;
     });
   };
@@ -458,31 +579,6 @@ const TimeRails = () => {
     if (!resizingRoutine) return;
 
     const minRoutineDurationMs = 15 * 60 * 1000;
-
-    const getDateFromPosition = (position: number) => {
-      if (tickMetrics.length === 0) {
-        return new Date(timeWindowStartMs);
-      }
-
-      const clampedPosition = Math.min(contentWidth, Math.max(0, position));
-      for (let index = 0; index < tickMetrics.length; index++) {
-        const tickMetric = tickMetrics[index];
-        const nextTickTime =
-          tickMetrics[index + 1]?.tick.getTime() ?? timeWindowEndMs;
-        const tickRight = tickMetric.left + tickMetric.width;
-
-        if (clampedPosition >= tickMetric.left && clampedPosition <= tickRight) {
-          const positionRatio =
-            (clampedPosition - tickMetric.left) / tickMetric.width;
-          return new Date(
-            tickMetric.tick.getTime() +
-              positionRatio * (nextTickTime - tickMetric.tick.getTime())
-          );
-        }
-      }
-
-      return new Date(timeWindowEndMs);
-    };
 
     const getResizedRoutineRange = (clientX: number) => {
       const deltaX = clientX - resizingRoutine.startClientX;
@@ -565,12 +661,9 @@ const TimeRails = () => {
       window.removeEventListener("pointerup", handlePointerUp);
     };
   }, [
-    contentWidth,
+    getDateFromPosition,
     resizingRoutine,
     stationRoutineManager.updateRoutine,
-    tickMetrics,
-    timeWindowEndMs,
-    timeWindowStartMs,
   ]);
 
   useEffect(() => {
@@ -609,9 +702,7 @@ const TimeRails = () => {
 
     const scrollContainer = scrollContainerRef.current;
 
-    const applyPendingScrollAdjustment = () => {
-      if (pendingScrollAdjustmentRef.current === null) return false;
-
+    if (pendingScrollAdjustmentRef.current !== null) {
       scrollContainer.scrollLeft += pendingScrollAdjustmentRef.current;
       pendingScrollAdjustmentRef.current = null;
 
@@ -625,24 +716,23 @@ const TimeRails = () => {
         pendingWheelDeltaRef.current = 0;
       }
 
-      return true;
-    };
+      updateViewportWindow(scrollContainer);
+      return;
+    }
 
-    const centerDayScroll = () => {
-      if (!shouldCenterDayScrollRef.current) return;
+    const shouldCenterDayScroll = shouldCenterDayScrollRef.current;
+    const shouldCenterWeekScroll = shouldCenterWeekScrollRef.current;
+    const shouldCenterMonthScroll = shouldCenterMonthScrollRef.current;
+
+    if (shouldCenterDayScrollRef.current) {
       scrollContainer.scrollLeft = tickWidth * DayBufferHours;
       shouldCenterDayScrollRef.current = false;
-    };
-
-    const centerWeekScroll = () => {
-      if (!shouldCenterWeekScrollRef.current) return;
+    }
+    if (shouldCenterWeekScrollRef.current) {
       scrollContainer.scrollLeft = tickWidth * WeekBufferDays;
       shouldCenterWeekScrollRef.current = false;
-    };
-
-    const centerMonthScroll = () => {
-      if (!shouldCenterMonthScrollRef.current) return;
-
+    }
+    if (shouldCenterMonthScrollRef.current) {
       const firstMonthEndAt = new Date(
         stationRoutineManager.timeWindow.startAt
       );
@@ -653,19 +743,34 @@ const TimeRails = () => {
           (24 * 60 * 60 * 1000)) *
         tickWidth;
       shouldCenterMonthScrollRef.current = false;
-    };
-
-    if (applyPendingScrollAdjustment()) {
-      return;
     }
 
-    centerDayScroll();
-    centerWeekScroll();
-    centerMonthScroll();
+    window.requestAnimationFrame(() => {
+      if (shouldCenterDayScroll) {
+        scrollContainer.scrollLeft = tickWidth * DayBufferHours;
+      }
+      if (shouldCenterWeekScroll) {
+        scrollContainer.scrollLeft = tickWidth * WeekBufferDays;
+      }
+      if (shouldCenterMonthScroll) {
+        const firstMonthEndAt = new Date(
+          stationRoutineManager.timeWindow.startAt
+        );
+        firstMonthEndAt.setMonth(firstMonthEndAt.getMonth() + 1, 1);
+        scrollContainer.scrollLeft =
+          ((firstMonthEndAt.getTime() -
+            stationRoutineManager.timeWindow.startAt.getTime()) /
+            (24 * 60 * 60 * 1000)) *
+          tickWidth;
+      }
+      updateViewportWindow(scrollContainer);
+    });
   }, [
+    renderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     stationRoutineManager.timeWindow.startAt,
     tickWidth,
+    updateViewportWindow,
   ]);
 
   const moveTimeWindowByScroll = useCallback(
@@ -728,8 +833,9 @@ const TimeRails = () => {
   );
 
   useEffect(() => {
+    const timeRailsBody = timeRailsBodyRef.current;
     const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    if (!timeRailsBody || !scrollContainer) return;
 
     const handleWheel = (event: WheelEvent) => {
       if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) {
@@ -765,6 +871,7 @@ const TimeRails = () => {
         const leftEdgeScrollLeft = Math.min(edgeThreshold, maxScrollLeft);
         scrollContainer.scrollLeft = leftEdgeScrollLeft;
         pendingWheelDeltaRef.current = rawNextScrollLeft - leftEdgeScrollLeft;
+        updateViewportWindow(scrollContainer);
         moveTimeWindowByScroll("previous");
         return;
       }
@@ -777,24 +884,28 @@ const TimeRails = () => {
         const rightEdgeScrollLeft = Math.max(0, maxScrollLeft - edgeThreshold);
         scrollContainer.scrollLeft = rightEdgeScrollLeft;
         pendingWheelDeltaRef.current = rawNextScrollLeft - rightEdgeScrollLeft;
+        updateViewportWindow(scrollContainer);
         moveTimeWindowByScroll("next");
         return;
       }
 
       scrollContainer.scrollLeft = nextScrollLeft;
+      updateViewportWindow(scrollContainer);
     };
 
-    scrollContainer.addEventListener("wheel", handleWheel, {
+    timeRailsBody.addEventListener("wheel", handleWheel, {
       passive: false,
     });
 
     return () => {
-      scrollContainer.removeEventListener("wheel", handleWheel);
+      timeRailsBody.removeEventListener("wheel", handleWheel);
     };
   }, [
     moveTimeWindowByScroll,
+    renderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     tickWidth,
+    updateViewportWindow,
   ]);
 
   const navigateToDate = (date: Date) => {
@@ -958,7 +1069,10 @@ const TimeRails = () => {
         </div>
       </div>
 
-      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div
+        ref={timeRailsBodyRef}
+        className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
         {renderedTimeRailStations.length === 0 ? (
           <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
             No stations match the current scope.
@@ -973,6 +1087,7 @@ const TimeRails = () => {
               ref={scrollContainerRef}
               className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-contain"
               onScroll={event => {
+                updateViewportWindow(event.currentTarget);
                 if (pendingScrollAdjustmentRef.current !== null) return;
 
                 const { clientWidth, scrollLeft, scrollWidth } =

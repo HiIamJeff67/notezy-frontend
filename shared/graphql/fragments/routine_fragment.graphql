@@ -12,20 +12,33 @@ fragment FragmentedBasicPrivateRoutine on PrivateRoutine {
   deletedAt
   updatedAt
   createdAt
+  tagIds
+  taskIds
+  itemIds
 }
 
 fragment FragmentedPrivateRoutine on PrivateRoutine {
   ...FragmentedBasicPrivateRoutine
-  station {
-    ...FragmentedBasicPrivateStation
-  }
-  tags {
-    ...FragmentedBasicPrivateRoutineTag
-  }
-  tasks {
-    ...FragmentedBasicPrivateRoutineTask
-  }
-  items {
-    ...FragmentedBasicPrivateItem
-  }
+}
+
+fragment FragmentedBasicPrivateSearchableRoutine on PrivateSearchableRoutine {
+  id
+  stationId
+  title
+  status
+  isPinned
+  scheduledStartAt
+  scheduledEndAt
+  period
+  timezone
+  deletedAt
+  updatedAt
+  createdAt
+  tagIds
+  taskIds
+  itemIds
+}
+
+fragment FragmentedPrivateSearchableRoutine on PrivateSearchableRoutine {
+  ...FragmentedBasicPrivateSearchableRoutine
 }

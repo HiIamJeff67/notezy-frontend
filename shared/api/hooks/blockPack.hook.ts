@@ -126,7 +126,9 @@ export const useGetMyBlockPackById = (
 
   const query = useQuery<GetMyBlockPackByIdResponse, Error>({
     queryKey: queryKeys.blockPack.oneById(
-      hookRequest?.param.blockPackId as UUID | undefined
+      hookRequest?.param.blockPackId as UUID | undefined,
+      false,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -141,7 +143,9 @@ export const useGetMyBlockPackById = (
   ): Promise<GetMyBlockPackByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.blockPack.oneById(
-        callbackRequest.param.blockPackId as UUID | undefined
+        callbackRequest.param.blockPackId as UUID | undefined,
+        false,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -213,7 +217,8 @@ export const useGetMyBlockPackAndItsParentById = (
   const query = useQuery<GetMyBlockPackAndItsParentByIdResponse, Error>({
     queryKey: queryKeys.blockPack.oneById(
       hookRequest?.param.blockPackId as UUID | undefined,
-      true
+      true,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -229,7 +234,8 @@ export const useGetMyBlockPackAndItsParentById = (
     return queryClient.fetchQuery({
       queryKey: queryKeys.blockPack.oneById(
         callbackRequest.param.blockPackId as UUID | undefined,
-        true
+        true,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -300,7 +306,8 @@ export const useGetMyBlockPacksByParentSubShelfId = (
 
   const query = useQuery<GetMyBlockPacksByParentSubShelfIdResponse, Error>({
     queryKey: queryKeys.blockPack.manyByParentSubShelfId(
-      hookRequest?.param.parentSubShelfId as UUID | undefined
+      hookRequest?.param.parentSubShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -315,7 +322,8 @@ export const useGetMyBlockPacksByParentSubShelfId = (
   ): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.blockPack.manyByParentSubShelfId(
-        callbackRequest.param.parentSubShelfId as UUID | undefined
+        callbackRequest.param.parentSubShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -386,7 +394,8 @@ export const useGetAllMyBlockPacksByRootShelfId = (
 
   const query = useQuery<GetAllMyBlockPacksByRootShelfIdResponse, Error>({
     queryKey: queryKeys.blockPack.manyByRootShelfId(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest?.param.rootShelfId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -401,7 +410,8 @@ export const useGetAllMyBlockPacksByRootShelfId = (
   ): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.blockPack.manyByRootShelfId(
-        callbackRequest.param.rootShelfId as UUID | undefined
+        callbackRequest.param.rootShelfId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

@@ -16,10 +16,11 @@ export const GetMyRoutineTagByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     routineTagId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyRoutineTagByIdRequest = z.infer<
+export type GetMyRoutineTagByIdRequest = z.input<
   typeof GetMyRoutineTagByIdRequestSchema
 >;
 
@@ -50,9 +51,15 @@ export const GetAllMyRoutineTagsRequestSchema = NotezyRequestSchema.extend({
       authorization: z.string().optional(),
     })
     .optional(),
+  param: z
+    .object({
+      areDeleted: z.boolean().optional().default(false),
+    })
+    .optional()
+    .default({ areDeleted: false }),
 });
 
-export type GetAllMyRoutineTagsRequest = z.infer<
+export type GetAllMyRoutineTagsRequest = z.input<
   typeof GetAllMyRoutineTagsRequestSchema
 >;
 

@@ -119,7 +119,6 @@ export class StationLocalSynchronizer {
           response.data.map(station => ({
             id: station.id,
             name: station.name,
-            description: station.description,
             icon: station.icon,
             headerBackgroundURL: station.headerBackgroundURL,
             routineCount: station.routineCount,
@@ -132,7 +131,6 @@ export class StationLocalSynchronizer {
           target: Station.id,
           set: {
             name: sql`excluded.name`,
-            description: sql`excluded.description`,
             icon: sql`excluded.icon`,
             headerBackgroundURL: sql`excluded.header_background_url`,
             routineCount: sql`excluded.routine_count`,
@@ -167,7 +165,6 @@ export class StationLocalSynchronizer {
     searchedStations: Array<{
       id: string;
       name: string;
-      description: string;
       icon: SupportedIcon | null;
       headerBackgroundURL: string | null;
       permission: AccessControlPermission;
@@ -192,7 +189,6 @@ export class StationLocalSynchronizer {
           searchedStations.map(station => ({
             id: station.id,
             name: station.name,
-            description: station.description,
             icon: station.icon,
             headerBackgroundURL: station.headerBackgroundURL,
             routineCount: station.routineCount,
@@ -205,7 +201,6 @@ export class StationLocalSynchronizer {
           target: Station.id,
           set: {
             name: sql`excluded.name`,
-            description: sql`excluded.description`,
             icon: sql`excluded.icon`,
             headerBackgroundURL: sql`excluded.header_background_url`,
             routineCount: sql`excluded.routine_count`,

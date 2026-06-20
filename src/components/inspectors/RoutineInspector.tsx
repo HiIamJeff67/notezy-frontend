@@ -1,5 +1,11 @@
+import { useGetMyRoutineById } from "@shared/api/hooks/routine.hook";
 import { RoutinePeriod, RoutineStatus } from "@shared/api/interfaces/enums";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
+import type { RoutineNode } from "@shared/types/routineNode.type";
+import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import ContainableSelect from "@/components/commons/ContainableSelect/ContainableSelect";
@@ -36,7 +42,9 @@ const RoutineInspector = ({
 }: RoutineInspectorProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
-  const routineNode = stationRoutineManager.getRoutineById(routineId);
+  const getRoutineQuerier = useGetMyRoutineById();
+
+  const [isLoadingRoutineDetail, setIsLoadingRoutineDetail] = useState(false);
   const [values, setValues] = useState<{
     title: string;
     description: string;
@@ -58,18 +66,90 @@ const RoutineInspector = ({
   });
 
   useEffect(() => {
-    if (!isOpen || !routineNode) return;
+    if (!isOpen) return;
+    let cancelled = false;
+    const scheduledStartAt = new Date();
+    const scheduledEndAt = new Date(
+      scheduledStartAt.getTime() + 60 * 60 * 1000
+    );
     setValues({
-      title: routineNode.title,
-      description: routineNode.description,
-      status: routineNode.status,
-      isPinned: routineNode.isPinned,
-      scheduledStartAt: routineNode.scheduledStartAt,
-      scheduledEndAt: routineNode.scheduledEndAt,
-      period: routineNode.period,
-      timezone: routineNode.timezone,
+      title: "",
+      description: "",
+      status: RoutineStatus.Scheduled,
+      isPinned: false,
+      scheduledStartAt,
+      scheduledEndAt,
+      period: null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
-  }, [isOpen, routineNode]);
+
+    setIsLoadingRoutineDetail(true);
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+    getRoutineQuerier
+      .fetch({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          routineId,
+        },
+      })
+      .then(response => {
+        if (cancelled || response.success === false || !response.data) return;
+        const routineTasks = response.data.taskIds
+          .map(taskId =>
+            stationRoutineManager.getRoutineTaskById(taskId as UUID)
+          )
+          .filter(
+            (routineTask): routineTask is RoutineTaskNode =>
+              routineTask !== undefined
+          );
+        const routineNode: RoutineNode = {
+          id: response.data.id as UUID,
+          stationId: response.data.stationId as UUID,
+          title: response.data.title,
+          description: response.data.description,
+          status: response.data.status,
+          isPinned: response.data.isPinned,
+          scheduledStartAt: response.data.scheduledStartAt,
+          scheduledEndAt: response.data.scheduledEndAt,
+          period: response.data.period,
+          timezone: response.data.timezone,
+          deletedAt: response.data.deletedAt,
+          updatedAt: response.data.updatedAt,
+          createdAt: response.data.createdAt,
+          isOpen: false,
+          routineTagIds: response.data.tagIds as UUID[],
+          routineTaskIds: response.data.taskIds as UUID[],
+          itemIds: response.data.itemIds as UUID[],
+          routineTasks,
+        };
+        stationRoutineManager.upsertRoutineNode(routineNode);
+        setValues({
+          title: response.data.title,
+          description: response.data.description,
+          status: response.data.status,
+          isPinned: response.data.isPinned,
+          scheduledStartAt: response.data.scheduledStartAt,
+          scheduledEndAt: response.data.scheduledEndAt,
+          period: response.data.period,
+          timezone: response.data.timezone,
+        });
+      })
+      .catch(error => {
+        if (!cancelled) toast.error(languageManager.tError(error));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingRoutineDetail(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, routineId]);
 
   const saveRoutine = async () => {
     const title = values.title.trim();
@@ -107,8 +187,6 @@ const RoutineInspector = ({
     }
   };
 
-  if (!routineNode) return null;
-
   return (
     <Sheet
       open={isOpen}
@@ -124,12 +202,18 @@ const RoutineInspector = ({
           <SheetTitle className="flex min-w-0 items-center gap-2">
             <span className="shrink-0">Edit routine of</span>
             <span className="min-w-0 truncate text-foreground">
-              "{routineNode.title}"
+              "{values.title || "Routine"}"
             </span>
           </SheetTitle>
           <SheetDescription>
             Adjust this routine&apos;s schedule and working state.
           </SheetDescription>
+          {isLoadingRoutineDetail && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Spinner />
+              Loading routine details
+            </div>
+          )}
         </SheetHeader>
 
         <form
@@ -149,12 +233,13 @@ const RoutineInspector = ({
                 autoComplete="off"
                 maxLength={128}
                 autoFocus
-                onChange={event =>
+                onChange={event => {
+                  const title = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    title: event.currentTarget.value,
-                  }))
-                }
+                    title,
+                  }));
+                }}
               />
             </div>
 
@@ -165,12 +250,13 @@ const RoutineInspector = ({
                 value={values.description}
                 maxLength={1024}
                 className="min-h-48 max-h-72 resize-y overflow-y-auto"
-                onChange={event =>
+                onChange={event => {
+                  const description = event.currentTarget.value;
                   setValues(current => ({
                     ...current,
-                    description: event.currentTarget.value,
-                  }))
-                }
+                    description,
+                  }));
+                }}
               />
             </div>
 
@@ -309,6 +395,7 @@ const RoutineInspector = ({
               className="w-full"
               disabled={
                 stationRoutineManager.isUpdatingRoutine ||
+                isLoadingRoutineDetail ||
                 values.title.trim().length === 0 ||
                 !SupportedTimezones.includes(values.timezone)
               }

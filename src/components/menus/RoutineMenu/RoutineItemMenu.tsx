@@ -19,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
-import RoutineTaskMenuItem from "@/components/menus/StationMenu/RoutineTaskMenuItem";
+import RoutineTaskMenu from "@/components/menus/RoutineTaskMenu/RoutineTaskMenu";
 import {
   Collapsible,
   CollapsibleContent,
@@ -39,7 +39,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
-  SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
@@ -83,6 +82,16 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
     }) ?? [];
   const searchedRoutineTasks = stationRoutineManager.routineTasks.filter(
     routineTask => routineTask.stationId === station.id
+  );
+  const routineTaskCandidates = Array.from(
+    new Map(
+      [...routine.routineTasks, ...searchedRoutineTasks].map(routineTask => [
+        routineTask.id,
+        routineTask,
+      ])
+    ).values()
+  ).sort((leftRoutineTask, rightRoutineTask) =>
+    leftRoutineTask.title.localeCompare(rightRoutineTask.title)
   );
 
   const handleRenameRoutineOnSubmit = useCallback(
@@ -278,7 +287,12 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                 onOpenChange={open => {
                   if (!open) return;
                   void stationRoutineManager
-                    .searchRoutineTasksByStationId(station.id)
+                    .searchRoutineTasksByStationId(
+                      station.id,
+                      "",
+                      undefined,
+                      true
+                    )
                     .catch(error => toast.error(languageManager.tError(error)));
                 }}
               >
@@ -302,25 +316,24 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                       return;
                     }
                     void stationRoutineManager
-                      .loadMoreRoutineTasks()
+                      .loadMoreRoutineTaskCandidates()
                       .catch(error =>
                         toast.error(languageManager.tError(error))
                       );
                   }}
                 >
                   {stationRoutineManager.isSearchingRoutineTasks &&
-                  searchedRoutineTasks.length === 0 ? (
+                  routineTaskCandidates.length === 0 ? (
                     <ContextMenuItem disabled>
                       <LoaderCircle className="mr-2 size-4 animate-spin" />
                       Loading
                     </ContextMenuItem>
-                  ) : searchedRoutineTasks.length === 0 ? (
+                  ) : routineTaskCandidates.length === 0 ? (
                     <ContextMenuItem disabled>No Tasks</ContextMenuItem>
                   ) : (
-                    searchedRoutineTasks.map(routineTask => {
-                      const isLinked = routine.routineTasks.some(
-                        linkedRoutineTask =>
-                          linkedRoutineTask.id === routineTask.id
+                    routineTaskCandidates.map(routineTask => {
+                      const isLinked = routine.routineTaskIds.includes(
+                        routineTask.id
                       );
                       return (
                         <ContextMenuCheckboxItem
@@ -396,29 +409,45 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                     <ContextMenuItem disabled>No Items</ContextMenuItem>
                   ) : (
                     <>
-                      {searchedItems.map(item => (
-                        <ContextMenuItem
-                          key={`${item.type}-${item.id}`}
-                          onClick={() => {
-                            void stationRoutineManager
-                              .linkRoutineItem(routine.id, item.id, item.type)
-                              .then(() => toast.success("Item connected"))
-                              .catch(error =>
-                                toast.error(languageManager.tError(error))
-                              );
-                          }}
-                        >
-                          {item.type === ItemType.BlockPack ? (
-                            <Package className="mr-2 size-4" />
-                          ) : (
-                            <FileText className="mr-2 size-4" />
-                          )}
-                          <span className="min-w-0 truncate">
-                            {item.rootShelfName} / {item.parentSubShelfName} /{" "}
-                            {item.type} · {item.id.slice(0, 8)}
-                          </span>
-                        </ContextMenuItem>
-                      ))}
+                      {searchedItems.map(item => {
+                        const isLinked = routine.itemIds.includes(item.id);
+                        return (
+                          <ContextMenuCheckboxItem
+                            key={`${item.type}-${item.id}`}
+                            checked={isLinked}
+                            onSelect={event => event.preventDefault()}
+                            onCheckedChange={() => {
+                              void stationRoutineManager
+                                .linkRoutineItem(
+                                  routine.id,
+                                  item.id,
+                                  item.type,
+                                  isLinked
+                                )
+                                .then(() =>
+                                  toast.success(
+                                    isLinked
+                                      ? "Item disconnected"
+                                      : "Item connected"
+                                  )
+                                )
+                                .catch(error =>
+                                  toast.error(languageManager.tError(error))
+                                );
+                            }}
+                          >
+                            {item.type === ItemType.BlockPack ? (
+                              <Package className="mr-2 size-4" />
+                            ) : (
+                              <FileText className="mr-2 size-4" />
+                            )}
+                            <span className="min-w-0 truncate">
+                              {item.rootShelfName} / {item.parentSubShelfName} /{" "}
+                              {item.type} · {item.id.slice(0, 8)}
+                            </span>
+                          </ContextMenuCheckboxItem>
+                        );
+                      })}
                     </>
                   )}
                 </ContextMenuSubContent>
@@ -453,14 +482,7 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
 
         {!stationRoutineManager.isRoutineEditing(routine.id) && (
           <CollapsibleContent>
-            <SidebarMenuSub>
-              {routine.routineTasks.map(routineTask => (
-                <RoutineTaskMenuItem
-                  key={routineTask.id}
-                  routineTask={routineTask}
-                />
-              ))}
-            </SidebarMenuSub>
+            <RoutineTaskMenu routineTasks={routine.routineTasks} />
           </CollapsibleContent>
         )}
       </SidebarMenuSubItem>

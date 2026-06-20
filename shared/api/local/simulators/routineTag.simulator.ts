@@ -17,6 +17,7 @@ import {
 import type {
   CreateRoutineTagRequest,
   CreateRoutineTagsRequest,
+  GetAllMyRoutineTagsRequest,
   GetMyRoutineTagByIdRequest,
   HardDeleteMyRoutineTagByIdRequest,
   HardDeleteMyRoutineTagsByIdsRequest,
@@ -142,30 +143,6 @@ export class RoutineTagLocalSimulator {
     const startIndex = afterIndex >= 0 ? afterIndex + 1 : 0;
     const first = Math.max(0, input.first ?? 10);
     const pagedTags = tags.slice(startIndex, startIndex + first);
-    const pagedTagIds = pagedTags.map(tag => tag.id);
-    const linkedRoutines =
-      pagedTagIds.length === 0
-        ? []
-        : await localDB
-            .select({
-              tagId: RoutinesToTags.tagId,
-              id: Routine.id,
-              stationId: Routine.stationId,
-              title: Routine.title,
-              description: Routine.description,
-              status: Routine.status,
-              isPinned: Routine.isPinned,
-              scheduledStartAt: Routine.scheduledStartAt,
-              scheduledEndAt: Routine.scheduledEndAt,
-              period: Routine.period,
-              timezone: Routine.timezone,
-              deletedAt: Routine.deletedAt,
-              updatedAt: Routine.updatedAt,
-              createdAt: Routine.createdAt,
-            })
-            .from(RoutinesToTags)
-            .innerJoin(Routine, eq(Routine.id, RoutinesToTags.routineId))
-            .where(inArray(RoutinesToTags.tagId, pagedTagIds));
 
     return {
       __typename: "SearchRoutineTagConnection",
@@ -218,59 +195,6 @@ export class RoutineTagLocalSimulator {
             icon,
             updatedAt: tag.updatedAt,
             createdAt: tag.createdAt,
-            owner: {
-              __typename: "PublicUser",
-              publicId: loggedInUser.publicId,
-              name: loggedInUser.name,
-              displayName: loggedInUser.displayName,
-              role: UserRole.Normal,
-              plan: UserPlan.Free,
-              status: loggedInUser.status as UserStatus,
-              createdAt: loggedInUser.createdAt,
-            },
-            sharers: [],
-            routines: linkedRoutines
-              .filter(routine => routine.tagId === tag.id)
-              .map(routine => ({
-                __typename: "PrivateRoutine",
-                id: routine.id,
-                stationId: routine.stationId,
-                title: routine.title,
-                description: routine.description,
-                status: (() => {
-                  switch (routine.status) {
-                    case "Completed":
-                      return GraphQLRoutineStatus.RoutineStatusCompleted;
-                    case "InProgress":
-                      return GraphQLRoutineStatus.RoutineStatusInProgress;
-                    case "OverDue":
-                      return GraphQLRoutineStatus.RoutineStatusOverDue;
-                    default:
-                      return GraphQLRoutineStatus.RoutineStatusScheduled;
-                  }
-                })(),
-                isPinned: routine.isPinned,
-                scheduledStartAt: routine.scheduledStartAt,
-                scheduledEndAt: routine.scheduledEndAt,
-                period: (() => {
-                  switch (routine.period) {
-                    case "Daily":
-                      return GraphQLRoutinePeriod.RoutinePeriodDaily;
-                    case "Weekly":
-                      return GraphQLRoutinePeriod.RoutinePeriodWeekly;
-                    case "Monthly":
-                      return GraphQLRoutinePeriod.RoutinePeriodMonthly;
-                    case "Yearly":
-                      return GraphQLRoutinePeriod.RoutinePeriodYearly;
-                    default:
-                      return null;
-                  }
-                })(),
-                timezone: routine.timezone,
-                deletedAt: routine.deletedAt,
-                updatedAt: routine.updatedAt,
-                createdAt: routine.createdAt,
-              })),
           },
         };
       }),
@@ -326,10 +250,16 @@ export class RoutineTagLocalSimulator {
       .where(eq(RoutineTag.id, request.param.routineTagId))
       .limit(1);
 
+    if (request.param.isDeleted === true) return null;
+
     return tags[0] ?? null;
   };
 
-  static simulateGetAllMyRoutineTags = async () => {
+  static simulateGetAllMyRoutineTags = async (
+    request?: GetAllMyRoutineTagsRequest
+  ) => {
+    if (request?.param?.areDeleted === true) return [];
+
     if (!localDB.isReady) await localDB.ensureReady();
     const loggedInUser = await localDB.query.User.findFirst({
       where: eq(User.isLoggedIn, true),

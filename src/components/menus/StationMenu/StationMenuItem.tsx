@@ -207,48 +207,55 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
-        {!stationRoutineManager.isStationEditing(station.id) && (
+        {!stationRoutineManager.isStationEditing(station.id) &&
+          (station.routineCount > 0 || routineTaskCount > 0) && (
           <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
-            <HoverCard openDelay={250} closeDelay={100}>
-              <HoverCardTrigger asChild>
-                <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
-                  {station.routineCount}
-                </div>
-              </HoverCardTrigger>
-              <HoverCardContent
-                side="top"
-                align="center"
-                className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+            {station.routineCount > 0 && (
+              <HoverCard openDelay={250} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                  <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                    {station.routineCount}
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent
+                  side="top"
+                  align="center"
+                  className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+                >
+                  <ClipboardClock className="size-4 text-muted-foreground" />
+                  <span className="text-xs">
+                    {station.routineCount} total routines
+                  </span>
+                </HoverCardContent>
+              </HoverCard>
+            )}
+            {station.routineCount > 0 && routineTaskCount > 0 && (
+              <span
+                className="font-bold text-muted-foreground"
+                aria-hidden="true"
               >
-                <ClipboardClock className="size-4 text-muted-foreground" />
-                <span className="text-xs">
-                  {station.routineCount} total routines
-                </span>
-              </HoverCardContent>
-            </HoverCard>
-            <span
-              className="font-bold text-muted-foreground"
-              aria-hidden="true"
-            >
-              ·
-            </span>
-            <HoverCard openDelay={250} closeDelay={100}>
-              <HoverCardTrigger asChild>
-                <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
-                  {routineTaskCount}
-                </div>
-              </HoverCardTrigger>
-              <HoverCardContent
-                side="top"
-                align="center"
-                className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
-              >
-                <ClipboardList className="size-4 text-muted-foreground" />
-                <span className="text-xs">
-                  {routineTaskCount} total routine tasks
-                </span>
-              </HoverCardContent>
-            </HoverCard>
+                ·
+              </span>
+            )}
+            {routineTaskCount > 0 && (
+              <HoverCard openDelay={250} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                  <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                    {routineTaskCount}
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent
+                  side="top"
+                  align="center"
+                  className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+                >
+                  <ClipboardList className="size-4 text-muted-foreground" />
+                  <span className="text-xs">
+                    {routineTaskCount} total routine tasks
+                  </span>
+                </HoverCardContent>
+              </HoverCard>
+            )}
           </div>
         )}
         <CollapsibleContent>

@@ -17,10 +17,11 @@ export const GetMyBlockPackByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     blockPackId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyBlockPackByIdRequest = z.infer<
+export type GetMyBlockPackByIdRequest = z.input<
   typeof GetMyBlockPackByIdRequestSchema
 >;
 
@@ -57,10 +58,11 @@ export const GetMyBlockPackAndItsParentByIdRequestSchema =
       .optional(),
     param: z.object({
       blockPackId: z.uuidv4(),
+      isDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMyBlockPackAndItsParentByIdRequest = z.infer<
+export type GetMyBlockPackAndItsParentByIdRequest = z.input<
   typeof GetMyBlockPackAndItsParentByIdRequestSchema
 >;
 
@@ -105,10 +107,11 @@ export const GetMyBlockPacksByParentSubShelfIdRequestSchema =
       .optional(),
     param: z.object({
       parentSubShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetMyBlockPacksByParentSubShelfIdRequest = z.infer<
+export type GetMyBlockPacksByParentSubShelfIdRequest = z.input<
   typeof GetMyBlockPacksByParentSubShelfIdRequestSchema
 >;
 
@@ -148,10 +151,11 @@ export const GetAllMyBlockPacksByRootShelfIdRequestSchema =
       .optional(),
     param: z.object({
       rootShelfId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMyBlockPacksByRootShelfIdRequest = z.infer<
+export type GetAllMyBlockPacksByRootShelfIdRequest = z.input<
   typeof GetAllMyBlockPacksByRootShelfIdRequestSchema
 >;
 

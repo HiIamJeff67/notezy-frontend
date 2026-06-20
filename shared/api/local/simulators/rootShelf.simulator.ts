@@ -259,7 +259,11 @@ export class RootShelfLocalSimulator {
       .where(eq(RootShelf.id, request.param.rootShelfId))
       .limit(1);
 
-    return existingRootShelf[0] ?? null;
+    const rootShelf = existingRootShelf[0];
+    if (!rootShelf) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    return (rootShelf.deletedAt !== null) === isDeleted ? rootShelf : null;
   };
 
   // sync mutation data should available while user is offline

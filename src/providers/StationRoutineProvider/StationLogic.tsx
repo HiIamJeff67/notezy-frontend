@@ -30,6 +30,7 @@ interface UseStationLogicProps {
   routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
   expandRoutinesByStationId: (stationId: UUID) => Promise<void>;
+  getAllRoutineTasksByStationId: (stationId: UUID) => Promise<unknown>;
   selectedRoutineId: UUID | null;
   selectRoutine: (routineId: UUID | null) => void;
 }
@@ -40,6 +41,7 @@ export const useStationLogic = ({
   routineTagsRef,
   forceUpdate,
   expandRoutinesByStationId,
+  getAllRoutineTasksByStationId,
   selectedRoutineId,
   selectRoutine,
 }: UseStationLogicProps) => {
@@ -83,8 +85,14 @@ export const useStationLogic = ({
       stationNode.isOpen = true;
       forceUpdate();
       await expandRoutinesByStationId(stationId);
+      await getAllRoutineTasksByStationId(stationId);
     },
-    [expandRoutinesByStationId, forceUpdate, stationsRef]
+    [
+      expandRoutinesByStationId,
+      forceUpdate,
+      getAllRoutineTasksByStationId,
+      stationsRef,
+    ]
   );
 
   const createStation = useCallback(
@@ -131,6 +139,26 @@ export const useStationLogic = ({
       return stationNode;
     },
     [createStationMutator, forceUpdate, stationsRef]
+  );
+
+  const upsertStationNode = useCallback(
+    (stationNode: StationNode): StationNode => {
+      const existingStation = stationsRef.current.get(stationNode.id);
+      if (existingStation) {
+        Object.assign(existingStation, {
+          ...stationNode,
+          isOpen: existingStation.isOpen,
+          routines: existingStation.routines,
+          routineTasks: existingStation.routineTasks,
+        });
+      } else {
+        stationsRef.current.set(stationNode.id, stationNode);
+      }
+
+      forceUpdate();
+      return existingStation ?? stationNode;
+    },
+    [forceUpdate, stationsRef]
   );
 
   const updateStation = useCallback(
@@ -292,90 +320,107 @@ export const useStationLogic = ({
     };
   }, [editingStationNode, renameEditingStation]);
 
+  const mergeSearchedStations = useCallback(
+    (
+      searchEdges: Array<{
+        node?: unknown;
+      } | null>
+    ): void => {
+      for (const edge of searchEdges) {
+        if (!edge?.node) continue;
+
+        const node = edge.node as unknown as {
+          id: UUID;
+          name: string;
+          icon: GraphQLSupportedIcon | null;
+          headerBackgroundURL: string | null;
+          permission: AccessControlPermission;
+          routineCount: number;
+          deletedAt: Date | string | number | null;
+          updatedAt: Date | string | number;
+          createdAt: Date | string | number;
+        };
+        const existingStation = stationsRef.current.get(node.id);
+        const icon = (() => {
+          switch (node.icon) {
+            case GraphQLSupportedIcon.SupportedIconBooks:
+              return SupportedIcon.Books;
+            case GraphQLSupportedIcon.SupportedIconCalendar:
+              return SupportedIcon.Calendar;
+            case GraphQLSupportedIcon.SupportedIconCheckMark:
+              return SupportedIcon.CheckMark;
+            case GraphQLSupportedIcon.SupportedIconClock:
+              return SupportedIcon.Clock;
+            case GraphQLSupportedIcon.SupportedIconFire:
+              return SupportedIcon.Fire;
+            case GraphQLSupportedIcon.SupportedIconFolderOpen:
+              return SupportedIcon.FolderOpen;
+            case GraphQLSupportedIcon.SupportedIconGrinningFace:
+              return SupportedIcon.GrinningFace;
+            case GraphQLSupportedIcon.SupportedIconLightbulb:
+              return SupportedIcon.Lightbulb;
+            case GraphQLSupportedIcon.SupportedIconNotebook:
+              return SupportedIcon.Notebook;
+            case GraphQLSupportedIcon.SupportedIconPencilPaper:
+              return SupportedIcon.PencilPaper;
+            case GraphQLSupportedIcon.SupportedIconPin:
+              return SupportedIcon.Pin;
+            case GraphQLSupportedIcon.SupportedIconRedHeart:
+              return SupportedIcon.RedHeart;
+            case GraphQLSupportedIcon.SupportedIconRocket:
+              return SupportedIcon.Rocket;
+            case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
+              return SupportedIcon.SmilingFaceWithSmilingEyes;
+            case GraphQLSupportedIcon.SupportedIconStar:
+              return SupportedIcon.Star;
+            default:
+              return null;
+          }
+        })();
+
+        stationsRef.current.set(node.id, {
+          id: node.id,
+          name: node.name,
+          description: existingStation?.description ?? "",
+          icon,
+          headerBackgroundURL: node.headerBackgroundURL,
+          permission: node.permission as unknown as AccessControlPermission,
+          routineCount: existingStation?.routineCount ?? 0,
+          deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt),
+          updatedAt: new Date(node.updatedAt),
+          createdAt: new Date(node.createdAt),
+          isOpen: existingStation?.isOpen ?? false,
+          routines: existingStation?.routines ?? [],
+          routineTasks: existingStation?.routineTasks ?? [],
+        });
+      }
+      if (searchEdges.length > 0) forceUpdate();
+    },
+    [forceUpdate, stationsRef]
+  );
+
   useEffect(() => {
-    const searchEdges = searchStationsData?.searchStations?.searchEdges ?? [];
-    for (const edge of searchEdges) {
-      const node = edge.node as unknown as {
-        id: UUID;
-        name: string;
-        description: string;
-        icon: GraphQLSupportedIcon | null;
-        headerBackgroundURL: string | null;
-        permission: AccessControlPermission;
-        routineCount: number;
-        deletedAt: Date | string | number | null;
-        updatedAt: Date | string | number;
-        createdAt: Date | string | number;
-      };
-      const existingStation = stationsRef.current.get(node.id);
-      const icon = (() => {
-        switch (node.icon) {
-          case GraphQLSupportedIcon.SupportedIconBooks:
-            return SupportedIcon.Books;
-          case GraphQLSupportedIcon.SupportedIconCalendar:
-            return SupportedIcon.Calendar;
-          case GraphQLSupportedIcon.SupportedIconCheckMark:
-            return SupportedIcon.CheckMark;
-          case GraphQLSupportedIcon.SupportedIconClock:
-            return SupportedIcon.Clock;
-          case GraphQLSupportedIcon.SupportedIconFire:
-            return SupportedIcon.Fire;
-          case GraphQLSupportedIcon.SupportedIconFolderOpen:
-            return SupportedIcon.FolderOpen;
-          case GraphQLSupportedIcon.SupportedIconGrinningFace:
-            return SupportedIcon.GrinningFace;
-          case GraphQLSupportedIcon.SupportedIconLightbulb:
-            return SupportedIcon.Lightbulb;
-          case GraphQLSupportedIcon.SupportedIconNotebook:
-            return SupportedIcon.Notebook;
-          case GraphQLSupportedIcon.SupportedIconPencilPaper:
-            return SupportedIcon.PencilPaper;
-          case GraphQLSupportedIcon.SupportedIconPin:
-            return SupportedIcon.Pin;
-          case GraphQLSupportedIcon.SupportedIconRedHeart:
-            return SupportedIcon.RedHeart;
-          case GraphQLSupportedIcon.SupportedIconRocket:
-            return SupportedIcon.Rocket;
-          case GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes:
-            return SupportedIcon.SmilingFaceWithSmilingEyes;
-          case GraphQLSupportedIcon.SupportedIconStar:
-            return SupportedIcon.Star;
-          default:
-            return null;
-        }
-      })();
+    mergeSearchedStations(
+      searchStationsData?.searchStations?.searchEdges ?? []
+    );
+  }, [mergeSearchedStations, searchStationsData]);
 
-      stationsRef.current.set(node.id, {
-        id: node.id,
-        name: node.name,
-        description: node.description,
-        icon,
-        headerBackgroundURL: node.headerBackgroundURL,
-        permission: node.permission as unknown as AccessControlPermission,
-        routineCount: node.routineCount,
-        deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt),
-        updatedAt: new Date(node.updatedAt),
-        createdAt: new Date(node.createdAt),
-        isOpen: existingStation?.isOpen ?? false,
-        routines: existingStation?.routines ?? [],
-        routineTasks: existingStation?.routineTasks ?? [],
-      });
-    }
-    if (searchEdges.length > 0) forceUpdate();
-  }, [forceUpdate, searchStationsData, stationsRef]);
-
-  const searchStations = useCallback(async (): Promise<void> => {
-    await executeSearch({
-      variables: {
-        input: {
-          query: searchStationsInput.query,
-          first: MaxSearchLimit,
-          sortBy: SearchStationSortBy.Name,
-          sortOrder: SearchSortOrder.Asc,
+  const searchStations = useCallback(
+    async (query: string = searchStationsInput.query): Promise<void> => {
+      const result = await executeSearch({
+        variables: {
+          input: {
+            query,
+            first: MaxSearchLimit,
+            sortBy: SearchStationSortBy.Name,
+            sortOrder: SearchSortOrder.Asc,
+          },
         },
-      },
-    }).retain();
-  }, [executeSearch, searchStationsInput.query]);
+      }).retain();
+      mergeSearchedStations(result.data?.searchStations?.searchEdges ?? []);
+    },
+    [executeSearch, mergeSearchedStations, searchStationsInput.query]
+  );
 
   const loadMoreStations = useCallback(async (): Promise<void> => {
     const connection = searchStationsData?.searchStations;
@@ -426,6 +471,7 @@ export const useStationLogic = ({
     loadMoreStations,
     toggleStation,
     createStation,
+    upsertStationNode,
     isCreatingStation: createStationMutator.isPending,
     updateStation,
     isUpdatingStation: updateStationMutator.isPending,

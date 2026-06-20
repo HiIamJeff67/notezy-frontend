@@ -19,10 +19,11 @@ export const GetMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
     .optional(),
   param: z.object({
     routineTaskId: z.uuidv4(),
+    isDeleted: z.boolean().optional().default(false),
   }),
 });
 
-export type GetMyRoutineTaskByIdRequest = z.infer<
+export type GetMyRoutineTaskByIdRequest = z.input<
   typeof GetMyRoutineTaskByIdRequestSchema
 >;
 
@@ -64,10 +65,11 @@ export const GetAllMyRoutineTasksByStationIdsRequestSchema =
       .optional(),
     param: z.object({
       stationIds: z.array(z.uuidv4()).min(1).max(1024),
+      areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMyRoutineTasksByStationIdsRequest = z.infer<
+export type GetAllMyRoutineTasksByStationIdsRequest = z.input<
   typeof GetAllMyRoutineTasksByStationIdsRequestSchema
 >;
 
@@ -79,7 +81,6 @@ export const GetAllMyRoutineTasksByStationIdsResponseSchema =
         stationId: z.uuidv4(),
         title: z.string(),
         purpose: z.enum(AllRoutineTaskPurposes),
-        payload: z.any(),
         priority: z.int32(),
         status: z.enum(AllRoutineTaskStatuses),
         attempts: z.int32(),
@@ -109,9 +110,15 @@ export const GetAllMyRoutineTasksRequestSchema = NotezyRequestSchema.extend({
       authorization: z.string().optional(),
     })
     .optional(),
+  param: z
+    .object({
+      areDeleted: z.boolean().optional().default(false),
+    })
+    .optional()
+    .default({ areDeleted: false }),
 });
 
-export type GetAllMyRoutineTasksRequest = z.infer<
+export type GetAllMyRoutineTasksRequest = z.input<
   typeof GetAllMyRoutineTasksRequestSchema
 >;
 

@@ -42,9 +42,10 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 export const GetMySubShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMySubShelfByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMySubShelfByIdResponse> => {
-    const { subShelfId } = request.param;
+    const { subShelfId, isDeleted = false } = request.param;
     const params = new URLSearchParams({
       subShelfId: subShelfId,
+      isDeleted: String(isDeleted),
     }).toString();
     let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
@@ -89,9 +90,10 @@ export const GetMySubShelvesByPrevSubShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
-      const { prevSubShelfId } = request.param;
+      const { prevSubShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         prevSubShelfId: prevSubShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
@@ -139,9 +141,10 @@ export const GetAllMySubShelvesByRootShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
-      const { rootShelfId } = request.param;
+      const { rootShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         rootShelfId: rootShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
@@ -191,9 +194,10 @@ export const GetMySubShelvesAndItemsByPrevSubShelfId = createServerFn({
     async ({
       data: request,
     }): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
-      const { prevSubShelfId } = request.param;
+      const { prevSubShelfId, areDeleted = false } = request.param;
       const params = new URLSearchParams({
         prevSubShelfId: prevSubShelfId,
+        areDeleted: String(areDeleted),
       }).toString();
       let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
       const inboundCookie = getRequestHeader("cookie");

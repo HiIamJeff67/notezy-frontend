@@ -59,7 +59,11 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
         },
         {}
       )
-    ).toString();
+    );
+    if (request.param?.isDeleted === undefined) {
+      params.set("isDeleted", "false");
+    }
+    const query = params.toString();
     const url =
       import.meta.env.VITE_API_DOMAIN_URL +
       "/" +
@@ -67,7 +71,7 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
       "/" +
       APIURLPathDictionary.routine.getMyRoutineById +
       "?" +
-      params;
+      query;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -107,8 +111,15 @@ export const GetAllMyRoutinesByTimeRange = createServerFn({ method: "GET" })
   .handler(
     async ({ data: request }): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
       const params = new URLSearchParams();
-      params.set("from", new Date(request.param.from).toISOString());
-      params.set("to", new Date(request.param.to).toISOString());
+      params.set(
+        "from",
+        new Date(request.param.from as string | number | Date).toISOString()
+      );
+      params.set(
+        "to",
+        new Date(request.param.to as string | number | Date).toISOString()
+      );
+      params.set("areDeleted", String(request.param.areDeleted ?? false));
       for (const stationId of request.param.stationIds) {
         params.append("stationIds", stationId);
       }

@@ -66,7 +66,9 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           <HoverCardContent
             side="right"
             align="start"
-            className="w-72 rounded-sm p-3"
+            sideOffset={8}
+            collisionPadding={12}
+            className="z-[120] w-72 rounded-sm p-3"
           >
             <div className="flex min-w-0 flex-col gap-3">
               <div className="min-w-0">

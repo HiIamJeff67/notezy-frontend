@@ -119,7 +119,8 @@ export const useGetMyRoutineById = (
 
   const query = useQuery<GetMyRoutineByIdResponse, Error>({
     queryKey: queryKeys.routine.oneById(
-      hookRequest?.param.routineId as UUID | undefined
+      hookRequest?.param.routineId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -134,7 +135,8 @@ export const useGetMyRoutineById = (
   ): Promise<GetMyRoutineByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.routine.oneById(
-        callbackRequest.param.routineId as UUID | undefined
+        callbackRequest.param.routineId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
@@ -201,9 +203,10 @@ export const useGetAllMyRoutinesByTimeRange = (
 
   const query = useQuery<GetAllMyRoutinesByTimeRangeResponse, Error>({
     queryKey: queryKeys.routine.manyByTimeRange(
-      hookRequest?.param.from,
-      hookRequest?.param.to,
-      hookRequest?.param.stationIds as UUID[] | undefined
+      hookRequest?.param.from as Date | undefined,
+      hookRequest?.param.to as Date | undefined,
+      hookRequest?.param.stationIds as UUID[] | undefined,
+      hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -216,12 +219,19 @@ export const useGetAllMyRoutinesByTimeRange = (
   const fetch = async (
     callbackRequest: GetAllMyRoutinesByTimeRangeRequest
   ): Promise<GetAllMyRoutinesByTimeRangeResponse> => {
-    const requestedFromTime = callbackRequest.param.from.getTime();
-    const requestedToTime = callbackRequest.param.to.getTime();
+    const requestedFrom = new Date(
+      callbackRequest.param.from as string | number | Date
+    );
+    const requestedTo = new Date(
+      callbackRequest.param.to as string | number | Date
+    );
+    const requestedFromTime = requestedFrom.getTime();
+    const requestedToTime = requestedTo.getTime();
     const requestedStationIdsKey = callbackRequest.param.stationIds
       .slice()
       .sort()
       .join(",");
+    const requestedAreDeleted = callbackRequest.param.areDeleted ?? false;
     const coveredCachedQuery = queryClient
       .getQueryCache()
       .findAll({ queryKey: queryKeys.routine.all() })
@@ -230,6 +240,7 @@ export const useGetAllMyRoutinesByTimeRange = (
         if (queryKey[1] !== "manyByTimeRange") return false;
         if (query.state.isInvalidated || !query.state.data) return false;
         if (queryKey[4] !== requestedStationIdsKey) return false;
+        if ((queryKey[5] ?? false) !== requestedAreDeleted) return false;
 
         const cachedFromTime =
           typeof queryKey[2] === "number"
@@ -259,9 +270,10 @@ export const useGetAllMyRoutinesByTimeRange = (
 
     return queryClient.fetchQuery({
       queryKey: queryKeys.routine.manyByTimeRange(
-        callbackRequest.param.from,
-        callbackRequest.param.to,
-        callbackRequest.param.stationIds as UUID[]
+        requestedFrom,
+        requestedTo,
+        callbackRequest.param.stationIds as UUID[],
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

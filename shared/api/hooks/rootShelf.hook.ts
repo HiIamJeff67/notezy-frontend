@@ -109,7 +109,8 @@ export const useGetMyRootShelfById = (
 
   const query = useQuery<GetMyRootShelfByIdResponse, Error>({
     queryKey: queryKeys.rootShelf.oneById(
-      hookRequest?.param.rootShelfId as UUID | undefined
+      hookRequest?.param.rootShelfId as UUID | undefined,
+      hookRequest?.param.isDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
     staleTime: UseQueryDefaultOptions.staleTime,
@@ -124,7 +125,8 @@ export const useGetMyRootShelfById = (
   ): Promise<GetMyRootShelfByIdResponse> => {
     return queryClient.fetchQuery({
       queryKey: queryKeys.rootShelf.oneById(
-        callbackRequest.param.rootShelfId as UUID | undefined
+        callbackRequest.param.rootShelfId as UUID | undefined,
+        callbackRequest.param.isDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

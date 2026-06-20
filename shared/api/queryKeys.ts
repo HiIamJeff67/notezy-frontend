@@ -18,39 +18,66 @@ export const queryKeys = {
   },
   rootShelf: {
     all: () => ["rootShelf"] as const,
-    oneById: (rootShelfId: UUID | undefined) =>
-      ["rootShelf", "oneById", rootShelfId] as const,
+    oneById: (rootShelfId: UUID | undefined, isDeleted: boolean = false) =>
+      ["rootShelf", "oneById", rootShelfId, isDeleted] as const,
   },
   subShelf: {
     all: () => ["subShelf"] as const,
-    oneById: (subShelfId?: UUID) =>
-      ["subShelf", "oneById", subShelfId] as const,
-    manyByPrevSubShelfId: (prevSubShelfId?: UUID | null) =>
-      ["subShelf", "manyByPrevSubShelfId", prevSubShelfId] as const,
-    manyByRootShelfId: (rootShelfId?: UUID) =>
-      ["subShelf", "manyByRootShelfId", rootShelfId] as const,
+    oneById: (subShelfId?: UUID, isDeleted: boolean = false) =>
+      ["subShelf", "oneById", subShelfId, isDeleted] as const,
+    manyByPrevSubShelfId: (
+      prevSubShelfId?: UUID | null,
+      areDeleted: boolean = false
+    ) =>
+      ["subShelf", "manyByPrevSubShelfId", prevSubShelfId, areDeleted] as const,
+    manyByRootShelfId: (rootShelfId?: UUID, areDeleted: boolean = false) =>
+      ["subShelf", "manyByRootShelfId", rootShelfId, areDeleted] as const,
   },
   material: {
     all: () => ["material"] as const,
-    oneById: (id?: UUID, withParent: boolean = false) =>
+    oneById: (
+      id?: UUID,
+      withParent: boolean = false,
+      isDeleted: boolean = false
+    ) =>
       withParent
-        ? (["material", "oneById", id, "withParent"] as const)
-        : (["material", "oneById", id] as const),
-    manyByParentSubShelfId: (parentSubShelfId?: UUID) =>
-      ["material", "manyByParentSubShelfId", parentSubShelfId] as const,
-    manyByRootShelfId: (rootShelfId?: UUID) =>
-      ["material", "manyByRootShelfId", rootShelfId] as const,
+        ? (["material", "oneById", id, "withParent", isDeleted] as const)
+        : (["material", "oneById", id, isDeleted] as const),
+    manyByParentSubShelfId: (
+      parentSubShelfId?: UUID,
+      areDeleted: boolean = false
+    ) =>
+      [
+        "material",
+        "manyByParentSubShelfId",
+        parentSubShelfId,
+        areDeleted,
+      ] as const,
+    manyByRootShelfId: (rootShelfId?: UUID, areDeleted: boolean = false) =>
+      ["material", "manyByRootShelfId", rootShelfId, areDeleted] as const,
   },
   blockPack: {
     all: () => ["blockPack"] as const,
-    oneById: (id?: UUID, withParent: boolean = false) =>
+    oneById: (
+      id?: UUID,
+      withParent: boolean = false,
+      isDeleted: boolean = false
+    ) =>
       withParent
-        ? (["blockPack", "oneById", id, "withParent"] as const)
-        : (["blockPack", "oneById", id] as const),
-    manyByParentSubShelfId: (parentSubShelfId?: UUID) =>
-      ["blockPack", "manyByParentSubShelfId", parentSubShelfId] as const,
-    manyByRootShelfId: (rootShelfId?: UUID) =>
-      ["blockPack", "manyByRootShelfId", rootShelfId] as const,
+        ? (["blockPack", "oneById", id, "withParent", isDeleted] as const)
+        : (["blockPack", "oneById", id, isDeleted] as const),
+    manyByParentSubShelfId: (
+      parentSubShelfId?: UUID,
+      areDeleted: boolean = false
+    ) =>
+      [
+        "blockPack",
+        "manyByParentSubShelfId",
+        parentSubShelfId,
+        areDeleted,
+      ] as const,
+    manyByRootShelfId: (rootShelfId?: UUID, areDeleted: boolean = false) =>
+      ["blockPack", "manyByRootShelfId", rootShelfId, areDeleted] as const,
   },
   blockGroup: {
     all: () => ["blockGroup"] as const,
@@ -105,15 +132,23 @@ export const queryKeys = {
   },
   station: {
     all: () => ["station"] as const,
-    myAll: (onlyDeleted?: number) => ["station", "myAll", onlyDeleted] as const,
-    oneById: (stationId?: UUID) => ["station", "oneById", stationId] as const,
+    myAll: (areDeleted: boolean = false) =>
+      ["station", "myAll", areDeleted] as const,
+    oneById: (stationId?: UUID, isDeleted: boolean = false) =>
+      ["station", "oneById", stationId, isDeleted] as const,
   },
   routine: {
     all: () => ["routine"] as const,
-    oneById: (routineId?: UUID) => ["routine", "oneById", routineId] as const,
-    manyByStationId: (stationId?: UUID) =>
-      ["routine", "manyByStationId", stationId] as const,
-    manyByTimeRange: (from?: Date, to?: Date, stationIds?: UUID[]) =>
+    oneById: (routineId?: UUID, isDeleted: boolean = false) =>
+      ["routine", "oneById", routineId, isDeleted] as const,
+    manyByStationId: (stationId?: UUID, areDeleted: boolean = false) =>
+      ["routine", "manyByStationId", stationId, areDeleted] as const,
+    manyByTimeRange: (
+      from?: Date,
+      to?: Date,
+      stationIds?: UUID[],
+      areDeleted: boolean = false
+    ) =>
       [
         "routine",
         "manyByTimeRange",
@@ -122,28 +157,32 @@ export const queryKeys = {
         stationIds && stationIds.length > 0
           ? stationIds.slice().sort().join(",")
           : undefined,
+        areDeleted,
       ] as const,
   },
   routineTag: {
     all: () => ["routineTag"] as const,
-    myAll: () => ["routineTag", "myAll"] as const,
-    oneById: (routineTagId?: UUID) =>
-      ["routineTag", "oneById", routineTagId] as const,
+    myAll: (areDeleted: boolean = false) =>
+      ["routineTag", "myAll", areDeleted] as const,
+    oneById: (routineTagId?: UUID, isDeleted: boolean = false) =>
+      ["routineTag", "oneById", routineTagId, isDeleted] as const,
   },
   routineTask: {
     all: () => ["routineTask"] as const,
-    myAll: () => ["routineTask", "myAll"] as const,
-    oneById: (routineTaskId?: UUID) =>
-      ["routineTask", "oneById", routineTaskId] as const,
-    manyByStationId: (stationId?: UUID) =>
-      ["routineTask", "manyByStationId", stationId] as const,
-    manyByStationIds: (stationIds?: UUID[]) =>
+    myAll: (areDeleted: boolean = false) =>
+      ["routineTask", "myAll", areDeleted] as const,
+    oneById: (routineTaskId?: UUID, isDeleted: boolean = false) =>
+      ["routineTask", "oneById", routineTaskId, isDeleted] as const,
+    manyByStationId: (stationId?: UUID, areDeleted: boolean = false) =>
+      ["routineTask", "manyByStationId", stationId, areDeleted] as const,
+    manyByStationIds: (stationIds?: UUID[], areDeleted: boolean = false) =>
       [
         "routineTask",
         "manyByStationIds",
         stationIds && stationIds.length > 0
           ? stationIds.slice().sort().join(",")
           : undefined,
+        areDeleted,
       ] as const,
   },
 };

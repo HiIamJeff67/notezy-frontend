@@ -1,7 +1,6 @@
 import {
   RoutinePeriod as GraphQLRoutinePeriod,
   RoutineStatus as GraphQLRoutineStatus,
-  SupportedIcon as GraphQLSupportedIcon,
   type SearchRoutineInput,
   SearchRoutineSortBy,
   type SearchRoutinesQuery,
@@ -109,7 +108,6 @@ export class RoutineLocalSimulator {
         id: Routine.id,
         stationId: Routine.stationId,
         title: Routine.title,
-        description: Routine.description,
         status: Routine.status,
         isPinned: Routine.isPinned,
         scheduledStartAt: Routine.scheduledStartAt,
@@ -119,15 +117,6 @@ export class RoutineLocalSimulator {
         deletedAt: Routine.deletedAt,
         updatedAt: Routine.updatedAt,
         createdAt: Routine.createdAt,
-        stationName: Station.name,
-        stationDescription: Station.description,
-        stationIcon: Station.icon,
-        stationHeaderBackgroundURL: Station.headerBackgroundURL,
-        stationPermission: UsersToStations.permission,
-        stationRoutineCount: Station.routineCount,
-        stationDeletedAt: Station.deletedAt,
-        stationUpdatedAt: Station.updatedAt,
-        stationCreatedAt: Station.createdAt,
       })
       .from(Routine)
       .innerJoin(Station, eq(Station.id, Routine.stationId))
@@ -141,7 +130,7 @@ export class RoutineLocalSimulator {
       );
 
     const routineIdsByTag =
-      input.tagId === undefined || input.tagId === null
+      input.tagIds.length === 0
         ? null
         : new Set(
             (
@@ -150,16 +139,15 @@ export class RoutineLocalSimulator {
                   routineId: RoutinesToTags.routineId,
                 })
                 .from(RoutinesToTags)
-                .where(eq(RoutinesToTags.tagId, input.tagId))
+                .where(inArray(RoutinesToTags.tagId, input.tagIds))
             ).map(relation => relation.routineId)
           );
     const normalizedQuery = input.query.trim().toLowerCase();
     const routines = accessibleRoutines.filter(routine => {
       if (routine.deletedAt !== null) return false;
       if (
-        input.stationId !== undefined &&
-        input.stationId !== null &&
-        routine.stationId !== input.stationId
+        input.stationIds.length > 0 &&
+        !(input.stationIds as string[]).includes(routine.stationId)
       ) {
         return false;
       }
@@ -223,16 +211,30 @@ export class RoutineLocalSimulator {
         : await localDB
             .select({
               routineId: RoutinesToTags.routineId,
-              id: RoutineTag.id,
-              name: RoutineTag.name,
-              color: RoutineTag.color,
-              icon: RoutineTag.icon,
-              updatedAt: RoutineTag.updatedAt,
-              createdAt: RoutineTag.createdAt,
+              tagId: RoutinesToTags.tagId,
             })
             .from(RoutinesToTags)
-            .innerJoin(RoutineTag, eq(RoutineTag.id, RoutinesToTags.tagId))
             .where(inArray(RoutinesToTags.routineId, pagedRoutineIds));
+    const linkedTasks =
+      pagedRoutineIds.length === 0
+        ? []
+        : await localDB
+            .select({
+              routineId: RoutinesToTasks.routineId,
+              taskId: RoutinesToTasks.taskId,
+            })
+            .from(RoutinesToTasks)
+            .where(inArray(RoutinesToTasks.routineId, pagedRoutineIds));
+    const linkedItems =
+      pagedRoutineIds.length === 0
+        ? []
+        : await localDB
+            .select({
+              routineId: RoutinesToItems.routineId,
+              itemId: RoutinesToItems.itemId,
+            })
+            .from(RoutinesToItems)
+            .where(inArray(RoutinesToItems.routineId, pagedRoutineIds));
 
     return {
       __typename: "SearchRoutineConnection",
@@ -263,43 +265,6 @@ export class RoutineLocalSimulator {
               return null;
           }
         })();
-        const stationIcon = (() => {
-          switch (routine.stationIcon) {
-            case "📚":
-              return GraphQLSupportedIcon.SupportedIconBooks;
-            case "📅":
-              return GraphQLSupportedIcon.SupportedIconCalendar;
-            case "✅":
-              return GraphQLSupportedIcon.SupportedIconCheckMark;
-            case "⏰":
-              return GraphQLSupportedIcon.SupportedIconClock;
-            case "🔥":
-              return GraphQLSupportedIcon.SupportedIconFire;
-            case "📂":
-              return GraphQLSupportedIcon.SupportedIconFolderOpen;
-            case "😀":
-              return GraphQLSupportedIcon.SupportedIconGrinningFace;
-            case "💡":
-              return GraphQLSupportedIcon.SupportedIconLightbulb;
-            case "📓":
-              return GraphQLSupportedIcon.SupportedIconNotebook;
-            case "📝":
-              return GraphQLSupportedIcon.SupportedIconPencilPaper;
-            case "📌":
-              return GraphQLSupportedIcon.SupportedIconPin;
-            case "❤️":
-              return GraphQLSupportedIcon.SupportedIconRedHeart;
-            case "🚀":
-              return GraphQLSupportedIcon.SupportedIconRocket;
-            case "😊":
-              return GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes;
-            case "⭐":
-              return GraphQLSupportedIcon.SupportedIconStar;
-            default:
-              return null;
-          }
-        })();
-
         return {
           __typename: "SearchRoutineEdge",
           encodedSearchCursor: btoa(JSON.stringify({ id: routine.id })),
@@ -308,7 +273,6 @@ export class RoutineLocalSimulator {
             id: routine.id,
             stationId: routine.stationId,
             title: routine.title,
-            description: routine.description,
             status,
             isPinned: routine.isPinned,
             scheduledStartAt: routine.scheduledStartAt,
@@ -318,70 +282,15 @@ export class RoutineLocalSimulator {
             deletedAt: routine.deletedAt,
             updatedAt: routine.updatedAt,
             createdAt: routine.createdAt,
-            station: {
-              __typename: "PrivateStation",
-              id: routine.stationId,
-              name: routine.stationName,
-              description: routine.stationDescription,
-              icon: stationIcon,
-              headerBackgroundURL: routine.stationHeaderBackgroundURL,
-              permission: routine.stationPermission,
-              routineCount: routine.stationRoutineCount,
-              deletedAt: routine.stationDeletedAt,
-              updatedAt: routine.stationUpdatedAt,
-              createdAt: routine.stationCreatedAt,
-            },
-            tags: linkedTags
+            tagIds: linkedTags
               .filter(tag => tag.routineId === routine.id)
-              .map(tag => {
-                const icon = (() => {
-                  switch (tag.icon) {
-                    case "📚":
-                      return GraphQLSupportedIcon.SupportedIconBooks;
-                    case "📅":
-                      return GraphQLSupportedIcon.SupportedIconCalendar;
-                    case "✅":
-                      return GraphQLSupportedIcon.SupportedIconCheckMark;
-                    case "⏰":
-                      return GraphQLSupportedIcon.SupportedIconClock;
-                    case "🔥":
-                      return GraphQLSupportedIcon.SupportedIconFire;
-                    case "📂":
-                      return GraphQLSupportedIcon.SupportedIconFolderOpen;
-                    case "😀":
-                      return GraphQLSupportedIcon.SupportedIconGrinningFace;
-                    case "💡":
-                      return GraphQLSupportedIcon.SupportedIconLightbulb;
-                    case "📓":
-                      return GraphQLSupportedIcon.SupportedIconNotebook;
-                    case "📝":
-                      return GraphQLSupportedIcon.SupportedIconPencilPaper;
-                    case "📌":
-                      return GraphQLSupportedIcon.SupportedIconPin;
-                    case "❤️":
-                      return GraphQLSupportedIcon.SupportedIconRedHeart;
-                    case "🚀":
-                      return GraphQLSupportedIcon.SupportedIconRocket;
-                    case "😊":
-                      return GraphQLSupportedIcon.SupportedIconSmilingFaceWithSmilingEyes;
-                    case "⭐":
-                      return GraphQLSupportedIcon.SupportedIconStar;
-                    default:
-                      return null;
-                  }
-                })();
-
-                return {
-                  __typename: "PrivateRoutineTag",
-                  id: tag.id,
-                  name: tag.name,
-                  color: tag.color,
-                  icon,
-                  updatedAt: tag.updatedAt,
-                  createdAt: tag.createdAt,
-                };
-              }),
-            tasks: [],
+              .map(tag => tag.tagId),
+            taskIds: linkedTasks
+              .filter(task => task.routineId === routine.id)
+              .map(task => task.taskId),
+            itemIds: linkedItems
+              .filter(item => item.routineId === routine.id)
+              .map(item => item.itemId),
           },
         };
       }),
@@ -444,20 +353,29 @@ export class RoutineLocalSimulator {
       .where(eq(Routine.id, request.param.routineId))
       .limit(1);
 
-    if (!routines[0]) return null;
+    const routine = routines[0];
+    if (!routine) return null;
+
+    const isDeleted = request.param.isDeleted ?? false;
+    if ((routine.deletedAt !== null) !== isDeleted) return null;
 
     const relations = await localDB
       .select({ tagId: RoutinesToTags.tagId })
       .from(RoutinesToTags)
-      .where(eq(RoutinesToTags.routineId, routines[0].id));
+      .where(eq(RoutinesToTags.routineId, routine.id));
     const taskRelations = await localDB
       .select({ taskId: RoutinesToTasks.taskId })
       .from(RoutinesToTasks)
-      .where(eq(RoutinesToTasks.routineId, routines[0].id));
+      .where(eq(RoutinesToTasks.routineId, routine.id));
+    const itemRelations = await localDB
+      .select({ itemId: RoutinesToItems.itemId })
+      .from(RoutinesToItems)
+      .where(eq(RoutinesToItems.routineId, routine.id));
     return {
-      ...routines[0],
+      ...routine,
       tagIds: relations.map(relation => relation.tagId),
       taskIds: taskRelations.map(relation => relation.taskId),
+      itemIds: itemRelations.map(relation => relation.itemId),
     };
   };
 
@@ -469,13 +387,14 @@ export class RoutineLocalSimulator {
       where: eq(User.isLoggedIn, true),
     });
     if (loggedInUser === undefined) return [];
+    const from = new Date(request.param.from as string | number | Date);
+    const to = new Date(request.param.to as string | number | Date);
 
     const routines = await localDB
       .select({
         id: Routine.id,
         stationId: Routine.stationId,
         title: Routine.title,
-        description: Routine.description,
         status: Routine.status,
         isPinned: Routine.isPinned,
         scheduledStartAt: Routine.scheduledStartAt,
@@ -500,9 +419,11 @@ export class RoutineLocalSimulator {
         and(
           inArray(Routine.stationId, request.param.stationIds),
           isNull(Station.deletedAt),
-          isNull(Routine.deletedAt),
-          lt(Routine.scheduledStartAt, request.param.to),
-          gt(Routine.scheduledEndAt, request.param.from)
+          request.param.areDeleted === true
+            ? sql`${Routine.deletedAt} IS NOT NULL`
+            : isNull(Routine.deletedAt),
+          lt(Routine.scheduledStartAt, to),
+          gt(Routine.scheduledEndAt, from)
         )
       )
       .orderBy(
@@ -536,6 +457,18 @@ export class RoutineLocalSimulator {
           routines.map(routine => routine.id)
         )
       );
+    const itemRelations = await localDB
+      .select({
+        routineId: RoutinesToItems.routineId,
+        itemId: RoutinesToItems.itemId,
+      })
+      .from(RoutinesToItems)
+      .where(
+        inArray(
+          RoutinesToItems.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
     return routines.map(routine => ({
       ...routine,
       tagIds: relations
@@ -544,6 +477,9 @@ export class RoutineLocalSimulator {
       taskIds: taskRelations
         .filter(relation => relation.routineId === routine.id)
         .map(relation => relation.taskId),
+      itemIds: itemRelations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.itemId),
     }));
   };
 
