@@ -166,9 +166,7 @@ export const useRoutineLogic = ({
                 ? RoutinePeriod.Weekly
                 : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
                   ? RoutinePeriod.Monthly
-                  : node.period === GraphQLRoutinePeriod.RoutinePeriodYearly
-                    ? RoutinePeriod.Yearly
-                    : null,
+                  : null,
           timezone: node.timezone,
           deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt),
           updatedAt: new Date(node.updatedAt),

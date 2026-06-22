@@ -1,6 +1,10 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import type {
+  VisualizeMyTotalCountRequest,
+  VisualizeMyTotalCountResponse,
+} from "@shared/api/interfaces/station.interface";
 import {
   CreateStationRequest,
   CreateStationResponse,
@@ -35,6 +39,17 @@ import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
+import { fetchVisualizeResponse } from "./visualize.serverFn";
+
+export const VisualizeMyTotalCount = createServerFn({ method: "GET" })
+  .inputValidator((data: VisualizeMyTotalCountRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<VisualizeMyTotalCountResponse> =>
+      fetchVisualizeResponse(
+        request,
+        APIURLPathDictionary.station.visualizeMyTotalCount
+      )
+  );
 
 export const GetMyStationById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyStationByIdRequest) => data)

@@ -70,8 +70,6 @@ const alignSearchedRoutines = (
           return RoutinePeriod.Weekly;
         case GraphQLRoutinePeriod.RoutinePeriodMonthly:
           return RoutinePeriod.Monthly;
-        case GraphQLRoutinePeriod.RoutinePeriodYearly:
-          return RoutinePeriod.Yearly;
         default:
           return null;
       }

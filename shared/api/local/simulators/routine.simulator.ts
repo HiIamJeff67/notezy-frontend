@@ -259,8 +259,6 @@ export class RoutineLocalSimulator {
               return GraphQLRoutinePeriod.RoutinePeriodWeekly;
             case "Monthly":
               return GraphQLRoutinePeriod.RoutinePeriodMonthly;
-            case "Yearly":
-              return GraphQLRoutinePeriod.RoutinePeriodYearly;
             default:
               return null;
           }

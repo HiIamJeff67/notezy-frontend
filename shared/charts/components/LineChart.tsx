@@ -1,26 +1,26 @@
-import * as React from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useState } from "react";
+import { getChartColor } from "../constants/color.constant";
 import {
+  DEFAULT_CHART_MARGIN,
   DEFAULT_VIEWBOX_HEIGHT,
   DEFAULT_VIEWBOX_WIDTH,
-  getChartColor,
-} from "../constants/chart.constant";
-import { getCartesianValues, getInnerChartDomain, mergeChartMargin } from "../data";
+} from "../constants/size.constant";
+import type {
+  CartesianChartData,
+  CartesianChartDatum,
+  ChartActive,
+  ChartMargin,
+  ChartTooltipContext,
+} from "../types";
 import {
   buildLinearTicks,
   createBandScale,
   createLinearDomain,
   createLinearScale,
   isFiniteChartValue,
-} from "../scales";
-import type {
-  CartesianChartData,
-  CartesianChartDatum,
-  ChartAxisValue,
-  ChartActive,
-  ChartDomain,
-  ChartMargin,
-  ChartTooltipContext,
-} from "../types";
+  splitSvgTextLines,
+} from "../util";
 import {
   ChartFrame,
   formatAxisValue,
@@ -31,7 +31,7 @@ import {
 export interface LineChartProps<TMeta = unknown> {
   data: CartesianChartData<TMeta>;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   height?: number | string;
   width?: number | string;
   ariaLabel?: string;
@@ -39,11 +39,11 @@ export interface LineChartProps<TMeta = unknown> {
   emptyMessage?: string;
   showLegend?: boolean;
   showGrid?: boolean;
-  tooltip?: (context: ChartTooltipContext<TMeta>) => React.ReactNode;
+  tooltip?: (context: ChartTooltipContext<TMeta>) => ReactNode;
   onActiveChange?: (active: ChartActive<TMeta> | null) => void;
   margin?: Partial<ChartMargin>;
-  valueDomain?: ChartDomain;
-  formatX?: (value: ChartAxisValue) => string;
+  valueDomain?: [number, number];
+  formatX?: (value: string) => string;
   formatY?: (value: number) => string;
   maxXAxisLabels?: number;
 }
@@ -67,21 +67,31 @@ export function LineChart<TMeta = unknown>({
   formatY = formatNumber,
   maxXAxisLabels = 8,
 }: LineChartProps<TMeta>) {
-  const [active, setActive] = React.useState<ChartActive<TMeta> | null>(null);
+  const [active, setActive] = useState<ChartActive<TMeta> | null>(null);
   const [tooltipPosition, setTooltipPosition] =
-    React.useState<TooltipPosition | null>(null);
-  const mergedMargin = mergeChartMargin(margin);
-  const inner = getInnerChartDomain(
-    DEFAULT_VIEWBOX_WIDTH,
-    DEFAULT_VIEWBOX_HEIGHT,
-    mergedMargin
+    useState<TooltipPosition | null>(null);
+  const mergedMargin = { ...DEFAULT_CHART_MARGIN, ...margin };
+  const innerWidth = Math.max(
+    0,
+    DEFAULT_VIEWBOX_WIDTH - mergedMargin.left - mergedMargin.right,
   );
+  const innerHeight = Math.max(
+    0,
+    DEFAULT_VIEWBOX_HEIGHT - mergedMargin.top - mergedMargin.bottom,
+  );
+  const inner = {
+    x: [mergedMargin.left, mergedMargin.left + innerWidth] as [number, number],
+    y: [mergedMargin.top + innerHeight, mergedMargin.top] as [number, number],
+  };
   const xScale = createBandScale(
     data.data.map((datum) => datum.id),
     inner.x,
-    0.12
+    0.12,
   );
-  const domain = valueDomain ?? createLinearDomain(getCartesianValues(data));
+  const chartValues = data.data.flatMap((datum) =>
+    data.series.map((series) => datum.values[series.id] ?? 0),
+  );
+  const domain = valueDomain ?? createLinearDomain(chartValues);
   const yScale = createLinearScale(domain, inner.y);
   const ticks = buildLinearTicks(domain);
   const legendItems = data.series.map((series, index) => ({
@@ -93,16 +103,16 @@ export function LineChart<TMeta = unknown>({
   const isEmpty =
     data.series.length === 0 ||
     data.data.length === 0 ||
-    getCartesianValues(data).every((value) => !isFiniteChartValue(value));
+    chartValues.every((value) => !isFiniteChartValue(value));
 
   const setActivePoint = (
     datum: CartesianChartDatum<TMeta>,
     seriesIndex: number,
     pointX: number,
-    pointY: number
+    pointY: number,
   ) => {
     const series = data.series[seriesIndex];
-    const value = datum.values[series.id];
+    const value = datum.values[series.id] ?? 0;
 
     if (!isFiniteChartValue(value)) {
       return;
@@ -137,6 +147,7 @@ export function LineChart<TMeta = unknown>({
       ariaLabel={ariaLabel}
       className={className}
       emptyMessage={emptyMessage}
+      formatValue={formatY}
       height={height}
       isEmpty={isEmpty}
       legendItems={legendItems}
@@ -181,6 +192,12 @@ export function LineChart<TMeta = unknown>({
 
           const x = xScale.getPosition(datum.id) + xScale.bandwidth / 2;
 
+          const label = datum.label ?? formatX(datum.x);
+          const labelLines = splitSvgTextLines(
+            label,
+            Math.max(4, Math.floor(xScale.bandwidth / 6)),
+          );
+
           return (
             <text
               fill="var(--muted-foreground)"
@@ -188,9 +205,17 @@ export function LineChart<TMeta = unknown>({
               key={datum.id}
               textAnchor="middle"
               x={x}
-              y={DEFAULT_VIEWBOX_HEIGHT - 10}
+              y={DEFAULT_VIEWBOX_HEIGHT - mergedMargin.bottom + 14}
             >
-              {datum.label ?? formatX(datum.x)}
+              {labelLines.map((line, lineIndex) => (
+                <tspan
+                  dy={lineIndex === 0 ? 0 : 12}
+                  key={`${line}-${lineIndex}`}
+                  x={x}
+                >
+                  {line}
+                </tspan>
+              ))}
             </text>
           );
         })}
@@ -198,7 +223,7 @@ export function LineChart<TMeta = unknown>({
           const color = getChartColor(seriesIndex, series.color);
           const points = data.data.map((datum) => {
             const x = xScale.getPosition(datum.id) + xScale.bandwidth / 2;
-            const value = datum.values[series.id];
+            const value = datum.values[series.id] ?? 0;
             return {
               x,
               y: isFiniteChartValue(value) ? yScale(value) : null,
@@ -208,7 +233,7 @@ export function LineChart<TMeta = unknown>({
           let segmentStarted = false;
 
           points.forEach((point) => {
-            if (!isFiniteChartValue(point.y)) {
+            if (point.y === null) {
               segmentStarted = false;
               return;
             }
@@ -233,7 +258,7 @@ export function LineChart<TMeta = unknown>({
                 strokeWidth={2.5}
               />
               {data.data.map((datum) => {
-                const value = datum.values[series.id];
+                const value = datum.values[series.id] ?? 0;
 
                 if (!isFiniteChartValue(value)) {
                   return null;
@@ -253,7 +278,9 @@ export function LineChart<TMeta = unknown>({
                     key={`${datum.id}-${series.id}`}
                     onBlur={clearActive}
                     onFocus={() => setActivePoint(datum, seriesIndex, x, y)}
-                    onMouseEnter={() => setActivePoint(datum, seriesIndex, x, y)}
+                    onMouseEnter={() =>
+                      setActivePoint(datum, seriesIndex, x, y)
+                    }
                     r={4}
                     role="img"
                     stroke={color}

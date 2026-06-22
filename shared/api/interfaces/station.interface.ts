@@ -7,6 +7,25 @@ import {
   AllSupportedIcons,
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
+import {
+  VisualizePermissionRequestSchema,
+  VisualizeResponseSchema,
+} from "./visualize.interface";
+
+/* ============================== VisualizeMyTotalCount ============================== */
+
+export const VisualizeMyTotalCountRequestSchema =
+  VisualizePermissionRequestSchema;
+
+export type VisualizeMyTotalCountRequest = z.infer<
+  typeof VisualizeMyTotalCountRequestSchema
+>;
+
+export const VisualizeMyTotalCountResponseSchema = VisualizeResponseSchema;
+
+export type VisualizeMyTotalCountResponse = z.infer<
+  typeof VisualizeMyTotalCountResponseSchema
+>;
 
 /* ============================== GetMyStationById ============================== */
 

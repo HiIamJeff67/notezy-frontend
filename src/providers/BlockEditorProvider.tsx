@@ -65,6 +65,18 @@ interface BlockEditorProviderProps {
   blockPackMeta: BlockPackMeta;
 }
 
+interface NewBlockPackInitState {
+  blockId: UUID;
+  blockGroupId: UUID;
+  requestPromise: Promise<void> | null;
+  isInitialized: boolean;
+}
+
+const newBlockPackInitStateByBlockPackId = new Map<
+  UUID,
+  NewBlockPackInitState
+>();
+
 export const BlockEditorProvider = ({
   children,
   blockPackMeta,
@@ -152,17 +164,33 @@ export const BlockEditorProvider = ({
         );
       }
 
+      const isNewBlockPack = initialContent.length === 0;
+      if (isNewBlockPack) {
+        let initState = newBlockPackInitStateByBlockPackId.get(
+          blockPackMeta.id
+        );
+
+        if (initState === undefined) {
+          initState = {
+            blockId: generateUUID(),
+            blockGroupId: generateUUID(),
+            requestPromise: null,
+            isInitialized: false,
+          };
+          newBlockPackInitStateByBlockPackId.set(blockPackMeta.id, initState);
+        }
+
+        initialContent = [
+          {
+            id: initState.blockId,
+            type: "paragraph",
+            content: [],
+          },
+        ];
+      }
+
       const editor = BlockNoteEditor.create({
-        initialContent:
-          initialContent.length === 0
-            ? [
-                {
-                  id: generateUUID(),
-                  type: "paragraph",
-                  content: [],
-                },
-              ]
-            : initialContent,
+        initialContent,
         trailingBlock: false,
       });
 
@@ -171,7 +199,7 @@ export const BlockEditorProvider = ({
       return {
         editor: editor,
         initialContent: editor.document,
-        isNewBlockPack: initialContent.length === 0,
+        isNewBlockPack,
       };
     },
     []
@@ -712,53 +740,91 @@ export const BlockEditorProvider = ({
   };
 
   const syncNewBlockPack = useCallback(async () => {
+    let initState = newBlockPackInitStateByBlockPackId.get(blockPackMeta.id);
+
+    if (initState === undefined) {
+      initState = {
+        blockId: generateUUID(),
+        blockGroupId: generateUUID(),
+        requestPromise: null,
+        isInitialized: false,
+      };
+      newBlockPackInitStateByBlockPackId.set(blockPackMeta.id, initState);
+    }
+
     const userAgent = navigator.userAgent;
     const accessToken = LocalStorageManipulator.getItemByKey(
       LocalStorageKey.accessToken
     );
     const newBlockId = editor.document[0].id as UUID; // should exist
-    const newBlockGroupId = generateUUID();
     const newBlockGroupMeta = getDefaultBlockGroupMeta(
-      newBlockGroupId,
+      initState.blockGroupId,
       blockPackMeta.id,
       null,
       null
     );
-    dsuRef.current.add(newBlockGroupId, Infinity);
-    dsuRef.current.setPayload(newBlockGroupId, newBlockGroupMeta);
+    dsuRef.current.add(initState.blockGroupId, Infinity);
+    dsuRef.current.setPayload(initState.blockGroupId, newBlockGroupMeta);
     dsuRef.current.add(newBlockId);
-    dsuRef.current.union(newBlockId, newBlockGroupId);
-    blockGroupsLinkedListRef.current.insertAfter(
-      blockGroupsLinkedListRef.current.getHead(),
-      newBlockGroupId,
-      1
-    );
-    await insertBlockGroupsAndBlocksMutator.mutateAsync({
-      header: {
-        userAgent: userAgent,
-        authorization: getAuthorization(accessToken),
-      },
-      body: {
-        blockPackId: blockPackMeta.id,
-        blockGroupContents: [
-          {
-            blockGroupId: newBlockGroupId,
-            prevBlockGroupId: null,
-            // since if isNewBlockPack, then initialContent has one partial block in it,
-            // and although it is not new block pack, initialContent still has non zero length
-            arborizedEditableBlock: initialContent[0],
-          },
-        ],
-      },
-    });
-  }, [insertBlockGroupsAndBlocksMutator, initialContent]);
-
-  useEffect(() => {
-    if (isNewBlockPack && !hasInitializedRef.current) {
-      hasInitializedRef.current = true;
-      syncNewBlockPack();
+    dsuRef.current.union(newBlockId, initState.blockGroupId);
+    if (!blockGroupsLinkedListRef.current.has(initState.blockGroupId)) {
+      blockGroupsLinkedListRef.current.insertAfter(
+        blockGroupsLinkedListRef.current.getHead(),
+        initState.blockGroupId,
+        1
+      );
     }
 
+    if (initState.isInitialized) return;
+    if (initState.requestPromise !== null) return initState.requestPromise;
+
+    initState.requestPromise = insertBlockGroupsAndBlocksMutator
+      .mutateAsync({
+        header: {
+          userAgent: userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: {
+          blockPackId: blockPackMeta.id,
+          blockGroupContents: [
+            {
+              blockGroupId: initState.blockGroupId,
+              prevBlockGroupId: null,
+              // since if isNewBlockPack, then initialContent has one partial block in it,
+              // and although it is not new block pack, initialContent still has non zero length
+              arborizedEditableBlock: initialContent[0],
+            },
+          ],
+        },
+      })
+      .then(response => {
+        if (response.success === false && !response.data.isAllSuccess) {
+          return;
+        }
+        initState.isInitialized = true;
+      })
+      .finally(() => {
+        initState.requestPromise = null;
+      });
+
+    return initState.requestPromise;
+  }, [
+    blockPackMeta.id,
+    editor,
+    insertBlockGroupsAndBlocksMutator,
+    initialContent,
+  ]);
+
+  useEffect(() => {
+    if (!isNewBlockPack || hasInitializedRef.current) return;
+
+    hasInitializedRef.current = true;
+    void syncNewBlockPack().catch(error =>
+      toast.error(languageManager.tError(error))
+    );
+  }, [isNewBlockPack, syncNewBlockPack, languageManager]);
+
+  useEffect(() => {
     const unSubscribeOnBeforeChange = editor.onBeforeChange(
       (_, { getChanges }) => {
         const changes = getChanges();
@@ -839,7 +905,7 @@ export const BlockEditorProvider = ({
         mergeTimeoutRef.current = null;
       }
     };
-  }, [isNewBlockPack, editor]);
+  }, [editor]);
 
   return (
     <BlockEditorContext.Provider value={{ editor, state }}>

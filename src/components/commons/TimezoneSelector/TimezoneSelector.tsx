@@ -75,7 +75,7 @@ const TimezoneSelector = ({
             searchInputRef.current?.focus();
           }}
           className={cn(
-            "z-[120] flex w-[var(--radix-popover-trigger-width)] flex-col rounded-sm border bg-muted p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "z-[160] flex w-[var(--radix-popover-trigger-width)] flex-col rounded-sm border bg-muted p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             contentClassName
           )}
         >

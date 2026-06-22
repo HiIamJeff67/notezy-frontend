@@ -175,6 +175,7 @@ export const APIURLPathDictionary = {
     deleteMyBlocksByIds: "block/deleteMyBlocksByIds",
   },
   station: {
+    visualizeMyTotalCount: "station/visualizeMyTotalCount",
     getMyStationById: "station/getMyStationById",
     getAllMyStations: "station/getAllMyStations",
     createStation: "station/createStation",
@@ -189,6 +190,12 @@ export const APIURLPathDictionary = {
     hardDeleteMyStationsByIds: "station/hardDeleteMyStationsByIds",
   },
   routine: {
+    visualizeMyRoutineStatusCount: "routine/visualizeMyRoutineStatusCount",
+    visualizeMyRoutinePeriodCount: "routine/visualizeMyRoutinePeriodCount",
+    visualizeMyRoutineScheduledStartAtCount:
+      "routine/visualizeMyRoutineScheduledStartAtCount",
+    visualizeMyRoutineScheduledEndAtCount:
+      "routine/visualizeMyRoutineScheduledEndAtCount",
     getMyRoutineById: "routine/getMyRoutineById",
     getAllMyRoutinesByTimeRange: "routine/getAllMyRoutinesByTimeRange",
     createRoutineByStationId: "routine/createRoutineByStationId",
@@ -219,6 +226,16 @@ export const APIURLPathDictionary = {
     hardDeleteMyRoutineTagsByIds: "routineTag/hardDeleteMyRoutineTagsByIds",
   },
   routineTask: {
+    visualizeMyRoutineTaskStatusCount:
+      "routineTask/visualizeMyRoutineTaskStatusCount",
+    visualizeMyRoutineTaskPurposeCount:
+      "routineTask/visualizeMyRoutineTaskPurposeCount",
+    visualizeMyRoutineTaskScheduledAtCount:
+      "routineTask/visualizeMyRoutineTaskScheduledAtCount",
+    visualizeMyRoutineTaskActualStartedAtCount:
+      "routineTask/visualizeMyRoutineTaskActualStartedAtCount",
+    visualizeMyRoutineTaskActualEndedAtCount:
+      "routineTask/visualizeMyRoutineTaskActualEndedAtCount",
     getMyRoutineTaskById: "routineTask/getMyRoutineTaskById",
     getAllMyRoutineTasksByStationIds:
       "routineTask/getAllMyRoutineTasksByStationIds",

@@ -49,7 +49,7 @@ const TimeRailsStationBarItem = ({
         drop(node);
       }}
       className="
-        flex min-w-0 cursor-grab items-start gap-2 border-t border-border/60
+        flex w-full min-w-0 cursor-grab items-start gap-2 overflow-hidden border-t border-border/60
         bg-card px-3 py-3 shadow-[8px_0_18px_-18px_hsl(var(--foreground))]
         active:cursor-grabbing
       "
@@ -67,9 +67,9 @@ const TimeRailsStationBarItem = ({
           className="mt-0.5 shrink-0 text-muted-foreground"
         />
       )}
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate text-sm font-medium">{station.name}</p>
-        <p className="text-xs tabular-nums text-muted-foreground">
+        <p className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
           {routineCount} routines
         </p>
       </div>

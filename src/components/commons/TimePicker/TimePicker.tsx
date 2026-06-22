@@ -1,9 +1,8 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@shared/util/utils";
-import { CalendarIcon } from "lucide-react";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { ClockIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   HoverCard,
   HoverCardContent,
@@ -11,25 +10,25 @@ import {
 } from "@/components/ui/hover-card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-interface DatePickerProps {
+interface TimePickerProps {
   value: Date | undefined;
   onValueChange: (value: Date | undefined) => void;
   placeholder?: string;
-  disabled?: ComponentProps<typeof Calendar>["disabled"];
+  disabled?: boolean;
   isInvalid?: boolean;
   className?: string;
   contentClassName?: string;
 }
 
-const DatePicker = ({
+const TimePicker = ({
   value,
   onValueChange,
-  placeholder = "Select date and time",
-  disabled,
+  placeholder = "Select time",
+  disabled = false,
   isInvalid = false,
   className,
   contentClassName,
-}: DatePickerProps) => {
+}: TimePickerProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const hourWheelRef = useRef<HTMLDivElement>(null);
   const minuteWheelRef = useRef<HTMLDivElement>(null);
@@ -40,22 +39,25 @@ const DatePicker = ({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [hourCycle, setHourCycle] = useState<"12" | "24">("24");
   const [portalContainer, setPortalContainer] = useState<Element | null>(null);
+  const displayedTime = value ?? new Date(2000, 0, 1, 0, 0, 0, 0);
 
   useEffect(() => {
-    if (!isOpen || !value) return;
+    if (!isOpen) return;
 
     const frameId = requestAnimationFrame(() => {
       if (hourWheelRef.current) {
         hourWheelRef.current.scrollTop =
-          (hourCycle === "12" ? value.getHours() % 12 : value.getHours()) * 32;
+          (hourCycle === "12"
+            ? displayedTime.getHours() % 12
+            : displayedTime.getHours()) * 32;
       }
       if (minuteWheelRef.current) {
-        minuteWheelRef.current.scrollTop = value.getMinutes() * 32;
+        minuteWheelRef.current.scrollTop = displayedTime.getMinutes() * 32;
       }
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [hourCycle, isOpen, value]);
+  }, [displayedTime, hourCycle, isOpen]);
 
   useEffect(
     () => () => {
@@ -79,6 +81,11 @@ const DatePicker = ({
               '[data-slot="sheet-content"], [data-slot="dialog-content"]'
             ) ?? null
           );
+          if (!value) {
+            const now = new Date();
+            now.setSeconds(0, 0);
+            onValueChange(now);
+          }
         }
         setIsOpen(open);
       }}
@@ -92,19 +99,20 @@ const DatePicker = ({
               variant="outline"
               data-empty={!value}
               aria-invalid={isInvalid}
+              disabled={disabled}
               className={cn(
-                "h-10 w-full bg-muted justify-start rounded-sm px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
+                "h-10 w-full justify-start rounded-sm bg-muted px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
                 className
               )}
             >
-              <CalendarIcon className="size-4 shrink-0" />
+              <ClockIcon className="size-4 shrink-0" />
               <span className="truncate">
                 {value
-                  ? `${value.toDateString()} at ${value.toLocaleTimeString([], {
+                  ? value.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: hourCycle === "12",
-                    })}`
+                    })
                   : placeholder}
               </span>
             </Button>
@@ -112,26 +120,23 @@ const DatePicker = ({
         </HoverCardTrigger>
         <HoverCardContent
           align="start"
-          className="z-[170] w-72 rounded-sm bg-popover p-3"
+          className="z-[170] w-64 rounded-sm bg-popover p-3"
         >
           <div className="flex items-start gap-3">
-            <CalendarIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <ClockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <p className="text-sm font-medium">
-                {value ? value.toLocaleDateString() : placeholder}
+                {value ? "Time" : placeholder}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {value
-                  ? value.toLocaleString([], {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
+                  ? value.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
+                      second: "2-digit",
                       hour12: hourCycle === "12",
                     })
-                  : "No date and time selected"}
+                  : "No time selected"}
               </p>
             </div>
           </div>
@@ -142,32 +147,11 @@ const DatePicker = ({
           align="start"
           sideOffset={4}
           className={cn(
-            "z-[160] w-auto rounded-sm border bg-muted p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "z-[160] w-72 rounded-sm border bg-muted p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             contentClassName
           )}
         >
-          <Calendar
-            mode="single"
-            selected={value}
-            disabled={disabled}
-            onSelect={date => {
-              if (!date) {
-                onValueChange(undefined);
-                return;
-              }
-
-              date.setHours(
-                value?.getHours() ?? 0,
-                value?.getMinutes() ?? 0,
-                0,
-                0
-              );
-              onValueChange(date);
-            }}
-            className="bg-muted"
-            initialFocus
-          />
-          <div className="flex items-center justify-between border-t border-b px-3 py-2">
+          <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-xs font-medium text-muted-foreground">
               Time
             </span>
@@ -239,7 +223,9 @@ const DatePicker = ({
                           hourCycle === "12"
                             ? hour + (value.getHours() >= 12 ? 12 : 0)
                             : hour,
-                          value.getMinutes()
+                          value.getMinutes(),
+                          0,
+                          0
                         )
                       );
                     }, 100);
@@ -253,30 +239,32 @@ const DatePicker = ({
                         key={hour}
                         type="button"
                         variant="ghost"
-                        disabled={!value}
+                        disabled={disabled}
                         onClick={event => {
-                          if (!value) return;
+                          const targetTime = value ?? new Date();
                           event.currentTarget.scrollIntoView({
                             block: "center",
                             behavior: "smooth",
                           });
                           onValueChange(
                             new Date(
-                              value.getFullYear(),
-                              value.getMonth(),
-                              value.getDate(),
+                              targetTime.getFullYear(),
+                              targetTime.getMonth(),
+                              targetTime.getDate(),
                               hourCycle === "12"
-                                ? hour + (value.getHours() >= 12 ? 12 : 0)
+                                ? hour + (targetTime.getHours() >= 12 ? 12 : 0)
                                 : hour,
-                              value.getMinutes()
+                              targetTime.getMinutes(),
+                              0,
+                              0
                             )
                           );
                         }}
                         className={cn(
                           "flex h-8 w-full snap-center justify-center rounded-none font-mono text-sm font-normal",
                           (hourCycle === "12"
-                            ? value && value.getHours() % 12
-                            : value?.getHours()) === hour
+                            ? displayedTime.getHours() % 12
+                            : displayedTime.getHours()) === hour
                             ? "text-foreground"
                             : "text-muted-foreground"
                         )}
@@ -330,7 +318,9 @@ const DatePicker = ({
                           value.getMonth(),
                           value.getDate(),
                           value.getHours(),
-                          minute
+                          minute,
+                          0,
+                          0
                         )
                       );
                     }, 100);
@@ -342,26 +332,28 @@ const DatePicker = ({
                       key={minute}
                       type="button"
                       variant="ghost"
-                      disabled={!value}
+                      disabled={disabled}
                       onClick={event => {
-                        if (!value) return;
+                        const targetTime = value ?? new Date();
                         event.currentTarget.scrollIntoView({
                           block: "center",
                           behavior: "smooth",
                         });
                         onValueChange(
                           new Date(
-                            value.getFullYear(),
-                            value.getMonth(),
-                            value.getDate(),
-                            value.getHours(),
-                            minute
+                            targetTime.getFullYear(),
+                            targetTime.getMonth(),
+                            targetTime.getDate(),
+                            targetTime.getHours(),
+                            minute,
+                            0,
+                            0
                           )
                         );
                       }}
                       className={cn(
                         "flex h-8 w-full snap-center justify-center rounded-none font-mono text-sm font-normal",
-                        value?.getMinutes() === minute
+                        displayedTime.getMinutes() === minute
                           ? "text-foreground"
                           : "text-muted-foreground"
                       )}
@@ -384,19 +376,22 @@ const DatePicker = ({
                   <Button
                     type="button"
                     variant={
-                      value && value.getHours() < 12 ? "secondary" : "ghost"
+                      displayedTime.getHours() < 12 ? "secondary" : "ghost"
                     }
-                    disabled={!value}
+                    disabled={disabled}
                     onClick={() => {
-                      if (!value || value.getHours() < 12) return;
+                      const targetTime = value ?? new Date();
+                      if (targetTime.getHours() < 12) return;
 
                       onValueChange(
                         new Date(
-                          value.getFullYear(),
-                          value.getMonth(),
-                          value.getDate(),
-                          value.getHours() - 12,
-                          value.getMinutes()
+                          targetTime.getFullYear(),
+                          targetTime.getMonth(),
+                          targetTime.getDate(),
+                          targetTime.getHours() - 12,
+                          targetTime.getMinutes(),
+                          0,
+                          0
                         )
                       );
                     }}
@@ -407,19 +402,22 @@ const DatePicker = ({
                   <Button
                     type="button"
                     variant={
-                      value && value.getHours() >= 12 ? "secondary" : "ghost"
+                      displayedTime.getHours() >= 12 ? "secondary" : "ghost"
                     }
-                    disabled={!value}
+                    disabled={disabled}
                     onClick={() => {
-                      if (!value || value.getHours() >= 12) return;
+                      const targetTime = value ?? new Date();
+                      if (targetTime.getHours() >= 12) return;
 
                       onValueChange(
                         new Date(
-                          value.getFullYear(),
-                          value.getMonth(),
-                          value.getDate(),
-                          value.getHours() + 12,
-                          value.getMinutes()
+                          targetTime.getFullYear(),
+                          targetTime.getMonth(),
+                          targetTime.getDate(),
+                          targetTime.getHours() + 12,
+                          targetTime.getMinutes(),
+                          0,
+                          0
                         )
                       );
                     }}
@@ -437,4 +435,4 @@ const DatePicker = ({
   );
 };
 
-export default DatePicker;
+export default TimePicker;

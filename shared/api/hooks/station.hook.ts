@@ -23,6 +23,8 @@ import type {
   RestoreMyStationsByIdsRequest,
   UpdateMyStationByIdRequest,
   UpdateMyStationsByIdsRequest,
+  VisualizeMyTotalCountRequest,
+  VisualizeMyTotalCountResponse,
 } from "@shared/api/interfaces/station.interface";
 import {
   mutationFnCreateStation,
@@ -37,6 +39,7 @@ import {
   mutationFnUpdateMyStationsByIds,
   queryFnGetAllMyStations,
   queryFnGetMyStationById,
+  queryFnVisualizeMyTotalCount,
 } from "@shared/api/invokers/station.invoker";
 import { StationLocalSimulator } from "@shared/api/local/simulators/station.simulator";
 import { StationLocalSynchronizer } from "@shared/api/local/synchronizers/station.synchronizer";
@@ -52,6 +55,19 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { useVisualizeQuery } from "./visualize.hook";
+
+export const useVisualizeMyTotalCount = (
+  request?: VisualizeMyTotalCountRequest,
+  options?: Partial<UseQueryOptions<VisualizeMyTotalCountResponse, Error>>
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.station.visualizeMyTotalCount(currentRequest?.param.permission),
+    queryFnVisualizeMyTotalCount,
+    options
+  );
 
 export const useGetMyStationById = (
   hookRequest?: GetMyStationByIdRequest,

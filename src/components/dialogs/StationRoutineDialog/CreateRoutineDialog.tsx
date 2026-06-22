@@ -7,6 +7,7 @@ import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import TimePicker from "@/components/commons/TimePicker/TimePicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -59,6 +60,7 @@ const CreateRoutineDialog = ({
   );
   const [period, setPeriod] = useState<RoutinePeriod | null>(null);
   const [isPinned, setIsPinned] = useState<boolean>(false);
+  const usesDailyTimePicker = period === RoutinePeriod.Daily;
 
   useEffect(() => {
     if (isOpen) return;
@@ -75,13 +77,17 @@ const CreateRoutineDialog = ({
     hasCustomSchedule &&
     (!scheduledStartAt ||
       !scheduledEndAt ||
-      scheduledEndAt <= scheduledStartAt);
+      (usesDailyTimePicker
+        ? scheduledEndAt.getHours() * 60 + scheduledEndAt.getMinutes() <=
+          scheduledStartAt.getHours() * 60 + scheduledStartAt.getMinutes()
+        : scheduledEndAt <= scheduledStartAt));
 
   const createRoutine = async () => {
     const trimmedTitle = title.trim();
     if (trimmedTitle.length === 0 || hasInvalidSchedule) return;
 
     try {
+      const today = new Date();
       const routineNode = await stationRoutineManager.createRoutine(stationId, {
         title: trimmedTitle,
         description: description.trim(),
@@ -89,8 +95,28 @@ const CreateRoutineDialog = ({
         isPinned,
         ...(hasCustomSchedule && scheduledStartAt && scheduledEndAt
           ? {
-              scheduledStartAt,
-              scheduledEndAt,
+              scheduledStartAt: usesDailyTimePicker
+                ? new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate(),
+                    scheduledStartAt.getHours(),
+                    scheduledStartAt.getMinutes(),
+                    0,
+                    0
+                  )
+                : scheduledStartAt,
+              scheduledEndAt: usesDailyTimePicker
+                ? new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate(),
+                    scheduledEndAt.getHours(),
+                    scheduledEndAt.getMinutes(),
+                    0,
+                    0
+                  )
+                : scheduledEndAt,
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             }
           : {}),
@@ -111,7 +137,7 @@ const CreateRoutineDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutine) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-sm bg-muted sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create routine</DialogTitle>
           <DialogDescription>
@@ -171,24 +197,43 @@ const CreateRoutineDialog = ({
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Label>Starts</Label>
-                <DatePicker
-                  value={scheduledStartAt}
-                  onValueChange={setScheduledStartAt}
-                  placeholder="Select start date and time"
-                />
+                {usesDailyTimePicker ? (
+                  <TimePicker
+                    value={scheduledStartAt}
+                    onValueChange={setScheduledStartAt}
+                    placeholder="Select start time"
+                  />
+                ) : (
+                  <DatePicker
+                    value={scheduledStartAt}
+                    onValueChange={setScheduledStartAt}
+                    placeholder="Select start date and time"
+                  />
+                )}
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Label>Ends</Label>
-                <DatePicker
-                  value={scheduledEndAt}
-                  onValueChange={setScheduledEndAt}
-                  disabled={
-                    scheduledStartAt ? { before: scheduledStartAt } : undefined
-                  }
-                  isInvalid={hasInvalidSchedule}
-                  placeholder="Select end date and time"
-                />
+                {usesDailyTimePicker ? (
+                  <TimePicker
+                    value={scheduledEndAt}
+                    onValueChange={setScheduledEndAt}
+                    isInvalid={hasInvalidSchedule}
+                    placeholder="Select end time"
+                  />
+                ) : (
+                  <DatePicker
+                    value={scheduledEndAt}
+                    onValueChange={setScheduledEndAt}
+                    disabled={
+                      scheduledStartAt
+                        ? { before: scheduledStartAt }
+                        : undefined
+                    }
+                    isInvalid={hasInvalidSchedule}
+                    placeholder="Select end date and time"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -205,7 +250,7 @@ const CreateRoutineDialog = ({
                 <SelectTrigger className="w-full rounded-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[160]">
                   <SelectItem value="none">Does not repeat</SelectItem>
                   {AllRoutinePeriods.map(routinePeriod => (
                     <SelectItem key={routinePeriod} value={routinePeriod}>

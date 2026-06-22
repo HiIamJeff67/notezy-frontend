@@ -132,6 +132,8 @@ export const queryKeys = {
   },
   station: {
     all: () => ["station"] as const,
+    visualizeMyTotalCount: (permission?: string) =>
+      ["station", "visualizeMyTotalCount", permission] as const,
     myAll: (areDeleted: boolean = false) =>
       ["station", "myAll", areDeleted] as const,
     oneById: (stationId?: UUID, isDeleted: boolean = false) =>
@@ -139,6 +141,38 @@ export const queryKeys = {
   },
   routine: {
     all: () => ["routine"] as const,
+    visualizeMyStatusCount: (permission?: string) =>
+      ["routine", "visualizeMyStatusCount", permission] as const,
+    visualizeMyPeriodCount: (permission?: string) =>
+      ["routine", "visualizeMyPeriodCount", permission] as const,
+    visualizeMyScheduledStartAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date
+    ) =>
+      [
+        "routine",
+        "visualizeMyScheduledStartAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+      ] as const,
+    visualizeMyScheduledEndAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date
+    ) =>
+      [
+        "routine",
+        "visualizeMyScheduledEndAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+      ] as const,
     oneById: (routineId?: UUID, isDeleted: boolean = false) =>
       ["routine", "oneById", routineId, isDeleted] as const,
     manyByStationId: (stationId?: UUID, areDeleted: boolean = false) =>
@@ -169,6 +203,52 @@ export const queryKeys = {
   },
   routineTask: {
     all: () => ["routineTask"] as const,
+    visualizeMyStatusCount: (permission?: string) =>
+      ["routineTask", "visualizeMyStatusCount", permission] as const,
+    visualizeMyPurposeCount: (permission?: string) =>
+      ["routineTask", "visualizeMyPurposeCount", permission] as const,
+    visualizeMyScheduledAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date
+    ) =>
+      [
+        "routineTask",
+        "visualizeMyScheduledAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+      ] as const,
+    visualizeMyActualStartedAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date
+    ) =>
+      [
+        "routineTask",
+        "visualizeMyActualStartedAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+      ] as const,
+    visualizeMyActualEndedAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date
+    ) =>
+      [
+        "routineTask",
+        "visualizeMyActualEndedAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+      ] as const,
     myAll: (areDeleted: boolean = false) =>
       ["routineTask", "myAll", areDeleted] as const,
     oneById: (routineTaskId?: UUID, isDeleted: boolean = false) =>

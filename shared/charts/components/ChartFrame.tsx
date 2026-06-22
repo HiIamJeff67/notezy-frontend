@@ -1,8 +1,9 @@
-import * as React from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DEFAULT_VIEWBOX_HEIGHT,
   DEFAULT_VIEWBOX_WIDTH,
-} from "../constants/chart.constant";
+} from "../constants/size.constant";
 import type { ChartActive, ChartTooltipContext } from "../types";
 
 export interface ChartLegendItem {
@@ -18,32 +19,35 @@ export interface TooltipPosition {
 
 interface ChartFrameProps<TMeta = unknown> {
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   height?: number | string;
   width?: number | string;
   ariaLabel?: string;
   loading?: boolean;
   emptyMessage?: string;
   showLegend?: boolean;
-  tooltip?: (context: ChartTooltipContext<TMeta>) => React.ReactNode;
+  tooltip?: (context: ChartTooltipContext<TMeta>) => ReactNode;
   isEmpty: boolean;
   legendItems?: ChartLegendItem[];
   active?: ChartActive<TMeta> | null;
   tooltipPosition?: TooltipPosition | null;
-  children: React.ReactNode;
+  children: ReactNode;
+  formatValue?: (value: number) => string;
 }
 
-export function formatAxisValue(value: string | number | Date) {
-  if (value instanceof Date) {
-    return value.toISOString().slice(0, 10);
-  }
-
-  return String(value);
+export function formatAxisValue(value: string) {
+  return value;
 }
 
 export function formatNumber(value: number) {
   return Intl.NumberFormat(undefined, {
     maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function formatInteger(value: number) {
+  return Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 0,
   }).format(value);
 }
 
@@ -62,14 +66,21 @@ export function ChartFrame<TMeta = unknown>({
   tooltipPosition,
   isEmpty,
   children,
+  formatValue = formatNumber,
 }: ChartFrameProps<TMeta>) {
   const frameClassName = [
-    "relative flex min-h-0 min-w-0 flex-col overflow-hidden text-foreground",
+    "relative flex min-h-0 min-w-0 flex-col overflow-visible text-foreground",
     className,
   ]
     .filter(Boolean)
     .join(" ");
   const shouldShowState = loading || isEmpty;
+  const tooltipPositionClass =
+    !tooltipPosition || tooltipPosition.x < DEFAULT_VIEWBOX_WIDTH * 0.25
+      ? "-translate-y-full"
+      : tooltipPosition.x > DEFAULT_VIEWBOX_WIDTH * 0.75
+        ? "-translate-x-full -translate-y-full"
+        : "-translate-x-1/2 -translate-y-full";
 
   return (
     <div
@@ -80,7 +91,7 @@ export function ChartFrame<TMeta = unknown>({
         ...style,
       }}
     >
-      <div className="relative min-h-0 min-w-0 flex-1">
+      <div className="relative min-h-0 min-w-0 flex-1 overflow-visible">
         <svg
           aria-label={ariaLabel}
           className="block size-full overflow-visible"
@@ -91,12 +102,19 @@ export function ChartFrame<TMeta = unknown>({
         </svg>
         {shouldShowState && (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-            {loading ? "Loading chart" : emptyMessage}
+            {loading ? (
+              <Spinner aria-label="Loading chart data" />
+            ) : (
+              emptyMessage
+            )}
           </div>
         )}
         {!shouldShowState && active && tooltipPosition && (
           <div
-            className="pointer-events-none absolute z-10 max-w-56 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+            className={[
+              "pointer-events-none absolute z-50 w-max max-w-64 rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md",
+              tooltipPositionClass,
+            ].join(" ")}
             style={{
               left: `${(tooltipPosition.x / DEFAULT_VIEWBOX_WIDTH) * 100}%`,
               top: `${(tooltipPosition.y / DEFAULT_VIEWBOX_HEIGHT) * 100}%`,
@@ -104,7 +122,7 @@ export function ChartFrame<TMeta = unknown>({
           >
             {tooltip
               ? tooltip({ active } satisfies ChartTooltipContext<TMeta>)
-              : defaultTooltip(active)}
+              : defaultTooltip(active, formatValue)}
           </div>
         )}
       </div>
@@ -126,15 +144,18 @@ export function ChartFrame<TMeta = unknown>({
   );
 }
 
-function defaultTooltip<TMeta = unknown>(active: ChartActive<TMeta>) {
+function defaultTooltip<TMeta = unknown>(
+  active: ChartActive<TMeta>,
+  formatValue: (value: number) => string,
+) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <span className="truncate font-medium text-foreground">
+      <span className="whitespace-normal break-words font-medium text-foreground">
         {active.seriesLabel
           ? `${active.seriesLabel} · ${active.label}`
           : active.label}
       </span>
-      <span className="text-muted-foreground">{formatNumber(active.value)}</span>
+      <span className="text-muted-foreground">{formatValue(active.value)}</span>
     </div>
   );
 }

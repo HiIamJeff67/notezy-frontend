@@ -169,7 +169,7 @@ const ColorSelector = ({
         align="start"
         sideOffset={6}
         className={cn(
-          "z-[120] flex w-72 flex-col gap-3 rounded-sm p-3",
+          "z-[160] flex w-72 flex-col gap-3 rounded-sm p-3",
           className
         )}
       >

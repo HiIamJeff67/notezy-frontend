@@ -7,6 +7,68 @@ import {
   AllRoutineTaskStatuses,
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
+import {
+  VisualizePermissionRequestSchema,
+  VisualizeResponseSchema,
+  VisualizeTimeBucketRequestSchema,
+} from "./visualize.interface";
+
+/* ============================== Visualize Routine Task Charts ============================== */
+
+export const VisualizeMyRoutineTaskStatusCountRequestSchema =
+  VisualizePermissionRequestSchema;
+export type VisualizeMyRoutineTaskStatusCountRequest = z.infer<
+  typeof VisualizeMyRoutineTaskStatusCountRequestSchema
+>;
+export const VisualizeMyRoutineTaskStatusCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineTaskStatusCountResponse = z.infer<
+  typeof VisualizeMyRoutineTaskStatusCountResponseSchema
+>;
+
+export const VisualizeMyRoutineTaskPurposeCountRequestSchema =
+  VisualizePermissionRequestSchema;
+export type VisualizeMyRoutineTaskPurposeCountRequest = z.infer<
+  typeof VisualizeMyRoutineTaskPurposeCountRequestSchema
+>;
+export const VisualizeMyRoutineTaskPurposeCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineTaskPurposeCountResponse = z.infer<
+  typeof VisualizeMyRoutineTaskPurposeCountResponseSchema
+>;
+
+export const VisualizeMyRoutineTaskScheduledAtCountRequestSchema =
+  VisualizeTimeBucketRequestSchema;
+export type VisualizeMyRoutineTaskScheduledAtCountRequest = z.infer<
+  typeof VisualizeMyRoutineTaskScheduledAtCountRequestSchema
+>;
+export const VisualizeMyRoutineTaskScheduledAtCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineTaskScheduledAtCountResponse = z.infer<
+  typeof VisualizeMyRoutineTaskScheduledAtCountResponseSchema
+>;
+
+export const VisualizeMyRoutineTaskActualStartedAtCountRequestSchema =
+  VisualizeTimeBucketRequestSchema;
+export type VisualizeMyRoutineTaskActualStartedAtCountRequest = z.infer<
+  typeof VisualizeMyRoutineTaskActualStartedAtCountRequestSchema
+>;
+export const VisualizeMyRoutineTaskActualStartedAtCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineTaskActualStartedAtCountResponse = z.infer<
+  typeof VisualizeMyRoutineTaskActualStartedAtCountResponseSchema
+>;
+
+export const VisualizeMyRoutineTaskActualEndedAtCountRequestSchema =
+  VisualizeTimeBucketRequestSchema;
+export type VisualizeMyRoutineTaskActualEndedAtCountRequest = z.infer<
+  typeof VisualizeMyRoutineTaskActualEndedAtCountRequestSchema
+>;
+export const VisualizeMyRoutineTaskActualEndedAtCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineTaskActualEndedAtCountResponse = z.infer<
+  typeof VisualizeMyRoutineTaskActualEndedAtCountResponseSchema
+>;
 
 /* ============================== GetMyRoutineTaskById ============================== */
 

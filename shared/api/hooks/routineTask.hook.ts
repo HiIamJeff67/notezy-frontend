@@ -16,6 +16,16 @@ import type {
   HardDeleteMyRoutineTaskByIdRequest,
   HardDeleteMyRoutineTasksByIdsRequest,
   UpdateMyRoutineTaskByIdRequest,
+  VisualizeMyRoutineTaskActualEndedAtCountRequest,
+  VisualizeMyRoutineTaskActualEndedAtCountResponse,
+  VisualizeMyRoutineTaskActualStartedAtCountRequest,
+  VisualizeMyRoutineTaskActualStartedAtCountResponse,
+  VisualizeMyRoutineTaskPurposeCountRequest,
+  VisualizeMyRoutineTaskPurposeCountResponse,
+  VisualizeMyRoutineTaskScheduledAtCountRequest,
+  VisualizeMyRoutineTaskScheduledAtCountResponse,
+  VisualizeMyRoutineTaskStatusCountRequest,
+  VisualizeMyRoutineTaskStatusCountResponse,
 } from "@shared/api/interfaces/routineTask.interface";
 import {
   mutationFnCreateRoutineTaskByStationId,
@@ -25,6 +35,11 @@ import {
   queryFnGetAllMyRoutineTasks,
   queryFnGetAllMyRoutineTasksByStationIds,
   queryFnGetMyRoutineTaskById,
+  queryFnVisualizeMyRoutineTaskActualEndedAtCount,
+  queryFnVisualizeMyRoutineTaskActualStartedAtCount,
+  queryFnVisualizeMyRoutineTaskPurposeCount,
+  queryFnVisualizeMyRoutineTaskScheduledAtCount,
+  queryFnVisualizeMyRoutineTaskStatusCount,
 } from "@shared/api/invokers/routineTask.invoker";
 import { RoutineTaskLocalSimulator } from "@shared/api/local/simulators/routineTask.simulator";
 import { RoutineTaskLocalSynchronizer } from "@shared/api/local/synchronizers/routineTask.synchronizer";
@@ -40,6 +55,96 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { useVisualizeQuery } from "./visualize.hook";
+
+export const useVisualizeMyRoutineTaskStatusCount = (
+  request?: VisualizeMyRoutineTaskStatusCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineTaskStatusCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routineTask.visualizeMyStatusCount(
+        currentRequest?.param.permission
+      ),
+    queryFnVisualizeMyRoutineTaskStatusCount,
+    options
+  );
+
+export const useVisualizeMyRoutineTaskPurposeCount = (
+  request?: VisualizeMyRoutineTaskPurposeCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineTaskPurposeCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routineTask.visualizeMyPurposeCount(
+        currentRequest?.param.permission
+      ),
+    queryFnVisualizeMyRoutineTaskPurposeCount,
+    options
+  );
+
+export const useVisualizeMyRoutineTaskScheduledAtCount = (
+  request?: VisualizeMyRoutineTaskScheduledAtCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineTaskScheduledAtCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routineTask.visualizeMyScheduledAtCount(
+        currentRequest?.param.permission,
+        currentRequest?.param.timeHourUnit,
+        currentRequest?.param.queryRangeStartedAt,
+        currentRequest?.param.queryRangeEndedAt
+      ),
+    queryFnVisualizeMyRoutineTaskScheduledAtCount,
+    options
+  );
+
+export const useVisualizeMyRoutineTaskActualStartedAtCount = (
+  request?: VisualizeMyRoutineTaskActualStartedAtCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineTaskActualStartedAtCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routineTask.visualizeMyActualStartedAtCount(
+        currentRequest?.param.permission,
+        currentRequest?.param.timeHourUnit,
+        currentRequest?.param.queryRangeStartedAt,
+        currentRequest?.param.queryRangeEndedAt
+      ),
+    queryFnVisualizeMyRoutineTaskActualStartedAtCount,
+    options
+  );
+
+export const useVisualizeMyRoutineTaskActualEndedAtCount = (
+  request?: VisualizeMyRoutineTaskActualEndedAtCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineTaskActualEndedAtCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routineTask.visualizeMyActualEndedAtCount(
+        currentRequest?.param.permission,
+        currentRequest?.param.timeHourUnit,
+        currentRequest?.param.queryRangeStartedAt,
+        currentRequest?.param.queryRangeEndedAt
+      ),
+    queryFnVisualizeMyRoutineTaskActualEndedAtCount,
+    options
+  );
 
 export const useGetMyRoutineTaskById = (
   hookRequest?: GetMyRoutineTaskByIdRequest,

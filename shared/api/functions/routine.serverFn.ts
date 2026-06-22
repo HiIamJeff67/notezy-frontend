@@ -1,6 +1,16 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
+import type {
+  VisualizeMyRoutinePeriodCountRequest,
+  VisualizeMyRoutinePeriodCountResponse,
+  VisualizeMyRoutineScheduledEndAtCountRequest,
+  VisualizeMyRoutineScheduledEndAtCountResponse,
+  VisualizeMyRoutineScheduledStartAtCountRequest,
+  VisualizeMyRoutineScheduledStartAtCountResponse,
+  VisualizeMyRoutineStatusCountRequest,
+  VisualizeMyRoutineStatusCountResponse,
+} from "@shared/api/interfaces/routine.interface";
 import {
   BulkLinkRoutineItemsByIdsRequest,
   BulkLinkRoutineItemsByIdsResponse,
@@ -47,6 +57,57 @@ import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
+import { fetchVisualizeResponse } from "./visualize.serverFn";
+
+export const VisualizeMyRoutineStatusCount = createServerFn({ method: "GET" })
+  .inputValidator((data: VisualizeMyRoutineStatusCountRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<VisualizeMyRoutineStatusCountResponse> =>
+      fetchVisualizeResponse(
+        request,
+        APIURLPathDictionary.routine.visualizeMyRoutineStatusCount
+      )
+  );
+
+export const VisualizeMyRoutinePeriodCount = createServerFn({ method: "GET" })
+  .inputValidator((data: VisualizeMyRoutinePeriodCountRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<VisualizeMyRoutinePeriodCountResponse> =>
+      fetchVisualizeResponse(
+        request,
+        APIURLPathDictionary.routine.visualizeMyRoutinePeriodCount
+      )
+  );
+
+export const VisualizeMyRoutineScheduledStartAtCount = createServerFn({
+  method: "GET",
+})
+  .inputValidator(
+    (data: VisualizeMyRoutineScheduledStartAtCountRequest) => data
+  )
+  .handler(
+    async ({
+      data: request,
+    }): Promise<VisualizeMyRoutineScheduledStartAtCountResponse> =>
+      fetchVisualizeResponse(
+        request,
+        APIURLPathDictionary.routine.visualizeMyRoutineScheduledStartAtCount
+      )
+  );
+
+export const VisualizeMyRoutineScheduledEndAtCount = createServerFn({
+  method: "GET",
+})
+  .inputValidator((data: VisualizeMyRoutineScheduledEndAtCountRequest) => data)
+  .handler(
+    async ({
+      data: request,
+    }): Promise<VisualizeMyRoutineScheduledEndAtCountResponse> =>
+      fetchVisualizeResponse(
+        request,
+        APIURLPathDictionary.routine.visualizeMyRoutineScheduledEndAtCount
+      )
+  );
 
 export const GetMyRoutineById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyRoutineByIdRequest) => data)

@@ -680,8 +680,18 @@ const TimeRails = () => {
       const entry = entries[0];
       if (!entry) return;
 
-      setWeekTickWidth(Math.max(120, (entry.contentRect.width - 160) / 7));
-      shouldCenterWeekScrollRef.current = true;
+      const nextWeekTickWidth = Math.max(
+        120,
+        (entry.contentRect.width - 160) / 7
+      );
+      setWeekTickWidth(previousWeekTickWidth => {
+        if (Math.abs(previousWeekTickWidth - nextWeekTickWidth) < 1) {
+          return previousWeekTickWidth;
+        }
+
+        shouldCenterWeekScrollRef.current = true;
+        return nextWeekTickWidth;
+      });
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -766,7 +776,6 @@ const TimeRails = () => {
       updateViewportWindow(scrollContainer);
     });
   }, [
-    renderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     stationRoutineManager.timeWindow.startAt,
     tickWidth,
@@ -833,9 +842,8 @@ const TimeRails = () => {
   );
 
   useEffect(() => {
-    const timeRailsBody = timeRailsBodyRef.current;
     const scrollContainer = scrollContainerRef.current;
-    if (!timeRailsBody || !scrollContainer) return;
+    if (!scrollContainer) return;
 
     const handleWheel = (event: WheelEvent) => {
       if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) {
@@ -893,16 +901,15 @@ const TimeRails = () => {
       updateViewportWindow(scrollContainer);
     };
 
-    timeRailsBody.addEventListener("wheel", handleWheel, {
+    scrollContainer.addEventListener("wheel", handleWheel, {
       passive: false,
     });
 
     return () => {
-      timeRailsBody.removeEventListener("wheel", handleWheel);
+      scrollContainer.removeEventListener("wheel", handleWheel);
     };
   }, [
     moveTimeWindowByScroll,
-    renderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     tickWidth,
     updateViewportWindow,
@@ -967,8 +974,8 @@ const TimeRails = () => {
   return (
     <section
       className="
-        @container flex max-h-[520px] w-full min-w-0 shrink-0 flex-col
-        overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm
+        @container flex w-full min-w-0 shrink-0 flex-col
+        rounded-md border border-border/60 bg-card/70 backdrop-blur-sm
       "
     >
       <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[680px]:flex-col @max-[680px]:items-start">
@@ -1069,10 +1076,7 @@ const TimeRails = () => {
         </div>
       </div>
 
-      <div
-        ref={timeRailsBodyRef}
-        className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain"
-      >
+      <div ref={timeRailsBodyRef} className="min-h-0">
         {renderedTimeRailStations.length === 0 ? (
           <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
             No stations match the current scope.

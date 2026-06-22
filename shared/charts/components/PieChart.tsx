@@ -1,16 +1,19 @@
-import * as React from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useState } from "react";
+import { getChartColor } from "../constants/color.constant";
 import {
   DEFAULT_VIEWBOX_HEIGHT,
   DEFAULT_VIEWBOX_WIDTH,
-  getChartColor,
-} from "../constants/chart.constant";
+} from "../constants/size.constant";
 import type {
   ChartActive,
   ChartTooltipContext,
+  ChartValueMode,
   PieChartData,
 } from "../types";
 import {
   ChartFrame,
+  formatInteger,
   formatNumber,
   type TooltipPosition,
 } from "./ChartFrame";
@@ -18,17 +21,18 @@ import {
 export interface PieChartProps<TMeta = unknown> {
   data: PieChartData<TMeta>;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   height?: number | string;
   width?: number | string;
   ariaLabel?: string;
   loading?: boolean;
   emptyMessage?: string;
   showLegend?: boolean;
-  tooltip?: (context: ChartTooltipContext<TMeta>) => React.ReactNode;
+  tooltip?: (context: ChartTooltipContext<TMeta>) => ReactNode;
   onActiveChange?: (active: ChartActive<TMeta> | null) => void;
   innerRadiusRatio?: number;
   formatValue?: (value: number) => string;
+  valueMode?: ChartValueMode;
 }
 
 export function PieChart<TMeta = unknown>({
@@ -44,17 +48,42 @@ export function PieChart<TMeta = unknown>({
   tooltip,
   onActiveChange,
   innerRadiusRatio = 0,
-  formatValue = formatNumber,
+  formatValue,
+  valueMode = "continuous",
 }: PieChartProps<TMeta>) {
-  const [active, setActive] = React.useState<ChartActive<TMeta> | null>(null);
+  const valueFormatter =
+    formatValue ?? (valueMode === "integer" ? formatInteger : formatNumber);
+  const [active, setActive] = useState<ChartActive<TMeta> | null>(null);
   const [tooltipPosition, setTooltipPosition] =
-    React.useState<TooltipPosition | null>(null);
+    useState<TooltipPosition | null>(null);
   const centerX = DEFAULT_VIEWBOX_WIDTH / 2;
   const centerY = DEFAULT_VIEWBOX_HEIGHT / 2;
   const radius = Math.min(DEFAULT_VIEWBOX_WIDTH, DEFAULT_VIEWBOX_HEIGHT) * 0.36;
   const innerRadius = radius * Math.min(Math.max(innerRadiusRatio, 0), 0.85);
-  const geometries = buildPieSliceGeometries(data.slices);
-  const geometryById = new Map(geometries.map((geometry) => [geometry.id, geometry]));
+  const positiveSlices = data.slices.map(slice => ({
+    ...slice,
+    value: Math.max(0, Number.isFinite(slice.value) ? slice.value : 0),
+  }));
+  const total = positiveSlices.reduce((sum, slice) => sum + slice.value, 0);
+  let currentAngle = -90;
+  const geometries =
+    total > 0
+      ? positiveSlices.map(slice => {
+          const angle = (slice.value / total) * 360;
+          const geometry = {
+            id: slice.id,
+            startAngle: currentAngle,
+            endAngle: currentAngle + angle,
+            value: slice.value,
+          };
+
+          currentAngle += angle;
+          return geometry;
+        })
+      : [];
+  const geometryById = new Map(
+    geometries.map(geometry => [geometry.id, geometry])
+  );
   const legendItems = data.slices.map((slice, index) => ({
     id: slice.id,
     label: slice.label,
@@ -104,6 +133,7 @@ export function PieChart<TMeta = unknown>({
       ariaLabel={ariaLabel}
       className={className}
       emptyMessage={emptyMessage}
+      formatValue={valueFormatter}
       height={height}
       isEmpty={isEmpty}
       legendItems={legendItems}
@@ -126,7 +156,7 @@ export function PieChart<TMeta = unknown>({
 
           return (
             <path
-              aria-label={`${slice.label}: ${formatValue(geometry.value)}`}
+              aria-label={`${slice.label}: ${valueFormatter(geometry.value)}`}
               d={describeArcPath(
                 centerX,
                 centerY,
@@ -136,6 +166,7 @@ export function PieChart<TMeta = unknown>({
                 innerRadius
               )}
               fill={color}
+              fillRule="evenodd"
               key={slice.id}
               onBlur={clearActive}
               onFocus={() => setActiveSlice(index)}
@@ -156,7 +187,7 @@ export function PieChart<TMeta = unknown>({
             x={centerX}
             y={centerY + 4}
           >
-            {formatValue(
+            {valueFormatter(
               geometries.reduce((total, geometry) => total + geometry.value, 0)
             )}
           </text>
@@ -164,44 +195,6 @@ export function PieChart<TMeta = unknown>({
       </g>
     </ChartFrame>
   );
-}
-
-interface PieSliceGeometry {
-  id: string;
-  startAngle: number;
-  endAngle: number;
-  value: number;
-  percentage: number;
-}
-
-function buildPieSliceGeometries(
-  slices: Array<{ id: string; value: number }>
-): PieSliceGeometry[] {
-  const positiveSlices = slices.map((slice) => ({
-    ...slice,
-    value: Math.max(0, Number.isFinite(slice.value) ? slice.value : 0),
-  }));
-  const total = positiveSlices.reduce((sum, slice) => sum + slice.value, 0);
-
-  if (total <= 0) {
-    return [];
-  }
-
-  let currentAngle = -90;
-
-  return positiveSlices.map((slice) => {
-    const angle = (slice.value / total) * 360;
-    const geometry = {
-      id: slice.id,
-      startAngle: currentAngle,
-      endAngle: currentAngle + angle,
-      value: slice.value,
-      percentage: slice.value / total,
-    };
-
-    currentAngle += angle;
-    return geometry;
-  });
 }
 
 function polarToCartesian(
@@ -226,6 +219,27 @@ function describeArcPath(
   endAngle: number,
   innerRadius = 0
 ) {
+  if (endAngle - startAngle >= 359.999) {
+    if (innerRadius <= 0) {
+      return [
+        `M ${centerX - outerRadius} ${centerY}`,
+        `A ${outerRadius} ${outerRadius} 0 1 0 ${centerX + outerRadius} ${centerY}`,
+        `A ${outerRadius} ${outerRadius} 0 1 0 ${centerX - outerRadius} ${centerY}`,
+        "Z",
+      ].join(" ");
+    }
+
+    return [
+      `M ${centerX - outerRadius} ${centerY}`,
+      `A ${outerRadius} ${outerRadius} 0 1 0 ${centerX + outerRadius} ${centerY}`,
+      `A ${outerRadius} ${outerRadius} 0 1 0 ${centerX - outerRadius} ${centerY}`,
+      `M ${centerX - innerRadius} ${centerY}`,
+      `A ${innerRadius} ${innerRadius} 0 1 1 ${centerX + innerRadius} ${centerY}`,
+      `A ${innerRadius} ${innerRadius} 0 1 1 ${centerX - innerRadius} ${centerY}`,
+      "Z",
+    ].join(" ");
+  }
+
   const start = polarToCartesian(centerX, centerY, outerRadius, endAngle);
   const end = polarToCartesian(centerX, centerY, outerRadius, startAngle);
   const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
@@ -239,7 +253,12 @@ function describeArcPath(
     ].join(" ");
   }
 
-  const innerStart = polarToCartesian(centerX, centerY, innerRadius, startAngle);
+  const innerStart = polarToCartesian(
+    centerX,
+    centerY,
+    innerRadius,
+    startAngle
+  );
   const innerEnd = polarToCartesian(centerX, centerY, innerRadius, endAngle);
 
   return [

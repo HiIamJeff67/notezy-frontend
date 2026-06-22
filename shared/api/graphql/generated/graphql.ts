@@ -353,8 +353,7 @@ export type QuerySearchUsersArgs = {
 export enum RoutinePeriod {
   RoutinePeriodDaily = 'RoutinePeriod_Daily',
   RoutinePeriodMonthly = 'RoutinePeriod_Monthly',
-  RoutinePeriodWeekly = 'RoutinePeriod_Weekly',
-  RoutinePeriodYearly = 'RoutinePeriod_Yearly'
+  RoutinePeriodWeekly = 'RoutinePeriod_Weekly'
 }
 
 export enum RoutineStatus {

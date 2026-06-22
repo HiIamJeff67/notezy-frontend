@@ -1,16 +1,13 @@
+import { createSingleSeriesCartesianData } from "@shared/charts/types";
 import {
-  createSingleSeriesCartesianData,
-  getCartesianValues,
-  getInnerChartDomain,
-  mergeChartMargin,
-} from "@shared/charts/data";
-import {
+  buildIntegerTicks,
   createBandScale,
+  createIntegerDomain,
   createLinearDomain,
   createLinearScale,
-} from "@shared/charts/scales";
+} from "@shared/charts/util";
 
-describe("Charts Core Unit Tests", () => {
+describe("Charts Shared Unit Tests", () => {
   describe("createLinearDomain", () => {
     test("should include zero and add padding by default", () => {
       const domain = createLinearDomain([10, 20], { paddingRatio: 0.1 });
@@ -20,7 +17,7 @@ describe("Charts Core Unit Tests", () => {
     });
 
     test("should fallback when values are empty", () => {
-      expect(createLinearDomain([null, undefined])).toEqual([0, 1]);
+      expect(createLinearDomain([])).toEqual([0, 1]);
     });
 
     test("should expand single-value domains", () => {
@@ -41,6 +38,16 @@ describe("Charts Core Unit Tests", () => {
     });
   });
 
+  describe("integer chart values", () => {
+    test("should create a zero-based integer domain for positive counts", () => {
+      expect(createIntegerDomain([0, 1, 3])).toEqual([0, 3]);
+    });
+
+    test("should generate integer ticks for small count domains", () => {
+      expect(buildIntegerTicks([0, 3])).toEqual([0, 1, 2, 3]);
+    });
+  });
+
   describe("createBandScale", () => {
     test("should allocate stable band positions", () => {
       const scale = createBandScale(["a", "b"], [0, 100], 0.2);
@@ -57,39 +64,16 @@ describe("Charts Core Unit Tests", () => {
         { id: "count", label: "Count" },
         [
           { id: "day-1", x: "Mon", y: 2 },
-          { id: "day-2", x: "Tue", y: null },
+          { id: "day-2", x: "Tue", y: 0 },
         ]
       );
 
       expect(data.series).toEqual([{ id: "count", label: "Count" }]);
-      expect(getCartesianValues(data)).toEqual([2, null]);
-    });
-  });
-
-  describe("chart layout data", () => {
-    test("should merge chart margin defaults", () => {
-      expect(mergeChartMargin({ left: 80 })).toEqual({
-        top: 16,
-        right: 20,
-        bottom: 36,
-        left: 80,
-      });
-    });
-
-    test("should calculate inner chart domains", () => {
       expect(
-        getInnerChartDomain(200, 100, {
-          top: 10,
-          right: 20,
-          bottom: 30,
-          left: 40,
-        })
-      ).toEqual({
-        x: [40, 180],
-        y: [70, 10],
-        width: 140,
-        height: 60,
-      });
+        data.data.flatMap(datum =>
+          data.series.map(series => datum.values[series.id])
+        )
+      ).toEqual([2, 0]);
     });
   });
 });

@@ -117,7 +117,7 @@ export const createApolloClient = () => {
           searchRoutines: {
             keyArgs: [
               "input",
-              ["query", "sortBy", "sortOrder", "stationId", "tagId"],
+              ["query", "sortBy", "sortOrder", "stationIds", "tagIds"],
             ],
             merge(existing, incoming, { args }) {
               if (!existing) return incoming;

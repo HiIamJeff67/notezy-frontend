@@ -111,7 +111,7 @@ const CreateRoutineTaskDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutineTask) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-sm bg-muted sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create routine task</DialogTitle>
           <DialogDescription>
@@ -151,7 +151,7 @@ const CreateRoutineTaskDialog = ({
               <SelectTrigger className="w-full rounded-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[160]">
                 {AllRoutineTaskPurposes.map(routineTaskPurpose => (
                   <SelectItem
                     key={routineTaskPurpose}

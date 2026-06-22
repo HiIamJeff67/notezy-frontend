@@ -22,6 +22,10 @@ import {
   RestoreMyRoutinesByIds,
   UpdateMyRoutineById,
   UpdateMyRoutinesByIds,
+  VisualizeMyRoutinePeriodCount,
+  VisualizeMyRoutineScheduledEndAtCount,
+  VisualizeMyRoutineScheduledStartAtCount,
+  VisualizeMyRoutineStatusCount,
 } from "@shared/api/functions/routine.serverFn";
 import {
   BulkLinkRoutineItemsByIdsRequest,
@@ -96,8 +100,69 @@ import {
   UpdateMyRoutinesByIdsRequestSchema,
   UpdateMyRoutinesByIdsResponse,
   UpdateMyRoutinesByIdsResponseSchema,
+  type VisualizeMyRoutinePeriodCountRequest,
+  VisualizeMyRoutinePeriodCountRequestSchema,
+  type VisualizeMyRoutinePeriodCountResponse,
+  VisualizeMyRoutinePeriodCountResponseSchema,
+  type VisualizeMyRoutineScheduledEndAtCountRequest,
+  VisualizeMyRoutineScheduledEndAtCountRequestSchema,
+  type VisualizeMyRoutineScheduledEndAtCountResponse,
+  VisualizeMyRoutineScheduledEndAtCountResponseSchema,
+  type VisualizeMyRoutineScheduledStartAtCountRequest,
+  VisualizeMyRoutineScheduledStartAtCountRequestSchema,
+  type VisualizeMyRoutineScheduledStartAtCountResponse,
+  VisualizeMyRoutineScheduledStartAtCountResponseSchema,
+  type VisualizeMyRoutineStatusCountRequest,
+  VisualizeMyRoutineStatusCountRequestSchema,
+  type VisualizeMyRoutineStatusCountResponse,
+  VisualizeMyRoutineStatusCountResponseSchema,
 } from "@shared/api/interfaces/routine.interface";
 import { ZodError } from "zod";
+import { invokeVisualizeQuery } from "./visualize.invoker";
+
+export const queryFnVisualizeMyRoutineStatusCount = (
+  request: VisualizeMyRoutineStatusCountRequest
+): Promise<VisualizeMyRoutineStatusCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineStatusCountRequestSchema,
+    VisualizeMyRoutineStatusCountResponseSchema,
+    VisualizeMyRoutineStatusCount,
+    "queryFnVisualizeMyRoutineStatusCount"
+  );
+
+export const queryFnVisualizeMyRoutinePeriodCount = (
+  request: VisualizeMyRoutinePeriodCountRequest
+): Promise<VisualizeMyRoutinePeriodCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutinePeriodCountRequestSchema,
+    VisualizeMyRoutinePeriodCountResponseSchema,
+    VisualizeMyRoutinePeriodCount,
+    "queryFnVisualizeMyRoutinePeriodCount"
+  );
+
+export const queryFnVisualizeMyRoutineScheduledStartAtCount = (
+  request: VisualizeMyRoutineScheduledStartAtCountRequest
+): Promise<VisualizeMyRoutineScheduledStartAtCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineScheduledStartAtCountRequestSchema,
+    VisualizeMyRoutineScheduledStartAtCountResponseSchema,
+    VisualizeMyRoutineScheduledStartAtCount,
+    "queryFnVisualizeMyRoutineScheduledStartAtCount"
+  );
+
+export const queryFnVisualizeMyRoutineScheduledEndAtCount = (
+  request: VisualizeMyRoutineScheduledEndAtCountRequest
+): Promise<VisualizeMyRoutineScheduledEndAtCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineScheduledEndAtCountRequestSchema,
+    VisualizeMyRoutineScheduledEndAtCountResponseSchema,
+    VisualizeMyRoutineScheduledEndAtCount,
+    "queryFnVisualizeMyRoutineScheduledEndAtCount"
+  );
 
 export const queryFnGetMyRoutineById = async (
   request: GetMyRoutineByIdRequest

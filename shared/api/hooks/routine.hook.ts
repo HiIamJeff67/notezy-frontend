@@ -29,6 +29,14 @@ import type {
   RestoreMyRoutinesByIdsRequest,
   UpdateMyRoutineByIdRequest,
   UpdateMyRoutinesByIdsRequest,
+  VisualizeMyRoutinePeriodCountRequest,
+  VisualizeMyRoutinePeriodCountResponse,
+  VisualizeMyRoutineScheduledEndAtCountRequest,
+  VisualizeMyRoutineScheduledEndAtCountResponse,
+  VisualizeMyRoutineScheduledStartAtCountRequest,
+  VisualizeMyRoutineScheduledStartAtCountResponse,
+  VisualizeMyRoutineStatusCountRequest,
+  VisualizeMyRoutineStatusCountResponse,
 } from "@shared/api/interfaces/routine.interface";
 import {
   mutationFnBulkLinkRoutineItemsByIds,
@@ -49,6 +57,10 @@ import {
   mutationFnUpdateMyRoutinesByIds,
   queryFnGetAllMyRoutinesByTimeRange,
   queryFnGetMyRoutineById,
+  queryFnVisualizeMyRoutinePeriodCount,
+  queryFnVisualizeMyRoutineScheduledEndAtCount,
+  queryFnVisualizeMyRoutineScheduledStartAtCount,
+  queryFnVisualizeMyRoutineStatusCount,
 } from "@shared/api/invokers/routine.invoker";
 import { RoutineLocalSimulator } from "@shared/api/local/simulators/routine.simulator";
 import { RoutineLocalSynchronizer } from "@shared/api/local/synchronizers/routine.synchronizer";
@@ -64,6 +76,77 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { useVisualizeQuery } from "./visualize.hook";
+
+export const useVisualizeMyRoutineStatusCount = (
+  request?: VisualizeMyRoutineStatusCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineStatusCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routine.visualizeMyStatusCount(
+        currentRequest?.param.permission
+      ),
+    queryFnVisualizeMyRoutineStatusCount,
+    options
+  );
+
+export const useVisualizeMyRoutinePeriodCount = (
+  request?: VisualizeMyRoutinePeriodCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutinePeriodCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routine.visualizeMyPeriodCount(
+        currentRequest?.param.permission
+      ),
+    queryFnVisualizeMyRoutinePeriodCount,
+    options
+  );
+
+export const useVisualizeMyRoutineScheduledStartAtCount = (
+  request?: VisualizeMyRoutineScheduledStartAtCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineScheduledStartAtCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routine.visualizeMyScheduledStartAtCount(
+        currentRequest?.param.permission,
+        currentRequest?.param.timeHourUnit,
+        currentRequest?.param.queryRangeStartedAt,
+        currentRequest?.param.queryRangeEndedAt
+      ),
+    queryFnVisualizeMyRoutineScheduledStartAtCount,
+    options
+  );
+
+export const useVisualizeMyRoutineScheduledEndAtCount = (
+  request?: VisualizeMyRoutineScheduledEndAtCountRequest,
+  options?: Partial<
+    UseQueryOptions<VisualizeMyRoutineScheduledEndAtCountResponse, Error>
+  >
+) =>
+  useVisualizeQuery(
+    request,
+    currentRequest =>
+      queryKeys.routine.visualizeMyScheduledEndAtCount(
+        currentRequest?.param.permission,
+        currentRequest?.param.timeHourUnit,
+        currentRequest?.param.queryRangeStartedAt,
+        currentRequest?.param.queryRangeEndedAt
+      ),
+    queryFnVisualizeMyRoutineScheduledEndAtCount,
+    options
+  );
 
 export const useGetMyRoutineById = (
   hookRequest?: GetMyRoutineByIdRequest,
@@ -323,6 +406,9 @@ export const useCreateRoutineByStationId = () => {
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
+      await apolloClient.refetchQueries({
+        include: ["SearchRoutines"],
+      });
       await RoutineLocalSynchronizer.syncCreateRoutineByStationId(
         request,
         response
@@ -385,6 +471,9 @@ export const useCreateRoutinesByStationIds = () => {
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
+      await apolloClient.refetchQueries({
+        include: ["SearchRoutines"],
+      });
       await RoutineLocalSynchronizer.syncCreateRoutinesByStationIds(
         request,
         response

@@ -12,7 +12,7 @@ const TimeRailsStationBar = ({
   onMove,
 }: TimeRailsStationBarProps) => {
   return (
-    <div className="w-28 shrink-0 select-none border-r border-border/60 bg-card @min-[680px]:w-40">
+    <div className="w-[112px] shrink-0 overflow-hidden border-r border-border/60 bg-card select-none @min-[680px]:w-[160px]">
       <div className="sticky top-0 z-30 h-10 select-none border-b border-border/60 bg-card" />
       {stations.map(timeRailStation => {
         const rowHeight = Math.max(timeRailStation.railCount * 38 + 18, 56);

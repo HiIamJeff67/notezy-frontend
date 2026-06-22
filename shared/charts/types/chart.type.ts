@@ -1,7 +1,3 @@
-export type ChartAxisValue = string | number | Date;
-export type ChartNumericValue = number | null | undefined;
-export type ChartDomain = [number, number];
-
 export interface ChartMargin {
   top: number;
   right: number;
@@ -15,6 +11,8 @@ export interface ChartSeries {
   color?: string;
 }
 
+export type ChartValueMode = "continuous" | "integer";
+
 export type ChartActiveKind = "column" | "bar" | "line-point" | "pie-slice";
 
 export interface ChartActive<TMeta = unknown> {
@@ -26,11 +24,10 @@ export interface ChartActive<TMeta = unknown> {
   seriesLabel?: string;
   datumId?: string;
   sliceId?: string;
-  x?: ChartAxisValue;
+  x?: string;
   meta?: TMeta;
 }
 
 export interface ChartTooltipContext<TMeta = unknown> {
   active: ChartActive<TMeta>;
 }
-

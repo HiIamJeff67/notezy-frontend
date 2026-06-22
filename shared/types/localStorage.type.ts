@@ -10,6 +10,7 @@ export enum LocalStorageKey {
   dashboardWidgets = "dashboard_widgets",
   colors = "colors",
   timeRailsStationIndexes = "time_rails_station_indexes",
+  routineOverviewCharts = "routine_overview_charts",
 }
 
 export interface LocalStorageItem {
@@ -21,4 +22,5 @@ export interface LocalStorageItem {
   [LocalStorageKey.dashboardWidgets]: string | null;
   [LocalStorageKey.colors]: string | null;
   [LocalStorageKey.timeRailsStationIndexes]: string[] | null;
+  [LocalStorageKey.routineOverviewCharts]: string[] | null;
 }

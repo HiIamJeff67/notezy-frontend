@@ -1,5 +1,4 @@
 export * from "./constants";
-export * from "./data";
-export * from "./scales";
+export * from "./components";
 export * from "./types";
-export * from "./ui";
+export * from "./util";

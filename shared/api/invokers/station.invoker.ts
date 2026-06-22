@@ -16,6 +16,7 @@ import {
   RestoreMyStationsByIds,
   UpdateMyStationById,
   UpdateMyStationsByIds,
+  VisualizeMyTotalCount,
 } from "@shared/api/functions/station.serverFn";
 import {
   CreateStationRequest,
@@ -66,8 +67,24 @@ import {
   UpdateMyStationsByIdsRequestSchema,
   UpdateMyStationsByIdsResponse,
   UpdateMyStationsByIdsResponseSchema,
+  type VisualizeMyTotalCountRequest,
+  VisualizeMyTotalCountRequestSchema,
+  type VisualizeMyTotalCountResponse,
+  VisualizeMyTotalCountResponseSchema,
 } from "@shared/api/interfaces/station.interface";
 import { ZodError } from "zod";
+import { invokeVisualizeQuery } from "./visualize.invoker";
+
+export const queryFnVisualizeMyTotalCount = (
+  request: VisualizeMyTotalCountRequest
+): Promise<VisualizeMyTotalCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyTotalCountRequestSchema,
+    VisualizeMyTotalCountResponseSchema,
+    VisualizeMyTotalCount,
+    "queryFnVisualizeMyTotalCount"
+  );
 
 export const queryFnGetMyStationById = async (
   request: GetMyStationByIdRequest

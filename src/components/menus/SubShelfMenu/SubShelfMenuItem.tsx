@@ -256,8 +256,8 @@ const SubShelfMenuItem = ({
             {!current.isExpanded ? (
               <>
                 <SubShelfMenuItemSkeleton number={1} />
-                <MaterialMenuItemSkeleton number={1} />
-                <BlockPackMenuItemSkeleton number={1} />
+                {/* <MaterialMenuItemSkeleton number={1} /> */}
+                {/* <BlockPackMenuItemSkeleton number={1} /> */}
               </>
             ) : (
               <>

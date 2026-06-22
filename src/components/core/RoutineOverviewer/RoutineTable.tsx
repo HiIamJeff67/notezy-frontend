@@ -13,10 +13,9 @@ import {
 } from "@shared/api/interfaces/enums";
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { UUID } from "crypto";
-import { ClipboardClock, SquarePen } from "lucide-react";
+import { BookmarkIcon, ClipboardClock, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
-import WideBookmarkIcon from "@/components/icons/WideBookmarkIcon";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -195,9 +194,7 @@ const RoutineTable = () => {
                     ? RoutinePeriod.Weekly
                     : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
                       ? RoutinePeriod.Monthly
-                      : node.period === GraphQLRoutinePeriod.RoutinePeriodYearly
-                        ? RoutinePeriod.Yearly
-                        : null,
+                      : null,
               timezone: node.timezone,
               deletedAt:
                 node.deletedAt === null ? null : new Date(node.deletedAt),
@@ -402,15 +399,15 @@ const RoutineTable = () => {
 
               return (
                 <TableRow key={routine.id}>
-                  <TableCell className="relative overflow-hidden px-3 py-3">
-                    {routine.isPinned && (
-                      <WideBookmarkIcon
-                        className="pointer-events-none absolute top-0 left-2 size-5 fill-foreground/20 text-muted-foreground drop-shadow-sm"
-                        aria-label="Pinned routine"
-                      />
-                    )}
+                  <TableCell className="overflow-hidden px-3 py-3">
                     <div className="flex min-w-0 items-center">
-                      <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 flex-1 items-start gap-1.5">
+                        {routine.isPinned && (
+                          <BookmarkIcon
+                            className="mt-0.5 size-3.5 shrink-0 fill-muted-foreground/20 text-muted-foreground"
+                            aria-label="Pinned routine"
+                          />
+                        )}
                         <p className="whitespace-normal font-medium leading-snug [overflow-wrap:anywhere]">
                           {routine.title}
                         </p>

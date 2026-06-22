@@ -1,0 +1,70 @@
+import { X } from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface ChartWidgetFrameProps<TValue extends string> {
+  title: string;
+  value: TValue;
+  options: { value: TValue; label: string }[];
+  onValueChange: (value: TValue) => void;
+  onRemove: () => void;
+  children: ReactNode;
+}
+
+export function ChartWidgetFrame<TValue extends string>({
+  title,
+  value,
+  options,
+  onValueChange,
+  onRemove,
+  children,
+}: ChartWidgetFrameProps<TValue>) {
+  return (
+    <article className="min-w-0 rounded-md border border-border/60 bg-background/55 p-4">
+      <header className="mb-3 flex min-w-0 items-center justify-between gap-3 border-b border-border/50 pb-3">
+        <h3 className="truncate text-sm font-medium text-foreground">
+          {title}
+        </h3>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Select
+            value={value}
+            onValueChange={(nextValue) => onValueChange(nextValue as TValue)}
+          >
+            <SelectTrigger
+              aria-label={`Select ${title} chart`}
+              className="h-8 max-w-[220px] min-w-0 rounded-sm text-xs"
+              size="sm"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            aria-label={`Remove ${title} chart`}
+            className="size-8 rounded-sm"
+            onClick={onRemove}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      </header>
+      {children}
+    </article>
+  );
+}

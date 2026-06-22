@@ -74,7 +74,7 @@ const CreateStationDialog = ({
         if (!open && !stationRoutineManager.isCreatingStation) onClose();
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto rounded-sm bg-muted sm:max-w-xl">
+      <DialogContent className="max-h-[85vh] overflow-visible rounded-sm bg-muted sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Create station</DialogTitle>
           <DialogDescription>
@@ -154,7 +154,8 @@ const CreateStationDialog = ({
               type="submit"
               variant="default"
               disabled={
-                stationRoutineManager.isCreatingStation || name.trim().length === 0
+                stationRoutineManager.isCreatingStation ||
+                name.trim().length === 0
               }
             >
               {stationRoutineManager.isCreatingStation && <Spinner />}

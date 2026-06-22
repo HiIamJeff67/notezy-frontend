@@ -367,10 +367,6 @@ const RoutineInspector = ({
                     value: RoutinePeriod.Monthly,
                     label: "Monthly",
                   },
-                  {
-                    value: RoutinePeriod.Yearly,
-                    label: "Yearly",
-                  },
                 ]}
               />
             </div>

@@ -84,7 +84,11 @@ const RoutineTrain = ({
           <span className="truncate">{routine.title}</span>
         </button>
       </HoverCardTrigger>
-      <HoverCardContent align="start" className="w-80 rounded-sm p-3">
+      <HoverCardContent
+        align="center"
+        side="bottom"
+        className="w-80 rounded-sm p-3"
+      >
         <div className="space-y-2">
           <div>
             <p className="truncate text-sm font-medium">{routine.title}</p>

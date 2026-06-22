@@ -8,6 +8,57 @@ import {
   AllRoutineStatuses,
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
+import {
+  VisualizePermissionRequestSchema,
+  VisualizeResponseSchema,
+  VisualizeTimeBucketRequestSchema,
+} from "./visualize.interface";
+
+/* ============================== Visualize Routine Charts ============================== */
+
+export const VisualizeMyRoutineStatusCountRequestSchema =
+  VisualizePermissionRequestSchema;
+export type VisualizeMyRoutineStatusCountRequest = z.infer<
+  typeof VisualizeMyRoutineStatusCountRequestSchema
+>;
+export const VisualizeMyRoutineStatusCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineStatusCountResponse = z.infer<
+  typeof VisualizeMyRoutineStatusCountResponseSchema
+>;
+
+export const VisualizeMyRoutinePeriodCountRequestSchema =
+  VisualizePermissionRequestSchema;
+export type VisualizeMyRoutinePeriodCountRequest = z.infer<
+  typeof VisualizeMyRoutinePeriodCountRequestSchema
+>;
+export const VisualizeMyRoutinePeriodCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutinePeriodCountResponse = z.infer<
+  typeof VisualizeMyRoutinePeriodCountResponseSchema
+>;
+
+export const VisualizeMyRoutineScheduledStartAtCountRequestSchema =
+  VisualizeTimeBucketRequestSchema;
+export type VisualizeMyRoutineScheduledStartAtCountRequest = z.infer<
+  typeof VisualizeMyRoutineScheduledStartAtCountRequestSchema
+>;
+export const VisualizeMyRoutineScheduledStartAtCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineScheduledStartAtCountResponse = z.infer<
+  typeof VisualizeMyRoutineScheduledStartAtCountResponseSchema
+>;
+
+export const VisualizeMyRoutineScheduledEndAtCountRequestSchema =
+  VisualizeTimeBucketRequestSchema;
+export type VisualizeMyRoutineScheduledEndAtCountRequest = z.infer<
+  typeof VisualizeMyRoutineScheduledEndAtCountRequestSchema
+>;
+export const VisualizeMyRoutineScheduledEndAtCountResponseSchema =
+  VisualizeResponseSchema;
+export type VisualizeMyRoutineScheduledEndAtCountResponse = z.infer<
+  typeof VisualizeMyRoutineScheduledEndAtCountResponseSchema
+>;
 
 /* ============================== GetMyRoutineById ============================== */
 

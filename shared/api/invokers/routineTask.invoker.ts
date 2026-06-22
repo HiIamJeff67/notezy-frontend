@@ -11,6 +11,11 @@ import {
   HardDeleteMyRoutineTaskById,
   HardDeleteMyRoutineTasksByIds,
   UpdateMyRoutineTaskById,
+  VisualizeMyRoutineTaskActualEndedAtCount,
+  VisualizeMyRoutineTaskActualStartedAtCount,
+  VisualizeMyRoutineTaskPurposeCount,
+  VisualizeMyRoutineTaskScheduledAtCount,
+  VisualizeMyRoutineTaskStatusCount,
 } from "@shared/api/functions/routineTask.serverFn";
 import {
   CreateRoutineTaskByStationIdRequest,
@@ -41,8 +46,84 @@ import {
   UpdateMyRoutineTaskByIdRequestSchema,
   UpdateMyRoutineTaskByIdResponse,
   UpdateMyRoutineTaskByIdResponseSchema,
+  type VisualizeMyRoutineTaskActualEndedAtCountRequest,
+  VisualizeMyRoutineTaskActualEndedAtCountRequestSchema,
+  type VisualizeMyRoutineTaskActualEndedAtCountResponse,
+  VisualizeMyRoutineTaskActualEndedAtCountResponseSchema,
+  type VisualizeMyRoutineTaskActualStartedAtCountRequest,
+  VisualizeMyRoutineTaskActualStartedAtCountRequestSchema,
+  type VisualizeMyRoutineTaskActualStartedAtCountResponse,
+  VisualizeMyRoutineTaskActualStartedAtCountResponseSchema,
+  type VisualizeMyRoutineTaskPurposeCountRequest,
+  VisualizeMyRoutineTaskPurposeCountRequestSchema,
+  type VisualizeMyRoutineTaskPurposeCountResponse,
+  VisualizeMyRoutineTaskPurposeCountResponseSchema,
+  type VisualizeMyRoutineTaskScheduledAtCountRequest,
+  VisualizeMyRoutineTaskScheduledAtCountRequestSchema,
+  type VisualizeMyRoutineTaskScheduledAtCountResponse,
+  VisualizeMyRoutineTaskScheduledAtCountResponseSchema,
+  type VisualizeMyRoutineTaskStatusCountRequest,
+  VisualizeMyRoutineTaskStatusCountRequestSchema,
+  type VisualizeMyRoutineTaskStatusCountResponse,
+  VisualizeMyRoutineTaskStatusCountResponseSchema,
 } from "@shared/api/interfaces/routineTask.interface";
 import { ZodError } from "zod";
+import { invokeVisualizeQuery } from "./visualize.invoker";
+
+export const queryFnVisualizeMyRoutineTaskStatusCount = (
+  request: VisualizeMyRoutineTaskStatusCountRequest
+): Promise<VisualizeMyRoutineTaskStatusCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineTaskStatusCountRequestSchema,
+    VisualizeMyRoutineTaskStatusCountResponseSchema,
+    VisualizeMyRoutineTaskStatusCount,
+    "queryFnVisualizeMyRoutineTaskStatusCount"
+  );
+
+export const queryFnVisualizeMyRoutineTaskPurposeCount = (
+  request: VisualizeMyRoutineTaskPurposeCountRequest
+): Promise<VisualizeMyRoutineTaskPurposeCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineTaskPurposeCountRequestSchema,
+    VisualizeMyRoutineTaskPurposeCountResponseSchema,
+    VisualizeMyRoutineTaskPurposeCount,
+    "queryFnVisualizeMyRoutineTaskPurposeCount"
+  );
+
+export const queryFnVisualizeMyRoutineTaskScheduledAtCount = (
+  request: VisualizeMyRoutineTaskScheduledAtCountRequest
+): Promise<VisualizeMyRoutineTaskScheduledAtCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineTaskScheduledAtCountRequestSchema,
+    VisualizeMyRoutineTaskScheduledAtCountResponseSchema,
+    VisualizeMyRoutineTaskScheduledAtCount,
+    "queryFnVisualizeMyRoutineTaskScheduledAtCount"
+  );
+
+export const queryFnVisualizeMyRoutineTaskActualStartedAtCount = (
+  request: VisualizeMyRoutineTaskActualStartedAtCountRequest
+): Promise<VisualizeMyRoutineTaskActualStartedAtCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineTaskActualStartedAtCountRequestSchema,
+    VisualizeMyRoutineTaskActualStartedAtCountResponseSchema,
+    VisualizeMyRoutineTaskActualStartedAtCount,
+    "queryFnVisualizeMyRoutineTaskActualStartedAtCount"
+  );
+
+export const queryFnVisualizeMyRoutineTaskActualEndedAtCount = (
+  request: VisualizeMyRoutineTaskActualEndedAtCountRequest
+): Promise<VisualizeMyRoutineTaskActualEndedAtCountResponse> =>
+  invokeVisualizeQuery(
+    request,
+    VisualizeMyRoutineTaskActualEndedAtCountRequestSchema,
+    VisualizeMyRoutineTaskActualEndedAtCountResponseSchema,
+    VisualizeMyRoutineTaskActualEndedAtCount,
+    "queryFnVisualizeMyRoutineTaskActualEndedAtCount"
+  );
 
 export const queryFnGetMyRoutineTaskById = async (
   request: GetMyRoutineTaskByIdRequest

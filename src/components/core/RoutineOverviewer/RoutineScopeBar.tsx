@@ -1,4 +1,9 @@
-import { ClipboardClock, ClipboardList, Search, Tags } from "lucide-react";
+import {
+  ChartNoAxesCombined,
+  ClipboardClock,
+  ClipboardList,
+  Tags,
+} from "lucide-react";
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
@@ -14,13 +19,22 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useStationRoutine } from "@/hooks";
 
-const RoutineScopeBar = () => {
+interface RoutineScopeBarProps {
+  onOpenAddChart: () => void;
+}
+
+const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
   const stationRoutineManager = useStationRoutine();
+
   const [pendingStationIds, setPendingStationIds] = useState(
     stationRoutineManager.presence.stationIds
   );
@@ -52,28 +66,23 @@ const RoutineScopeBar = () => {
         border-b border-border/40 bg-background/75 px-3 backdrop-blur-md
       "
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden @max-[600px]:hidden">
-        <div className="relative h-8 w-[220px] min-w-0 max-w-full">
-          <Search className="-translate-y-1/2 pointer-events-none absolute left-2.5 top-1/2 size-4 text-muted-foreground" />
-          <Input
-            value={stationRoutineManager.presence.query}
-            onChange={event =>
-              stationRoutineManager.setPresenceQuery(event.currentTarget.value)
-            }
-            onKeyDown={event => {
-              if (event.key !== "Enter") return;
-              event.currentTarget.blur();
-            }}
-            placeholder="Search routines"
-            className="
-              h-8 rounded-sm border-border/60 bg-background/60 pl-8
-              text-sm shadow-none
-            "
-          />
-        </div>
-      </div>
-
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Add chart"
+              className="size-7 rounded-sm"
+              onClick={onOpenAddChart}
+            >
+              <ChartNoAxesCombined className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Add charts</TooltipContent>
+        </Tooltip>
+
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <HoverCard
             openDelay={250}

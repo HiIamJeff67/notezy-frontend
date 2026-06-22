@@ -1,5 +1,3 @@
-import type { ChartMargin } from "../types";
-
 export const DEFAULT_CHART_COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
@@ -7,16 +5,6 @@ export const DEFAULT_CHART_COLORS = [
   "var(--chart-4)",
   "var(--chart-5)",
 ];
-
-export const DEFAULT_CHART_MARGIN: ChartMargin = {
-  top: 16,
-  right: 20,
-  bottom: 36,
-  left: 44,
-};
-
-export const DEFAULT_VIEWBOX_WIDTH = 640;
-export const DEFAULT_VIEWBOX_HEIGHT = 280;
 
 export function getChartColor(index: number, override?: string) {
   return override ?? DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length];
