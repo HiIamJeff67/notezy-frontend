@@ -123,6 +123,20 @@ export const useRoutineTagLogic = ({
     [createRoutineTagMutator, forceUpdate, routineTagsRef]
   );
 
+  const duplicateRoutineTag = useCallback(
+    async (routineTagId: UUID): Promise<RoutineTagNode> => {
+      const routineTagNode = routineTagsRef.current.get(routineTagId);
+      if (!routineTagNode) throw new Error("routine tag does not exist");
+
+      return await createRoutineTag(
+        `${routineTagNode.name} Copy`,
+        routineTagNode.color,
+        routineTagNode.icon
+      );
+    },
+    [createRoutineTag, routineTagsRef]
+  );
+
   const upsertRoutineTagNode = useCallback(
     (routineTagNode: RoutineTagNode): RoutineTagNode => {
       const existingRoutineTag = routineTagsRef.current.get(routineTagNode.id);
@@ -436,6 +450,7 @@ export const useRoutineTagLogic = ({
     expandRoutinesByTagId,
     toggleRoutineTag,
     createRoutineTag,
+    duplicateRoutineTag,
     upsertRoutineTagNode,
     isCreatingRoutineTag: createRoutineTagMutator.isPending,
     updateRoutineTag,

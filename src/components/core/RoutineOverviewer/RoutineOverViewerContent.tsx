@@ -58,7 +58,15 @@ function getChartDefinitionId(chart: NewRoutineOverviewChart) {
   )?.id;
 }
 
-const RoutineOverviewerContent = () => {
+type RoutineOverviewerContentProps = {
+  showCharts?: boolean;
+  showStationScope?: boolean;
+};
+
+const RoutineOverviewerContent = ({
+  showCharts = true,
+  showStationScope = true,
+}: RoutineOverviewerContentProps) => {
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
   const sidebarManager = useSidebar();
@@ -180,7 +188,11 @@ const RoutineOverviewerContent = () => {
           transition: "left 0.2s",
         }}
       >
-        <RoutineScopeBar onOpenAddChart={() => setIsAddChartDialogOpen(true)} />
+        <RoutineScopeBar
+          onOpenAddChart={() => setIsAddChartDialogOpen(true)}
+          showAddChart={showCharts}
+          showStationStatus={showStationScope}
+        />
       </header>
       <div className="custom-scrollbar flex h-full min-h-0 w-full flex-col overflow-x-hidden overflow-y-auto pt-10">
         <div className="relative z-10 h-60 w-full shrink-0">
@@ -247,24 +259,28 @@ const RoutineOverviewerContent = () => {
         </div>
         <div className="flex w-full flex-col gap-4 overflow-x-hidden p-4">
           <TimeRails />
-          <RoutineOverviewerCharts
-            charts={charts}
-            onChartChange={updateChart}
-            onChartRemove={removeChart}
-            onOpenAddChart={() => setIsAddChartDialogOpen(true)}
-            queryRange={stationRoutineManager.timeWindow}
-            timeHourUnit={chartTimeHourUnit}
-          />
+          {showCharts && (
+            <RoutineOverviewerCharts
+              charts={charts}
+              onChartChange={updateChart}
+              onChartRemove={removeChart}
+              onOpenAddChart={() => setIsAddChartDialogOpen(true)}
+              queryRange={stationRoutineManager.timeWindow}
+              timeHourUnit={chartTimeHourUnit}
+            />
+          )}
           <RoutineTable />
           <RoutineTaskTable />
         </div>
       </div>
-      <AddChartDialog
-        activeChartComponentIds={getChartComponentIds(charts)}
-        onAddChart={addChart}
-        onOpenChange={setIsAddChartDialogOpen}
-        open={isAddChartDialogOpen}
-      />
+      {showCharts && (
+        <AddChartDialog
+          activeChartComponentIds={getChartComponentIds(charts)}
+          onAddChart={addChart}
+          onOpenChange={setIsAddChartDialogOpen}
+          open={isAddChartDialogOpen}
+        />
+      )}
     </div>
   );
 };

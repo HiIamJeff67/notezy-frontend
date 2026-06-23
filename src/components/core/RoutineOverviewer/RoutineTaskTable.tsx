@@ -59,8 +59,12 @@ const RoutineTaskTable = () => {
   const [routineId, setRoutineId] = useState<UUID | "All" | "Unlinked">("All");
   const [scheduledAfter, setScheduledAfter] = useState<Date | undefined>();
   const [scheduledBefore, setScheduledBefore] = useState<Date | undefined>();
-  const stationPresenceSignature =
-    stationRoutineManager.presence.stationIds.join("|");
+  const effectiveStationIds =
+    stationRoutineManager.viewMode === "station" &&
+    stationRoutineManager.activeStationId
+      ? [stationRoutineManager.activeStationId]
+      : stationRoutineManager.presence.stationIds;
+  const stationPresenceSignature = effectiveStationIds.join("|");
   const routineTagPresenceSignature =
     stationRoutineManager.presence.routineTagIds.join("|");
 
@@ -70,7 +74,7 @@ const RoutineTaskTable = () => {
       if (!reset && (!hasMoreRoutineTasks || !routineTaskSearchCursor)) return;
       if (
         stationRoutineManager.stations.length > 0 &&
-        stationRoutineManager.presence.stationIds.length === 0
+        effectiveStationIds.length === 0
       ) {
         if (reset) {
           setRoutineTasks([]);
@@ -86,7 +90,7 @@ const RoutineTaskTable = () => {
       try {
         const shouldQueryBySingleStation =
           stationRoutineManager.stations.length > 0 &&
-          stationRoutineManager.presence.stationIds.length === 1;
+          effectiveStationIds.length === 1;
         const result = await executeSearchRoutineTasks({
           variables: {
             input: {
@@ -94,16 +98,14 @@ const RoutineTaskTable = () => {
               after: reset ? undefined : (routineTaskSearchCursor ?? undefined),
               first: reset ? 20 : 10,
               stationId: shouldQueryBySingleStation
-                ? stationRoutineManager.presence.stationIds[0]
+                ? effectiveStationIds[0]
                 : undefined,
               sortBy: SearchRoutineTaskSortBy.Title,
               sortOrder: SearchSortOrder.Asc,
             },
           },
         }).retain();
-        const selectedStationIds = new Set(
-          stationRoutineManager.presence.stationIds
-        );
+        const selectedStationIds = new Set(effectiveStationIds);
         const searchedRoutineTasks = (
           result.data?.searchRoutineTasks.searchEdges ?? []
         )
@@ -233,11 +235,12 @@ const RoutineTaskTable = () => {
     },
     [
       executeSearchRoutineTasks,
+      stationPresenceSignature,
       hasMoreRoutineTasks,
       routineTaskSearchCursor,
       stationRoutineManager.presence.query,
-      stationRoutineManager.presence.stationIds,
       stationRoutineManager.stations.length,
+      stationRoutineManager.viewMode,
     ]
   );
 

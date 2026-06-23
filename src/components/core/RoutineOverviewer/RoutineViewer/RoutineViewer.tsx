@@ -23,7 +23,7 @@ const RoutineViewer = ({ stationId }: RoutineViewerProps) => {
 
   return (
     <Suspense fallback={<StrictLoadingCover />}>
-      <RoutineOverviewerContent />
+      <RoutineOverviewerContent showCharts={false} showStationScope={false} />
     </Suspense>
   );
 };

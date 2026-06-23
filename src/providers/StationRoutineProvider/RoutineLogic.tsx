@@ -793,6 +793,33 @@ export const useRoutineLogic = ({
     [forceUpdate, linkRoutineItemMutator, stationsRef]
   );
 
+  const duplicateRoutine = useCallback(
+    async (routineId: UUID): Promise<RoutineNode> => {
+      let sourceRoutine: RoutineNode | undefined;
+      for (const stationNode of stationsRef.current.values()) {
+        sourceRoutine = stationNode.routines.find(
+          routine => routine.id === routineId
+        );
+        if (sourceRoutine) break;
+      }
+      if (!sourceRoutine) throw new Error("routine does not exist");
+
+      const duplicatedRoutine = await createRoutine(sourceRoutine.stationId, {
+        title: `${sourceRoutine.title} Copy`,
+        description: sourceRoutine.description,
+        status: sourceRoutine.status,
+        isPinned: sourceRoutine.isPinned,
+        scheduledStartAt: sourceRoutine.scheduledStartAt,
+        scheduledEndAt: sourceRoutine.scheduledEndAt,
+        period: sourceRoutine.period,
+        timezone: sourceRoutine.timezone,
+      });
+
+      return duplicatedRoutine;
+    },
+    [createRoutine, stationsRef]
+  );
+
   return {
     selectedRoutineId,
     selectRoutine,
@@ -814,6 +841,7 @@ export const useRoutineLogic = ({
     expandRoutinesByTagId,
     toggleRoutine,
     createRoutine,
+    duplicateRoutine,
     upsertRoutineNode,
     isCreatingRoutine: createRoutineMutator.isPending,
     deleteRoutine,

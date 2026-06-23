@@ -411,6 +411,29 @@ export const useRoutineTaskLogic = ({
     [createRoutineTaskMutator, forceUpdate, stationsRef]
   );
 
+  const duplicateRoutineTask = useCallback(
+    async (routineTaskId: UUID): Promise<RoutineTaskNode> => {
+      let sourceRoutineTask: RoutineTaskNode | undefined;
+      for (const stationNode of stationsRef.current.values()) {
+        sourceRoutineTask = stationNode.routineTasks.find(
+          routineTask => routineTask.id === routineTaskId
+        );
+        if (sourceRoutineTask) break;
+      }
+      if (!sourceRoutineTask) throw new Error("routine task does not exist");
+
+      return await createRoutineTask(
+        sourceRoutineTask.stationId,
+        `${sourceRoutineTask.title} Copy`,
+        sourceRoutineTask.purpose,
+        sourceRoutineTask.payload,
+        sourceRoutineTask.priority,
+        sourceRoutineTask.maxAttempts
+      );
+    },
+    [createRoutineTask, stationsRef]
+  );
+
   const upsertRoutineTaskNode = useCallback(
     (routineTaskNode: RoutineTaskNode): RoutineTaskNode => {
       const stationNode = stationsRef.current.get(routineTaskNode.stationId);
@@ -508,6 +531,7 @@ export const useRoutineTaskLogic = ({
     loadMoreRoutineTaskCandidates,
     loadMoreRoutineTasks,
     createRoutineTask,
+    duplicateRoutineTask,
     upsertRoutineTaskNode,
     isCreatingRoutineTask: createRoutineTaskMutator.isPending,
     updateRoutineTask,

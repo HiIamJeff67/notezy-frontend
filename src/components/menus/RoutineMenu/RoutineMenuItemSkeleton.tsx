@@ -3,7 +3,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
-const RoutineItemMenuSkeleton = ({ number = 1 }: { number?: number }) => {
+const RoutineMenuItemSkeleton = ({ number = 1 }: { number?: number }) => {
   return (
     <>
       {Array.from({ length: number }).map((_, index) => (
@@ -15,4 +15,4 @@ const RoutineItemMenuSkeleton = ({ number = 1 }: { number?: number }) => {
   );
 };
 
-export default RoutineItemMenuSkeleton;
+export default RoutineMenuItemSkeleton;

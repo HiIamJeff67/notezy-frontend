@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   ClipboardList,
+  Copy,
   FileText,
   LoaderCircle,
   Package,
@@ -50,12 +51,12 @@ import {
   useStationRoutine,
 } from "@/hooks";
 
-interface RoutineItemMenuProps {
+interface RoutineMenuItemProps {
   station: StationNode;
   routine: RoutineNode;
 }
 
-const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
+const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
   const languageManager = useLanguage();
   const loadingManager = useLoading();
   const modalManager = useModal();
@@ -190,12 +191,22 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
                 }}
               >
                 <SquarePen className="mr-2 size-4" />
-                Open
+                Open in Inspector
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
             <ContextMenuLabel>Add</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={() => {
+                  void stationRoutineManager
+                    .duplicateRoutine(routine.id)
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <Copy className="mr-2 size-4" />
+                Duplicate
+              </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
                   modalManager.open("CreateRoutineTaskDialog", {
@@ -490,4 +501,4 @@ const RoutineItemMenu = ({ station, routine }: RoutineItemMenuProps) => {
   );
 };
 
-export default RoutineItemMenu;
+export default RoutineMenuItem;

@@ -61,8 +61,12 @@ const RoutineTable = () => {
   const [startsAfter, setStartsAfter] = useState<Date | undefined>();
   const [endsBefore, setEndsBefore] = useState<Date | undefined>();
   const [showUnscheduled, setShowUnscheduled] = useState<boolean>(true);
-  const stationPresenceSignature =
-    stationRoutineManager.presence.stationIds.join("|");
+  const effectiveStationIds =
+    stationRoutineManager.viewMode === "station" &&
+    stationRoutineManager.activeStationId
+      ? [stationRoutineManager.activeStationId]
+      : stationRoutineManager.presence.stationIds;
+  const stationPresenceSignature = effectiveStationIds.join("|");
   const routineTagPresenceSignature =
     stationRoutineManager.presence.routineTagIds.join("|");
 
@@ -72,7 +76,7 @@ const RoutineTable = () => {
       if (!reset && (!hasMoreRoutines || !routineSearchCursor)) return;
       if (
         stationRoutineManager.stations.length > 0 &&
-        stationRoutineManager.presence.stationIds.length === 0
+        effectiveStationIds.length === 0
       ) {
         if (reset) {
           setRoutines([]);
@@ -100,9 +104,10 @@ const RoutineTable = () => {
       setIsSearchingRoutines(true);
       try {
         const isAllStationsSelected =
-          stationRoutineManager.stations.length === 0 ||
-          stationRoutineManager.presence.stationIds.length ===
-            stationRoutineManager.stations.length;
+          stationRoutineManager.viewMode !== "station" &&
+          (stationRoutineManager.stations.length === 0 ||
+            effectiveStationIds.length ===
+              stationRoutineManager.stations.length);
         const isAllRoutineTagsSelected =
           stationRoutineManager.routineTags.length === 0 ||
           stationRoutineManager.presence.routineTagIds.length ===
@@ -121,9 +126,7 @@ const RoutineTable = () => {
               query: stationRoutineManager.presence.query,
               after: reset ? undefined : (routineSearchCursor ?? undefined),
               first: reset ? 20 : 10,
-              stationIds: isAllStationsSelected
-                ? []
-                : stationRoutineManager.presence.stationIds,
+              stationIds: isAllStationsSelected ? [] : effectiveStationIds,
               tagIds:
                 shouldFilterRoutineTagsInView ||
                 shouldShowOnlyUntaggedRoutines ||
@@ -243,15 +246,16 @@ const RoutineTable = () => {
     },
     [
       executeSearchRoutines,
+      stationPresenceSignature,
       hasMoreRoutines,
       routineSearchCursor,
       stationRoutineManager.getRoutineTaskById,
       stationRoutineManager.presence.query,
       stationRoutineManager.presence.routineTagIds,
       stationRoutineManager.presence.showUntaggedRoutines,
-      stationRoutineManager.presence.stationIds,
       stationRoutineManager.routineTags.length,
       stationRoutineManager.stations.length,
+      stationRoutineManager.viewMode,
     ]
   );
 

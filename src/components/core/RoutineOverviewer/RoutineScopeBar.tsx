@@ -28,11 +28,24 @@ import {
 } from "@/components/ui/tooltip";
 import { useStationRoutine } from "@/hooks";
 
-interface RoutineScopeBarProps {
-  onOpenAddChart: () => void;
-}
+type RoutineScopeBarProps = {
+  onOpenAddChart?: () => void;
+  showAddChart?: boolean;
+  showStationStatus?: boolean;
+};
 
-const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
+type StatusPillProps = ComponentPropsWithoutRef<"div"> & {
+  icon: ReactNode;
+  presentCount: number;
+  totalCount: number;
+  title: string;
+};
+
+const RoutineScopeBar = ({
+  onOpenAddChart,
+  showAddChart = true,
+  showStationStatus = true,
+}: RoutineScopeBarProps) => {
   const stationRoutineManager = useStationRoutine();
 
   const [pendingStationIds, setPendingStationIds] = useState(
@@ -66,122 +79,112 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
         border-b border-border/40 bg-background/75 px-3 backdrop-blur-md
       "
     >
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Add chart"
-              className="size-7 rounded-sm"
-              onClick={onOpenAddChart}
-            >
-              <ChartNoAxesCombined className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Add charts</TooltipContent>
-        </Tooltip>
-
+      <div className="flex min-w-0 items-center gap-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <HoverCard
-            openDelay={250}
-            closeDelay={150}
-            onOpenChange={open => {
-              if (!open) return;
-              setPendingStationIds(stationRoutineManager.presence.stationIds);
-            }}
-          >
-            <HoverCardTrigger asChild>
-              <StatusPill
-                icon={<TrainStationIcon size={14} />}
-                presentCount={stationRoutineManager.visibleStations.length}
-                totalCount={stationRoutineManager.statusSummary.totalStations}
-                title="Stations"
-              />
-            </HoverCardTrigger>
-            <HoverCardContent align="end" className="w-72 rounded-sm p-0">
-              <div className="border-b px-3 py-2.5">
-                <p className="text-sm font-medium">Present stations</p>
-                <p className="text-xs text-muted-foreground">
-                  {stationRoutineManager.presence.stationIds.length} of{" "}
-                  {stationRoutineManager.stations.length} stations are shown
-                </p>
-              </div>
-              <div className="max-h-64 overflow-y-auto p-1.5">
-                {stationRoutineManager.stations.map(station => (
-                  <label
-                    key={station.id}
-                    className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
-                  >
-                    <Checkbox
-                      checked={pendingStationIds.includes(station.id)}
-                      onCheckedChange={() => {
-                        setPendingStationIds(previousStationIds =>
-                          previousStationIds.includes(station.id)
-                            ? previousStationIds.filter(id => id !== station.id)
-                            : [...previousStationIds, station.id]
-                        );
-                      }}
-                    />
-                    {station.icon ? (
-                      <span className="shrink-0 text-sm">{station.icon}</span>
-                    ) : (
-                      <TrainStationIcon size={14} />
-                    )}
-                    <span className="min-w-0 flex-1 truncate text-sm">
-                      {station.name}
-                    </span>
-                    <span className="tabular-nums text-xs text-muted-foreground">
-                      {station.routineCount}
-                    </span>
-                  </label>
-                ))}
-                {stationRoutineManager.stations.length === 0 && (
-                  <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-                    No stations
+          {showStationStatus && (
+            <HoverCard
+              openDelay={250}
+              closeDelay={150}
+              onOpenChange={open => {
+                if (!open) return;
+                setPendingStationIds(stationRoutineManager.presence.stationIds);
+              }}
+            >
+              <HoverCardTrigger asChild>
+                <StatusPill
+                  icon={<TrainStationIcon size={14} />}
+                  presentCount={stationRoutineManager.visibleStations.length}
+                  totalCount={stationRoutineManager.statusSummary.totalStations}
+                  title="Stations"
+                />
+              </HoverCardTrigger>
+              <HoverCardContent align="end" className="w-72 rounded-sm p-0">
+                <div className="border-b px-3 py-2.5">
+                  <p className="text-sm font-medium">Present stations</p>
+                  <p className="text-xs text-muted-foreground">
+                    {stationRoutineManager.presence.stationIds.length} of{" "}
+                    {stationRoutineManager.stations.length} stations are shown
                   </p>
-                )}
-              </div>
-              <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 rounded-sm px-2 text-xs"
-                  onClick={() =>
-                    setPendingStationIds(
-                      stationRoutineManager.presence.stationIds
-                    )
-                  }
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="h-7 rounded-sm px-2 text-xs"
-                  onClick={() => {
-                    const currentStationIds = [
-                      ...stationRoutineManager.presence.stationIds,
-                    ].sort();
-                    const nextStationIds = [...pendingStationIds].sort();
-                    const hasChanged =
-                      currentStationIds.length !== nextStationIds.length ||
-                      currentStationIds.some(
-                        (stationId, index) =>
-                          stationId !== nextStationIds[index]
-                      );
-                    if (!hasChanged) return;
+                </div>
+                <div className="max-h-64 overflow-y-auto p-1.5">
+                  {stationRoutineManager.stations.map(station => (
+                    <label
+                      key={station.id}
+                      className="flex h-9 cursor-default items-center gap-2 rounded-sm px-2 hover:bg-accent/50"
+                    >
+                      <Checkbox
+                        checked={pendingStationIds.includes(station.id)}
+                        onCheckedChange={() => {
+                          setPendingStationIds(previousStationIds =>
+                            previousStationIds.includes(station.id)
+                              ? previousStationIds.filter(
+                                  id => id !== station.id
+                                )
+                              : [...previousStationIds, station.id]
+                          );
+                        }}
+                      />
+                      {station.icon ? (
+                        <span className="shrink-0 text-sm">{station.icon}</span>
+                      ) : (
+                        <TrainStationIcon size={14} />
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-sm">
+                        {station.name}
+                      </span>
+                      <span className="tabular-nums text-xs text-muted-foreground">
+                        {station.routineCount}
+                      </span>
+                    </label>
+                  ))}
+                  {stationRoutineManager.stations.length === 0 && (
+                    <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                      No stations
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 rounded-sm px-2 text-xs"
+                    onClick={() =>
+                      setPendingStationIds(
+                        stationRoutineManager.presence.stationIds
+                      )
+                    }
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-7 rounded-sm px-2 text-xs"
+                    onClick={() => {
+                      const currentStationIds = [
+                        ...stationRoutineManager.presence.stationIds,
+                      ].sort();
+                      const nextStationIds = [...pendingStationIds].sort();
+                      const hasChanged =
+                        currentStationIds.length !== nextStationIds.length ||
+                        currentStationIds.some(
+                          (stationId, index) =>
+                            stationId !== nextStationIds[index]
+                        );
+                      if (!hasChanged) return;
 
-                    stationRoutineManager.setStationPresence(pendingStationIds);
-                  }}
-                >
-                  Confirm
-                </Button>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
+                      stationRoutineManager.setStationPresence(
+                        pendingStationIds
+                      );
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )}
           <StatusPill
             icon={<ClipboardClock className="size-3.5" />}
             presentCount={stationRoutineManager.visibleRoutines.length}
@@ -332,6 +335,26 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
             title="Routine tasks"
           />
         </div>
+      </div>
+
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        {showAddChart && onOpenAddChart && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Add chart"
+                className="size-7 rounded-sm"
+                onClick={onOpenAddChart}
+              >
+                <ChartNoAxesCombined className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Add charts</TooltipContent>
+          </Tooltip>
+        )}
 
         <ToggleGroup
           type="single"
@@ -341,12 +364,12 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
               stationRoutineManager.setTimeRailScale(value);
             }
           }}
-          className="rounded-sm border border-border/60 bg-background/40 p-0.5"
+          className="rounded-sm border border-border/60 bg-card/70 p-0.5"
         >
           <ToggleGroupItem
             value="day"
             size="sm"
-            className="h-6 rounded-sm px-2 text-xs"
+            className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
             <span className="@max-[480px]:hidden">Daily</span>
             <span className="hidden @max-[480px]:inline">D</span>
@@ -354,7 +377,7 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
           <ToggleGroupItem
             value="week"
             size="sm"
-            className="h-6 rounded-sm px-2 text-xs"
+            className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
             <span className="@max-[480px]:hidden">Weekly</span>
             <span className="hidden @max-[480px]:inline">W</span>
@@ -362,7 +385,7 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
           <ToggleGroupItem
             value="month"
             size="sm"
-            className="h-6 rounded-sm px-2 text-xs"
+            className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
             <span className="@max-[480px]:hidden">Monthly</span>
             <span className="hidden @max-[480px]:inline">M</span>
@@ -373,29 +396,23 @@ const RoutineScopeBar = ({ onOpenAddChart }: RoutineScopeBarProps) => {
   );
 };
 
-const StatusPill = forwardRef<
-  HTMLDivElement,
-  ComponentPropsWithoutRef<"div"> & {
-    icon: ReactNode;
-    presentCount: number;
-    totalCount: number;
-    title: string;
-  }
->(({ icon, presentCount, totalCount, title, ...props }, ref) => (
-  <div
-    ref={ref}
-    {...props}
-    className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-background/40 px-2"
-    aria-label={`${title}: ${presentCount} of ${totalCount} present`}
-  >
-    {icon}
-    <div className="tabular-nums">
-      <span className="@max-[480px]:hidden">{presentCount}</span>
-      <span className="px-0.5 @max-[480px]:hidden">|</span>
-      {totalCount}
+const StatusPill = forwardRef<HTMLDivElement, StatusPillProps>(
+  ({ icon, presentCount, totalCount, title, ...props }, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-background/40 px-2"
+      aria-label={`${title}: ${presentCount} of ${totalCount} present`}
+    >
+      {icon}
+      <div className="tabular-nums">
+        <span className="@max-[480px]:hidden">{presentCount}</span>
+        <span className="px-0.5 @max-[480px]:hidden">|</span>
+        {totalCount}
+      </div>
     </div>
-  </div>
-));
+  )
+);
 StatusPill.displayName = "StatusPill";
 
 export default RoutineScopeBar;

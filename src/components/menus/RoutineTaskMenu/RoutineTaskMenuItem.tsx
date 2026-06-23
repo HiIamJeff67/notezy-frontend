@@ -1,6 +1,7 @@
 import { RoutineTaskStatus } from "@shared/api/interfaces/enums";
+import toast from "@shared/lib/toast";
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
-import { SquarePen, Trash2 } from "lucide-react";
+import { Copy, SquarePen, Trash2 } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -19,13 +20,14 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useModal, useStationRoutine } from "@/hooks";
+import { useLanguage, useModal, useStationRoutine } from "@/hooks";
 
 interface RoutineTaskMenuItemProps {
   routineTask: RoutineTaskNode;
 }
 
 const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
+  const languageManager = useLanguage();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
   const statusDotClassName =
@@ -112,6 +114,20 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
             >
               <SquarePen className="mr-2 size-4" />
               Open
+            </ContextMenuItem>
+          </ContextMenuGroup>
+          <ContextMenuSeparator />
+          <ContextMenuLabel>Add</ContextMenuLabel>
+          <ContextMenuGroup>
+            <ContextMenuItem
+              onClick={() => {
+                void stationRoutineManager
+                  .duplicateRoutineTask(routineTask.id)
+                  .catch(error => toast.error(languageManager.tError(error)));
+              }}
+            >
+              <Copy className="mr-2 size-4" />
+              Duplicate
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />

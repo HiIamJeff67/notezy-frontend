@@ -1,8 +1,8 @@
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
 import { Suspense } from "react";
-import RoutineItemMenu from "@/components/menus/RoutineMenu/RoutineItemMenu";
-import RoutineItemMenuSkeleton from "@/components/menus/RoutineMenu/RoutineItemMenuSkeleton";
+import RoutineMenuItem from "@/components/menus/RoutineMenu/RoutineMenuItem";
+import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuItemSkeleton";
 import { SidebarMenuSub } from "@/components/ui/sidebar";
 import { useStationRoutine } from "@/hooks";
 
@@ -16,19 +16,20 @@ const RoutineMenu = ({ routines, station }: RoutineMenuProps) => {
 
   return (
     <SidebarMenuSub>
-      <Suspense fallback={<RoutineItemMenuSkeleton />}>
+      <Suspense fallback={<RoutineMenuItemSkeleton />}>
         {[...routines]
           .sort((leftRoutine, rightRoutine) =>
             leftRoutine.title.localeCompare(rightRoutine.title)
           )
           .map(routine => {
             const currentStation =
-              station ?? stationRoutineManager.getStationById(routine.stationId);
+              station ??
+              stationRoutineManager.getStationById(routine.stationId);
             if (!currentStation) return null;
 
             return (
-              <Suspense fallback={<RoutineItemMenuSkeleton />} key={routine.id}>
-                <RoutineItemMenu station={currentStation} routine={routine} />
+              <Suspense fallback={<RoutineMenuItemSkeleton />} key={routine.id}>
+                <RoutineMenuItem station={currentStation} routine={routine} />
               </Suspense>
             );
           })}

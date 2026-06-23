@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronDown,
   ChevronRight,
+  Copy,
   Link2,
   Pencil,
   SquarePen,
@@ -147,6 +148,20 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               >
                 <SquarePen className="mr-2 size-4" />
                 Open
+              </ContextMenuItem>
+            </ContextMenuGroup>
+            <ContextMenuSeparator />
+            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuGroup>
+              <ContextMenuItem
+                onClick={() => {
+                  void stationRoutineManager
+                    .duplicateRoutineTag(routineTag.id)
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <Copy className="mr-2 size-4" />
+                Duplicate
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />

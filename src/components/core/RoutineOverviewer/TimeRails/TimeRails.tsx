@@ -33,15 +33,14 @@ const TimeRails = () => {
   const userManager = useUser();
 
   const previousScaleRef = useRef(stationRoutineManager.timeRailScale);
-  const timeRailsBodyRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingScrollAdjustmentRef = useRef<number | null>(null);
   const pendingWheelDeltaRef = useRef<number>(0);
   const viewportUpdateAnimationRef = useRef<number | null>(null);
   const shouldSuppressRoutineOpenRef = useRef<boolean>(false);
-  const shouldCenterDayScrollRef = useRef<boolean>(false);
-  const shouldCenterWeekScrollRef = useRef<boolean>(true);
-  const shouldCenterMonthScrollRef = useRef<boolean>(false);
+  const pendingCenterScrollRef = useRef<"day" | "week" | "month" | null>(
+    "week"
+  );
   const hasLoadedStationPositionsRef = useRef<boolean>(false);
   const stationPositionsPublicIdRef = useRef<string | undefined>(undefined);
 
@@ -78,6 +77,11 @@ const TimeRails = () => {
       >
     >
   >({});
+  const stationOrderIds = useMemo(
+    () => stationRoutineManager.stations.map(station => station.id),
+    [stationRoutineManager.stations]
+  );
+  const stationOrderIdsSignature = stationOrderIds.join("|");
 
   const orderedTimeRailStations = useMemo(() => {
     const positionMap = new Map<UUID, number>();
@@ -94,14 +98,17 @@ const TimeRails = () => {
   }, [stationPositions, stationRoutineManager.timeRailStations]);
 
   useEffect(() => {
-    const stationIds = stationRoutineManager.timeRailStations.map(
-      timeRailStation => timeRailStation.station.id
-    );
     const publicId = userManager.userData?.publicId;
-    if (stationIds.length === 0 || !publicId) return;
+    if (!publicId) {
+      stationPositionsPublicIdRef.current = undefined;
+      hasLoadedStationPositionsRef.current = false;
+      setStationPositions([]);
+      return;
+    }
+    if (stationOrderIds.length === 0) return;
 
     setStationPositions(previousStationPositions => {
-      const currentStationIdSet = new Set(stationIds);
+      const currentStationIdSet = new Set(stationOrderIds);
       let baseStationPositions = previousStationPositions;
 
       if (stationPositionsPublicIdRef.current !== publicId) {
@@ -111,21 +118,10 @@ const TimeRails = () => {
       }
 
       if (!hasLoadedStationPositionsRef.current) {
-        const storedStationPositionsEncoded =
-          LocalStorageManipulator.getItemByKey(
-            LocalStorageKey.timeRailsStationIndexes,
-            publicId
-          );
-        let storedStationPositions: unknown = null;
-
-        try {
-          storedStationPositions =
-            typeof storedStationPositionsEncoded === "string"
-              ? JSON.parse(storedStationPositionsEncoded)
-              : storedStationPositionsEncoded;
-        } catch (error) {
-          console.error("failed to parse TimeRails station indexes", error);
-        }
+        const storedStationPositions = LocalStorageManipulator.getItemByKey(
+          LocalStorageKey.timeRailsStationIndexes,
+          publicId
+        );
 
         if (!Array.isArray(storedStationPositions)) {
           baseStationPositions = [];
@@ -144,7 +140,7 @@ const TimeRails = () => {
         ...baseStationPositions.filter(stationId =>
           currentStationIdSet.has(stationId)
         ),
-        ...stationIds.filter(
+        ...stationOrderIds.filter(
           stationId => !baseStationPositions.includes(stationId)
         ),
       ];
@@ -158,14 +154,9 @@ const TimeRails = () => {
         return previousStationPositions;
       }
 
-      LocalStorageManipulator.setItem(
-        LocalStorageKey.timeRailsStationIndexes,
-        nextStationPositions,
-        publicId
-      );
       return nextStationPositions;
     });
-  }, [stationRoutineManager.timeRailStations, userManager.userData?.publicId]);
+  }, [stationOrderIdsSignature, userManager.userData?.publicId]);
 
   useEffect(() => {
     return () => {
@@ -201,7 +192,7 @@ const TimeRails = () => {
       nextStartAt.setHours(nextStartAt.getHours() - DayBufferHours);
       nextEndAt.setTime(nextStartAt.getTime());
       nextEndAt.setHours(nextEndAt.getHours() + DayBufferHours * 3);
-      shouldCenterDayScrollRef.current = true;
+      pendingCenterScrollRef.current = "day";
     }
     if (stationRoutineManager.timeRailScale === "week") {
       nextStartAt.setDate(
@@ -211,14 +202,14 @@ const TimeRails = () => {
       nextEndAt.setDate(
         nextEndAt.getDate() + WeekVisibleDays + WeekBufferDays * 2
       );
-      shouldCenterWeekScrollRef.current = true;
+      pendingCenterScrollRef.current = "week";
     }
     if (stationRoutineManager.timeRailScale === "month") {
       nextStartAt.setDate(1);
       nextStartAt.setMonth(nextStartAt.getMonth() - 1);
       nextEndAt.setTime(nextStartAt.getTime());
       nextEndAt.setMonth(nextEndAt.getMonth() + 3, 1);
-      shouldCenterMonthScrollRef.current = true;
+      pendingCenterScrollRef.current = "month";
     }
 
     stationRoutineManager.setTimeWindow({
@@ -349,15 +340,23 @@ const TimeRails = () => {
 
         if (stationRoutineManager.timeRailScale === "day") {
           nextStartAt.setHours(nextStartAt.getHours() - 1);
+          nextStartAt.setMinutes(0, 0, 0);
           nextEndAt.setHours(nextEndAt.getHours() + 1);
+          nextEndAt.setMinutes(0, 0, 0);
         }
         if (stationRoutineManager.timeRailScale === "week") {
           nextStartAt.setDate(nextStartAt.getDate() - 1);
+          nextStartAt.setHours(0, 0, 0, 0);
           nextEndAt.setDate(nextEndAt.getDate() + 1);
+          nextEndAt.setHours(0, 0, 0, 0);
         }
         if (stationRoutineManager.timeRailScale === "month") {
           nextStartAt.setMonth(nextStartAt.getMonth() - 1);
+          nextStartAt.setDate(1);
+          nextStartAt.setHours(0, 0, 0, 0);
           nextEndAt.setMonth(nextEndAt.getMonth() + 1);
+          nextEndAt.setDate(1);
+          nextEndAt.setHours(0, 0, 0, 0);
         }
 
         setViewportWindow(previousViewportWindow => {
@@ -689,7 +688,7 @@ const TimeRails = () => {
           return previousWeekTickWidth;
         }
 
-        shouldCenterWeekScrollRef.current = true;
+        pendingCenterScrollRef.current = "week";
         return nextWeekTickWidth;
       });
     };
@@ -730,19 +729,16 @@ const TimeRails = () => {
       return;
     }
 
-    const shouldCenterDayScroll = shouldCenterDayScrollRef.current;
-    const shouldCenterWeekScroll = shouldCenterWeekScrollRef.current;
-    const shouldCenterMonthScroll = shouldCenterMonthScrollRef.current;
+    const pendingCenterScroll = pendingCenterScrollRef.current;
+    pendingCenterScrollRef.current = null;
 
-    if (shouldCenterDayScrollRef.current) {
+    if (pendingCenterScroll === "day") {
       scrollContainer.scrollLeft = tickWidth * DayBufferHours;
-      shouldCenterDayScrollRef.current = false;
     }
-    if (shouldCenterWeekScrollRef.current) {
+    if (pendingCenterScroll === "week") {
       scrollContainer.scrollLeft = tickWidth * WeekBufferDays;
-      shouldCenterWeekScrollRef.current = false;
     }
-    if (shouldCenterMonthScrollRef.current) {
+    if (pendingCenterScroll === "month") {
       const firstMonthEndAt = new Date(
         stationRoutineManager.timeWindow.startAt
       );
@@ -752,17 +748,16 @@ const TimeRails = () => {
           stationRoutineManager.timeWindow.startAt.getTime()) /
           (24 * 60 * 60 * 1000)) *
         tickWidth;
-      shouldCenterMonthScrollRef.current = false;
     }
 
     window.requestAnimationFrame(() => {
-      if (shouldCenterDayScroll) {
+      if (pendingCenterScroll === "day") {
         scrollContainer.scrollLeft = tickWidth * DayBufferHours;
       }
-      if (shouldCenterWeekScroll) {
+      if (pendingCenterScroll === "week") {
         scrollContainer.scrollLeft = tickWidth * WeekBufferDays;
       }
-      if (shouldCenterMonthScroll) {
+      if (pendingCenterScroll === "month") {
         const firstMonthEndAt = new Date(
           stationRoutineManager.timeWindow.startAt
         );
@@ -776,6 +771,7 @@ const TimeRails = () => {
       updateViewportWindow(scrollContainer);
     });
   }, [
+    orderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     stationRoutineManager.timeWindow.startAt,
     tickWidth,
@@ -910,6 +906,7 @@ const TimeRails = () => {
     };
   }, [
     moveTimeWindowByScroll,
+    orderedTimeRailStations.length,
     stationRoutineManager.timeRailScale,
     tickWidth,
     updateViewportWindow,
@@ -924,7 +921,7 @@ const TimeRails = () => {
       nextStartAt.setHours(nextStartAt.getHours() - DayBufferHours);
       nextEndAt.setTime(nextStartAt.getTime());
       nextEndAt.setHours(nextEndAt.getHours() + DayBufferHours * 3);
-      shouldCenterDayScrollRef.current = true;
+      pendingCenterScrollRef.current = "day";
     }
     if (stationRoutineManager.timeRailScale === "week") {
       nextStartAt.setDate(
@@ -934,14 +931,14 @@ const TimeRails = () => {
       nextEndAt.setDate(
         nextEndAt.getDate() + WeekVisibleDays + WeekBufferDays * 2
       );
-      shouldCenterWeekScrollRef.current = true;
+      pendingCenterScrollRef.current = "week";
     }
     if (stationRoutineManager.timeRailScale === "month") {
       nextStartAt.setDate(1);
       nextStartAt.setMonth(nextStartAt.getMonth() - 1);
       nextEndAt.setTime(nextStartAt.getTime());
       nextEndAt.setMonth(nextEndAt.getMonth() + 3, 1);
-      shouldCenterMonthScrollRef.current = true;
+      pendingCenterScrollRef.current = "month";
     }
 
     stationRoutineManager.setTimeWindow({
@@ -1076,7 +1073,7 @@ const TimeRails = () => {
         </div>
       </div>
 
-      <div ref={timeRailsBodyRef} className="min-h-0">
+      <div className="min-h-0">
         {renderedTimeRailStations.length === 0 ? (
           <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
             No stations match the current scope.
@@ -1089,7 +1086,7 @@ const TimeRails = () => {
             />
             <div
               ref={scrollContainerRef}
-              className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-contain"
+              className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain"
               onScroll={event => {
                 updateViewportWindow(event.currentTarget);
                 if (pendingScrollAdjustmentRef.current !== null) return;

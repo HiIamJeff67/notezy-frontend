@@ -78,7 +78,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 maxLength={128}
                 className="h-6 min-w-0 flex-1 bg-transparent pr-6 text-sm text-ellipsis outline-none"
                 onChange={event =>
-                  stationRoutineManager.setEditStationName(event.currentTarget.value)
+                  stationRoutineManager.setEditStationName(
+                    event.currentTarget.value
+                  )
                 }
                 onKeyDown={async event => {
                   if (event.key === "Enter") {
@@ -147,7 +149,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <ExternalLink className="mr-2 size-4" />
-                Overview
+                Overview Detail
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
@@ -158,7 +160,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <SquarePen className="mr-2 size-4" />
-                Open
+                Open in Inspector
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
@@ -187,7 +189,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
-                onClick={() => stationRoutineManager.startRenamingStation(station)}
+                onClick={() =>
+                  stationRoutineManager.startRenamingStation(station)
+                }
               >
                 <Pencil className="mr-2 size-4" />
                 Rename
@@ -209,55 +213,55 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
         </ContextMenu>
         {!stationRoutineManager.isStationEditing(station.id) &&
           (station.routineCount > 0 || routineTaskCount > 0) && (
-          <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
-            {station.routineCount > 0 && (
-              <HoverCard openDelay={250} closeDelay={100}>
-                <HoverCardTrigger asChild>
-                  <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
-                    {station.routineCount}
-                  </div>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  side="top"
-                  align="center"
-                  className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+            <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
+              {station.routineCount > 0 && (
+                <HoverCard openDelay={250} closeDelay={100}>
+                  <HoverCardTrigger asChild>
+                    <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                      {station.routineCount}
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+                  >
+                    <ClipboardClock className="size-4 text-muted-foreground" />
+                    <span className="text-xs">
+                      {station.routineCount} total routines
+                    </span>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
+              {station.routineCount > 0 && routineTaskCount > 0 && (
+                <span
+                  className="font-bold text-muted-foreground"
+                  aria-hidden="true"
                 >
-                  <ClipboardClock className="size-4 text-muted-foreground" />
-                  <span className="text-xs">
-                    {station.routineCount} total routines
-                  </span>
-                </HoverCardContent>
-              </HoverCard>
-            )}
-            {station.routineCount > 0 && routineTaskCount > 0 && (
-              <span
-                className="font-bold text-muted-foreground"
-                aria-hidden="true"
-              >
-                ·
-              </span>
-            )}
-            {routineTaskCount > 0 && (
-              <HoverCard openDelay={250} closeDelay={100}>
-                <HoverCardTrigger asChild>
-                  <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
-                    {routineTaskCount}
-                  </div>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  side="top"
-                  align="center"
-                  className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
-                >
-                  <ClipboardList className="size-4 text-muted-foreground" />
-                  <span className="text-xs">
-                    {routineTaskCount} total routine tasks
-                  </span>
-                </HoverCardContent>
-              </HoverCard>
-            )}
-          </div>
-        )}
+                  ·
+                </span>
+              )}
+              {routineTaskCount > 0 && (
+                <HoverCard openDelay={250} closeDelay={100}>
+                  <HoverCardTrigger asChild>
+                    <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                      {routineTaskCount}
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
+                  >
+                    <ClipboardList className="size-4 text-muted-foreground" />
+                    <span className="text-xs">
+                      {routineTaskCount} total routine tasks
+                    </span>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
+            </div>
+          )}
         <CollapsibleContent>
           <RoutineMenu station={station} routines={station.routines} />
         </CollapsibleContent>
