@@ -3,6 +3,7 @@ import {
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
 import {
+  AllRoutinePeriods,
   AllRoutineTaskPurposes,
   AllRoutineTaskStatuses,
 } from "@shared/api/interfaces/enums";
@@ -95,11 +96,13 @@ export const GetMyRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend({
     stationId: z.uuidv4(),
     title: z.string(),
     purpose: z.enum(AllRoutineTaskPurposes),
+    costUnit: z.number(),
     payload: z.any(),
     priority: z.int32(),
     status: z.enum(AllRoutineTaskStatuses),
     attempts: z.int32(),
     maxAttempts: z.int32(),
+    period: z.enum(AllRoutinePeriods).nullable(),
     scheduledAt: z.coerce.date(),
     actualStartedAt: z.coerce.date().nullable(),
     actualEndedAt: z.coerce.date().nullable(),
@@ -143,10 +146,12 @@ export const GetAllMyRoutineTasksByStationIdsResponseSchema =
         stationId: z.uuidv4(),
         title: z.string(),
         purpose: z.enum(AllRoutineTaskPurposes),
+        costUnit: z.number(),
         priority: z.int32(),
         status: z.enum(AllRoutineTaskStatuses),
         attempts: z.int32(),
         maxAttempts: z.int32(),
+        period: z.enum(AllRoutinePeriods).nullable(),
         scheduledAt: z.coerce.date(),
         actualStartedAt: z.coerce.date().nullable(),
         actualEndedAt: z.coerce.date().nullable(),
@@ -191,11 +196,13 @@ export const GetAllMyRoutineTasksResponseSchema = NotezyResponseSchema.extend({
       stationId: z.uuidv4(),
       title: z.string(),
       purpose: z.enum(AllRoutineTaskPurposes),
+      costUnit: z.number(),
       payload: z.any(),
       priority: z.int32(),
       status: z.enum(AllRoutineTaskStatuses),
       attempts: z.int32(),
       maxAttempts: z.int32(),
+      period: z.enum(AllRoutinePeriods).nullable(),
       scheduledAt: z.coerce.date(),
       actualStartedAt: z.coerce.date().nullable(),
       actualEndedAt: z.coerce.date().nullable(),
@@ -227,14 +234,26 @@ export const CreateRoutineTaskByStationIdRequestSchema =
         stationId: z.uuidv4(),
         title: z.string().min(1).max(128),
         purpose: z.enum(AllRoutineTaskPurposes),
-        payload: z.any(),
+        payload: z.any().refine(value => {
+          try {
+            return (
+              new TextEncoder().encode(JSON.stringify(value ?? {})).length <=
+              16_777_216
+            );
+          } catch {
+            return false;
+          }
+        }, "Payload must be smaller than 16 MiB."),
         priority: z.int32().min(0),
         maxAttempts: z.int32().min(1).max(20),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        scheduledAt: z.coerce.date(),
       })
       .partial({
         payload: true,
         priority: true,
         maxAttempts: true,
+        period: true,
       }),
   });
 
@@ -273,9 +292,20 @@ export const UpdateMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
         stationId: z.uuidv4(),
         title: z.string().min(1).max(128),
         purpose: z.enum(AllRoutineTaskPurposes),
-        payload: z.any(),
+        payload: z.any().refine(value => {
+          try {
+            return (
+              new TextEncoder().encode(JSON.stringify(value ?? {})).length <=
+              16_777_216
+            );
+          } catch {
+            return false;
+          }
+        }, "Payload must be smaller than 16 MiB."),
         priority: z.int32().min(0),
         maxAttempts: z.int32().min(1).max(20),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        scheduledAt: z.coerce.date(),
       })
       .partial(),
     setNull: z.record(z.string(), z.boolean()).optional(),

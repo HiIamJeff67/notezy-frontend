@@ -1,4 +1,5 @@
 import {
+  RoutinePeriod,
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
@@ -9,11 +10,13 @@ export interface RoutineTaskNode {
   stationId: UUID;
   title: string;
   purpose: RoutineTaskPurpose;
+  costUnit: number;
   payload: any;
   priority: number;
   status: RoutineTaskStatus;
   attempts: number;
   maxAttempts: number;
+  period: RoutinePeriod | null;
   scheduledAt: Date;
   actualStartedAt: Date | null;
   actualEndedAt: Date | null;
@@ -29,11 +32,13 @@ export const getDefaultRoutineTaskNode = (
   stationId,
   title: "Untitled",
   purpose: RoutineTaskPurpose.CreateBlock,
+  costUnit: 0,
   payload: {},
   priority: 0,
   status: RoutineTaskStatus.Idle,
   attempts: 0,
   maxAttempts: 1,
+  period: null,
   scheduledAt: new Date(),
   actualStartedAt: null,
   actualEndedAt: null,

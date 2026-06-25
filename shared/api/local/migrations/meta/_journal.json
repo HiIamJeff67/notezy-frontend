@@ -15,6 +15,13 @@
       "when": 1781654400000,
       "tag": "0001_add_routine_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782345600000,
+      "tag": "0002_update_routine_task_schedule_meta",
+      "breakpoints": true
     }
   ]
 }

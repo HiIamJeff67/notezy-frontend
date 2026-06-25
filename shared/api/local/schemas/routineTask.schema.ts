@@ -1,4 +1,5 @@
 import {
+  RoutinePeriod,
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
@@ -14,6 +15,7 @@ export const RoutineTask = sqliteTable("RoutineTaskTable", {
     .references(() => Station.id),
   title: text("title").notNull().default("undefined"),
   purpose: text("purpose").$type<RoutineTaskPurpose>().notNull(),
+  costUnit: integer("cost_unit").notNull().default(0),
   payload: text("payload", { mode: "json" }).$type<unknown>().notNull(),
   priority: integer("priority").notNull().default(0),
   status: text("status")
@@ -22,6 +24,7 @@ export const RoutineTask = sqliteTable("RoutineTaskTable", {
     .default(RoutineTaskStatus.Idle),
   attempts: integer("attempts").notNull().default(0),
   maxAttempts: integer("max_attempts").notNull().default(1),
+  period: text("period").$type<RoutinePeriod>(),
   scheduledAt: integer("scheduled_at", { mode: "timestamp" })
     .notNull()
     .default(new Date()),

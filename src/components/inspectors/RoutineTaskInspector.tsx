@@ -1,5 +1,9 @@
 import { useGetMyRoutineTaskById } from "@shared/api/hooks/routineTask.hook";
-import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
+import {
+  AllRoutinePeriods,
+  RoutinePeriod,
+  RoutineTaskPurpose,
+} from "@shared/api/interfaces/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -7,6 +11,7 @@ import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,12 +60,18 @@ const RoutineTaskInspector = ({
     payload: string;
     priority: number;
     maxAttempts: number;
+    scheduledAt: Date;
+    period: RoutinePeriod | null;
+    costUnit: number;
   }>({
     title: "",
     purpose: RoutineTaskPurpose.CreateBlockPack,
     payload: "{}",
     priority: 0,
     maxAttempts: 1,
+    scheduledAt: new Date(),
+    period: null,
+    costUnit: 0,
   });
 
   useEffect(() => {
@@ -72,6 +83,9 @@ const RoutineTaskInspector = ({
       payload: "{}",
       priority: 0,
       maxAttempts: 1,
+      scheduledAt: new Date(),
+      period: null,
+      costUnit: 0,
     });
 
     setIsLoadingRoutineTaskDetail(true);
@@ -95,11 +109,13 @@ const RoutineTaskInspector = ({
           stationId: response.data.stationId as UUID,
           title: response.data.title,
           purpose: response.data.purpose,
+          costUnit: response.data.costUnit,
           payload: response.data.payload,
           priority: response.data.priority,
           status: response.data.status,
           attempts: response.data.attempts,
           maxAttempts: response.data.maxAttempts,
+          period: response.data.period,
           scheduledAt: response.data.scheduledAt,
           actualStartedAt: response.data.actualStartedAt,
           actualEndedAt: response.data.actualEndedAt,
@@ -113,6 +129,9 @@ const RoutineTaskInspector = ({
           payload: JSON.stringify(response.data.payload ?? {}, null, 2),
           priority: response.data.priority,
           maxAttempts: response.data.maxAttempts,
+          scheduledAt: response.data.scheduledAt,
+          period: response.data.period,
+          costUnit: response.data.costUnit,
         });
       })
       .catch(error => {
@@ -130,16 +149,38 @@ const RoutineTaskInspector = ({
   const saveRoutineTask = async () => {
     const title = values.title.trim();
     if (title.length === 0) return;
+    let payload: unknown;
+    try {
+      payload =
+        values.payload.trim().length === 0 ? {} : JSON.parse(values.payload);
+    } catch {
+      toast.error("Payload must be valid JSON.");
+      return;
+    }
+    if (
+      new TextEncoder().encode(JSON.stringify(payload ?? {})).length >
+      16_777_216
+    ) {
+      toast.error("Payload must be smaller than 16 MiB.");
+      return;
+    }
 
     try {
-      await stationRoutineManager.updateRoutineTask(routineTaskId, {
-        title,
-        purpose: values.purpose,
-        payload:
-          values.payload.trim().length === 0 ? {} : JSON.parse(values.payload),
-        priority: values.priority,
-        maxAttempts: values.maxAttempts,
-      });
+      await stationRoutineManager.updateRoutineTask(
+        routineTaskId,
+        {
+          title,
+          purpose: values.purpose,
+          payload,
+          priority: values.priority,
+          maxAttempts: values.maxAttempts,
+          scheduledAt: values.scheduledAt,
+          ...(values.period === null ? {} : { period: values.period }),
+        },
+        {
+          Period: values.period === null,
+        }
+      );
       toast.success("Routine task updated");
       onClose();
     } catch (error) {
@@ -279,6 +320,48 @@ const RoutineTaskInspector = ({
             </div>
 
             <div className="flex flex-col gap-2">
+              <Label>Scheduled at</Label>
+              <DatePicker
+                value={values.scheduledAt}
+                onValueChange={scheduledAt => {
+                  if (!scheduledAt) return;
+                  scheduledAt.setSeconds(0, 0);
+                  setValues(current => ({
+                    ...current,
+                    scheduledAt,
+                  }));
+                }}
+                placeholder="Select first execution time"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Recurring</Label>
+              <Select
+                value={values.period ?? "OneShot"}
+                onValueChange={period =>
+                  setValues(current => ({
+                    ...current,
+                    period:
+                      period === "OneShot" ? null : (period as RoutinePeriod),
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-muted">
+                  <SelectItem value="OneShot">One-shot</SelectItem>
+                  {AllRoutinePeriods.map(routinePeriod => (
+                    <SelectItem key={routinePeriod} value={routinePeriod}>
+                      {routinePeriod}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
               <Label htmlFor="routine-task-inspector-payload">
                 Payload (JSON)
               </Label>
@@ -301,6 +384,12 @@ const RoutineTaskInspector = ({
               <span className="text-muted-foreground">Current status</span>
               <span className="font-medium">
                 {routineTaskNode?.status ?? "Loading"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3 text-sm">
+              <span className="text-muted-foreground">Cost unit</span>
+              <span className="font-medium tabular-nums">
+                {values.costUnit}
               </span>
             </div>
           </div>

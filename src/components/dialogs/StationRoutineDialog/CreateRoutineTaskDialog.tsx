@@ -1,10 +1,13 @@
 import {
+  AllRoutinePeriods,
   AllRoutineTaskPurposes,
+  RoutinePeriod,
   RoutineTaskPurpose,
 } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -51,6 +54,8 @@ const CreateRoutineTaskDialog = ({
   const [payload, setPayload] = useState<string>("{}");
   const [priority, setPriority] = useState<string>("0");
   const [maxAttempts, setMaxAttempts] = useState<string>("1");
+  const [scheduledAt, setScheduledAt] = useState<Date | undefined>();
+  const [period, setPeriod] = useState<RoutinePeriod | null>(null);
   const [payloadError, setPayloadError] = useState<string>("");
 
   useEffect(() => {
@@ -60,6 +65,8 @@ const CreateRoutineTaskDialog = ({
     setPayload("{}");
     setPriority("0");
     setMaxAttempts("1");
+    setScheduledAt(undefined);
+    setPeriod(null);
     setPayloadError("");
   }, [isOpen]);
 
@@ -77,6 +84,9 @@ const CreateRoutineTaskDialog = ({
     ) {
       return;
     }
+    if (!scheduledAt) {
+      return;
+    }
 
     let parsedPayload: unknown;
     try {
@@ -86,12 +96,21 @@ const CreateRoutineTaskDialog = ({
       setPayloadError("Payload must be valid JSON.");
       return;
     }
+    if (
+      new TextEncoder().encode(JSON.stringify(parsedPayload ?? {})).length >
+      16_777_216
+    ) {
+      setPayloadError("Payload must be smaller than 16 MiB.");
+      return;
+    }
 
     try {
       const routineTaskNode = await stationRoutineManager.createRoutineTask(
         stationId,
         trimmedTitle,
         purpose,
+        scheduledAt,
+        period,
         parsedPayload,
         parsedPriority,
         parsedMaxAttempts
@@ -165,6 +184,41 @@ const CreateRoutineTaskDialog = ({
           </div>
 
           <div className="flex flex-col gap-2">
+            <Label>Scheduled at</Label>
+            <DatePicker
+              value={scheduledAt}
+              onValueChange={value => {
+                if (!value) return;
+                value.setSeconds(0, 0);
+                setScheduledAt(value);
+              }}
+              placeholder="Select first execution time"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label>Recurring</Label>
+            <Select
+              value={period ?? "OneShot"}
+              onValueChange={value =>
+                setPeriod(value === "OneShot" ? null : (value as RoutinePeriod))
+              }
+            >
+              <SelectTrigger className="w-full rounded-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[160]">
+                <SelectItem value="OneShot">One-shot</SelectItem>
+                {AllRoutinePeriods.map(routinePeriod => (
+                  <SelectItem key={routinePeriod} value={routinePeriod}>
+                    {routinePeriod}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2">
             <Label htmlFor="routine-task-payload">Payload</Label>
             <Textarea
               id="routine-task-payload"
@@ -176,6 +230,9 @@ const CreateRoutineTaskDialog = ({
               className="min-h-36 resize-y font-mono text-xs"
               aria-invalid={payloadError.length > 0}
             />
+            <span className="text-xs text-muted-foreground">
+              Payload limit: 16 MiB.
+            </span>
             {payloadError.length > 0 && (
               <span className="text-destructive text-xs">{payloadError}</span>
             )}
@@ -223,7 +280,8 @@ const CreateRoutineTaskDialog = ({
               variant="default"
               disabled={
                 stationRoutineManager.isCreatingRoutineTask ||
-                title.trim().length === 0
+                title.trim().length === 0 ||
+                !scheduledAt
               }
             >
               {stationRoutineManager.isCreatingRoutineTask && <Spinner />}

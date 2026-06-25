@@ -1,4 +1,5 @@
 import {
+  RoutinePeriod as GraphQLRoutinePeriod,
   RoutineTaskPurpose as GraphQLRoutineTaskPurpose,
   RoutineTaskStatus as GraphQLRoutineTaskStatus,
   SearchRoutineTaskSortBy,
@@ -11,6 +12,7 @@ import {
   useUpdateMyRoutineTaskById,
 } from "@shared/api/hooks/routineTask.hook";
 import {
+  RoutinePeriod,
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
@@ -85,11 +87,13 @@ export const useRoutineTaskLogic = ({
           stationId: routineTask.stationId as UUID,
           title: routineTask.title,
           purpose: routineTask.purpose,
+          costUnit: routineTask.costUnit,
           payload: existingRoutineTask?.payload ?? {},
           priority: routineTask.priority,
           status: routineTask.status,
           attempts: routineTask.attempts,
           maxAttempts: routineTask.maxAttempts,
+          period: routineTask.period,
           scheduledAt: routineTask.scheduledAt,
           actualStartedAt: routineTask.actualStartedAt,
           actualEndedAt: routineTask.actualEndedAt,
@@ -163,10 +167,12 @@ export const useRoutineTaskLogic = ({
           stationId: UUID;
           title: string;
           purpose: GraphQLRoutineTaskPurpose;
+          costUnit: number;
           priority: number;
           status: GraphQLRoutineTaskStatus;
           attempts: number;
           maxAttempts: number;
+          period: GraphQLRoutinePeriod | null;
           scheduledAt: Date | string | number;
           actualStartedAt: Date | string | number | null;
           actualEndedAt: Date | string | number | null;
@@ -198,6 +204,7 @@ export const useRoutineTaskLogic = ({
                     ? RoutineTaskPurpose.UpdateBlock
                     : RoutineTaskPurpose.DeleteBlock,
           payload: existingRoutineTask?.payload ?? {},
+          costUnit: node.costUnit,
           priority: node.priority,
           status:
             node.status === GraphQLRoutineTaskStatus.RoutineTaskStatusWaiting
@@ -220,6 +227,14 @@ export const useRoutineTaskLogic = ({
                         : RoutineTaskStatus.Idle,
           attempts: node.attempts,
           maxAttempts: node.maxAttempts,
+          period:
+            node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
+              ? RoutinePeriod.Daily
+              : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
+                ? RoutinePeriod.Weekly
+                : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
+                  ? RoutinePeriod.Monthly
+                  : null,
           scheduledAt: new Date(node.scheduledAt),
           actualStartedAt:
             node.actualStartedAt === null
@@ -362,6 +377,8 @@ export const useRoutineTaskLogic = ({
       stationId: UUID,
       title: string,
       purpose: RoutineTaskPurpose,
+      scheduledAt: Date,
+      period: RoutinePeriod | null = null,
       payload: unknown = {},
       priority: number = 0,
       maxAttempts: number = 1
@@ -384,6 +401,8 @@ export const useRoutineTaskLogic = ({
           payload,
           priority,
           maxAttempts,
+          scheduledAt,
+          period,
         },
       });
       if (response.success === false) throw response.exception;
@@ -393,12 +412,14 @@ export const useRoutineTaskLogic = ({
         stationId,
         title,
         purpose,
+        costUnit: 0,
         payload,
         priority,
         status: RoutineTaskStatus.Idle,
         attempts: 0,
         maxAttempts,
-        scheduledAt: response.data.createdAt,
+        period,
+        scheduledAt,
         actualStartedAt: null,
         actualEndedAt: null,
         updatedAt: response.data.createdAt,
@@ -426,6 +447,8 @@ export const useRoutineTaskLogic = ({
         sourceRoutineTask.stationId,
         `${sourceRoutineTask.title} Copy`,
         sourceRoutineTask.purpose,
+        sourceRoutineTask.scheduledAt,
+        sourceRoutineTask.period,
         sourceRoutineTask.payload,
         sourceRoutineTask.priority,
         sourceRoutineTask.maxAttempts
@@ -511,6 +534,7 @@ export const useRoutineTaskLogic = ({
 
       for (const routineTaskNode of routineTaskNodes) {
         Object.assign(routineTaskNode, values);
+        if (setNull?.Period) routineTaskNode.period = null;
         routineTaskNode.updatedAt = response.data.updatedAt;
       }
       forceUpdate();

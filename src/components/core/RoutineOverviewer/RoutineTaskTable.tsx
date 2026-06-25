@@ -1,4 +1,5 @@
 import {
+  RoutinePeriod as GraphQLRoutinePeriod,
   RoutineTaskPurpose as GraphQLRoutineTaskPurpose,
   RoutineTaskStatus as GraphQLRoutineTaskStatus,
   SearchRoutineTaskSortBy,
@@ -7,6 +8,7 @@ import {
 import { useSearchRoutineTasksLazyQuery } from "@shared/api/graphql/hooks/useSearchRoutineTasks";
 import {
   AllRoutineTaskStatuses,
+  RoutinePeriod,
   RoutineTaskPurpose,
   RoutineTaskStatus,
 } from "@shared/api/interfaces/enums";
@@ -115,10 +117,12 @@ const RoutineTaskTable = () => {
               stationId: UUID;
               title: string;
               purpose: GraphQLRoutineTaskPurpose;
+              costUnit: number;
               priority: number;
               status: GraphQLRoutineTaskStatus;
               attempts: number;
               maxAttempts: number;
+              period: GraphQLRoutinePeriod | null;
               scheduledAt: Date | string | number;
               actualStartedAt: Date | string | number | null;
               actualEndedAt: Date | string | number | null;
@@ -154,6 +158,7 @@ const RoutineTaskTable = () => {
                         ? RoutineTaskPurpose.UpdateBlock
                         : RoutineTaskPurpose.DeleteBlock,
               payload: {},
+              costUnit: node.costUnit,
               priority: node.priority,
               status:
                 node.status ===
@@ -177,6 +182,14 @@ const RoutineTaskTable = () => {
                             : RoutineTaskStatus.Idle,
               attempts: node.attempts,
               maxAttempts: node.maxAttempts,
+              period:
+                node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
+                  ? RoutinePeriod.Daily
+                  : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
+                    ? RoutinePeriod.Weekly
+                    : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
+                      ? RoutinePeriod.Monthly
+                      : null,
               scheduledAt: new Date(node.scheduledAt),
               actualStartedAt:
                 node.actualStartedAt === null
