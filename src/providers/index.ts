@@ -3,6 +3,7 @@ export * from "./BackgroundImagesProvider";
 export * from "./BlockEditorProvider";
 export * from "./LanguageProvider";
 export * from "./LoadingProvider";
+export * from "./LocalPreferencesProvider";
 export * from "./ModalProvider";
 export * from "./ResizeSidebarProvider";
 export * from "./ScreenProvider";

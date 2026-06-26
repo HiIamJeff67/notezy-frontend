@@ -7,6 +7,7 @@ import { AppRouterProvider } from "@/providers/AppRouterProvider";
 import { BackgroundImagesProvider } from "@/providers/BackgroundImagesProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { LoadingProvider } from "@/providers/LoadingProvider";
+import { LocalPreferencesProvider } from "@/providers/LocalPreferencesProvider";
 import { ScreenProvider } from "@/providers/ScreenProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { TransactionSynchronizerProvider } from "@/providers/TransactionSynchronizerProvider/TransactionSynchronizerProvider";
@@ -22,15 +23,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <LoadingProvider>
             <LanguageProvider>
               <ThemeProvider>
-                <TransactionSynchronizerProvider>
-                  <UserProvider>
-                    <BackgroundImagesProvider>
-                      <DndProvider backend={HTML5Backend}>
-                        {children}
-                      </DndProvider>
-                    </BackgroundImagesProvider>
-                  </UserProvider>
-                </TransactionSynchronizerProvider>
+                <LocalPreferencesProvider>
+                  <TransactionSynchronizerProvider>
+                    <UserProvider>
+                      <BackgroundImagesProvider>
+                        <DndProvider backend={HTML5Backend}>
+                          {children}
+                        </DndProvider>
+                      </BackgroundImagesProvider>
+                    </UserProvider>
+                  </TransactionSynchronizerProvider>
+                </LocalPreferencesProvider>
               </ThemeProvider>
             </LanguageProvider>
           </LoadingProvider>

@@ -3,6 +3,7 @@ export * from "./blockTimes.constant";
 export * from "./defaultBlockPackInitialContent.constant";
 export * from "./defaultFakeUser.constant";
 export * from "./defaultThemes.constant";
+export * from "./planLimitations.constant";
 export * from "./searchLimitations.constant";
 export * from "./shelfMaterialLimitations.constant";
 export * from "./size.constant";

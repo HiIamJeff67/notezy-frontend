@@ -10,9 +10,11 @@ import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import ContainableSelect from "@/components/commons/ContainableSelect/ContainableSelect";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import MonthlyDayPicker from "@/components/commons/MonthlyDayPicker/MonthlyDayPicker";
 import TimezoneSelector, {
   SupportedTimezones,
 } from "@/components/commons/TimezoneSelector/TimezoneSelector";
+import WeekdayPicker from "@/components/commons/WeekdayPicker/WeekdayPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +66,14 @@ const RoutineInspector = ({
     period: null,
     timezone: "",
   });
+  const [weekdayRange, setWeekdayRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 1, end: 1 });
+  const [monthlyDayRange, setMonthlyDayRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 1, end: 1 });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,6 +92,8 @@ const RoutineInspector = ({
       period: null,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
+    setWeekdayRange({ start: 1, end: 1 });
+    setMonthlyDayRange({ start: 1, end: 1 });
 
     setIsLoadingRoutineDetail(true);
     const accessToken = LocalStorageManipulator.getItemByKey(
@@ -128,6 +140,28 @@ const RoutineInspector = ({
           routineTasks,
         };
         stationRoutineManager.upsertRoutineNode(routineNode);
+        if (response.data.period === RoutinePeriod.Weekly) {
+          const startWeekday = response.data.scheduledStartAt.getDay() || 7;
+          const endWeekday = response.data.scheduledEndAt.getDay() || 7;
+          setWeekdayRange({
+            start: Math.min(startWeekday, endWeekday),
+            end: Math.max(startWeekday, endWeekday),
+          });
+        }
+        if (response.data.period === RoutinePeriod.Monthly) {
+          const startDay = Math.min(
+            28,
+            Math.max(1, response.data.scheduledStartAt.getDate())
+          );
+          const endDay = Math.min(
+            28,
+            Math.max(1, response.data.scheduledEndAt.getDate())
+          );
+          setMonthlyDayRange({
+            start: Math.min(startDay, endDay),
+            end: Math.max(startDay, endDay),
+          });
+        }
         setValues({
           title: response.data.title,
           description: response.data.description,
@@ -154,7 +188,28 @@ const RoutineInspector = ({
   const saveRoutine = async () => {
     const title = values.title.trim();
     if (title.length === 0) return;
-    if (values.scheduledEndAt <= values.scheduledStartAt) {
+    const weekStartAt = new Date(2026, 0, 4 + weekdayRange.start);
+    weekStartAt.setHours(0, 0, 0, 0);
+    const weekEndAt = new Date(2026, 0, 4 + weekdayRange.end);
+    weekEndAt.setHours(23, 59, 0, 0);
+    const monthStartAt = new Date(2026, 0, monthlyDayRange.start);
+    monthStartAt.setHours(0, 0, 0, 0);
+    const monthEndAt = new Date(2026, 0, monthlyDayRange.end);
+    monthEndAt.setHours(23, 59, 0, 0);
+    const scheduledStartAt =
+      values.period === RoutinePeriod.Weekly
+        ? weekStartAt
+        : values.period === RoutinePeriod.Monthly
+          ? monthStartAt
+          : values.scheduledStartAt;
+    const scheduledEndAt =
+      values.period === RoutinePeriod.Weekly
+        ? weekEndAt
+        : values.period === RoutinePeriod.Monthly
+          ? monthEndAt
+          : values.scheduledEndAt;
+
+    if (scheduledEndAt <= scheduledStartAt) {
       toast.error("End time must be later than start time");
       return;
     }
@@ -171,8 +226,8 @@ const RoutineInspector = ({
           description: values.description.trim(),
           status: values.status,
           isPinned: values.isPinned,
-          scheduledStartAt: values.scheduledStartAt,
-          scheduledEndAt: values.scheduledEndAt,
+          scheduledStartAt,
+          scheduledEndAt,
           ...(values.period === null ? {} : { period: values.period }),
           timezone: values.timezone.trim(),
         },
@@ -308,35 +363,56 @@ const RoutineInspector = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Start</Label>
-              <DatePicker
-                value={values.scheduledStartAt}
-                onValueChange={scheduledStartAt => {
-                  if (!scheduledStartAt) return;
-                  setValues(current => ({
-                    ...current,
-                    scheduledStartAt,
-                  }));
-                }}
-                placeholder="Select start date and time"
-              />
-            </div>
+              {values.period === RoutinePeriod.Weekly ? (
+                <>
+                  <Label>Weekdays</Label>
+                  <WeekdayPicker
+                    value={weekdayRange}
+                    onValueChange={setWeekdayRange}
+                  />
+                </>
+              ) : values.period === RoutinePeriod.Monthly ? (
+                <>
+                  <Label>Month days</Label>
+                  <MonthlyDayPicker
+                    value={monthlyDayRange}
+                    onValueChange={setMonthlyDayRange}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Limited to day 1 - 28 to keep every month valid.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Label>Start</Label>
+                  <DatePicker
+                    value={values.scheduledStartAt}
+                    onValueChange={scheduledStartAt => {
+                      if (!scheduledStartAt) return;
+                      setValues(current => ({
+                        ...current,
+                        scheduledStartAt,
+                      }));
+                    }}
+                    placeholder="Select start date and time"
+                  />
 
-            <div className="flex flex-col gap-2">
-              <Label>End</Label>
-              <DatePicker
-                value={values.scheduledEndAt}
-                onValueChange={scheduledEndAt => {
-                  if (!scheduledEndAt) return;
-                  setValues(current => ({
-                    ...current,
-                    scheduledEndAt,
-                  }));
-                }}
-                disabled={{ before: values.scheduledStartAt }}
-                isInvalid={values.scheduledEndAt <= values.scheduledStartAt}
-                placeholder="Select end date and time"
-              />
+                  <Label>End</Label>
+                  <DatePicker
+                    value={values.scheduledEndAt}
+                    onValueChange={scheduledEndAt => {
+                      if (!scheduledEndAt) return;
+                      setValues(current => ({
+                        ...current,
+                        scheduledEndAt,
+                      }));
+                    }}
+                    disabled={{ before: values.scheduledStartAt }}
+                    isInvalid={values.scheduledEndAt <= values.scheduledStartAt}
+                    placeholder="Select end date and time"
+                  />
+                </>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">

@@ -7,7 +7,9 @@ import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import MonthlyDayPicker from "@/components/commons/MonthlyDayPicker/MonthlyDayPicker";
 import TimePicker from "@/components/commons/TimePicker/TimePicker";
+import WeekdayPicker from "@/components/commons/WeekdayPicker/WeekdayPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -59,8 +61,19 @@ const CreateRoutineDialog = ({
     undefined
   );
   const [period, setPeriod] = useState<RoutinePeriod | null>(null);
+  const [weekdayRange, setWeekdayRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 1, end: 1 });
+  const [monthlyDayRange, setMonthlyDayRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 1, end: 1 });
   const [isPinned, setIsPinned] = useState<boolean>(false);
   const usesDailyTimePicker = period === RoutinePeriod.Daily;
+  const usesWeekdayPicker = period === RoutinePeriod.Weekly;
+  const usesMonthlyDayPicker = period === RoutinePeriod.Monthly;
+  const usesPeriodRangePicker = usesWeekdayPicker || usesMonthlyDayPicker;
 
   useEffect(() => {
     if (isOpen) return;
@@ -70,11 +83,15 @@ const CreateRoutineDialog = ({
     setScheduledStartAt(undefined);
     setScheduledEndAt(undefined);
     setPeriod(null);
+    setWeekdayRange({ start: 1, end: 1 });
+    setMonthlyDayRange({ start: 1, end: 1 });
     setIsPinned(false);
   }, [isOpen]);
 
   const hasInvalidSchedule =
     hasCustomSchedule &&
+    !usesWeekdayPicker &&
+    !usesMonthlyDayPicker &&
     (!scheduledStartAt ||
       !scheduledEndAt ||
       (usesDailyTimePicker
@@ -88,35 +105,54 @@ const CreateRoutineDialog = ({
 
     try {
       const today = new Date();
+      const weekStartAt = new Date(2026, 0, 4 + weekdayRange.start);
+      weekStartAt.setHours(0, 0, 0, 0);
+      const weekEndAt = new Date(2026, 0, 4 + weekdayRange.end);
+      weekEndAt.setHours(23, 59, 0, 0);
+      const monthStartAt = new Date(2026, 0, monthlyDayRange.start);
+      monthStartAt.setHours(0, 0, 0, 0);
+      const monthEndAt = new Date(2026, 0, monthlyDayRange.end);
+      monthEndAt.setHours(23, 59, 0, 0);
       const routineNode = await stationRoutineManager.createRoutine(stationId, {
         title: trimmedTitle,
         description: description.trim(),
         status: RoutineStatus.Scheduled,
         isPinned,
-        ...(hasCustomSchedule && scheduledStartAt && scheduledEndAt
+        ...((hasCustomSchedule || usesPeriodRangePicker) &&
+        (usesWeekdayPicker ||
+          usesMonthlyDayPicker ||
+          (scheduledStartAt && scheduledEndAt))
           ? {
-              scheduledStartAt: usesDailyTimePicker
-                ? new Date(
-                    today.getFullYear(),
-                    today.getMonth(),
-                    today.getDate(),
-                    scheduledStartAt.getHours(),
-                    scheduledStartAt.getMinutes(),
-                    0,
-                    0
-                  )
-                : scheduledStartAt,
-              scheduledEndAt: usesDailyTimePicker
-                ? new Date(
-                    today.getFullYear(),
-                    today.getMonth(),
-                    today.getDate(),
-                    scheduledEndAt.getHours(),
-                    scheduledEndAt.getMinutes(),
-                    0,
-                    0
-                  )
-                : scheduledEndAt,
+              scheduledStartAt: usesWeekdayPicker
+                ? weekStartAt
+                : usesMonthlyDayPicker
+                  ? monthStartAt
+                  : usesDailyTimePicker && scheduledStartAt
+                    ? new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        today.getDate(),
+                        scheduledStartAt.getHours(),
+                        scheduledStartAt.getMinutes(),
+                        0,
+                        0
+                      )
+                    : scheduledStartAt,
+              scheduledEndAt: usesWeekdayPicker
+                ? weekEndAt
+                : usesMonthlyDayPicker
+                  ? monthEndAt
+                  : usesDailyTimePicker && scheduledEndAt
+                    ? new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        today.getDate(),
+                        scheduledEndAt.getHours(),
+                        scheduledEndAt.getMinutes(),
+                        0,
+                        0
+                      )
+                    : scheduledEndAt,
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             }
           : {}),
@@ -188,54 +224,78 @@ const CreateRoutineDialog = ({
             </div>
             <Switch
               id="routine-custom-schedule"
-              checked={hasCustomSchedule}
+              checked={hasCustomSchedule || usesPeriodRangePicker}
+              disabled={usesPeriodRangePicker}
               onCheckedChange={setHasCustomSchedule}
             />
           </div>
 
-          {hasCustomSchedule && (
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <Label>Starts</Label>
-                {usesDailyTimePicker ? (
-                  <TimePicker
-                    value={scheduledStartAt}
-                    onValueChange={setScheduledStartAt}
-                    placeholder="Select start time"
+          {(hasCustomSchedule || usesPeriodRangePicker) && (
+            <>
+              {usesWeekdayPicker ? (
+                <div className="flex flex-col gap-2">
+                  <Label>Weekdays</Label>
+                  <WeekdayPicker
+                    value={weekdayRange}
+                    onValueChange={setWeekdayRange}
                   />
-                ) : (
-                  <DatePicker
-                    value={scheduledStartAt}
-                    onValueChange={setScheduledStartAt}
-                    placeholder="Select start date and time"
+                </div>
+              ) : usesMonthlyDayPicker ? (
+                <div className="flex flex-col gap-2">
+                  <Label>Month days</Label>
+                  <MonthlyDayPicker
+                    value={monthlyDayRange}
+                    onValueChange={setMonthlyDayRange}
                   />
-                )}
-              </div>
+                  <span className="text-xs text-muted-foreground">
+                    Limited to day 1 - 28 to keep every month valid.
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <Label>Starts</Label>
+                    {usesDailyTimePicker ? (
+                      <TimePicker
+                        value={scheduledStartAt}
+                        onValueChange={setScheduledStartAt}
+                        placeholder="Select start time"
+                      />
+                    ) : (
+                      <DatePicker
+                        value={scheduledStartAt}
+                        onValueChange={setScheduledStartAt}
+                        placeholder="Select start date and time"
+                      />
+                    )}
+                  </div>
 
-              <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <Label>Ends</Label>
-                {usesDailyTimePicker ? (
-                  <TimePicker
-                    value={scheduledEndAt}
-                    onValueChange={setScheduledEndAt}
-                    isInvalid={hasInvalidSchedule}
-                    placeholder="Select end time"
-                  />
-                ) : (
-                  <DatePicker
-                    value={scheduledEndAt}
-                    onValueChange={setScheduledEndAt}
-                    disabled={
-                      scheduledStartAt
-                        ? { before: scheduledStartAt }
-                        : undefined
-                    }
-                    isInvalid={hasInvalidSchedule}
-                    placeholder="Select end date and time"
-                  />
-                )}
-              </div>
-            </div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <Label>Ends</Label>
+                    {usesDailyTimePicker ? (
+                      <TimePicker
+                        value={scheduledEndAt}
+                        onValueChange={setScheduledEndAt}
+                        isInvalid={hasInvalidSchedule}
+                        placeholder="Select end time"
+                      />
+                    ) : (
+                      <DatePicker
+                        value={scheduledEndAt}
+                        onValueChange={setScheduledEndAt}
+                        disabled={
+                          scheduledStartAt
+                            ? { before: scheduledStartAt }
+                            : undefined
+                        }
+                        isInvalid={hasInvalidSchedule}
+                        placeholder="Select end date and time"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
@@ -243,9 +303,17 @@ const CreateRoutineDialog = ({
               <Label>Repeat</Label>
               <Select
                 value={period ?? "none"}
-                onValueChange={value =>
-                  setPeriod(value === "none" ? null : (value as RoutinePeriod))
-                }
+                onValueChange={value => {
+                  const nextPeriod =
+                    value === "none" ? null : (value as RoutinePeriod);
+                  setPeriod(nextPeriod);
+                  if (
+                    nextPeriod === RoutinePeriod.Weekly ||
+                    nextPeriod === RoutinePeriod.Monthly
+                  ) {
+                    setHasCustomSchedule(true);
+                  }
+                }}
               >
                 <SelectTrigger className="w-full rounded-sm">
                   <SelectValue />

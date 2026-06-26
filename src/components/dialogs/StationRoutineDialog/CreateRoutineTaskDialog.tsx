@@ -3,10 +3,12 @@ import {
   AllRoutineTaskPurposes,
   RoutinePeriod,
   RoutineTaskPurpose,
+  UserPlan,
 } from "@shared/api/interfaces/enums";
+import { PlanLimitations } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine, useUser } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface CreateRoutineTaskDialogProps extends ModalProps {
@@ -46,6 +48,7 @@ const CreateRoutineTaskDialog = ({
 }: CreateRoutineTaskDialogProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
+  const userManager = useUser();
 
   const [title, setTitle] = useState<string>("");
   const [purpose, setPurpose] = useState<RoutineTaskPurpose>(
@@ -69,6 +72,31 @@ const CreateRoutineTaskDialog = ({
     setPeriod(null);
     setPayloadError("");
   }, [isOpen]);
+
+  const estimatedPayloadCostUnit = useMemo(() => {
+    try {
+      const parsedPayload =
+        payload.trim().length === 0 ? {} : JSON.parse(payload);
+      return Math.ceil(
+        new Blob([JSON.stringify(parsedPayload ?? {})]).size / 1024
+      );
+    } catch {
+      return null;
+    }
+  }, [payload]);
+
+  const routineTaskCostUnitCount = Number(
+    userManager.userAccount?.routineTaskCostUnitCount ?? 0
+  );
+  const maxRoutineTaskCostUnitCount =
+    PlanLimitations[userManager.userData?.plan ?? UserPlan.Free]
+      .maxRoutineTaskCostUnitCount;
+  const estimatedUsageAfterCreate =
+    routineTaskCostUnitCount + (estimatedPayloadCostUnit ?? 0);
+  const isRoutineTaskCostUnitExceeded =
+    userManager.userAccount !== null &&
+    estimatedPayloadCostUnit !== null &&
+    estimatedUsageAfterCreate > maxRoutineTaskCostUnitCount;
 
   const createRoutineTask = async () => {
     const trimmedTitle = title.trim();
@@ -103,6 +131,12 @@ const CreateRoutineTaskDialog = ({
       setPayloadError("Payload must be smaller than 16 MiB.");
       return;
     }
+    if (isRoutineTaskCostUnitExceeded) {
+      toast.error(
+        "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+      );
+      return;
+    }
 
     try {
       const routineTaskNode = await stationRoutineManager.createRoutineTask(
@@ -116,10 +150,19 @@ const CreateRoutineTaskDialog = ({
         parsedMaxAttempts
       );
       await onCreated?.(routineTaskNode.id);
+      userManager.updateUserAccount({
+        routineTaskCostUnitCount: estimatedUsageAfterCreate,
+      });
       toast.success("Routine task created");
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      const message = languageManager.tError(error);
+      toast.error(
+        message.toLowerCase().includes("routine task") &&
+          message.toLowerCase().includes("cost")
+          ? "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+          : message
+      );
     }
   };
 
@@ -231,7 +274,25 @@ const CreateRoutineTaskDialog = ({
               aria-invalid={payloadError.length > 0}
             />
             <span className="text-xs text-muted-foreground">
-              Payload limit: 16 MiB.
+              Routine task payload usage:{" "}
+              {userManager.userAccount
+                ? routineTaskCostUnitCount
+                : "Not loaded"}{" "}
+              / {maxRoutineTaskCostUnitCount} CostUnits.
+            </span>
+            <span
+              className={`text-xs ${
+                isRoutineTaskCostUnitExceeded
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {estimatedPayloadCostUnit === null
+                ? "Payload must be valid JSON to estimate CostUnits."
+                : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits.`}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Payload hard limit: 16 MiB.
             </span>
             {payloadError.length > 0 && (
               <span className="text-destructive text-xs">{payloadError}</span>
@@ -281,7 +342,9 @@ const CreateRoutineTaskDialog = ({
               disabled={
                 stationRoutineManager.isCreatingRoutineTask ||
                 title.trim().length === 0 ||
-                !scheduledAt
+                !scheduledAt ||
+                estimatedPayloadCostUnit === null ||
+                isRoutineTaskCostUnitExceeded
               }
             >
               {stationRoutineManager.isCreatingRoutineTask && <Spinner />}

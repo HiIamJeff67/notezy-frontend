@@ -3,14 +3,16 @@ import {
   AllRoutinePeriods,
   RoutinePeriod,
   RoutineTaskPurpose,
+  UserPlan,
 } from "@shared/api/interfaces/enums";
+import { PlanLimitations } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +34,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useLanguage, useStationRoutine, useUser } from "@/hooks";
 
 interface RoutineTaskInspectorProps {
   routineTaskId: UUID;
@@ -47,6 +49,7 @@ const RoutineTaskInspector = ({
 }: RoutineTaskInspectorProps) => {
   const languageManager = useLanguage();
   const stationRoutineManager = useStationRoutine();
+  const userManager = useUser();
   const getRoutineTaskQuerier = useGetMyRoutineTaskById();
 
   const routineTaskNode =
@@ -146,6 +149,40 @@ const RoutineTaskInspector = ({
     };
   }, [isOpen, routineTaskId]);
 
+  useEffect(() => {
+    if (!isOpen || userManager.userAccount) return;
+    void userManager.fetchUserAccount(
+      LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
+    );
+  }, [isOpen, userManager.fetchUserAccount, userManager.userAccount]);
+
+  const estimatedPayloadCostUnit = useMemo(() => {
+    try {
+      const parsedPayload =
+        values.payload.trim().length === 0 ? {} : JSON.parse(values.payload);
+      return Math.ceil(
+        new Blob([JSON.stringify(parsedPayload ?? {})]).size / 1024
+      );
+    } catch {
+      return null;
+    }
+  }, [values.payload]);
+
+  const routineTaskCostUnitCount = Number(
+    userManager.userAccount?.routineTaskCostUnitCount ?? 0
+  );
+  const maxRoutineTaskCostUnitCount =
+    PlanLimitations[userManager.userData?.plan ?? UserPlan.Free]
+      .maxRoutineTaskCostUnitCount;
+  const estimatedRoutineTaskCostUnitDelta =
+    (estimatedPayloadCostUnit ?? values.costUnit) - values.costUnit;
+  const estimatedUsageAfterUpdate =
+    routineTaskCostUnitCount + estimatedRoutineTaskCostUnitDelta;
+  const isRoutineTaskCostUnitExceeded =
+    userManager.userAccount !== null &&
+    estimatedPayloadCostUnit !== null &&
+    estimatedUsageAfterUpdate > maxRoutineTaskCostUnitCount;
+
   const saveRoutineTask = async () => {
     const title = values.title.trim();
     if (title.length === 0) return;
@@ -162,6 +199,12 @@ const RoutineTaskInspector = ({
       16_777_216
     ) {
       toast.error("Payload must be smaller than 16 MiB.");
+      return;
+    }
+    if (isRoutineTaskCostUnitExceeded) {
+      toast.error(
+        "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+      );
       return;
     }
 
@@ -181,10 +224,22 @@ const RoutineTaskInspector = ({
           Period: values.period === null,
         }
       );
+      userManager.updateUserAccount({
+        routineTaskCostUnitCount: estimatedUsageAfterUpdate,
+      });
+      void userManager.fetchUserAccount(
+        LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
+      );
       toast.success("Routine task updated");
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      const message = languageManager.tError(error);
+      toast.error(
+        message.toLowerCase().includes("routine task") &&
+          message.toLowerCase().includes("cost")
+          ? "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+          : message
+      );
     }
   };
 
@@ -378,6 +433,24 @@ const RoutineTaskInspector = ({
                   }));
                 }}
               />
+              <span className="text-xs text-muted-foreground">
+                Routine task payload usage:{" "}
+                {userManager.userAccount
+                  ? routineTaskCostUnitCount
+                  : "Not loaded"}{" "}
+                / {maxRoutineTaskCostUnitCount} CostUnits.
+              </span>
+              <span
+                className={`text-xs ${
+                  isRoutineTaskCostUnitExceeded
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {estimatedPayloadCostUnit === null
+                  ? "Payload must be valid JSON to estimate CostUnits."
+                  : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits after save.`}
+              </span>
             </div>
 
             <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3 text-sm">
@@ -401,7 +474,9 @@ const RoutineTaskInspector = ({
               disabled={
                 stationRoutineManager.isUpdatingRoutineTask ||
                 isLoadingRoutineTaskDetail ||
-                values.title.trim().length === 0
+                values.title.trim().length === 0 ||
+                estimatedPayloadCostUnit === null ||
+                isRoutineTaskCostUnitExceeded
               }
             >
               {stationRoutineManager.isUpdatingRoutineTask && <Spinner />}

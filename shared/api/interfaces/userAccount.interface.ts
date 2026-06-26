@@ -30,6 +30,10 @@ export const GetMyAccountResponseSchema = NotezyResponseSchema.extend({
     materialCount: z.int32().min(0),
     workflowCount: z.int32().min(0),
     additionalItemCount: z.int32().min(0),
+    stationCount: z.number().int().min(0),
+    routineCount: z.number().int().min(0),
+    routineTaskCostUnitCount: z.number().int().min(0),
+    routineTagCount: z.number().int().min(0),
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({

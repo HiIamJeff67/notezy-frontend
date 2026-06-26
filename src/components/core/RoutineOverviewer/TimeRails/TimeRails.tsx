@@ -1,3 +1,4 @@
+import { RoutinePeriod } from "@shared/api/interfaces/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import type { RoutineNode } from "@shared/types/routineNode.type";
@@ -415,29 +416,208 @@ const TimeRails = () => {
 
   const renderedTimeRailStations = useMemo(() => {
     return orderedTimeRailStations.map(timeRailStation => {
-      const visibleRoutines = timeRailStation.routines.filter(routine => {
+      const routineOccurrences = timeRailStation.routines.flatMap(routine => {
+        if (routine.period === RoutinePeriod.Daily) {
+          const occurrences: Array<{
+            key: string;
+            routine: RoutineNode;
+            canResize: boolean;
+          }> = [];
+          const cursor = new Date(routineVisibilityWindow.startAt);
+          cursor.setHours(0, 0, 0, 0);
+          cursor.setDate(cursor.getDate() - 1);
+
+          while (cursor < routineVisibilityWindow.endAt) {
+            const scheduledStartAt = new Date(cursor);
+            scheduledStartAt.setHours(
+              routine.scheduledStartAt.getHours(),
+              routine.scheduledStartAt.getMinutes(),
+              0,
+              0
+            );
+            const scheduledEndAt = new Date(cursor);
+            scheduledEndAt.setHours(
+              routine.scheduledEndAt.getHours(),
+              routine.scheduledEndAt.getMinutes(),
+              0,
+              0
+            );
+            if (scheduledEndAt <= scheduledStartAt) {
+              scheduledEndAt.setDate(scheduledEndAt.getDate() + 1);
+            }
+
+            if (
+              scheduledStartAt < routineVisibilityWindow.endAt &&
+              scheduledEndAt > routineVisibilityWindow.startAt
+            ) {
+              occurrences.push({
+                key: `${routine.id}-${scheduledStartAt.getTime()}`,
+                routine: {
+                  ...routine,
+                  scheduledStartAt,
+                  scheduledEndAt,
+                },
+                canResize: false,
+              });
+            }
+            cursor.setDate(cursor.getDate() + 1);
+          }
+
+          return occurrences;
+        }
+
+        if (routine.period === RoutinePeriod.Weekly) {
+          const occurrences: Array<{
+            key: string;
+            routine: RoutineNode;
+            canResize: boolean;
+          }> = [];
+          const routineStartWeekday = routine.scheduledStartAt.getDay() || 7;
+          const routineEndWeekday = routine.scheduledEndAt.getDay() || 7;
+          const startWeekday = Math.min(routineStartWeekday, routineEndWeekday);
+          const endWeekday = Math.max(routineStartWeekday, routineEndWeekday);
+          const firstWeekStartAt = new Date(routineVisibilityWindow.startAt);
+          firstWeekStartAt.setHours(0, 0, 0, 0);
+          firstWeekStartAt.setDate(
+            firstWeekStartAt.getDate() - ((firstWeekStartAt.getDay() || 7) - 1)
+          );
+          firstWeekStartAt.setDate(firstWeekStartAt.getDate() - 7);
+
+          while (firstWeekStartAt < routineVisibilityWindow.endAt) {
+            const scheduledStartAt = new Date(firstWeekStartAt);
+            scheduledStartAt.setDate(
+              scheduledStartAt.getDate() + startWeekday - 1
+            );
+            scheduledStartAt.setHours(
+              routine.scheduledStartAt.getHours(),
+              routine.scheduledStartAt.getMinutes(),
+              0,
+              0
+            );
+            const scheduledEndAt = new Date(firstWeekStartAt);
+            scheduledEndAt.setDate(scheduledEndAt.getDate() + endWeekday - 1);
+            scheduledEndAt.setHours(
+              routine.scheduledEndAt.getHours(),
+              routine.scheduledEndAt.getMinutes(),
+              0,
+              0
+            );
+
+            if (
+              scheduledStartAt < routineVisibilityWindow.endAt &&
+              scheduledEndAt > routineVisibilityWindow.startAt
+            ) {
+              occurrences.push({
+                key: `${routine.id}-${scheduledStartAt.getTime()}`,
+                routine: {
+                  ...routine,
+                  scheduledStartAt,
+                  scheduledEndAt,
+                },
+                canResize: false,
+              });
+            }
+            firstWeekStartAt.setDate(firstWeekStartAt.getDate() + 7);
+          }
+
+          return occurrences;
+        }
+
+        if (routine.period === RoutinePeriod.Monthly) {
+          const occurrences: Array<{
+            key: string;
+            routine: RoutineNode;
+            canResize: boolean;
+          }> = [];
+          const routineStartDay = Math.min(
+            28,
+            Math.max(1, routine.scheduledStartAt.getDate())
+          );
+          const routineEndDay = Math.min(
+            28,
+            Math.max(1, routine.scheduledEndAt.getDate())
+          );
+          const startDay = Math.min(routineStartDay, routineEndDay);
+          const endDay = Math.max(routineStartDay, routineEndDay);
+          const cursor = new Date(routineVisibilityWindow.startAt);
+          cursor.setDate(1);
+          cursor.setHours(0, 0, 0, 0);
+          cursor.setMonth(cursor.getMonth() - 1);
+
+          while (cursor < routineVisibilityWindow.endAt) {
+            const scheduledStartAt = new Date(
+              cursor.getFullYear(),
+              cursor.getMonth(),
+              startDay,
+              routine.scheduledStartAt.getHours(),
+              routine.scheduledStartAt.getMinutes(),
+              0,
+              0
+            );
+            const scheduledEndAt = new Date(
+              cursor.getFullYear(),
+              cursor.getMonth(),
+              endDay,
+              routine.scheduledEndAt.getHours(),
+              routine.scheduledEndAt.getMinutes(),
+              0,
+              0
+            );
+
+            if (
+              scheduledStartAt < routineVisibilityWindow.endAt &&
+              scheduledEndAt > routineVisibilityWindow.startAt
+            ) {
+              occurrences.push({
+                key: `${routine.id}-${scheduledStartAt.getTime()}`,
+                routine: {
+                  ...routine,
+                  scheduledStartAt,
+                  scheduledEndAt,
+                },
+                canResize: false,
+              });
+            }
+            cursor.setMonth(cursor.getMonth() + 1);
+          }
+
+          return occurrences;
+        }
+
         const preview = routineResizePreview[routine.id];
         const scheduledStartAt =
           preview?.scheduledStartAt ?? routine.scheduledStartAt;
         const scheduledEndAt =
           preview?.scheduledEndAt ?? routine.scheduledEndAt;
 
-        return (
+        if (
           scheduledStartAt < routineVisibilityWindow.endAt &&
           scheduledEndAt > routineVisibilityWindow.startAt
-        );
+        ) {
+          return [
+            {
+              key: routine.id,
+              routine: {
+                ...routine,
+                scheduledStartAt,
+                scheduledEndAt,
+              },
+              canResize: true,
+            },
+          ];
+        }
+
+        return [];
       });
       const routineLayouts = new Map<
-        UUID,
+        string,
         { left: number; width: number; railIndex: number }
       >();
-      const routineVisualLayouts = visibleRoutines
-        .map(routine => {
-          const preview = routineResizePreview[routine.id];
-          const scheduledStartAt =
-            preview?.scheduledStartAt ?? routine.scheduledStartAt;
-          const scheduledEndAt =
-            preview?.scheduledEndAt ?? routine.scheduledEndAt;
+      const routineVisualLayouts = routineOccurrences
+        .map(routineOccurrence => {
+          const { routine } = routineOccurrence;
+          const scheduledStartAt = routine.scheduledStartAt;
+          const scheduledEndAt = routine.scheduledEndAt;
           const routineStartMs = Math.max(
             scheduledStartAt.getTime(),
             timeWindowStartMs
@@ -471,10 +651,12 @@ const TimeRails = () => {
           }
 
           return {
+            key: routineOccurrence.key,
             routine,
             left,
             width,
             scheduledEndAt,
+            canResize: routineOccurrence.canResize,
           };
         })
         .sort((a, b) => {
@@ -493,7 +675,7 @@ const TimeRails = () => {
           targetRailIndex === -1 ? railRightPositions.length : targetRailIndex;
 
         railRightPositions[railIndex] = visualRight;
-        routineLayouts.set(routineVisualLayout.routine.id, {
+        routineLayouts.set(routineVisualLayout.key, {
           left: routineVisualLayout.left,
           width: routineVisualLayout.width,
           railIndex,
@@ -502,9 +684,12 @@ const TimeRails = () => {
 
       return {
         ...timeRailStation,
-        routines: visibleRoutines,
+        routines: routineOccurrences.map(
+          routineOccurrence => routineOccurrence.routine
+        ),
         railCount: Math.max(railRightPositions.length, 1),
         routineLayouts,
+        routineOccurrences,
       };
     });
   }, [
@@ -1190,57 +1375,65 @@ const TimeRails = () => {
                           No routines
                         </div>
                       )}
-                      {timeRailStation.routines.map(routine => {
-                        const routineLayout =
-                          timeRailStation.routineLayouts.get(routine.id);
-                        if (!routineLayout) return null;
+                      {timeRailStation.routineOccurrences.map(
+                        routineOccurrence => {
+                          const { routine } = routineOccurrence;
+                          const routineLayout =
+                            timeRailStation.routineLayouts.get(
+                              routineOccurrence.key
+                            );
+                          if (!routineLayout) return null;
 
-                        return (
-                          <RoutineTrain
-                            key={routine.id}
-                            routine={routine}
-                            left={routineLayout.left}
-                            top={10 + routineLayout.railIndex * 38}
-                            width={routineLayout.width}
-                            stationName={timeRailStation.station.name}
-                            isResizing={
-                              resizingRoutine?.routineId === routine.id
-                            }
-                            onOpen={() => {
-                              if (shouldSuppressRoutineOpenRef.current) {
-                                return;
+                          return (
+                            <RoutineTrain
+                              key={routineOccurrence.key}
+                              routine={routine}
+                              left={routineLayout.left}
+                              top={10 + routineLayout.railIndex * 38}
+                              width={routineLayout.width}
+                              stationName={timeRailStation.station.name}
+                              isResizing={
+                                resizingRoutine?.routineId === routine.id
                               }
-                              stationRoutineManager.openInspector({
-                                type: "routine",
-                                id: routine.id,
-                              });
-                            }}
-                            onResizeStart={(edge, event) => {
-                              shouldSuppressRoutineOpenRef.current = true;
-                              setResizingRoutine({
-                                routineId: routine.id,
-                                edge,
-                                startClientX: event.clientX,
-                                originalStartAt: new Date(
-                                  routine.scheduledStartAt
-                                ),
-                                originalEndAt: new Date(routine.scheduledEndAt),
-                                originalLeft: routineLayout.left,
-                                originalWidth: routineLayout.width,
-                              });
-                            }}
-                            tagNames={routine.routineTagIds.flatMap(
-                              routineTagId => {
-                                const routineTag =
-                                  stationRoutineManager.getRoutineTagById(
-                                    routineTagId
-                                  );
-                                return routineTag ? [routineTag.name] : [];
-                              }
-                            )}
-                          />
-                        );
-                      })}
+                              onOpen={() => {
+                                if (shouldSuppressRoutineOpenRef.current) {
+                                  return;
+                                }
+                                stationRoutineManager.openInspector({
+                                  type: "routine",
+                                  id: routine.id,
+                                });
+                              }}
+                              onResizeStart={(edge, event) => {
+                                shouldSuppressRoutineOpenRef.current = true;
+                                setResizingRoutine({
+                                  routineId: routine.id,
+                                  edge,
+                                  startClientX: event.clientX,
+                                  originalStartAt: new Date(
+                                    routine.scheduledStartAt
+                                  ),
+                                  originalEndAt: new Date(
+                                    routine.scheduledEndAt
+                                  ),
+                                  originalLeft: routineLayout.left,
+                                  originalWidth: routineLayout.width,
+                                });
+                              }}
+                              tagNames={routine.routineTagIds.flatMap(
+                                routineTagId => {
+                                  const routineTag =
+                                    stationRoutineManager.getRoutineTagById(
+                                      routineTagId
+                                    );
+                                  return routineTag ? [routineTag.name] : [];
+                                }
+                              )}
+                              canResize={routineOccurrence.canResize}
+                            />
+                          );
+                        }
+                      )}
                     </div>
                   );
                 })}

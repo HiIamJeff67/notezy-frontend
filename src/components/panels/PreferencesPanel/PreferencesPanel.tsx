@@ -1,57 +1,78 @@
-import { Bell, Database, Info, Palette, Shield, Users } from "lucide-react";
+import type { PreferencePage } from "@shared/api/hooks/localPreferences.hook";
+import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+import type { LucideIcon } from "lucide-react";
+import {
+  BellIcon,
+  BookOpenIcon,
+  FocusIcon,
+  HardDriveIcon,
+  InfoIcon,
+  LeafIcon,
+  PaletteIcon,
+  ShieldIcon,
+} from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { useLanguage, useTheme } from "@/hooks";
-
-type PreferencePage =
-  | "appearance"
-  | "privacy"
-  | "community"
-  | "notifications"
-  | "about"
-  | "data";
-
-const sidebarItems: {
-  id: PreferencePage;
-  label: string;
-  icon: React.ElementType;
-}[] = [
-  { id: "appearance", label: "外觀", icon: Palette },
-  { id: "privacy", label: "隱私", icon: Shield },
-  { id: "community", label: "社群", icon: Users },
-  { id: "notifications", label: "通知", icon: Bell },
-  { id: "about", label: "關於", icon: Info },
-  { id: "data", label: "數據", icon: Database },
-];
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import Sidebar from "./Sidebar";
+import AboutTab from "./tabs/AboutTab";
+import AppearanceTab from "./tabs/AppearanceTab";
+import AppearanceTabSkeleton from "./tabs/AppearanceTabSkeleton";
+import EditorTab from "./tabs/EditorTab";
+import EditorTabSkeleton from "./tabs/EditorTabSkeleton";
+import FocusTab from "./tabs/FocusTab";
+import NotificationsTab from "./tabs/NotificationsTab";
+import OfflineTab from "./tabs/OfflineTab";
+import OfflineTabSkeleton from "./tabs/OfflineTabSkeleton";
+import PrivacyTab from "./tabs/PrivacyTab";
 
 interface PreferencesPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
-  const languageManager = useLanguage();
-  const themeManager = useTheme();
-  const [currentPage, setCurrentPage] = useState<PreferencePage>("appearance");
+const sidebarItems = [
+  { id: "appearance", label: "外觀", icon: PaletteIcon },
+  { id: "editor", label: "編輯器", icon: BookOpenIcon },
+  { id: "focus", label: "專注", icon: FocusIcon },
+  { id: "offline", label: "離線資料", icon: HardDriveIcon },
+  { id: "privacy", label: "隱私", icon: ShieldIcon },
+  { id: "notifications", label: "通知", icon: BellIcon },
+  { id: "about", label: "關於", icon: InfoIcon },
+] satisfies { id: PreferencePage; label: string; icon: LucideIcon }[];
 
-  // fake data
-  const userPublicId = "notezy-123456";
+const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
+  const [currentPage, setCurrentPage] = useState<PreferencePage>("appearance");
+  const { isReady } = useLocalPreferences();
+
+  const activePage =
+    sidebarItems.find(item => item.id === currentPage) ?? sidebarItems[0];
+
+  const ActiveIcon = activePage.icon;
+
+  const currentTab = (() => {
+    if (!isReady) {
+      if (currentPage === "appearance") return <AppearanceTabSkeleton />;
+      if (currentPage === "editor") return <EditorTabSkeleton />;
+      if (currentPage === "offline") return <OfflineTabSkeleton />;
+    }
+
+    switch (currentPage) {
+      case "appearance":
+        return <AppearanceTab />;
+      case "editor":
+        return <EditorTab />;
+      case "focus":
+        return <FocusTab />;
+      case "offline":
+        return <OfflineTab />;
+      case "privacy":
+        return <PrivacyTab />;
+      case "notifications":
+        return <NotificationsTab />;
+      case "about":
+        return <AboutTab />;
+    }
+  })();
 
   return (
     <Dialog
@@ -60,235 +81,34 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="min-w-4/5 p-0 overflow-hidden">
+      <DialogContent className="min-w-4/5 overflow-hidden border-none p-0">
+        <DialogTitle className="sr-only">偏好設定</DialogTitle>
         <div className="flex h-[520px]">
-          {/* Sidebar */}
-          <div className="w-50 max-w-7/20 bg-muted/50 border-r flex flex-col">
-            <DialogHeader className="p-6 pb-4">
-              <DialogTitle className="text-lg font-semibold">
-                偏好設置
-              </DialogTitle>
-            </DialogHeader>
+          <Sidebar
+            currentPage={currentPage}
+            items={sidebarItems}
+            setCurrentPage={setCurrentPage}
+          />
 
-            <nav className="flex-1 px-4 pb-4">
-              <ul className="space-y-1">
-                {sidebarItems.map(item => {
-                  const Icon = item.icon as React.ComponentType<
-                    React.SVGProps<SVGSVGElement>
-                  >;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        onClick={() => setCurrentPage(item.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-left ${
-                          currentPage === item.id
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <Icon />
-                        {item.label}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-          </div>
-          {/* Content */}
-          <div className="flex-1 px-8 py-6 overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="mb-4 text-xl font-bold">
-                偏好設置
-              </DialogTitle>
-            </DialogHeader>
-            <Separator className="mb-4" />
-            {currentPage === "appearance" && (
-              <form className="space-y-6">
-                <div>
-                  <Label>主題</Label>
-                  <Select
-                    value={themeManager.currentTheme.id}
-                    onValueChange={async value =>
-                      await themeManager.switchCurrentTheme(value)
-                    }
-                  >
-                    <SelectTrigger className="w-40 mt-1">
-                      <SelectValue placeholder="選擇主題" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {themeManager.availableThemes.map((theme, index) => {
-                        return (
-                          <SelectItem
-                            key={index}
-                            value={theme.id}
-                            defaultChecked={
-                              themeManager.currentTheme.id === theme.id
-                            }
-                          >
-                            {languageManager.t(theme.translationKey)}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+          <main className="h-[520px] flex-1 overflow-y-auto bg-muted px-8 pt-10 pb-8 [scrollbar-color:var(--muted-foreground)_var(--secondary)]!">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+                  <ActiveIcon className="size-4 text-emerald-700" />
+                  Client Preferences
                 </div>
-                <div>
-                  <Label>字體大小</Label>
-                  <Select>
-                    <SelectTrigger className="w-32 mt-1">
-                      <SelectValue placeholder="中" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">小</SelectItem>
-                      <SelectItem value="medium">中</SelectItem>
-                      <SelectItem value="large">大</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>緊湊模式</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>動畫效果</Label>
-                  <Switch defaultChecked />
-                </div>
-                <div>
-                  <Label>介面語言</Label>
-                  <Select>
-                    <SelectTrigger className="w-32 mt-1">
-                      <SelectValue placeholder="繁體中文" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="zh-TW">繁體中文</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </form>
-            )}
-            {currentPage === "privacy" && (
-              <form className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label>公開個人資料</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>使用情況統計</Label>
-                  <Switch />
-                </div>
-                <Separator />
-                <Button variant="link" className="px-0">
-                  隱私政策
-                </Button>
-              </form>
-            )}
-            {currentPage === "community" && (
-              <form className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label>最佳化推薦</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>依照地區推薦</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>忽略陌生人邀請</Label>
-                  <Switch />
-                </div>
-                <div>
-                  <Label>邀請碼</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="rounded bg-muted px-2 py-1 text-xs font-mono">
-                      {userPublicId}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      type="button"
-                      onClick={() =>
-                        navigator.clipboard.writeText(userPublicId)
-                      }
-                    >
-                      複製
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            )}
-            {currentPage === "notifications" && (
-              <form className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label>桌面通知</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>社群通知</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>好友邀請通知</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>電子郵件通知</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>同步完成通知</Label>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label>錯誤通知</Label>
-                  <Switch />
-                </div>
-              </form>
-            )}
-            {currentPage === "about" && (
-              <div className="space-y-4">
-                <div>
-                  <Label>版本資訊</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Notezy v1.0.0
-                  </div>
-                </div>
-                <Separator />
-                <Button variant="link" className="px-0">
-                  說明文檔
-                </Button>
-                <Button variant="link" className="px-0">
-                  回報問題
-                </Button>
-                <Button variant="link" className="px-0">
-                  使用條款
-                </Button>
-                <Button variant="link" className="px-0">
-                  隱私政策
-                </Button>
+                <h2 className="mt-2 text-2xl font-semibold text-foreground">
+                  {activePage.label}
+                </h2>
               </div>
-            )}
-            {currentPage === "data" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label>雲端自動同步</Label>
-                  <Switch />
-                </div>
-                <div>
-                  <Label>備份與還原</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button size="sm" variant="outline">
-                      立即備份
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      還原備份
-                    </Button>
-                  </div>
-                </div>
+              <div className="hidden items-center gap-2 rounded-sm border border-border bg-background/45 px-3 py-2 text-xs text-muted-foreground sm:flex">
+                <LeafIcon className="size-4 text-emerald-700" />
+                Local only
               </div>
-            )}
-          </div>
+            </div>
+
+            {currentTab}
+          </main>
         </div>
       </DialogContent>
     </Dialog>

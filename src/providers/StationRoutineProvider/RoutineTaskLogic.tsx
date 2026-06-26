@@ -412,7 +412,9 @@ export const useRoutineTaskLogic = ({
         stationId,
         title,
         purpose,
-        costUnit: 0,
+        costUnit: Math.ceil(
+          new Blob([JSON.stringify(payload ?? {})]).size / 1024
+        ),
         payload,
         priority,
         status: RoutineTaskStatus.Idle,
@@ -534,6 +536,11 @@ export const useRoutineTaskLogic = ({
 
       for (const routineTaskNode of routineTaskNodes) {
         Object.assign(routineTaskNode, values);
+        if (values.payload !== undefined) {
+          routineTaskNode.costUnit = Math.ceil(
+            new Blob([JSON.stringify(values.payload ?? {})]).size / 1024
+          );
+        }
         if (setNull?.Period) routineTaskNode.period = null;
         routineTaskNode.updatedAt = response.data.updatedAt;
       }

@@ -19,6 +19,7 @@ const RoutineTrain = ({
   onOpen,
   onResizeStart,
   isResizing,
+  canResize = true,
 }: {
   routine: RoutineNode;
   left: number;
@@ -32,6 +33,7 @@ const RoutineTrain = ({
     event: PointerEvent<HTMLSpanElement>
   ) => void;
   isResizing: boolean;
+  canResize?: boolean;
 }) => {
   return (
     <HoverCard openDelay={180} closeDelay={120}>
@@ -54,30 +56,34 @@ const RoutineTrain = ({
           }}
           onClick={onOpen}
         >
-          <span
-            className="
-              absolute inset-y-0 left-0 z-10 w-2 cursor-ew-resize
-              border-l-2 border-primary/60 opacity-0 transition-opacity
-              group-hover:opacity-100
-            "
-            onPointerDown={event => {
-              event.preventDefault();
-              event.stopPropagation();
-              onResizeStart("start", event);
-            }}
-          />
-          <span
-            className="
-              absolute inset-y-0 right-0 z-10 w-2 cursor-ew-resize
-              border-r-2 border-primary/60 opacity-0 transition-opacity
-              group-hover:opacity-100
-            "
-            onPointerDown={event => {
-              event.preventDefault();
-              event.stopPropagation();
-              onResizeStart("end", event);
-            }}
-          />
+          {canResize && (
+            <>
+              <span
+                className="
+                  absolute inset-y-0 left-0 z-10 w-2 cursor-ew-resize
+                  border-l-2 border-primary/60 opacity-0 transition-opacity
+                  group-hover:opacity-100
+                "
+                onPointerDown={event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onResizeStart("start", event);
+                }}
+              />
+              <span
+                className="
+                  absolute inset-y-0 right-0 z-10 w-2 cursor-ew-resize
+                  border-r-2 border-primary/60 opacity-0 transition-opacity
+                  group-hover:opacity-100
+                "
+                onPointerDown={event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onResizeStart("end", event);
+                }}
+              />
+            </>
+          )}
           {routine.isPinned && (
             <Bookmark className="size-3 shrink-0 fill-muted-foreground/20 text-muted-foreground" />
           )}
