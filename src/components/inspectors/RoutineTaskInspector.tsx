@@ -14,6 +14,7 @@ import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useMemo, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditor/RoutineTaskPayloadEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +77,8 @@ const RoutineTaskInspector = ({
     period: null,
     costUnit: 0,
   });
+  const [isPayloadEditorOpen, setIsPayloadEditorOpen] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -90,6 +93,7 @@ const RoutineTaskInspector = ({
       period: null,
       costUnit: 0,
     });
+    setIsPayloadEditorOpen(false);
 
     setIsLoadingRoutineTaskDetail(true);
     const accessToken = LocalStorageManipulator.getItemByKey(
@@ -433,6 +437,14 @@ const RoutineTaskInspector = ({
                   }));
                 }}
               />
+              <Button
+                type="button"
+                variant="outline"
+                className="w-fit"
+                onClick={() => setIsPayloadEditorOpen(true)}
+              >
+                Edit payload
+              </Button>
               <span className="text-xs text-muted-foreground">
                 Routine task payload usage:{" "}
                 {userManager.userAccount
@@ -493,6 +505,18 @@ const RoutineTaskInspector = ({
             </Button>
           </SheetFooter>
         </form>
+        <RoutineTaskPayloadEditor
+          isOpen={isPayloadEditorOpen}
+          purpose={values.purpose}
+          initialPayload={values.payload}
+          onClose={() => setIsPayloadEditorOpen(false)}
+          onConfirm={payload => {
+            setValues(current => ({
+              ...current,
+              payload,
+            }));
+          }}
+        />
       </SheetContent>
     </Sheet>
   );

@@ -4,7 +4,7 @@ import type {
   StartSurface,
 } from "@shared/api/hooks/localPreferences.hook";
 import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
-import { BookOpenIcon, KeyboardIcon } from "lucide-react";
+import { KeyboardIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,9 +19,12 @@ const EditorTab = () => {
   const { preferences, updatePreference } = useLocalPreferences();
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <Section title="編輯器預設" icon={BookOpenIcon}>
-        <SettingRow title="起始畫面">
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
+      <Section>
+        <SettingRow
+          title="起始畫面"
+          description="決定開啟 Notezy 時先回到上次位置，或直接進入指定工作區。"
+        >
           <Select
             value={preferences.startSurface}
             onValueChange={value =>
@@ -38,7 +41,10 @@ const EditorTab = () => {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow title="頁面寬度">
+        <SettingRow
+          title="頁面寬度"
+          description="調整編輯區預設寬度，讓閱讀、書寫或整理大量內容更順手。"
+        >
           <Select
             value={preferences.editorWidth}
             onValueChange={value =>
@@ -55,7 +61,10 @@ const EditorTab = () => {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow title="文字尺寸">
+        <SettingRow
+          title="文字尺寸"
+          description="設定編輯器中的基準字級，只影響本機顯示偏好。"
+        >
           <div className="flex w-56 items-center gap-3">
             <Slider
               value={[preferences.editorFontSize]}
@@ -71,7 +80,10 @@ const EditorTab = () => {
             </span>
           </div>
         </SettingRow>
-        <SettingRow title="貼上模式">
+        <SettingRow
+          title="貼上模式"
+          description="控制從外部貼上內容時要保留格式、轉成 Markdown，或只留下純文字。"
+        >
           <Select
             value={preferences.markdownPaste}
             onValueChange={value =>
@@ -90,6 +102,7 @@ const EditorTab = () => {
         </SettingRow>
         <SwitchRow
           title="自動暫存"
+          description="在本機保留尚未送出的草稿，降低重新整理或切換頁面時的遺失風險。"
           checked={preferences.autosaveDrafts}
           onCheckedChange={checked =>
             updatePreference("autosaveDrafts", checked)
@@ -97,23 +110,26 @@ const EditorTab = () => {
         />
         <SwitchRow
           title="自動換行"
+          description="讓長句自動折行，不需要水平捲動即可閱讀完整段落。"
           checked={preferences.lineWrap}
           onCheckedChange={checked => updatePreference("lineWrap", checked)}
         />
         <SwitchRow
           title="拼字檢查"
+          description="使用瀏覽器本機拼字檢查能力輔助輸入，不會把內容送到 Notezy API。"
           checked={preferences.spellcheck}
           onCheckedChange={checked => updatePreference("spellcheck", checked)}
         />
         <SwitchRow
           title="快速插入列"
+          description="在編輯時顯示常用插入工具，方便快速加入區塊、routine 或素材。"
           checked={preferences.quickInsert}
           onCheckedChange={checked => updatePreference("quickInsert", checked)}
           hideSeparator
         />
       </Section>
 
-      <section className="rounded-md border border-border bg-background/45 p-4">
+      <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <KeyboardIcon className="size-4 text-emerald-700" />
           編輯樣本
@@ -135,7 +151,7 @@ const EditorTab = () => {
             {["Block", "Routine", "Material"].map(item => (
               <span
                 key={item}
-                className="rounded-sm border border-border bg-background/50 px-2 py-1 text-xs"
+                className="rounded-sm border border-border bg-card/70 px-2 py-1 text-xs"
               >
                 {item}
               </span>

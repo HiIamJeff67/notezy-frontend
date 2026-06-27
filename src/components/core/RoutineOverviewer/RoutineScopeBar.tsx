@@ -179,7 +179,7 @@ const RoutineScopeBar = ({
                       );
                     }}
                   >
-                    Confirm
+                    Filter
                   </Button>
                 </div>
               </HoverCardContent>
@@ -323,7 +323,7 @@ const RoutineScopeBar = ({
                     }
                   }}
                 >
-                  Confirm
+                  Filter
                 </Button>
               </div>
             </HoverCardContent>

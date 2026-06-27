@@ -70,10 +70,6 @@ const CreateRoutineDialog = ({
     end: number;
   }>({ start: 1, end: 1 });
   const [isPinned, setIsPinned] = useState<boolean>(false);
-  const usesDailyTimePicker = period === RoutinePeriod.Daily;
-  const usesWeekdayPicker = period === RoutinePeriod.Weekly;
-  const usesMonthlyDayPicker = period === RoutinePeriod.Monthly;
-  const usesPeriodRangePicker = usesWeekdayPicker || usesMonthlyDayPicker;
 
   useEffect(() => {
     if (isOpen) return;
@@ -90,81 +86,14 @@ const CreateRoutineDialog = ({
 
   const hasInvalidSchedule =
     hasCustomSchedule &&
-    !usesWeekdayPicker &&
-    !usesMonthlyDayPicker &&
+    period !== RoutinePeriod.Weekly &&
+    period !== RoutinePeriod.Monthly &&
     (!scheduledStartAt ||
       !scheduledEndAt ||
-      (usesDailyTimePicker
+      (period === RoutinePeriod.Daily
         ? scheduledEndAt.getHours() * 60 + scheduledEndAt.getMinutes() <=
           scheduledStartAt.getHours() * 60 + scheduledStartAt.getMinutes()
         : scheduledEndAt <= scheduledStartAt));
-
-  const createRoutine = async () => {
-    const trimmedTitle = title.trim();
-    if (trimmedTitle.length === 0 || hasInvalidSchedule) return;
-
-    try {
-      const today = new Date();
-      const weekStartAt = new Date(2026, 0, 4 + weekdayRange.start);
-      weekStartAt.setHours(0, 0, 0, 0);
-      const weekEndAt = new Date(2026, 0, 4 + weekdayRange.end);
-      weekEndAt.setHours(23, 59, 0, 0);
-      const monthStartAt = new Date(2026, 0, monthlyDayRange.start);
-      monthStartAt.setHours(0, 0, 0, 0);
-      const monthEndAt = new Date(2026, 0, monthlyDayRange.end);
-      monthEndAt.setHours(23, 59, 0, 0);
-      const routineNode = await stationRoutineManager.createRoutine(stationId, {
-        title: trimmedTitle,
-        description: description.trim(),
-        status: RoutineStatus.Scheduled,
-        isPinned,
-        ...((hasCustomSchedule || usesPeriodRangePicker) &&
-        (usesWeekdayPicker ||
-          usesMonthlyDayPicker ||
-          (scheduledStartAt && scheduledEndAt))
-          ? {
-              scheduledStartAt: usesWeekdayPicker
-                ? weekStartAt
-                : usesMonthlyDayPicker
-                  ? monthStartAt
-                  : usesDailyTimePicker && scheduledStartAt
-                    ? new Date(
-                        today.getFullYear(),
-                        today.getMonth(),
-                        today.getDate(),
-                        scheduledStartAt.getHours(),
-                        scheduledStartAt.getMinutes(),
-                        0,
-                        0
-                      )
-                    : scheduledStartAt,
-              scheduledEndAt: usesWeekdayPicker
-                ? weekEndAt
-                : usesMonthlyDayPicker
-                  ? monthEndAt
-                  : usesDailyTimePicker && scheduledEndAt
-                    ? new Date(
-                        today.getFullYear(),
-                        today.getMonth(),
-                        today.getDate(),
-                        scheduledEndAt.getHours(),
-                        scheduledEndAt.getMinutes(),
-                        0,
-                        0
-                      )
-                    : scheduledEndAt,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            }
-          : {}),
-        period,
-      });
-      await onCreated?.(routineNode.id);
-      toast.success("Routine created");
-      onClose();
-    } catch (error) {
-      toast.error(languageManager.tError(error));
-    }
-  };
 
   return (
     <Dialog
@@ -187,7 +116,85 @@ const CreateRoutineDialog = ({
           className="flex flex-col gap-4"
           onSubmit={async event => {
             event.preventDefault();
-            await createRoutine();
+            const trimmedTitle = title.trim();
+            if (trimmedTitle.length === 0 || hasInvalidSchedule) return;
+
+            try {
+              let nextScheduledStartAt = scheduledStartAt;
+              let nextScheduledEndAt = scheduledEndAt;
+
+              if (period === RoutinePeriod.Weekly) {
+                nextScheduledStartAt = new Date(
+                  2026,
+                  0,
+                  4 + weekdayRange.start
+                );
+                nextScheduledStartAt.setHours(0, 0, 0, 0);
+                nextScheduledEndAt = new Date(2026, 0, 4 + weekdayRange.end);
+                nextScheduledEndAt.setHours(23, 59, 0, 0);
+              }
+
+              if (period === RoutinePeriod.Monthly) {
+                nextScheduledStartAt = new Date(2026, 0, monthlyDayRange.start);
+                nextScheduledStartAt.setHours(0, 0, 0, 0);
+                nextScheduledEndAt = new Date(2026, 0, monthlyDayRange.end);
+                nextScheduledEndAt.setHours(23, 59, 0, 0);
+              }
+
+              if (
+                period === RoutinePeriod.Daily &&
+                scheduledStartAt &&
+                scheduledEndAt
+              ) {
+                const today = new Date();
+                nextScheduledStartAt = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  today.getDate(),
+                  scheduledStartAt.getHours(),
+                  scheduledStartAt.getMinutes(),
+                  0,
+                  0
+                );
+                nextScheduledEndAt = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  today.getDate(),
+                  scheduledEndAt.getHours(),
+                  scheduledEndAt.getMinutes(),
+                  0,
+                  0
+                );
+              }
+
+              const routineNode = await stationRoutineManager.createRoutine(
+                stationId,
+                {
+                  title: trimmedTitle,
+                  description: description.trim(),
+                  status: RoutineStatus.Scheduled,
+                  isPinned,
+                  ...((hasCustomSchedule ||
+                    period === RoutinePeriod.Weekly ||
+                    period === RoutinePeriod.Monthly) &&
+                  nextScheduledStartAt &&
+                  nextScheduledEndAt
+                    ? {
+                        scheduledStartAt: nextScheduledStartAt,
+                        scheduledEndAt: nextScheduledEndAt,
+                        timezone:
+                          Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      }
+                    : {}),
+                  period,
+                }
+              );
+              await onCreated?.(routineNode.id);
+              toast.success("Routine created");
+              onClose();
+            } catch (error) {
+              toast.error(languageManager.tError(error));
+            }
           }}
         >
           <div className="flex flex-col gap-2">
@@ -224,15 +231,24 @@ const CreateRoutineDialog = ({
             </div>
             <Switch
               id="routine-custom-schedule"
-              checked={hasCustomSchedule || usesPeriodRangePicker}
-              disabled={usesPeriodRangePicker}
+              checked={
+                hasCustomSchedule ||
+                period === RoutinePeriod.Weekly ||
+                period === RoutinePeriod.Monthly
+              }
+              disabled={
+                period === RoutinePeriod.Weekly ||
+                period === RoutinePeriod.Monthly
+              }
               onCheckedChange={setHasCustomSchedule}
             />
           </div>
 
-          {(hasCustomSchedule || usesPeriodRangePicker) && (
+          {(hasCustomSchedule ||
+            period === RoutinePeriod.Weekly ||
+            period === RoutinePeriod.Monthly) && (
             <>
-              {usesWeekdayPicker ? (
+              {period === RoutinePeriod.Weekly ? (
                 <div className="flex flex-col gap-2">
                   <Label>Weekdays</Label>
                   <WeekdayPicker
@@ -240,7 +256,7 @@ const CreateRoutineDialog = ({
                     onValueChange={setWeekdayRange}
                   />
                 </div>
-              ) : usesMonthlyDayPicker ? (
+              ) : period === RoutinePeriod.Monthly ? (
                 <div className="flex flex-col gap-2">
                   <Label>Month days</Label>
                   <MonthlyDayPicker
@@ -255,7 +271,7 @@ const CreateRoutineDialog = ({
                 <div className="flex flex-col gap-4 sm:flex-row">
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <Label>Starts</Label>
-                    {usesDailyTimePicker ? (
+                    {period === RoutinePeriod.Daily ? (
                       <TimePicker
                         value={scheduledStartAt}
                         onValueChange={setScheduledStartAt}
@@ -272,7 +288,7 @@ const CreateRoutineDialog = ({
 
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <Label>Ends</Label>
-                    {usesDailyTimePicker ? (
+                    {period === RoutinePeriod.Daily ? (
                       <TimePicker
                         value={scheduledEndAt}
                         onValueChange={setScheduledEndAt}

@@ -7,7 +7,6 @@ import {
   FocusIcon,
   HardDriveIcon,
   InfoIcon,
-  LeafIcon,
   PaletteIcon,
   ShieldIcon,
 } from "lucide-react";
@@ -92,18 +91,11 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
 
           <main className="h-[520px] flex-1 overflow-y-auto bg-muted px-8 pt-10 pb-8 [scrollbar-color:var(--muted-foreground)_var(--secondary)]!">
             <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
-                  <ActiveIcon className="size-4 text-emerald-700" />
-                  Client Preferences
-                </div>
-                <h2 className="mt-2 text-2xl font-semibold text-foreground">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground">
+                  <ActiveIcon className="size-5 shrink-0 text-emerald-700" />
                   {activePage.label}
                 </h2>
-              </div>
-              <div className="hidden items-center gap-2 rounded-sm border border-border bg-background/45 px-3 py-2 text-xs text-muted-foreground sm:flex">
-                <LeafIcon className="size-4 text-emerald-700" />
-                Local only
               </div>
             </div>
 

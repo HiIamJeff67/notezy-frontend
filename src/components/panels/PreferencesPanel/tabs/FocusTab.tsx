@@ -1,30 +1,34 @@
 import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
-import { FocusIcon, SquareDashedMousePointerIcon } from "lucide-react";
+import { SquareDashedMousePointerIcon } from "lucide-react";
 import { Section, SwitchRow } from "../PreferenceRows";
 
 const FocusTab = () => {
   const { preferences, updatePreference } = useLocalPreferences();
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <Section title="專注環境" icon={FocusIcon}>
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
+      <Section>
         <SwitchRow
           title="專注側軌"
+          description="顯示精簡工具側欄，保留切換工作區與常用動作的入口。"
           checked={preferences.focusRail}
           onCheckedChange={checked => updatePreference("focusRail", checked)}
         />
         <SwitchRow
           title="環境格線"
+          description="在工作區背景加上低對比格線，協助判讀面板位置與層次。"
           checked={preferences.ambientGrid}
           onCheckedChange={checked => updatePreference("ambientGrid", checked)}
         />
         <SwitchRow
           title="植被點綴"
+          description="保留少量綠色植被點綴，讓工業風介面不至於過度冰冷。"
           checked={preferences.plantAccents}
           onCheckedChange={checked => updatePreference("plantAccents", checked)}
         />
         <SwitchRow
           title="淡化非作用面板"
+          description="讓未聚焦的面板降低視覺重量，凸顯正在處理的內容。"
           checked={preferences.dimInactivePanels}
           onCheckedChange={checked =>
             updatePreference("dimInactivePanels", checked)
@@ -33,7 +37,7 @@ const FocusTab = () => {
         />
       </Section>
 
-      <section className="relative overflow-hidden rounded-md border border-border bg-background/45 p-4">
+      <section className="relative overflow-hidden rounded-md border border-border bg-card p-4">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-emerald-700/60 to-transparent" />
         <div className="flex items-center gap-2 text-sm font-semibold">
           <SquareDashedMousePointerIcon className="size-4 text-emerald-700" />
@@ -61,7 +65,7 @@ const FocusTab = () => {
               }`}
             >
               <div className="h-20 rounded-sm border border-emerald-900/50 bg-emerald-950/20" />
-              <div className="h-20 rounded-sm border border-border bg-background/55" />
+              <div className="h-20 rounded-sm border border-border bg-card/65" />
             </div>
             {preferences.plantAccents && (
               <div className="absolute right-4 bottom-4 flex gap-1">

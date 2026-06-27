@@ -35,7 +35,7 @@ export const PlanLimitations: Record<UserPlan, PlanLimitation> = {
     maxStationCount: 10,
     maxRoutineTagCount: 5,
     maxRoutineCountPerStation: 20,
-    maxRoutineTaskCostUnitCount: 64,
+    maxRoutineTaskCostUnitCount: 16,
     maxRoutineTaskAttempts: 3,
   },
   [UserPlan.Pro]: {

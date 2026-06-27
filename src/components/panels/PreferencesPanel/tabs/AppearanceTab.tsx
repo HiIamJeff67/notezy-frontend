@@ -3,7 +3,6 @@ import type {
   PanelDock,
 } from "@shared/api/hooks/localPreferences.hook";
 import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
-import { PaletteIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,9 +19,12 @@ const AppearanceTab = () => {
   const themeManager = useTheme();
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-      <Section title="介面外觀" icon={PaletteIcon}>
-        <SettingRow title="主題">
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_280px]">
+      <Section>
+        <SettingRow
+          title="主題"
+          description="調整整個產品的色彩與明暗層次，會立即套用在目前裝置。"
+        >
           <Select
             value={themeManager.currentTheme.id}
             onValueChange={value => void themeManager.switchCurrentTheme(value)}
@@ -39,7 +41,10 @@ const AppearanceTab = () => {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow title="介面語言">
+        <SettingRow
+          title="介面語言"
+          description="切換介面顯示語言；內容本身不會被翻譯或改寫。"
+        >
           <Select
             value={languageManager.currentLanguage.key}
             onValueChange={value => {
@@ -63,7 +68,10 @@ const AppearanceTab = () => {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow title="密度">
+        <SettingRow
+          title="密度"
+          description="控制列表、按鈕和面板之間的間距，影響畫面資訊量。"
+        >
           <div className="flex rounded-md border border-border bg-muted p-1">
             {[
               ["comfortable", "寬鬆"],
@@ -77,7 +85,7 @@ const AppearanceTab = () => {
                 className={`h-8 rounded-sm px-3 text-sm transition ${
                   preferences.density === value
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-background hover:text-foreground"
+                    : "text-muted-foreground hover:bg-card hover:text-foreground"
                 }`}
               >
                 {label}
@@ -85,7 +93,10 @@ const AppearanceTab = () => {
             ))}
           </div>
         </SettingRow>
-        <SettingRow title="面板停靠">
+        <SettingRow
+          title="面板停靠"
+          description="設定側邊設定面板預設靠左、靠右，或以浮動方式顯示。"
+        >
           <Select
             value={preferences.panelDock}
             onValueChange={value =>
@@ -104,11 +115,13 @@ const AppearanceTab = () => {
         </SettingRow>
         <SwitchRow
           title="低動態"
+          description="減少轉場和動態效果，適合長時間工作或對動畫敏感時使用。"
           checked={preferences.reduceMotion}
           onCheckedChange={checked => updatePreference("reduceMotion", checked)}
         />
         <SwitchRow
           title="操作回饋"
+          description="保留按鈕、切換和選取時的細微觸覺感與視覺回饋。"
           checked={preferences.tactileFeedback}
           onCheckedChange={checked =>
             updatePreference("tactileFeedback", checked)
@@ -117,7 +130,7 @@ const AppearanceTab = () => {
         />
       </Section>
 
-      <section className="rounded-md border border-border bg-background/45 p-4">
+      <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold">視覺樣本</div>
           <StatusPill>{preferences.density}</StatusPill>
@@ -134,7 +147,7 @@ const AppearanceTab = () => {
             {[0, 1, 2].map(index => (
               <div
                 key={index}
-                className="h-14 rounded-sm border border-border bg-background/60"
+                className="h-14 rounded-sm border border-border bg-card/60"
               />
             ))}
           </div>

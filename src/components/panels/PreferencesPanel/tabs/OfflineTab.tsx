@@ -1,8 +1,8 @@
 import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
-import { ClipboardIcon, DatabaseIcon, HardDriveIcon } from "lucide-react";
+import { ClipboardIcon, HardDriveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Section, SettingRow, StatusPill, SwitchRow } from "../PreferenceRows";
+import { Section, SettingRow, SwitchRow } from "../PreferenceRows";
 
 const OfflineTab = () => {
   const {
@@ -15,30 +15,32 @@ const OfflineTab = () => {
   } = useLocalPreferences();
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <Section
-        title="本機資料"
-        icon={DatabaseIcon}
-        footer={<StatusPill>{storageUsagePercent}% used</StatusPill>}
-      >
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
+      <Section>
         <SwitchRow
           title="本機資料庫"
+          description="允許 Notezy 在瀏覽器本機保存工作資料，用於更快載入與離線使用。"
           checked={preferences.localVault}
           onCheckedChange={checked => updatePreference("localVault", checked)}
         />
         <SwitchRow
           title="離線佇列"
+          description="離線時先把操作排入本機佇列，等連線恢復後再同步處理。"
           checked={preferences.offlineQueue}
           onCheckedChange={checked => updatePreference("offlineQueue", checked)}
         />
         <SwitchRow
           title="附件快取"
+          description="快取近期看過的附件，提升再次開啟速度，但會增加本機儲存用量。"
           checked={preferences.cacheAttachments}
           onCheckedChange={checked =>
             updatePreference("cacheAttachments", checked)
           }
         />
-        <SettingRow title="清理週期">
+        <SettingRow
+          title="清理週期"
+          description="設定本機快取資料的保留天數，到期後由客戶端優先清理。"
+        >
           <div className="flex w-56 items-center gap-3">
             <Slider
               value={[preferences.cleanupAfterDays]}
@@ -54,7 +56,11 @@ const OfflineTab = () => {
             </span>
           </div>
         </SettingRow>
-        <SettingRow title="偏好匯出" hideSeparator>
+        <SettingRow
+          title="偏好匯出"
+          description="把目前本機偏好複製成 JSON，方便你之後手動備份或回報問題。"
+          hideSeparator
+        >
           <Button
             type="button"
             variant="outline"
@@ -71,7 +77,7 @@ const OfflineTab = () => {
         </SettingRow>
       </Section>
 
-      <section className="rounded-md border border-border bg-background/45 p-4">
+      <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <HardDriveIcon className="size-4 text-emerald-700" />
           儲存配額
