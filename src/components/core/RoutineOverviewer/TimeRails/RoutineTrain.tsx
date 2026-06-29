@@ -60,7 +60,7 @@ const RoutineTrain = ({
             <>
               <span
                 className="
-                  absolute inset-y-0 left-0 z-10 w-2 cursor-ew-resize
+                  absolute inset-y-0 left-0 z-10 w-4 cursor-ew-resize
                   border-l-2 border-primary/60 opacity-0 transition-opacity
                   group-hover:opacity-100
                 "
@@ -72,7 +72,7 @@ const RoutineTrain = ({
               />
               <span
                 className="
-                  absolute inset-y-0 right-0 z-10 w-2 cursor-ew-resize
+                  absolute inset-y-0 right-0 z-10 w-4 cursor-ew-resize
                   border-r-2 border-primary/60 opacity-0 transition-opacity
                   group-hover:opacity-100
                 "

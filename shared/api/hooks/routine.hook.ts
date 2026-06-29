@@ -20,6 +20,8 @@ import type {
   GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdRequest,
   GetMyRoutineByIdResponse,
+  GetMyRoutinesByStationIdRequest,
+  GetMyRoutinesByStationIdResponse,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutinesByIdsRequest,
   LinkRoutineItemByIdRequest,
@@ -57,6 +59,7 @@ import {
   mutationFnUpdateMyRoutinesByIds,
   queryFnGetAllMyRoutinesByTimeRange,
   queryFnGetMyRoutineById,
+  queryFnGetMyRoutinesByStationId,
   queryFnVisualizeMyRoutinePeriodCount,
   queryFnVisualizeMyRoutineScheduledEndAtCount,
   queryFnVisualizeMyRoutineScheduledStartAtCount,
@@ -220,6 +223,88 @@ export const useGetMyRoutineById = (
       queryKey: queryKeys.routine.oneById(
         callbackRequest.param.routineId as UUID | undefined,
         callbackRequest.param.isDeleted ?? false
+      ),
+      queryFn: async () => perform(callbackRequest),
+      staleTime: UseQueryDefaultOptions.staleTime,
+      ...options,
+    });
+  };
+
+  return { ...query, fetch };
+};
+
+export const useGetMyRoutinesByStationId = (
+  hookRequest?: GetMyRoutinesByStationIdRequest,
+  options?: Partial<UseQueryOptions<GetMyRoutinesByStationIdResponse, Error>>
+) => {
+  const queryClient = getQueryClient();
+
+  const perform = async (
+    request?: GetMyRoutinesByStationIdRequest
+  ): Promise<GetMyRoutinesByStationIdResponse> => {
+    if (!request) {
+      throw new NotezyValidationError(
+        ValidationClientException.ReceivedUndefinedRequest()
+      );
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+      }
+
+      const response = await queryFnGetMyRoutinesByStationId(request);
+      LocalStorageManipulator.ensureItem(
+        LocalStorageKey.accessToken,
+        response.refreshableTokens?.newAccessToken,
+        response.embedded.publicId
+      );
+      SessionStorageManipulator.ensureItem(
+        SessionStorageKey.csrfToken,
+        response.refreshableTokens?.newCSRFToken,
+        response.embedded.publicId
+      );
+      await RoutineLocalSynchronizer.syncGetMyRoutinesByStationId(response);
+      return response;
+    } catch (error) {
+      if (
+        error instanceof NotezyAPIError ||
+        error instanceof NotezyFetchError
+      ) {
+        const routines =
+          await RoutineLocalSimulator.simulateGetMyRoutinesByStationId(request);
+        return {
+          success: false,
+          data: routines,
+          exception: error.unWrap,
+          embedded: { publicId: "" },
+        } as GetMyRoutinesByStationIdResponse;
+      }
+
+      throw error;
+    }
+  };
+
+  const query = useQuery<GetMyRoutinesByStationIdResponse, Error>({
+    queryKey: queryKeys.routine.manyByStationId(
+      hookRequest?.param.stationId as UUID | undefined,
+      hookRequest?.param.areDeleted ?? false
+    ),
+    queryFn: async () => perform(hookRequest),
+    staleTime: UseQueryDefaultOptions.staleTime,
+    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
+    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
+    ...options,
+    enabled: hookRequest ? (options?.enabled ?? true) : false,
+  });
+
+  const fetch = async (
+    callbackRequest: GetMyRoutinesByStationIdRequest
+  ): Promise<GetMyRoutinesByStationIdResponse> => {
+    return queryClient.fetchQuery({
+      queryKey: queryKeys.routine.manyByStationId(
+        callbackRequest.param.stationId as UUID | undefined,
+        callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,

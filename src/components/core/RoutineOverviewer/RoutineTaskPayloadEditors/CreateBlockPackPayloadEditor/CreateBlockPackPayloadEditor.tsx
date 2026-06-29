@@ -1,7 +1,5 @@
 import { BlockNoteEditor } from "@blocknote/core";
-import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
-import { GetAllMySubShelvesByRootShelfIdResponse } from "@shared/api/interfaces/subShelf.interface";
 import { convertBlocksToJSON } from "@shared/util/convertBlocksToFiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -16,9 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useShelfItem } from "@/hooks";
-import RoutineTaskPayloadEditorSidebar from "./RoutineTaskPayloadEditorSidebar";
-import RoutineTaskPayloadTemplateEditor from "./RoutineTaskPayloadTemplateEditor";
+import CreateBlockPackPayloadEditorSidebar from "./CreateBlockPackPayloadEditorSidebar";
+import CreateBlockPackPayloadTemplateEditor from "./CreateBlockPackPayloadTemplateEditor";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 
@@ -29,7 +26,15 @@ export interface PatternBlock {
   reference: string;
 }
 
-interface RoutineTaskPayloadEditorProps {
+export interface SelectedBlockPayloadTarget {
+  id: string;
+  type: string;
+  props: unknown;
+  content: unknown;
+  contentText: string;
+}
+
+interface CreateBlockPackPayloadEditorProps {
   isOpen: boolean;
   purpose: RoutineTaskPurpose;
   initialPayload: string;
@@ -37,18 +42,13 @@ interface RoutineTaskPayloadEditorProps {
   onConfirm: (payload: string) => void;
 }
 
-const RoutineTaskPayloadEditor = ({
+const CreateBlockPackPayloadEditor = ({
   isOpen,
   purpose,
   initialPayload,
   onClose,
   onConfirm,
-}: RoutineTaskPayloadEditorProps) => {
-  const shelfItemManager = useShelfItem();
-  const getAllSubShelvesByRootShelfIdQuerier =
-    useGetAllMySubShelvesByRootShelfId();
-  const loadingSubShelvesByRootShelfIdRef = useRef<Set<string>>(new Set());
-  const targetSubShelfPickerTriggerRef = useRef<HTMLButtonElement>(null);
+}: CreateBlockPackPayloadEditorProps) => {
   const didInitializeOpenDialogRef = useRef(false);
   const parsedInitialPayload = useMemo(() => {
     try {
@@ -65,18 +65,6 @@ const RoutineTaskPayloadEditor = ({
       ? parsedInitialPayload.targetSubShelfId
       : ""
   );
-  const [subShelvesByRootShelfId, setSubShelvesByRootShelfId] = useState<
-    Record<string, GetAllMySubShelvesByRootShelfIdResponse["data"]>
-  >({});
-  const [isTargetSubShelfPickerOpen, setIsTargetSubShelfPickerOpen] =
-    useState(false);
-  const [
-    targetSubShelfPickerPortalContainer,
-    setTargetSubShelfPickerPortalContainer,
-  ] = useState<Element | null>(null);
-  const [activeRootShelfId, setActiveRootShelfId] = useState<string | null>(
-    null
-  );
   const [templateName, setTemplateName] = useState<string>(
     typeof parsedInitialPayload.template?.name === "string"
       ? parsedInitialPayload.template.name
@@ -85,16 +73,6 @@ const RoutineTaskPayloadEditor = ({
   const [blockPackId, setBlockPackId] = useState<string>(
     typeof parsedInitialPayload.blockPackId === "string"
       ? parsedInitialPayload.blockPackId
-      : ""
-  );
-  const [blockGroupId, setBlockGroupId] = useState<string>(
-    typeof parsedInitialPayload.blockGroupId === "string"
-      ? parsedInitialPayload.blockGroupId
-      : ""
-  );
-  const [parentBlockId, setParentBlockId] = useState<string>(
-    typeof parsedInitialPayload.parentBlockId === "string"
-      ? parsedInitialPayload.parentBlockId
       : ""
   );
   const [blockId, setBlockId] = useState<string>(
@@ -109,6 +87,8 @@ const RoutineTaskPayloadEditor = ({
     new Set()
   );
   const [patternBlocks, setPatternBlocks] = useState<PatternBlock[]>([]);
+  const [selectedBlock, setSelectedBlock] =
+    useState<SelectedBlockPayloadTarget | null>(null);
   const [payloadPreview, setPayloadPreview] = useState<string>(
     JSON.stringify(parsedInitialPayload, null, 2)
   );
@@ -128,19 +108,29 @@ const RoutineTaskPayloadEditor = ({
       }),
     []
   );
+  const originalBlockEditor = useMemo(
+    () =>
+      BlockNoteEditor.create({
+        initialContent: [
+          {
+            id: crypto.randomUUID(),
+            type: "paragraph",
+            content: [],
+          },
+        ],
+        trailingBlock: false,
+      }),
+    []
+  );
 
   const usesBlockLiteEditor =
     purpose === RoutineTaskPurpose.CreateBlockPack ||
-    purpose === RoutineTaskPurpose.CreateBlock ||
+    purpose === RoutineTaskPurpose.AppendBlock ||
     purpose === RoutineTaskPurpose.UpdateBlock;
-  const isDeleteBlockPack = purpose === RoutineTaskPurpose.DeleteBlockPack;
-  const isDeleteBlock = purpose === RoutineTaskPurpose.DeleteBlock;
-  const rootShelfNodes = shelfItemManager.expandedShelves
-    .values()
-    .map(shelfTreeSummary => shelfTreeSummary.root);
-  const selectedTargetSubShelf = Object.values(subShelvesByRootShelfId)
-    .flat()
-    .find(subShelf => subShelf.id === targetSubShelfId);
+  const usesPayloadSidebar =
+    usesBlockLiteEditor || purpose === RoutineTaskPurpose.ResetBlock;
+  const isResetBlockPack = purpose === RoutineTaskPurpose.ResetBlockPack;
+  const isResetBlock = purpose === RoutineTaskPurpose.ResetBlock;
   const availablePatternBlocks = useMemo(() => {
     const patternBlocksFromEditor: PatternBlock[] = [];
     const blocks: any[] = [...editor.document];
@@ -166,8 +156,8 @@ const RoutineTaskPayloadEditor = ({
                 return "";
               })
               .join("")
-              .trim() || block.type
-          : block.type,
+              .trim()
+          : "",
         reference: "{{customString}}",
       });
 
@@ -209,58 +199,6 @@ const RoutineTaskPayloadEditor = ({
   };
 
   useEffect(() => {
-    if (!isTargetSubShelfPickerOpen) return;
-
-    if (rootShelfNodes.length === 0) {
-      setActiveRootShelfId(null);
-      return;
-    }
-
-    if (
-      !activeRootShelfId ||
-      !rootShelfNodes.some(
-        rootShelfNode => rootShelfNode.id === activeRootShelfId
-      )
-    ) {
-      setActiveRootShelfId(rootShelfNodes[0].id);
-    }
-  }, [
-    activeRootShelfId,
-    isTargetSubShelfPickerOpen,
-    rootShelfNodes.length,
-    rootShelfNodes[0]?.id,
-  ]);
-
-  useEffect(() => {
-    if (
-      !isTargetSubShelfPickerOpen ||
-      !activeRootShelfId ||
-      subShelvesByRootShelfId[activeRootShelfId] ||
-      loadingSubShelvesByRootShelfIdRef.current.has(activeRootShelfId)
-    ) {
-      return;
-    }
-
-    loadingSubShelvesByRootShelfIdRef.current.add(activeRootShelfId);
-    void getAllSubShelvesByRootShelfIdQuerier
-      .fetch({
-        param: {
-          rootShelfId: activeRootShelfId,
-          areDeleted: false,
-        },
-      })
-      .then(response =>
-        setSubShelvesByRootShelfId(previousSubShelvesByRootShelfId => ({
-          ...previousSubShelvesByRootShelfId,
-          [activeRootShelfId]: response.data,
-        }))
-      )
-      .finally(() =>
-        loadingSubShelvesByRootShelfIdRef.current.delete(activeRootShelfId)
-      );
-  }, [activeRootShelfId, isTargetSubShelfPickerOpen, subShelvesByRootShelfId]);
-
-  useEffect(() => {
     if (!isOpen) {
       didInitializeOpenDialogRef.current = false;
       return;
@@ -283,21 +221,12 @@ const RoutineTaskPayloadEditor = ({
         ? parsedInitialPayload.blockPackId
         : ""
     );
-    setBlockGroupId(
-      typeof parsedInitialPayload.blockGroupId === "string"
-        ? parsedInitialPayload.blockGroupId
-        : ""
-    );
-    setParentBlockId(
-      typeof parsedInitialPayload.parentBlockId === "string"
-        ? parsedInitialPayload.parentBlockId
-        : ""
-    );
     setBlockId(
       typeof parsedInitialPayload.blockId === "string"
         ? parsedInitialPayload.blockId
         : ""
     );
+    setSelectedBlock(null);
     setRawPayload(JSON.stringify(parsedInitialPayload, null, 2));
     setSelectedPatternIds(new Set());
     setPatternBlocks(
@@ -311,8 +240,7 @@ const RoutineTaskPayloadEditor = ({
                   ? pattern.id
                   : crypto.randomUUID(),
             type: typeof pattern.type === "string" ? pattern.type : "block",
-            label:
-              typeof pattern.label === "string" ? pattern.label : "Pattern",
+            label: typeof pattern.label === "string" ? pattern.label : "",
             reference:
               typeof pattern.reference === "string"
                 ? pattern.reference
@@ -328,7 +256,7 @@ const RoutineTaskPayloadEditor = ({
         ? parsedInitialPayload.template.blockGroups.map(
             (blockGroup: any) => blockGroup.arborizedEditableBlock
           )
-        : (purpose === RoutineTaskPurpose.CreateBlock ||
+        : (purpose === RoutineTaskPurpose.AppendBlock ||
               purpose === RoutineTaskPurpose.UpdateBlock) &&
             parsedInitialPayload.arborizedEditableBlock
           ? [parsedInitialPayload.arborizedEditableBlock]
@@ -343,13 +271,59 @@ const RoutineTaskPayloadEditor = ({
       editor.document.map(block => block.id),
       blocks
     );
+    originalBlockEditor.replaceBlocks(
+      originalBlockEditor.document.map(block => block.id),
+      blocks.length > 0 ? [blocks[0]] : blocks
+    );
     setEditorVersion(version => version + 1);
-  }, [editor, isOpen, parsedInitialPayload, purpose]);
+  }, [editor, originalBlockEditor, isOpen, parsedInitialPayload, purpose]);
 
   useEffect(() => {
     if (!isOpen || !usesBlockLiteEditor) return;
-    return editor.onChange(() => setEditorVersion(version => version + 1));
-  }, [editor, isOpen, usesBlockLiteEditor]);
+    return editor.onChange(() => {
+      if (
+        (purpose === RoutineTaskPurpose.AppendBlock ||
+          purpose === RoutineTaskPurpose.UpdateBlock) &&
+        editor.document.length > 1
+      ) {
+        editor.removeBlocks(editor.document.slice(1).map(block => block.id));
+      }
+      setEditorVersion(version => version + 1);
+    });
+  }, [editor, isOpen, purpose, usesBlockLiteEditor]);
+
+  useEffect(() => {
+    if (
+      !isOpen ||
+      purpose !== RoutineTaskPurpose.UpdateBlock ||
+      !selectedBlock
+    ) {
+      return;
+    }
+
+    const block = {
+      id: selectedBlock.id,
+      type: selectedBlock.type
+        .replace(/^BlockType_/, "")
+        .replace(/^[A-Z]/, character => character.toLowerCase()),
+      props: selectedBlock.props ?? {},
+      content: Array.isArray(selectedBlock.content)
+        ? selectedBlock.content
+        : Array.isArray((selectedBlock.content as any)?.content)
+          ? (selectedBlock.content as any).content
+          : selectedBlock.contentText,
+      children: [],
+    };
+    editor.replaceBlocks(
+      editor.document.map(editorBlock => editorBlock.id),
+      [block as any]
+    );
+    originalBlockEditor.replaceBlocks(
+      originalBlockEditor.document.map(editorBlock => editorBlock.id),
+      [block as any]
+    );
+    setEditorVersion(version => version + 1);
+  }, [editor, originalBlockEditor, isOpen, purpose, selectedBlock]);
 
   const normalizeBlock = (block: any): any => {
     const uuidRegex =
@@ -413,12 +387,8 @@ const RoutineTaskPayloadEditor = ({
       };
     }
 
-    if (purpose === RoutineTaskPurpose.CreateBlock) {
-      return {
-        blockGroupId,
-        parentBlockId: parentBlockId.trim().length > 0 ? parentBlockId : null,
-        arborizedEditableBlock: firstBlock,
-      };
+    if (purpose === RoutineTaskPurpose.AppendBlock) {
+      return { blockPackId, arborizedEditableBlock: firstBlock };
     }
 
     return {
@@ -438,12 +408,12 @@ const RoutineTaskPayloadEditor = ({
         return;
       }
 
-      if (isDeleteBlockPack) {
+      if (isResetBlockPack) {
         setPayloadPreview(JSON.stringify({ blockPackId }, null, 2));
         return;
       }
 
-      if (isDeleteBlock) {
+      if (isResetBlock) {
         setPayloadPreview(JSON.stringify({ blockId }, null, 2));
         return;
       }
@@ -459,14 +429,12 @@ const RoutineTaskPayloadEditor = ({
       isCanceled = true;
     };
   }, [
-    blockGroupId,
     blockId,
     blockPackId,
     editorVersion,
-    isDeleteBlock,
-    isDeleteBlockPack,
+    isResetBlock,
+    isResetBlockPack,
     isOpen,
-    parentBlockId,
     patternBlocks,
     rawPayload,
     targetSubShelfId,
@@ -478,13 +446,13 @@ const RoutineTaskPayloadEditor = ({
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent
         className={
-          usesBlockLiteEditor
+          usesPayloadSidebar
             ? "z-[180] max-h-[92vh] !w-[min(1600px,97vw)] !max-w-none gap-0 overflow-hidden rounded-sm bg-muted p-0"
             : "max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-xl"
         }
       >
         <DialogHeader
-          className={usesBlockLiteEditor ? "border-b px-5 py-4" : ""}
+          className={usesPayloadSidebar ? "border-b px-5 py-4" : ""}
         >
           <DialogTitle>Payload editor</DialogTitle>
           <DialogDescription>
@@ -492,34 +460,19 @@ const RoutineTaskPayloadEditor = ({
           </DialogDescription>
         </DialogHeader>
 
-        {usesBlockLiteEditor ? (
+        {usesPayloadSidebar ? (
           <div className="grid min-h-0 flex-1 grid-cols-[500px_minmax(0,1fr)] overflow-hidden">
-            <RoutineTaskPayloadEditorSidebar
+            <CreateBlockPackPayloadEditorSidebar
               purpose={purpose}
-              rootShelfNodes={rootShelfNodes}
-              selectedTargetSubShelf={selectedTargetSubShelf}
-              targetSubShelfPickerTriggerRef={targetSubShelfPickerTriggerRef}
-              targetSubShelfPickerPortalContainer={
-                targetSubShelfPickerPortalContainer
-              }
-              isTargetSubShelfPickerOpen={isTargetSubShelfPickerOpen}
-              setIsTargetSubShelfPickerOpen={setIsTargetSubShelfPickerOpen}
-              setTargetSubShelfPickerPortalContainer={
-                setTargetSubShelfPickerPortalContainer
-              }
-              activeRootShelfId={activeRootShelfId}
-              setActiveRootShelfId={setActiveRootShelfId}
-              subShelvesByRootShelfId={subShelvesByRootShelfId}
               targetSubShelfId={targetSubShelfId}
               setTargetSubShelfId={setTargetSubShelfId}
               templateName={templateName}
               setTemplateName={setTemplateName}
-              blockGroupId={blockGroupId}
-              setBlockGroupId={setBlockGroupId}
-              parentBlockId={parentBlockId}
-              setParentBlockId={setParentBlockId}
+              blockPackId={blockPackId}
+              setBlockPackId={setBlockPackId}
               blockId={blockId}
               setBlockId={setBlockId}
+              setSelectedBlock={setSelectedBlock}
               patternBlocks={patternBlocks}
               availablePatternBlocks={availablePatternBlocks}
               setPatternBlocks={setPatternBlocks}
@@ -528,21 +481,52 @@ const RoutineTaskPayloadEditor = ({
               setSelectedPatternIds={setSelectedPatternIds}
               payloadPreview={payloadPreview}
             />
-            <RoutineTaskPayloadTemplateEditor
-              editor={editor}
-              payloadPreview={payloadPreview}
-              patternBlockIds={
-                new Set(patternBlocks.map(patternBlock => patternBlock.id))
-              }
-              onAddPatternBlock={addPatternBlock}
-              onRemovePatternBlock={removePatternBlock}
-              onClose={onClose}
-              onConfirm={onConfirm}
-            />
+            {usesBlockLiteEditor ? (
+              <CreateBlockPackPayloadTemplateEditor
+                editor={editor}
+                originalBlockEditor={originalBlockEditor}
+                purpose={purpose}
+                payloadPreview={payloadPreview}
+                patternBlockIds={
+                  new Set(patternBlocks.map(patternBlock => patternBlock.id))
+                }
+                onAddPatternBlock={addPatternBlock}
+                onRemovePatternBlock={removePatternBlock}
+                onClose={onClose}
+                onConfirm={onConfirm}
+              />
+            ) : (
+              <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-background/30">
+                <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                  <Label>Payload Preview</Label>
+                  <pre className="mt-2 min-h-64 whitespace-pre-wrap break-words rounded-sm border bg-background/45 p-3 font-mono text-xs">
+                    {payloadPreview}
+                  </pre>
+                </div>
+                <DialogFooter className="min-h-10 border-t bg-muted/80 px-4 py-2">
+                  <span className="mr-auto self-center text-xs text-muted-foreground">
+                    Estimated payload cost:{" "}
+                    {Math.ceil(new Blob([payloadPreview]).size / 1024)}{" "}
+                    CostUnits
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      onConfirm(payloadPreview);
+                      onClose();
+                    }}
+                  >
+                    Save
+                  </Button>
+                </DialogFooter>
+              </main>
+            )}
           </div>
         ) : (
           <>
-            {isDeleteBlockPack ? (
+            {isResetBlockPack ? (
               <div className="flex flex-col gap-2">
                 <Label>Block pack id</Label>
                 <Input
@@ -550,7 +534,7 @@ const RoutineTaskPayloadEditor = ({
                   onChange={event => setBlockPackId(event.currentTarget.value)}
                 />
               </div>
-            ) : isDeleteBlock ? (
+            ) : isResetBlock ? (
               <div className="flex flex-col gap-2">
                 <Label>Block id</Label>
                 <Input
@@ -596,4 +580,4 @@ const RoutineTaskPayloadEditor = ({
   );
 };
 
-export default RoutineTaskPayloadEditor;
+export default CreateBlockPackPayloadEditor;

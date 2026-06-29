@@ -20,6 +20,7 @@ import type {
   DeleteMyRoutinesByIdsRequest,
   GetAllMyRoutinesByTimeRangeRequest,
   GetMyRoutineByIdRequest,
+  GetMyRoutinesByStationIdRequest,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutinesByIdsRequest,
   LinkRoutineItemByIdRequest,
@@ -375,6 +376,106 @@ export class RoutineLocalSimulator {
       taskIds: taskRelations.map(relation => relation.taskId),
       itemIds: itemRelations.map(relation => relation.itemId),
     };
+  };
+
+  static simulateGetMyRoutinesByStationId = async (
+    request: GetMyRoutinesByStationIdRequest
+  ) => {
+    if (!localDB.isReady) await localDB.ensureReady();
+    const loggedInUser = await localDB.query.User.findFirst({
+      where: eq(User.isLoggedIn, true),
+    });
+    if (loggedInUser === undefined) return [];
+
+    const routines = await localDB
+      .select({
+        id: Routine.id,
+        stationId: Routine.stationId,
+        title: Routine.title,
+        status: Routine.status,
+        isPinned: Routine.isPinned,
+        scheduledStartAt: Routine.scheduledStartAt,
+        scheduledEndAt: Routine.scheduledEndAt,
+        period: Routine.period,
+        timezone: Routine.timezone,
+        deletedAt: Routine.deletedAt,
+        updatedAt: Routine.updatedAt,
+        createdAt: Routine.createdAt,
+      })
+      .from(Routine)
+      .innerJoin(Station, eq(Station.id, Routine.stationId))
+      .innerJoin(
+        UsersToStations,
+        and(
+          eq(UsersToStations.stationId, Routine.stationId),
+          eq(UsersToStations.userPublicId, loggedInUser.publicId),
+          inArray(UsersToStations.permission, AllAccessControlPermissions)
+        )
+      )
+      .where(
+        and(
+          eq(Routine.stationId, request.param.stationId),
+          isNull(Station.deletedAt),
+          request.param.areDeleted === true
+            ? sql`${Routine.deletedAt} IS NOT NULL`
+            : isNull(Routine.deletedAt)
+        )
+      )
+      .orderBy(
+        asc(Routine.scheduledStartAt),
+        asc(Routine.scheduledEndAt),
+        asc(Routine.id)
+      );
+    if (routines.length === 0) return [];
+
+    const relations = await localDB
+      .select({
+        routineId: RoutinesToTags.routineId,
+        tagId: RoutinesToTags.tagId,
+      })
+      .from(RoutinesToTags)
+      .where(
+        inArray(
+          RoutinesToTags.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
+    const taskRelations = await localDB
+      .select({
+        routineId: RoutinesToTasks.routineId,
+        taskId: RoutinesToTasks.taskId,
+      })
+      .from(RoutinesToTasks)
+      .where(
+        inArray(
+          RoutinesToTasks.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
+    const itemRelations = await localDB
+      .select({
+        routineId: RoutinesToItems.routineId,
+        itemId: RoutinesToItems.itemId,
+      })
+      .from(RoutinesToItems)
+      .where(
+        inArray(
+          RoutinesToItems.routineId,
+          routines.map(routine => routine.id)
+        )
+      );
+    return routines.map(routine => ({
+      ...routine,
+      tagIds: relations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.tagId),
+      taskIds: taskRelations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.taskId),
+      itemIds: itemRelations
+        .filter(relation => relation.routineId === routine.id)
+        .map(relation => relation.itemId),
+    }));
   };
 
   static simulateGetAllMyRoutinesByTimeRange = async (

@@ -74,7 +74,7 @@ const CreateStationDialog = ({
         if (!open && !stationRoutineManager.isCreatingStation) onClose();
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-visible rounded-sm bg-muted sm:max-w-xl">
+      <DialogContent className="max-h-[85vh] overflow-visible rounded-sm bg-muted sm:max-w-xl [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>Create station</DialogTitle>
           <DialogDescription>
@@ -159,7 +159,7 @@ const CreateStationDialog = ({
               }
             >
               {stationRoutineManager.isCreatingStation && <Spinner />}
-              Create station
+              Create
             </Button>
           </DialogFooter>
         </form>

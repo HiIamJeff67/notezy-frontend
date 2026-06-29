@@ -1,6 +1,5 @@
 import {
   RoutinePeriod as GraphQLRoutinePeriod,
-  RoutineTaskPurpose as GraphQLRoutineTaskPurpose,
   RoutineTaskStatus as GraphQLRoutineTaskStatus,
   SearchRoutineTaskSortBy,
   SearchSortOrder,
@@ -166,7 +165,7 @@ export const useRoutineTaskLogic = ({
           id: UUID;
           stationId: UUID;
           title: string;
-          purpose: GraphQLRoutineTaskPurpose;
+          purpose: string;
           costUnit: number;
           priority: number;
           status: GraphQLRoutineTaskStatus;
@@ -189,20 +188,10 @@ export const useRoutineTaskLogic = ({
           id: node.id,
           stationId: node.stationId,
           title: node.title,
-          purpose:
-            node.purpose ===
-            GraphQLRoutineTaskPurpose.RoutineTaskPurposeCreateBlockPack
-              ? RoutineTaskPurpose.CreateBlockPack
-              : node.purpose ===
-                  GraphQLRoutineTaskPurpose.RoutineTaskPurposeDeleteBlockPack
-                ? RoutineTaskPurpose.DeleteBlockPack
-                : node.purpose ===
-                    GraphQLRoutineTaskPurpose.RoutineTaskPurposeCreateBlock
-                  ? RoutineTaskPurpose.CreateBlock
-                  : node.purpose ===
-                      GraphQLRoutineTaskPurpose.RoutineTaskPurposeUpdateBlock
-                    ? RoutineTaskPurpose.UpdateBlock
-                    : RoutineTaskPurpose.DeleteBlock,
+          purpose: node.purpose.replace(
+            "RoutineTaskPurpose_",
+            ""
+          ) as RoutineTaskPurpose,
           payload: existingRoutineTask?.payload ?? {},
           costUnit: node.costUnit,
           priority: node.priority,

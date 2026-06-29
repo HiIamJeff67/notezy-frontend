@@ -13,6 +13,7 @@ import {
   DeleteMyRoutinesByIds,
   GetAllMyRoutinesByTimeRange,
   GetMyRoutineById,
+  GetMyRoutinesByStationId,
   HardDeleteMyRoutineById,
   HardDeleteMyRoutinesByIds,
   LinkRoutineItemById,
@@ -64,6 +65,10 @@ import {
   GetMyRoutineByIdRequestSchema,
   GetMyRoutineByIdResponse,
   GetMyRoutineByIdResponseSchema,
+  GetMyRoutinesByStationIdRequest,
+  GetMyRoutinesByStationIdRequestSchema,
+  GetMyRoutinesByStationIdResponse,
+  GetMyRoutinesByStationIdResponseSchema,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutineByIdRequestSchema,
   HardDeleteMyRoutineByIdResponse,
@@ -175,6 +180,34 @@ export const queryFnGetMyRoutineById = async (
     return GetMyRoutineByIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyRoutineById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const queryFnGetMyRoutinesByStationId = async (
+  request: GetMyRoutinesByStationIdRequest
+): Promise<GetMyRoutinesByStationIdResponse> => {
+  try {
+    const validatedRequest =
+      GetMyRoutinesByStationIdRequestSchema.parse(request);
+    const response = await GetMyRoutinesByStationId({
+      data: validatedRequest,
+    });
+    return GetMyRoutinesByStationIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetMyRoutinesByStationId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

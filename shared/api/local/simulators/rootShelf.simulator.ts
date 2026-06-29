@@ -3,9 +3,6 @@ import {
   SearchRootShelfSortBy,
   SearchRootShelvesQuery,
   SearchSortOrder,
-  UserPlan,
-  UserRole,
-  UserStatus,
 } from "@shared/api/graphql/generated/graphql";
 import {
   AccessControlPermission,
@@ -182,18 +179,9 @@ export class RootShelfLocalSimulator {
           deletedAt: rootShelf.deletedAt,
           updatedAt: rootShelf.updatedAt,
           createdAt: rootShelf.createdAt,
-          owner: [
-            {
-              __typename: "PublicUser",
-              publicId: loggedInUser.publicId,
-              name: loggedInUser.name,
-              displayName: loggedInUser.displayName,
-              role: UserRole.Normal,
-              plan: UserPlan.Free,
-              status: loggedInUser.status as UserStatus,
-              createdAt: loggedInUser.createdAt,
-            },
-          ],
+          ownerId: loggedInUser.publicId as UUID,
+          sharerIds: [],
+          itemIds: [],
         },
       })),
       searchPageInfo: {

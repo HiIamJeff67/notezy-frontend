@@ -56,7 +56,7 @@ const DeleteStationDialog = ({
         if (!open && !stationRoutineManager.isDeletingStation) onClose();
       }}
     >
-      <DialogContent className="rounded-sm bg-muted sm:max-w-md">
+      <DialogContent className="rounded-sm bg-muted sm:max-w-md [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>Delete a station</DialogTitle>
           <DialogDescription>
@@ -93,7 +93,8 @@ const DeleteStationDialog = ({
               type="button"
               variant="destructive"
               disabled={
-                stationRoutineManager.isDeletingStation || confirmation !== stationName
+                stationRoutineManager.isDeletingStation ||
+                confirmation !== stationName
               }
               onClick={deleteStation}
             >

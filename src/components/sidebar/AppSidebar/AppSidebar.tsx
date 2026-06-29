@@ -54,7 +54,6 @@ import {
 import {
   useAppRouter,
   useLanguage,
-  useLoading,
   useResizeSidebar,
   useShelfItem,
   useStationRoutine,
@@ -70,7 +69,6 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   if (disabled) return <></>;
 
   const router = useAppRouter();
-  const loadingManager = useLoading();
   const languageManager = useLanguage();
   const modalManager = useModal();
   const sidebarManager = useSidebar();
@@ -179,17 +177,13 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                     "Typing an new name of the created root shelf. Note that duplicate root shelf name is not allowed.",
                   disableInput: false,
                   inputPlaceholder: "Type new name here",
-                  onCreate: async (newRootShelfName: string) =>
-                    await loadingManager.startAsyncTransactionLoading(
-                      async () => {
-                        await shelfItemManager
-                          .createRootShelf(newRootShelfName)
-                          .then(modalManager.close)
-                          .catch(error =>
-                            toast.error(languageManager.tError(error))
-                          );
-                      }
-                    ),
+                  onCreate: async (newRootShelfName: string) => {
+                    await shelfItemManager
+                      .createRootShelf(newRootShelfName)
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  },
                   onCancel: modalManager.close,
                 })
               }

@@ -30,6 +30,8 @@ import {
   GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdRequest,
   GetMyRoutineByIdResponse,
+  GetMyRoutinesByStationIdRequest,
+  GetMyRoutinesByStationIdResponse,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutineByIdResponse,
   HardDeleteMyRoutinesByIdsRequest,
@@ -166,6 +168,67 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
 
     return formattedResponse;
   });
+
+export const GetMyRoutinesByStationId = createServerFn({ method: "GET" })
+  .inputValidator((data: GetMyRoutinesByStationIdRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<GetMyRoutinesByStationIdResponse> => {
+      const params = new URLSearchParams(
+        Object.entries(request.param || {}).reduce<Record<string, string>>(
+          (acc, [key, value]) => {
+            if (value !== undefined && value !== null) acc[key] = String(value);
+            return acc;
+          },
+          {}
+        )
+      );
+      if (request.param?.areDeleted === undefined) {
+        params.set("areDeleted", "false");
+      }
+      const url =
+        import.meta.env.VITE_API_DOMAIN_URL +
+        "/" +
+        CurrentAPIBaseURL +
+        "/" +
+        APIURLPathDictionary.routine.getMyRoutinesByStationId +
+        "?" +
+        params.toString();
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        credentials: "include",
+      });
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as GetMyRoutinesByStationIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
 
 export const GetAllMyRoutinesByTimeRange = createServerFn({ method: "GET" })
   .inputValidator((data: GetAllMyRoutinesByTimeRangeRequest) => data)

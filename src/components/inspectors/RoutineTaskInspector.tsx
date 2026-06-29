@@ -14,14 +14,17 @@ import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useMemo, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
-import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditor/RoutineTaskPayloadEditor";
+import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditors/RoutineTaskPayloadEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -34,7 +37,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useStationRoutine, useUser } from "@/hooks";
 
 interface RoutineTaskInspectorProps {
@@ -315,24 +317,71 @@ const RoutineTaskInspector = ({
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {values.purpose.replace(
+                      /^(Create|Append|Update|Reset)(.+)$/,
+                      "$1．$2"
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-muted">
-                  <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
-                    Create block pack
-                  </SelectItem>
-                  <SelectItem value={RoutineTaskPurpose.DeleteBlockPack}>
-                    Delete block pack
-                  </SelectItem>
-                  <SelectItem value={RoutineTaskPurpose.CreateBlock}>
-                    Create block
-                  </SelectItem>
-                  <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
-                    Update block
-                  </SelectItem>
-                  <SelectItem value={RoutineTaskPurpose.DeleteBlock}>
-                    Delete block
-                  </SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Create</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
+                      Routine
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Append</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.AppendBlock}>
+                      Block
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Update</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
+                      Block
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
+                      Routine
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Reset</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetBlock}>
+                      Block
+                    </SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
@@ -421,22 +470,15 @@ const RoutineTaskInspector = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="routine-task-inspector-payload">
-                Payload (JSON)
-              </Label>
-              <Textarea
+              <Label htmlFor="routine-task-inspector-payload">Payload</Label>
+              <div
                 id="routine-task-inspector-payload"
-                value={values.payload}
-                spellCheck={false}
-                className="min-h-64 max-h-96 resize-y overflow-y-auto font-mono text-xs"
-                onChange={event => {
-                  const payload = event.currentTarget.value;
-                  setValues(current => ({
-                    ...current,
-                    payload,
-                  }));
-                }}
-              />
+                className="max-h-64 overflow-y-auto rounded-sm border bg-background/45 p-3"
+              >
+                <pre className="whitespace-pre-wrap break-words font-mono text-xs text-muted-foreground">
+                  {values.payload}
+                </pre>
+              </div>
               <Button
                 type="button"
                 variant="outline"

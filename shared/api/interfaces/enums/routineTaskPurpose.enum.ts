@@ -1,9 +1,18 @@
 export enum RoutineTaskPurpose {
+  CreateRootShelf = "CreateRootShelf",
+  UpdateRootShelf = "UpdateRootShelf",
+  ResetRootShelf = "ResetRootShelf",
+  CreateSubShelf = "CreateSubShelf",
+  UpdateSubShelf = "UpdateSubShelf",
+  ResetSubShelf = "ResetSubShelf",
   CreateBlockPack = "CreateBlockPack",
-  DeleteBlockPack = "DeleteBlockPack",
-  CreateBlock = "CreateBlock",
+  UpdateBlockPack = "UpdateBlockPack",
+  ResetBlockPack = "ResetBlockPack",
+  AppendBlock = "AppendBlock",
   UpdateBlock = "UpdateBlock",
-  DeleteBlock = "DeleteBlock",
+  ResetBlock = "ResetBlock",
+  CreateRoutine = "CreateRoutine",
+  UpdateRoutine = "UpdateRoutine",
 }
 
 export const AllRoutineTaskPurposes: RoutineTaskPurpose[] =

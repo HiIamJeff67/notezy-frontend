@@ -197,6 +197,7 @@ export const APIURLPathDictionary = {
     visualizeMyRoutineScheduledEndAtCount:
       "routine/visualizeMyRoutineScheduledEndAtCount",
     getMyRoutineById: "routine/getMyRoutineById",
+    getMyRoutinesByStationId: "routine/getMyRoutinesByStationId",
     getAllMyRoutinesByTimeRange: "routine/getAllMyRoutinesByTimeRange",
     createRoutineByStationId: "routine/createRoutineByStationId",
     createRoutinesByStationIds: "routine/createRoutinesByStationIds",

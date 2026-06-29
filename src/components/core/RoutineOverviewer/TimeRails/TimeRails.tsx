@@ -352,11 +352,9 @@ const TimeRails = () => {
           nextEndAt.setHours(0, 0, 0, 0);
         }
         if (stationRoutineManager.timeRailScale === "month") {
-          nextStartAt.setMonth(nextStartAt.getMonth() - 1);
-          nextStartAt.setDate(1);
+          nextStartAt.setDate(nextStartAt.getDate() - 1);
           nextStartAt.setHours(0, 0, 0, 0);
-          nextEndAt.setMonth(nextEndAt.getMonth() + 1);
-          nextEndAt.setDate(1);
+          nextEndAt.setDate(nextEndAt.getDate() + 1);
           nextEndAt.setHours(0, 0, 0, 0);
         }
 
@@ -401,7 +399,7 @@ const TimeRails = () => {
     if (stationRoutineManager.timeRailScale === "month") {
       startAt.setMonth(startAt.getMonth(), 1);
       endAt.setTime(startAt.getTime());
-      endAt.setMonth(endAt.getMonth() + 3, 1);
+      endAt.setMonth(endAt.getMonth() + 1, 1);
     }
 
     return {
@@ -450,14 +448,22 @@ const TimeRails = () => {
               scheduledStartAt < routineVisibilityWindow.endAt &&
               scheduledEndAt > routineVisibilityWindow.startAt
             ) {
+              const preview = routineResizePreview[routine.id];
+              const isPreviewedOccurrence =
+                preview?.scheduledStartAt.toDateString() ===
+                scheduledStartAt.toDateString();
               occurrences.push({
                 key: `${routine.id}-${scheduledStartAt.getTime()}`,
                 routine: {
                   ...routine,
-                  scheduledStartAt,
-                  scheduledEndAt,
+                  scheduledStartAt: isPreviewedOccurrence
+                    ? preview.scheduledStartAt
+                    : scheduledStartAt,
+                  scheduledEndAt: isPreviewedOccurrence
+                    ? preview.scheduledEndAt
+                    : scheduledEndAt,
                 },
-                canResize: false,
+                canResize: true,
               });
             }
             cursor.setDate(cursor.getDate() + 1);
@@ -484,38 +490,50 @@ const TimeRails = () => {
           firstWeekStartAt.setDate(firstWeekStartAt.getDate() - 7);
 
           while (firstWeekStartAt < routineVisibilityWindow.endAt) {
-            const scheduledStartAt = new Date(firstWeekStartAt);
-            scheduledStartAt.setDate(
-              scheduledStartAt.getDate() + startWeekday - 1
-            );
-            scheduledStartAt.setHours(
-              routine.scheduledStartAt.getHours(),
-              routine.scheduledStartAt.getMinutes(),
-              0,
-              0
-            );
-            const scheduledEndAt = new Date(firstWeekStartAt);
-            scheduledEndAt.setDate(scheduledEndAt.getDate() + endWeekday - 1);
-            scheduledEndAt.setHours(
-              routine.scheduledEndAt.getHours(),
-              routine.scheduledEndAt.getMinutes(),
-              0,
-              0
-            );
+            for (let weekday = startWeekday; weekday <= endWeekday; weekday++) {
+              const scheduledStartAt = new Date(firstWeekStartAt);
+              scheduledStartAt.setDate(
+                scheduledStartAt.getDate() + weekday - 1
+              );
+              scheduledStartAt.setHours(
+                routine.scheduledStartAt.getHours(),
+                routine.scheduledStartAt.getMinutes(),
+                0,
+                0
+              );
+              const scheduledEndAt = new Date(scheduledStartAt);
+              scheduledEndAt.setHours(
+                routine.scheduledEndAt.getHours(),
+                routine.scheduledEndAt.getMinutes(),
+                0,
+                0
+              );
+              if (scheduledEndAt <= scheduledStartAt) {
+                scheduledEndAt.setDate(scheduledEndAt.getDate() + 1);
+              }
 
-            if (
-              scheduledStartAt < routineVisibilityWindow.endAt &&
-              scheduledEndAt > routineVisibilityWindow.startAt
-            ) {
-              occurrences.push({
-                key: `${routine.id}-${scheduledStartAt.getTime()}`,
-                routine: {
-                  ...routine,
-                  scheduledStartAt,
-                  scheduledEndAt,
-                },
-                canResize: false,
-              });
+              if (
+                scheduledStartAt < routineVisibilityWindow.endAt &&
+                scheduledEndAt > routineVisibilityWindow.startAt
+              ) {
+                const preview = routineResizePreview[routine.id];
+                const isPreviewedOccurrence =
+                  preview?.scheduledStartAt.toDateString() ===
+                  scheduledStartAt.toDateString();
+                occurrences.push({
+                  key: `${routine.id}-${scheduledStartAt.getTime()}`,
+                  routine: {
+                    ...routine,
+                    scheduledStartAt: isPreviewedOccurrence
+                      ? preview.scheduledStartAt
+                      : scheduledStartAt,
+                    scheduledEndAt: isPreviewedOccurrence
+                      ? preview.scheduledEndAt
+                      : scheduledEndAt,
+                  },
+                  canResize: true,
+                });
+              }
             }
             firstWeekStartAt.setDate(firstWeekStartAt.getDate() + 7);
           }
@@ -545,38 +563,49 @@ const TimeRails = () => {
           cursor.setMonth(cursor.getMonth() - 1);
 
           while (cursor < routineVisibilityWindow.endAt) {
-            const scheduledStartAt = new Date(
-              cursor.getFullYear(),
-              cursor.getMonth(),
-              startDay,
-              routine.scheduledStartAt.getHours(),
-              routine.scheduledStartAt.getMinutes(),
-              0,
-              0
-            );
-            const scheduledEndAt = new Date(
-              cursor.getFullYear(),
-              cursor.getMonth(),
-              endDay,
-              routine.scheduledEndAt.getHours(),
-              routine.scheduledEndAt.getMinutes(),
-              0,
-              0
-            );
+            for (let day = startDay; day <= endDay; day++) {
+              const scheduledStartAt = new Date(
+                cursor.getFullYear(),
+                cursor.getMonth(),
+                day,
+                routine.scheduledStartAt.getHours(),
+                routine.scheduledStartAt.getMinutes(),
+                0,
+                0
+              );
+              const scheduledEndAt = new Date(scheduledStartAt);
+              scheduledEndAt.setHours(
+                routine.scheduledEndAt.getHours(),
+                routine.scheduledEndAt.getMinutes(),
+                0,
+                0
+              );
+              if (scheduledEndAt <= scheduledStartAt) {
+                scheduledEndAt.setDate(scheduledEndAt.getDate() + 1);
+              }
 
-            if (
-              scheduledStartAt < routineVisibilityWindow.endAt &&
-              scheduledEndAt > routineVisibilityWindow.startAt
-            ) {
-              occurrences.push({
-                key: `${routine.id}-${scheduledStartAt.getTime()}`,
-                routine: {
-                  ...routine,
-                  scheduledStartAt,
-                  scheduledEndAt,
-                },
-                canResize: false,
-              });
+              if (
+                scheduledStartAt < routineVisibilityWindow.endAt &&
+                scheduledEndAt > routineVisibilityWindow.startAt
+              ) {
+                const preview = routineResizePreview[routine.id];
+                const isPreviewedOccurrence =
+                  preview?.scheduledStartAt.toDateString() ===
+                  scheduledStartAt.toDateString();
+                occurrences.push({
+                  key: `${routine.id}-${scheduledStartAt.getTime()}`,
+                  routine: {
+                    ...routine,
+                    scheduledStartAt: isPreviewedOccurrence
+                      ? preview.scheduledStartAt
+                      : scheduledStartAt,
+                    scheduledEndAt: isPreviewedOccurrence
+                      ? preview.scheduledEndAt
+                      : scheduledEndAt,
+                  },
+                  canResize: true,
+                });
+              }
             }
             cursor.setMonth(cursor.getMonth() + 1);
           }
@@ -643,9 +672,9 @@ const TimeRails = () => {
               const dayRight = getDatePosition(
                 new Date(routineStartDay.getTime() + 24 * 60 * 60 * 1000)
               );
-              width = Math.min(width, Math.max(dayRight - left - 4, 18));
-              if (left + width > dayRight - 4) {
-                left = Math.max(dayLeft + 4, dayRight - width - 4);
+              width = Math.min(width, Math.max(dayRight - left - 10, 18));
+              if (left + width > dayRight - 10) {
+                left = Math.max(dayLeft + 10, dayRight - width - 10);
               }
             }
           }
@@ -667,7 +696,7 @@ const TimeRails = () => {
       const railRightPositions: number[] = [];
       for (const routineVisualLayout of routineVisualLayouts) {
         const visualRight =
-          routineVisualLayout.left + routineVisualLayout.width + 6;
+          routineVisualLayout.left + routineVisualLayout.width;
         const targetRailIndex = railRightPositions.findIndex(
           railRightPosition => railRightPosition <= routineVisualLayout.left
         );

@@ -1,6 +1,5 @@
 import {
   AllRoutinePeriods,
-  AllRoutineTaskPurposes,
   RoutinePeriod,
   RoutineTaskPurpose,
   UserPlan,
@@ -11,7 +10,7 @@ import type { UUID } from "crypto";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
-import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditor/RoutineTaskPayloadEditor";
+import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditors/RoutineTaskPayloadEditor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +25,10 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -204,7 +206,7 @@ const CreateRoutineTaskDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutineTask) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>Create routine task</DialogTitle>
           <DialogDescription>
@@ -216,7 +218,7 @@ const CreateRoutineTaskDialog = ({
 
         <form
           autoComplete="off"
-          className="flex max-h-[calc(90vh-112px)] flex-col gap-4 overflow-y-auto pr-1 pb-4"
+          className="flex max-h-[calc(90vh-112px)] flex-col gap-4 overflow-y-auto px-1 pb-4"
           onSubmit={async event => {
             event.preventDefault();
             await createRoutineTask();
@@ -231,30 +233,110 @@ const CreateRoutineTaskDialog = ({
               maxLength={128}
               autoFocus
               onChange={event => setTitle(event.currentTarget.value)}
-              placeholder="Create the daily note"
+              placeholder="ex. Create the daily note"
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label>Purpose</Label>
-            <Select
-              value={purpose}
-              onValueChange={value => setPurpose(value as RoutineTaskPurpose)}
-            >
-              <SelectTrigger className="w-full rounded-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[160]">
-                {AllRoutineTaskPurposes.map(routineTaskPurpose => (
-                  <SelectItem
-                    key={routineTaskPurpose}
-                    value={routineTaskPurpose}
-                  >
-                    {routineTaskPurpose}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex min-w-0 flex-[1.35] flex-col gap-2">
+              <Label>Purpose</Label>
+              <Select
+                value={purpose}
+                onValueChange={value => setPurpose(value as RoutineTaskPurpose)}
+              >
+                <SelectTrigger className="w-full rounded-sm">
+                  <SelectValue>
+                    {purpose.replace(
+                      /^(Create|Append|Update|Reset)(.+)$/,
+                      "$1．$2"
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="z-[160]">
+                  <SelectGroup>
+                    <SelectLabel>Create</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
+                      Routine
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Append</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.AppendBlock}>
+                      Block
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Update</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
+                      Block
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
+                      Routine
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Reset</SelectLabel>
+                    <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
+                      RootShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
+                      SubShelf
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
+                      BlockPack
+                    </SelectItem>
+                    <SelectItem value={RoutineTaskPurpose.ResetBlock}>
+                      Block
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex min-w-36 flex-1 flex-col gap-2">
+              <Label>Recurring</Label>
+              <Select
+                value={period ?? "OneShot"}
+                onValueChange={value =>
+                  setPeriod(
+                    value === "OneShot" ? null : (value as RoutinePeriod)
+                  )
+                }
+              >
+                <SelectTrigger className="w-full rounded-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[160]">
+                  <SelectItem value="OneShot">One-shot</SelectItem>
+                  {AllRoutinePeriods.map(routinePeriod => (
+                    <SelectItem key={routinePeriod} value={routinePeriod}>
+                      {routinePeriod}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -268,28 +350,6 @@ const CreateRoutineTaskDialog = ({
               }}
               placeholder="Select first execution time"
             />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label>Recurring</Label>
-            <Select
-              value={period ?? "OneShot"}
-              onValueChange={value =>
-                setPeriod(value === "OneShot" ? null : (value as RoutinePeriod))
-              }
-            >
-              <SelectTrigger className="w-full rounded-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[160]">
-                <SelectItem value="OneShot">One-shot</SelectItem>
-                {AllRoutinePeriods.map(routinePeriod => (
-                  <SelectItem key={routinePeriod} value={routinePeriod}>
-                    {routinePeriod}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="flex flex-col gap-2">

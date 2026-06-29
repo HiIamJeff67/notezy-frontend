@@ -107,6 +107,57 @@ export type GetMyRoutineByIdResponse = z.infer<
   typeof GetMyRoutineByIdResponseSchema
 >;
 
+/* ============================== GetMyRoutinesByStationId ============================== */
+
+export const GetMyRoutinesByStationIdRequestSchema = NotezyRequestSchema.extend(
+  {
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({
+      stationId: z.uuidv4(),
+      areDeleted: z.boolean().optional().default(false),
+    }),
+  }
+);
+
+export type GetMyRoutinesByStationIdRequest = z.input<
+  typeof GetMyRoutinesByStationIdRequestSchema
+>;
+
+export const GetMyRoutinesByStationIdResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.array(
+      z.object({
+        id: z.uuidv4(),
+        stationId: z.uuidv4(),
+        title: z.string(),
+        status: z.enum(AllRoutineStatuses),
+        isPinned: z.boolean(),
+        scheduledStartAt: z.coerce.date(),
+        scheduledEndAt: z.coerce.date(),
+        period: z.enum(AllRoutinePeriods).nullable(),
+        timezone: z.string(),
+        deletedAt: z.coerce.date().nullable(),
+        updatedAt: z.coerce.date(),
+        createdAt: z.coerce.date(),
+        tagIds: z.array(z.uuidv4()),
+        taskIds: z.array(z.uuidv4()),
+        itemIds: z.array(z.uuidv4()),
+      })
+    ),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  });
+
+export type GetMyRoutinesByStationIdResponse = z.infer<
+  typeof GetMyRoutinesByStationIdResponseSchema
+>;
+
 /* ============================== GetAllMyRoutinesByTimeRange ============================== */
 
 export const GetAllMyRoutinesByTimeRangeRequestSchema =

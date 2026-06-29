@@ -1,6 +1,10 @@
-import { useGetAllMyRoutinesByTimeRange } from "@shared/api/hooks/routine.hook";
-import { RoutineStatus, RoutineTaskStatus } from "@shared/api/interfaces/enums";
-import type { GetAllMyRoutinesByTimeRangeResponse } from "@shared/api/interfaces/routine.interface";
+import { useGetMyRoutinesByStationId } from "@shared/api/hooks/routine.hook";
+import {
+  RoutinePeriod,
+  RoutineStatus,
+  RoutineTaskStatus,
+} from "@shared/api/interfaces/enums";
+import type { GetMyRoutinesByStationIdResponse } from "@shared/api/interfaces/routine.interface";
 import { MaxTriggerValue } from "@shared/constants/triggerLimitations.constant";
 import { LRUCache } from "@shared/lib/LRUCache";
 import type { RoutineNode } from "@shared/types/routineNode.type";
@@ -111,7 +115,7 @@ export const StationRoutineProvider = ({
   children: React.ReactNode;
 }) => {
   const userManager = useUser();
-  const getAllRoutinesQuerier = useGetAllMyRoutinesByTimeRange();
+  const getStationRoutinesQuerier = useGetMyRoutinesByStationId();
 
   const initialStartAt = new Date();
   initialStartAt.setHours(0, 0, 0, 0);
@@ -130,6 +134,7 @@ export const StationRoutineProvider = ({
   );
   const knownStationIdsRef = useRef<Set<UUID>>(new Set());
   const knownRoutineTagIdsRef = useRef<Set<UUID>>(new Set());
+  const loadedRoutineStationIdsRef = useRef<Set<UUID>>(new Set());
   const initializedUserPublicIdRef = useRef<string | null>(null);
   const initializationPromiseRef = useRef<Promise<void> | null>(null);
   const presenceRef = useRef<{
@@ -236,23 +241,6 @@ export const StationRoutineProvider = ({
   const routineTagIdsSignature = routineTags
     .map(routineTag => routineTag.id)
     .join(",");
-  const routineTimePageSignature = (() => {
-    const anchorMonth = new Date(
-      (timeWindow.startAt.getTime() + timeWindow.endAt.getTime()) / 2
-    );
-    anchorMonth.setDate(1);
-    anchorMonth.setHours(0, 0, 0, 0);
-    anchorMonth.setMonth(anchorMonth.getMonth() - 1);
-
-    const monthKeys: string[] = [];
-    const cursor = new Date(anchorMonth);
-    for (let index = 0; index < 3; index++) {
-      monthKeys.push(`${cursor.getFullYear()}-${cursor.getMonth()}`);
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
-
-    return monthKeys.join("|");
-  })();
 
   useEffect(() => {
     const currentStationIds = stationsRef.current.keys() as UUID[];
@@ -289,44 +277,36 @@ export const StationRoutineProvider = ({
   useEffect(() => {
     const stationIds = stationsRef.current.keys() as UUID[];
     if (stationIds.length === 0) return;
+    const unloadedStationIds = stationIds.filter(
+      stationId => !loadedRoutineStationIdsRef.current.has(stationId)
+    );
+    if (unloadedStationIds.length === 0) return;
 
     let cancelled = false;
     setState("loading");
     void (async () => {
-      const timeRange = (() => {
-        const anchorMonth = new Date(
-          (timeWindow.startAt.getTime() + timeWindow.endAt.getTime()) / 2
-        );
-        anchorMonth.setDate(1);
-        anchorMonth.setHours(0, 0, 0, 0);
-        anchorMonth.setMonth(anchorMonth.getMonth() - 1);
-
-        const from = new Date(anchorMonth);
-        const to = new Date(anchorMonth);
-        to.setMonth(to.getMonth() + 3);
-
-        return { from, to };
-      })();
-      return await getAllRoutinesQuerier.fetch({
-        param: {
-          from: timeRange.from,
-          to: timeRange.to,
-          stationIds,
-        },
-      });
+      return await Promise.all(
+        unloadedStationIds.map(stationId =>
+          getStationRoutinesQuerier.fetch({
+            param: { stationId },
+          })
+        )
+      );
     })()
-      .then(routineResponse => {
+      .then(routineResponses => {
         if (cancelled) return;
 
         const routinesById = new Map<
           UUID,
-          GetAllMyRoutinesByTimeRangeResponse["data"][number]
+          GetMyRoutinesByStationIdResponse["data"][number]
         >();
-        for (const routine of routineResponse.data) {
-          routinesById.set(routine.id as UUID, routine);
+        for (const routineResponse of routineResponses) {
+          for (const routine of routineResponse.data) {
+            routinesById.set(routine.id as UUID, routine);
+          }
         }
 
-        for (const stationId of stationIds) {
+        for (const stationId of unloadedStationIds) {
           const stationNode = stationsRef.current.get(stationId);
           if (!stationNode) continue;
 
@@ -410,6 +390,7 @@ export const StationRoutineProvider = ({
               }
             }
           }
+          loadedRoutineStationIdsRef.current.add(stationId);
         }
         routinesById.clear();
         forceUpdate();
@@ -426,7 +407,7 @@ export const StationRoutineProvider = ({
     return () => {
       cancelled = true;
     };
-  }, [forceUpdate, routineTimePageSignature, stationIdsSignature]);
+  }, [forceUpdate, stationIdsSignature]);
 
   const refresh = useCallback(async () => {
     setState("syncing");
@@ -435,6 +416,7 @@ export const StationRoutineProvider = ({
       routineTagsRef.current.clear();
       knownStationIdsRef.current.clear();
       knownRoutineTagIdsRef.current.clear();
+      loadedRoutineStationIdsRef.current.clear();
       presenceRef.current = {
         stationIds: [],
         routineTagIds: [],
@@ -603,8 +585,11 @@ export const StationRoutineProvider = ({
 
       return (
         routine.stationId === station.id &&
-        routine.scheduledStartAt < timeWindow.endAt &&
-        routine.scheduledEndAt > timeWindow.startAt
+        (routine.period === RoutinePeriod.Daily ||
+          routine.period === RoutinePeriod.Weekly ||
+          routine.period === RoutinePeriod.Monthly ||
+          (routine.scheduledStartAt < timeWindow.endAt &&
+            routine.scheduledEndAt > timeWindow.startAt))
       );
     });
     const sortedRoutines = [...stationRoutines].sort(

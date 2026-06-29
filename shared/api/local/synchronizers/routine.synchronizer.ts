@@ -18,6 +18,7 @@ import type {
   DeleteMyRoutinesByIdsResponse,
   GetAllMyRoutinesByTimeRangeResponse,
   GetMyRoutineByIdResponse,
+  GetMyRoutinesByStationIdResponse,
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutineByIdResponse,
   HardDeleteMyRoutinesByIdsRequest,
@@ -298,6 +299,12 @@ export class RoutineLocalSynchronizer {
         }
       }
     });
+  };
+
+  static syncGetMyRoutinesByStationId = async (
+    response: GetMyRoutinesByStationIdResponse
+  ): Promise<void> => {
+    await RoutineLocalSynchronizer.syncGetAllMyRoutinesByTimeRange(response);
   };
 
   static syncSearchRoutines = async (

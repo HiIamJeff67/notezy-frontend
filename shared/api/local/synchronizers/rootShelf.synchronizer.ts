@@ -96,7 +96,6 @@ export class RootShelfLocalSynchronizer {
       deletedAt: Date | null;
       updatedAt: Date;
       createdAt: Date;
-      ownerPublicId: string;
       permission: AccessControlPermission;
     }>
   ): Promise<void> => {

@@ -31,7 +31,7 @@ export const getDefaultRoutineTaskNode = (
   id: routineTaskId,
   stationId,
   title: "Untitled",
-  purpose: RoutineTaskPurpose.CreateBlock,
+  purpose: RoutineTaskPurpose.AppendBlock,
   costUnit: 0,
   payload: {},
   priority: 0,

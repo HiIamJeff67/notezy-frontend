@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 interface UploadImageDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
 }) => {
   const [uploadedImages, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>("");
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const handleOnDrop = (files: File[]) => {
     if (files.length > maxCount) {
@@ -42,15 +44,20 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
     setError("");
   };
 
-  const handleOnUpload = () => {
+  const handleOnUpload = async () => {
     if (uploadedImages.length === 0) {
       setError("Please select at least one image");
       return;
     }
-    onUpload(uploadedImages);
-    setSelectedFiles([]);
-    setError("");
-    onOpenChange(false);
+    try {
+      setIsUploading(true);
+      await onUpload(uploadedImages);
+      setSelectedFiles([]);
+      setError("");
+      onOpenChange(false);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -106,14 +113,15 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         )}
         {error && <div className="text-destructive text-sm">{error}</div>}
         <div className="w-full flex justify-end gap-2 mt-4">
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="secondary" disabled={isUploading} onClick={onCancel}>
             Cancel
           </Button>
           <Button
             variant="default"
             onClick={handleOnUpload}
-            disabled={uploadedImages.length === 0}
+            disabled={uploadedImages.length === 0 || isUploading}
           >
+            {isUploading && <Spinner />}
             Upload
           </Button>
         </div>

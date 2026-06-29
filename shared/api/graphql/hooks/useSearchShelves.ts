@@ -21,7 +21,6 @@ const alignSearchedRootShelves = (
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  ownerPublicId: string;
   permission: AccessControlPermission;
 }[] =>
   data?.searchRootShelves.searchEdges.map(edge => {
@@ -34,12 +33,11 @@ const alignSearchedRootShelves = (
       deletedAt: Date | string | number | null;
       updatedAt: Date | string | number;
       createdAt: Date | string | number;
-      owner: Array<{ publicId: string }> | { publicId: string };
+      ownerId: string;
+      sharerIds: string[];
+      itemIds: string[];
       permission: AccessControlPermission;
     };
-    const ownerPublicId = Array.isArray(node.owner)
-      ? (node.owner[0]?.publicId ?? "")
-      : (node.owner?.publicId ?? "");
 
     return {
       id: node.id,
@@ -50,7 +48,6 @@ const alignSearchedRootShelves = (
       deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt ?? 0),
       updatedAt: new Date(node.updatedAt ?? 0),
       createdAt: new Date(node.createdAt ?? 0),
-      ownerPublicId,
       permission: node.permission,
     };
   }) ?? [];
