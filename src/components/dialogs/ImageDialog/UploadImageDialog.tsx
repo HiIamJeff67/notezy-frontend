@@ -75,7 +75,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
           disabled={false}
           width="100%"
           height="140px"
-          className="mb-2"
+          className="mb-2 bg-muted/45 hover:bg-muted/60"
           onDrop={handleOnDrop}
         >
           <div className="flex-col justify-center items-center">

@@ -4,9 +4,9 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BulkLinkRoutineItemsByIds,
-  BulkLinkRoutineTagsByIds,
-  BulkLinkRoutineTasksByIds,
+  LinkRoutineItemsByIds,
+  LinkRoutineTagsByIds,
+  LinkRoutineTasksByIds,
   CreateRoutineByStationId,
   CreateRoutinesByStationIds,
   DeleteMyRoutineById,
@@ -29,18 +29,18 @@ import {
   VisualizeMyRoutineStatusCount,
 } from "@shared/api/functions/routine.serverFn";
 import {
-  BulkLinkRoutineItemsByIdsRequest,
-  BulkLinkRoutineItemsByIdsRequestSchema,
-  BulkLinkRoutineItemsByIdsResponse,
-  BulkLinkRoutineItemsByIdsResponseSchema,
-  BulkLinkRoutineTagsByIdsRequest,
-  BulkLinkRoutineTagsByIdsRequestSchema,
-  BulkLinkRoutineTagsByIdsResponse,
-  BulkLinkRoutineTagsByIdsResponseSchema,
-  BulkLinkRoutineTasksByIdsRequest,
-  BulkLinkRoutineTasksByIdsRequestSchema,
-  BulkLinkRoutineTasksByIdsResponse,
-  BulkLinkRoutineTasksByIdsResponseSchema,
+  LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsRequestSchema,
+  LinkRoutineItemsByIdsResponse,
+  LinkRoutineItemsByIdsResponseSchema,
+  LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsRequestSchema,
+  LinkRoutineTagsByIdsResponse,
+  LinkRoutineTagsByIdsResponseSchema,
+  LinkRoutineTasksByIdsRequest,
+  LinkRoutineTasksByIdsRequestSchema,
+  LinkRoutineTasksByIdsResponse,
+  LinkRoutineTasksByIdsResponseSchema,
   CreateRoutineByStationIdRequest,
   CreateRoutineByStationIdRequestSchema,
   CreateRoutineByStationIdResponse,
@@ -398,19 +398,19 @@ export const mutationFnLinkRoutineTagById = async (
   }
 };
 
-export const mutationFnBulkLinkRoutineTagsByIds = async (
-  request: BulkLinkRoutineTagsByIdsRequest
-): Promise<BulkLinkRoutineTagsByIdsResponse> => {
+export const mutationFnLinkRoutineTagsByIds = async (
+  request: LinkRoutineTagsByIdsRequest
+): Promise<LinkRoutineTagsByIdsResponse> => {
   try {
     const validatedRequest =
-      BulkLinkRoutineTagsByIdsRequestSchema.parse(request);
-    const response = await BulkLinkRoutineTagsByIds({
+      LinkRoutineTagsByIdsRequestSchema.parse(request);
+    const response = await LinkRoutineTagsByIds({
       data: validatedRequest,
     });
-    return BulkLinkRoutineTagsByIdsResponseSchema.parse(response);
+    return LinkRoutineTagsByIdsResponseSchema.parse(response);
   } catch (error) {
     console.error(
-      "error happening in mutationFnBulkLinkRoutineTagsByIds",
+      "error happening in mutationFnLinkRoutineTagsByIds",
       error
     );
     if (error instanceof ZodError) {
@@ -456,19 +456,19 @@ export const mutationFnLinkRoutineTaskById = async (
   }
 };
 
-export const mutationFnBulkLinkRoutineTasksByIds = async (
-  request: BulkLinkRoutineTasksByIdsRequest
-): Promise<BulkLinkRoutineTasksByIdsResponse> => {
+export const mutationFnLinkRoutineTasksByIds = async (
+  request: LinkRoutineTasksByIdsRequest
+): Promise<LinkRoutineTasksByIdsResponse> => {
   try {
     const validatedRequest =
-      BulkLinkRoutineTasksByIdsRequestSchema.parse(request);
-    const response = await BulkLinkRoutineTasksByIds({
+      LinkRoutineTasksByIdsRequestSchema.parse(request);
+    const response = await LinkRoutineTasksByIds({
       data: validatedRequest,
     });
-    return BulkLinkRoutineTasksByIdsResponseSchema.parse(response);
+    return LinkRoutineTasksByIdsResponseSchema.parse(response);
   } catch (error) {
     console.error(
-      "error happening in mutationFnBulkLinkRoutineTasksByIds",
+      "error happening in mutationFnLinkRoutineTasksByIds",
       error
     );
     if (error instanceof ZodError) {
@@ -514,19 +514,19 @@ export const mutationFnLinkRoutineItemById = async (
   }
 };
 
-export const mutationFnBulkLinkRoutineItemsByIds = async (
-  request: BulkLinkRoutineItemsByIdsRequest
-): Promise<BulkLinkRoutineItemsByIdsResponse> => {
+export const mutationFnLinkRoutineItemsByIds = async (
+  request: LinkRoutineItemsByIdsRequest
+): Promise<LinkRoutineItemsByIdsResponse> => {
   try {
     const validatedRequest =
-      BulkLinkRoutineItemsByIdsRequestSchema.parse(request);
-    const response = await BulkLinkRoutineItemsByIds({
+      LinkRoutineItemsByIdsRequestSchema.parse(request);
+    const response = await LinkRoutineItemsByIds({
       data: validatedRequest,
     });
-    return BulkLinkRoutineItemsByIdsResponseSchema.parse(response);
+    return LinkRoutineItemsByIdsResponseSchema.parse(response);
   } catch (error) {
     console.error(
-      "error happening in mutationFnBulkLinkRoutineItemsByIds",
+      "error happening in mutationFnLinkRoutineItemsByIds",
       error
     );
     if (error instanceof ZodError) {

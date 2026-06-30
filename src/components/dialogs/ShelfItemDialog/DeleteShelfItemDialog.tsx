@@ -48,7 +48,7 @@ const DeleteShelfItemDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-muted">
+      <DialogContent className="bg-muted [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>{dialogHeader}</DialogTitle>
         </DialogHeader>

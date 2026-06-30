@@ -1,6 +1,6 @@
 import {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesRequestSchema,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsRequestSchema,
   CreateSubShelfByRootShelfIdRequestSchema,
   CreateSubShelvesByRootShelfIdsRequest,
   CreateSubShelvesByRootShelfIdsRequestSchema,
@@ -8,7 +8,7 @@ import {
   DeleteMySubShelvesByIdsRequest,
   DeleteMySubShelvesByIdsRequestSchema,
   MoveMySubShelfRequestSchema,
-  MoveMySubShelvesRequestSchema,
+  MoveMySubShelvesByRootShelfIdRequestSchema,
   RestoreMySubShelfByIdRequestSchema,
   RestoreMySubShelvesByIdsRequest,
   RestoreMySubShelvesByIdsRequestSchema,
@@ -41,7 +41,7 @@ interface SubShelfMutators {
     mutateAsync: (request: UpdateMySubShelvesByIdsRequest) => Promise<unknown>;
   };
   moveSubShelvesMutator: {
-    mutateAsync: (request: BatchMoveMySubShelvesRequest) => Promise<unknown>;
+    mutateAsync: (request: MoveMySubShelvesByRootShelfIdsRequest) => Promise<unknown>;
   };
   restoreSubShelvesMutator: {
     mutateAsync: (request: RestoreMySubShelvesByIdsRequest) => Promise<unknown>;
@@ -308,7 +308,7 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const oneToOne = MoveMySubShelvesRequestSchema.safeParse(request);
+        const oneToOne = MoveMySubShelvesByRootShelfIdRequestSchema.safeParse(request);
         if (oneToOne.success) {
           for (const id of oneToOne.data.body.sourceSubShelfIds) {
             const createState = createSubShelvesMap.get(id);
@@ -335,9 +335,9 @@ export const buildSubShelfSyncResult = ({
           break;
         }
 
-        const many = BatchMoveMySubShelvesRequestSchema.safeParse(request);
+        const many = MoveMySubShelvesByRootShelfIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const moved of many.data.body.movedSubShelves) {
+          for (const moved of many.data.body.moveSubShelves) {
             for (const id of moved.sourceSubShelfIds) {
               const createState = createSubShelvesMap.get(id);
               if (createState) {
@@ -551,10 +551,10 @@ export const buildSubShelfSyncResult = ({
 
   if (moveSubShelvesMap.size > 0) {
     const states = Array.from(moveSubShelvesMap.values());
-    const request: BatchMoveMySubShelvesRequest = {
+    const request: MoveMySubShelvesByRootShelfIdsRequest = {
       header,
       body: {
-        movedSubShelves: states.map(state => ({
+        moveSubShelves: states.map(state => ({
           sourceRootShelfId: state.body.sourceRootShelfId,
           sourceSubShelfIds: [state.body.sourceSubShelfId],
           destinationRootShelfId: state.body.destinationRootShelfId,

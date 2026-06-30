@@ -4,13 +4,13 @@ import {
   useUpdateMyBlocksByIds,
 } from "@shared/api/hooks/block.hook";
 import {
-  useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
-  useBatchInsertBlockGroupsByBlockPackIds,
-  useBatchMoveMyBlockGroupsByIds,
+  useInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  useInsertBlockGroupsByBlockPackIds,
+  useMoveMyBlockGroupsByBlockPackIds,
   useDeleteMyBlockGroupsByIds,
 } from "@shared/api/hooks/blockGroup.hook";
 import {
-  useBatchMoveMyBlockPacksByIds,
+  useMoveMyBlockPacksByParentSubShelfIds,
   useCreateBlockPacks,
   useDeleteMyBlockPacksByIds,
   useRestoreMyBlockPacksByIds,
@@ -23,8 +23,8 @@ import {
   useUpdateMyRootShelvesByIds,
 } from "@shared/api/hooks/rootShelf.hook";
 import {
-  useBulkLinkRoutineItemsByIds,
-  useBulkLinkRoutineTagsByIds,
+  useLinkRoutineItemsByIds,
+  useLinkRoutineTagsByIds,
   useCreateRoutineByStationId,
   useCreateRoutinesByStationIds,
   useDeleteMyRoutineById,
@@ -59,7 +59,7 @@ import {
   useUpdateMyStationsByIds,
 } from "@shared/api/hooks/station.hook";
 import {
-  useBatchMoveMySubShelves,
+  useMoveMySubShelvesByRootShelfIds,
   useCreateSubShelvesByRootShelfIds,
   useDeleteMySubShelvesByIds,
   useRestoreMySubShelvesByIds,
@@ -213,9 +213,9 @@ export const TransactionSynchronizerProvider = ({
   const hardDeleteRoutineMutator = useHardDeleteMyRoutineById();
   const hardDeleteRoutinesMutator = useHardDeleteMyRoutinesByIds();
   const linkRoutineTagMutator = useLinkRoutineTagById();
-  const bulkLinkRoutineTagsMutator = useBulkLinkRoutineTagsByIds();
+  const linkRoutineTagsMutator = useLinkRoutineTagsByIds();
   const linkRoutineItemMutator = useLinkRoutineItemById();
-  const bulkLinkRoutineItemsMutator = useBulkLinkRoutineItemsByIds();
+  const linkRoutineItemsMutator = useLinkRoutineItemsByIds();
 
   const createRoutineTagMutator = useCreateRoutineTag();
   const createRoutineTagsMutator = useCreateRoutineTags();
@@ -226,23 +226,23 @@ export const TransactionSynchronizerProvider = ({
 
   const createSubShelvesMutator = useCreateSubShelvesByRootShelfIds();
   const updateSubShelvesMutator = useUpdateMySubShelvesByIds();
-  const moveSubShelvesMutator = useBatchMoveMySubShelves();
+  const moveSubShelvesMutator = useMoveMySubShelvesByRootShelfIds();
   const restoreSubShelvesMutator = useRestoreMySubShelvesByIds();
   const deleteSubShelvesMutator = useDeleteMySubShelvesByIds();
 
   const createBlockPacksMutator = useCreateBlockPacks();
   const updateBlockPacksMutator = useUpdateMyBlockPacksByIds();
-  const moveBlockPacksMutator = useBatchMoveMyBlockPacksByIds();
+  const moveBlockPacksMutator = useMoveMyBlockPacksByParentSubShelfIds();
   const restoreBlockPacksMutator = useRestoreMyBlockPacksByIds();
   const deleteBlockPacksMutator = useDeleteMyBlockPacksByIds();
 
   const insertBlocksMutator = useInsertBlocks();
-  const batchInsertBlockGroupsAndBlocksMutator =
-    useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds();
-  const batchInsertBlockGroupsMutator =
-    useBatchInsertBlockGroupsByBlockPackIds();
+  const insertBlockGroupsAndBlocksMutator =
+    useInsertBlockGroupsAndTheirBlocksByBlockPackIds();
+  const insertBlockGroupsMutator =
+    useInsertBlockGroupsByBlockPackIds();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
-  const batchMoveBlockGroupsMutator = useBatchMoveMyBlockGroupsByIds();
+  const moveBlockGroupsMutator = useMoveMyBlockGroupsByBlockPackIds();
   const deleteBlocksMutator = useDeleteMyBlocksByIds();
   const deleteBlockGroupsMutator = useDeleteMyBlockGroupsByIds();
 
@@ -511,9 +511,9 @@ export const TransactionSynchronizerProvider = ({
           transactions: blockGroupTransactions,
           header,
           mutators: {
-            batchInsertBlockGroupsAndBlocksMutator,
-            batchInsertBlockGroupsMutator,
-            batchMoveBlockGroupsMutator,
+            insertBlockGroupsAndBlocksMutator,
+            insertBlockGroupsMutator,
+            moveBlockGroupsMutator,
             deleteBlockGroupsMutator,
           },
           onParsed: handleOnParsed,
@@ -595,9 +595,9 @@ export const TransactionSynchronizerProvider = ({
           header,
           mutators: {
             linkRoutineTagMutator,
-            bulkLinkRoutineTagsMutator,
+            linkRoutineTagsMutator,
             linkRoutineItemMutator,
-            bulkLinkRoutineItemsMutator,
+            linkRoutineItemsMutator,
           },
           onParsed: handleOnParsed,
         }),
@@ -644,9 +644,9 @@ export const TransactionSynchronizerProvider = ({
     insertBlocksMutator,
     updateBlocksMutator,
     deleteBlocksMutator,
-    batchInsertBlockGroupsAndBlocksMutator,
-    batchInsertBlockGroupsMutator,
-    batchMoveBlockGroupsMutator,
+    insertBlockGroupsAndBlocksMutator,
+    insertBlockGroupsMutator,
+    moveBlockGroupsMutator,
     deleteBlockGroupsMutator,
     createStationMutator,
     createStationsMutator,
@@ -669,9 +669,9 @@ export const TransactionSynchronizerProvider = ({
     hardDeleteRoutineMutator,
     hardDeleteRoutinesMutator,
     linkRoutineTagMutator,
-    bulkLinkRoutineTagsMutator,
+    linkRoutineTagsMutator,
     linkRoutineItemMutator,
-    bulkLinkRoutineItemsMutator,
+    linkRoutineItemsMutator,
     createRoutineTagMutator,
     createRoutineTagsMutator,
     updateRoutineTagMutator,

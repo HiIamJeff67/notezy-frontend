@@ -102,7 +102,7 @@ const CreateRoutineDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutine) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
+      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>Create routine</DialogTitle>
           <DialogDescription>
@@ -276,12 +276,16 @@ const CreateRoutineDialog = ({
                         value={scheduledStartAt}
                         onValueChange={setScheduledStartAt}
                         placeholder="Select start time"
+                        className="bg-card/45 hover:bg-card/60"
+                        contentClassName="bg-card"
                       />
                     ) : (
                       <DatePicker
                         value={scheduledStartAt}
                         onValueChange={setScheduledStartAt}
                         placeholder="Select start date and time"
+                        className="bg-card/45 hover:bg-card/60"
+                        contentClassName="bg-card"
                       />
                     )}
                   </div>
@@ -294,6 +298,8 @@ const CreateRoutineDialog = ({
                         onValueChange={setScheduledEndAt}
                         isInvalid={hasInvalidSchedule}
                         placeholder="Select end time"
+                        className="bg-card/45 hover:bg-card/60"
+                        contentClassName="bg-card"
                       />
                     ) : (
                       <DatePicker
@@ -306,6 +312,8 @@ const CreateRoutineDialog = ({
                         }
                         isInvalid={hasInvalidSchedule}
                         placeholder="Select end date and time"
+                        className="bg-card/45 hover:bg-card/60"
+                        contentClassName="bg-card"
                       />
                     )}
                   </div>
@@ -334,7 +342,7 @@ const CreateRoutineDialog = ({
                 <SelectTrigger className="w-full rounded-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[160]">
+                <SelectContent className="z-[160] bg-card">
                   <SelectItem value="none">Does not repeat</SelectItem>
                   {AllRoutinePeriods.map(routinePeriod => (
                     <SelectItem key={routinePeriod} value={routinePeriod}>

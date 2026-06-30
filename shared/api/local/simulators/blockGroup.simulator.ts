@@ -1,7 +1,7 @@
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchMoveMyBlockGroupsByIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupsByIdsRequest,
   GetAllMyBlockGroupsByBlockPackIdRequest,
@@ -16,7 +16,7 @@ import {
   InsertBlockGroupsByBlockPackIdRequest,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   MoveMyBlockGroupByIdRequest,
-  MoveMyBlockGroupsByIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdRequest,
   RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupsByIdsRequest,
 } from "@shared/api/interfaces/blockGroup.interface";
@@ -420,8 +420,8 @@ export class BlockGroupLocalSimulator {
     });
   };
 
-  static simulateBatchInsertBlockGroupsByBlockPackIds = async (
-    request: BatchInsertBlockGroupsByBlockPackIdsRequest
+  static simulateInsertBlockGroupsByBlockPackIds = async (
+    request: InsertBlockGroupsByBlockPackIdsRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -440,7 +440,7 @@ export class BlockGroupLocalSimulator {
           id: blockGroupId,
           ownerPublicId: loggedInUser.publicId,
           blockPackId: content.blockPackId,
-          prevBlockGroupId: content.prevBlockGroupId,
+          prevBlockGroupId: content.prevBlockGroupIds,
         };
       });
 
@@ -580,8 +580,8 @@ export class BlockGroupLocalSimulator {
     });
   };
 
-  static simulateBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = async (
-    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+  static simulateInsertBlockGroupsAndTheirBlocksByBlockPackIds = async (
+    request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -762,8 +762,8 @@ export class BlockGroupLocalSimulator {
     });
   };
 
-  static simulateMoveMyBlockGroupsByIds = async (
-    request: MoveMyBlockGroupsByIdsRequest
+  static simulateMoveMyBlockGroupsByBlockPackId = async (
+    request: MoveMyBlockGroupsByBlockPackIdRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -806,8 +806,8 @@ export class BlockGroupLocalSimulator {
     });
   };
 
-  static simulateBatchMoveMyBlockGroupsByIds = async (
-    request: BatchMoveMyBlockGroupsByIdsRequest
+  static simulateMoveMyBlockGroupsByBlockPackIds = async (
+    request: MoveMyBlockGroupsByBlockPackIdsRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 

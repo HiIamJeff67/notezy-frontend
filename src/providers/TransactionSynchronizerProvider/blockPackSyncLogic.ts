@@ -1,6 +1,6 @@
 import {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsRequestSchema,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsRequestSchema,
   CreateBlockPackRequestSchema,
   CreateBlockPacksRequest,
   CreateBlockPacksRequestSchema,
@@ -8,7 +8,7 @@ import {
   DeleteMyBlockPacksByIdsRequest,
   DeleteMyBlockPacksByIdsRequestSchema,
   MoveMyBlockPackByIdRequestSchema,
-  MoveMyBlockPacksByIdsRequestSchema,
+  MoveMyBlockPacksByParentSubShelfIdRequestSchema,
   RestoreMyBlockPackByIdRequestSchema,
   RestoreMyBlockPacksByIdsRequest,
   RestoreMyBlockPacksByIdsRequestSchema,
@@ -40,7 +40,7 @@ interface BlockPackMutators {
   };
   moveBlockPacksMutator: {
     mutateAsync: (
-      request: BatchMoveMyBlockPacksByIdsRequest
+      request: MoveMyBlockPacksByParentSubShelfIdsRequest
     ) => Promise<unknown>;
   };
   restoreBlockPacksMutator: {
@@ -343,7 +343,7 @@ export const buildBlockPackSyncResult = ({
         }
 
         const manyOneDestination =
-          MoveMyBlockPacksByIdsRequestSchema.safeParse(request);
+          MoveMyBlockPacksByParentSubShelfIdRequestSchema.safeParse(request);
         if (manyOneDestination.success) {
           for (const [index, id] of manyOneDestination.data.body.blockPackIds.entries()) {
             const createState = createBlockPacksMap.get(id);
@@ -372,7 +372,7 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = BatchMoveMyBlockPacksByIdsRequestSchema.safeParse(request);
+        const many = MoveMyBlockPacksByParentSubShelfIdsRequestSchema.safeParse(request);
         if (many.success) {
           for (const [movedIndex, moved] of many.data.body.movedBlockPacks.entries()) {
             for (const id of moved.blockPackIds) {
@@ -601,7 +601,7 @@ export const buildBlockPackSyncResult = ({
 
   if (moveBlockPacksMap.size > 0) {
     const states = Array.from(moveBlockPacksMap.values());
-    const request: BatchMoveMyBlockPacksByIdsRequest = {
+    const request: MoveMyBlockPacksByParentSubShelfIdsRequest = {
       header,
       body: {
         movedBlockPacks: states.map(state => ({

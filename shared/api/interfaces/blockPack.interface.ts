@@ -4,7 +4,6 @@ import {
 } from "@shared/api/interfaces/context.interface";
 import { AllSupportedIcons } from "@shared/api/interfaces/enums";
 import { z } from "zod";
-import { BatchMoveMySubShelvesResponseSchema } from "./subShelf.interface";
 
 /* ============================== GetMyBlockPackById ============================== */
 
@@ -394,9 +393,9 @@ export type MoveMyBlockPackByIdResponse = z.infer<
   typeof MoveMyBlockPackByIdResponseSchema
 >;
 
-/* ============================== MoveMyBlockPacksByIds ============================== */
+/* ============================== MoveMyBlockPacksByParentSubShelfId ============================== */
 
-export const MoveMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
+export const MoveMyBlockPacksByParentSubShelfIdRequestSchema = NotezyRequestSchema.extend({
   header: z
     .object({
       userAgent: z.string().min(1).optional(),
@@ -413,11 +412,11 @@ export const MoveMyBlockPacksByIdsRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type MoveMyBlockPacksByIdsRequest = z.infer<
-  typeof MoveMyBlockPacksByIdsRequestSchema
+export type MoveMyBlockPacksByParentSubShelfIdRequest = z.infer<
+  typeof MoveMyBlockPacksByParentSubShelfIdRequestSchema
 >;
 
-export const MoveMyBlockPacksByIdsResponseSchema = NotezyResponseSchema.extend({
+export const MoveMyBlockPacksByParentSubShelfIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
@@ -426,13 +425,13 @@ export const MoveMyBlockPacksByIdsResponseSchema = NotezyResponseSchema.extend({
   }),
 });
 
-export type MoveMyBlockPacksByIdsResponse = z.infer<
-  typeof MoveMyBlockPacksByIdsResponseSchema
+export type MoveMyBlockPacksByParentSubShelfIdResponse = z.infer<
+  typeof MoveMyBlockPacksByParentSubShelfIdResponseSchema
 >;
 
-/* ============================== BatchMoveMyBlockPacksByIds ============================== */
+/* ============================== MoveMyBlockPacksByParentSubShelfIds ============================== */
 
-export const BatchMoveMyBlockPacksByIdsRequestSchema =
+export const MoveMyBlockPacksByParentSubShelfIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -454,11 +453,11 @@ export const BatchMoveMyBlockPacksByIdsRequestSchema =
     }),
   });
 
-export type BatchMoveMyBlockPacksByIdsRequest = z.infer<
-  typeof BatchMoveMyBlockPacksByIdsRequestSchema
+export type MoveMyBlockPacksByParentSubShelfIdsRequest = z.infer<
+  typeof MoveMyBlockPacksByParentSubShelfIdsRequestSchema
 >;
 
-export const BatchMoveMyBlockPacksByIdsResponseSchema =
+export const MoveMyBlockPacksByParentSubShelfIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -468,8 +467,8 @@ export const BatchMoveMyBlockPacksByIdsResponseSchema =
     }),
   });
 
-export type BatchMoveMyBlockPacksByIdsResponse = z.infer<
-  typeof BatchMoveMySubShelvesResponseSchema
+export type MoveMyBlockPacksByParentSubShelfIdsResponse = z.infer<
+  typeof MoveMyBlockPacksByParentSubShelfIdsResponseSchema
 >;
 
 /* ============================== RestoreMyBlockPackById ============================== */

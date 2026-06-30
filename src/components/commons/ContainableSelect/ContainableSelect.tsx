@@ -6,22 +6,26 @@ import { useRef, useState } from "react";
 interface ContainableSelectProps {
   value: string;
   onValueChange: (value: string) => void;
-  options: {
+  options?: {
     value: string;
     label: string;
   }[];
+  children?: React.ReactNode;
   disabled?: boolean;
   className?: string;
   contentClassName?: string;
+  valueLabel?: React.ReactNode;
 }
 
 const ContainableSelect = ({
   value,
   onValueChange,
-  options,
+  options = [],
+  children,
   disabled = false,
   className,
   contentClassName,
+  valueLabel,
 }: ContainableSelectProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -51,7 +55,7 @@ const ContainableSelect = ({
           className
         )}
       >
-        <SelectPrimitive.Value />
+        <SelectPrimitive.Value>{valueLabel}</SelectPrimitive.Value>
         <SelectPrimitive.Icon asChild>
           <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
         </SelectPrimitive.Icon>
@@ -66,22 +70,23 @@ const ContainableSelect = ({
           )}
         >
           <SelectPrimitive.Viewport className="w-full min-w-[var(--radix-select-trigger-width)] p-1">
-            {options.map(option => (
-              <SelectPrimitive.Item
-                key={option.value}
-                value={option.value}
-                className="focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-              >
-                <SelectPrimitive.ItemText>
-                  {option.label}
-                </SelectPrimitive.ItemText>
-                <span className="absolute right-2 flex size-3.5 items-center justify-center">
-                  <SelectPrimitive.ItemIndicator>
-                    <CheckIcon className="size-4" />
-                  </SelectPrimitive.ItemIndicator>
-                </span>
-              </SelectPrimitive.Item>
-            ))}
+            {children ??
+              options.map(option => (
+                <SelectPrimitive.Item
+                  key={option.value}
+                  value={option.value}
+                  className="focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  <SelectPrimitive.ItemText>
+                    {option.label}
+                  </SelectPrimitive.ItemText>
+                  <span className="absolute right-2 flex size-3.5 items-center justify-center">
+                    <SelectPrimitive.ItemIndicator>
+                      <CheckIcon className="size-4" />
+                    </SelectPrimitive.ItemIndicator>
+                  </span>
+                </SelectPrimitive.Item>
+              ))}
           </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>
       </SelectPrimitive.Portal>

@@ -330,9 +330,9 @@ export type InsertBlockGroupsByBlockPackIdResponse = z.infer<
   typeof InsertBlockGroupsByBlockPackIdResponseSchema
 >;
 
-/* ============================== BatchInsertBlockGroupsByBlockPackIds ============================== */
+/* ============================== InsertBlockGroupsByBlockPackIds ============================== */
 
-export const BatchInsertBlockGroupsByBlockPackIdsRequestSchema =
+export const InsertBlockGroupsByBlockPackIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -345,17 +345,17 @@ export const BatchInsertBlockGroupsByBlockPackIdsRequestSchema =
         z.object({
           blockPackId: z.uuidv4(),
           blockGroupId: z.uuidv4().optional(),
-          prevBlockGroupId: z.uuidv4().nullable(),
+          prevBlockGroupIds: z.uuidv4().nullable(),
         })
       ),
     }),
   });
 
-export type BatchInsertBlockGroupsByBlockPackIdsRequest = z.infer<
-  typeof BatchInsertBlockGroupsByBlockPackIdsRequestSchema
+export type InsertBlockGroupsByBlockPackIdsRequest = z.infer<
+  typeof InsertBlockGroupsByBlockPackIdsRequestSchema
 >;
 
-export const BatchInsertBlockGroupsByBlockPackIdsResponseSchema =
+export const InsertBlockGroupsByBlockPackIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       ids: z.array(z.uuidv4()),
@@ -366,8 +366,8 @@ export const BatchInsertBlockGroupsByBlockPackIdsResponseSchema =
     }),
   });
 
-export type BatchInsertBlockGroupsByBlockPackIdsResponse = z.infer<
-  typeof BatchInsertBlockGroupsByBlockPackIdsResponseSchema
+export type InsertBlockGroupsByBlockPackIdsResponse = z.infer<
+  typeof InsertBlockGroupsByBlockPackIdsResponseSchema
 >;
 
 /* ============================== InsertBlockGroupAndItsBlocksByBlockPackId ============================== */
@@ -456,9 +456,9 @@ export type InsertBlockGroupsAndTheirBlocksByBlockPackIdResponse = z.infer<
   typeof InsertBlockGroupsAndTheirBlocksByBlockPackIdResponseSchema
 >;
 
-/* ============================== BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds ============================== */
+/* ============================== InsertBlockGroupsAndTheirBlocksByBlockPackIds ============================== */
 
-export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema =
+export const InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -478,11 +478,11 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema =
     }),
   });
 
-export type BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest = z.infer<
-  typeof BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema
+export type InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest = z.infer<
+  typeof InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema
 >;
 
-export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema =
+export const InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       isAllSuccess: z.boolean(),
@@ -502,9 +502,9 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema =
     }),
   });
 
-export type BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse =
+export type InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse =
   z.infer<
-    typeof BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema
+    typeof InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema
   >;
 
 /* ============================== InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId ============================== */
@@ -587,9 +587,9 @@ export type MoveMyBlockGroupByIdResponse = z.infer<
   typeof MoveMyBlockGroupByIdResponseSchema
 >;
 
-/* ============================== MoveMyBlockGroupsByIds ============================== */
+/* ============================== MoveMyBlockGroupsByBlockPackId ============================== */
 
-export const MoveMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend({
+export const MoveMyBlockGroupsByBlockPackIdRequestSchema = NotezyRequestSchema.extend({
   header: z
     .object({
       userAgent: z.string().min(1).optional(),
@@ -604,11 +604,11 @@ export const MoveMyBlockGroupsByIdsRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type MoveMyBlockGroupsByIdsRequest = z.infer<
-  typeof MoveMyBlockGroupsByIdsRequestSchema
+export type MoveMyBlockGroupsByBlockPackIdRequest = z.infer<
+  typeof MoveMyBlockGroupsByBlockPackIdRequestSchema
 >;
 
-export const MoveMyBlockGroupsByIdsResponseSchema = NotezyResponseSchema.extend(
+export const MoveMyBlockGroupsByBlockPackIdResponseSchema = NotezyResponseSchema.extend(
   {
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -619,13 +619,13 @@ export const MoveMyBlockGroupsByIdsResponseSchema = NotezyResponseSchema.extend(
   }
 );
 
-export type MoveMyBlockGroupsByIdsResponse = z.infer<
-  typeof MoveMyBlockGroupsByIdsResponseSchema
+export type MoveMyBlockGroupsByBlockPackIdResponse = z.infer<
+  typeof MoveMyBlockGroupsByBlockPackIdResponseSchema
 >;
 
-/* ============================== BatchMoveMyBlockGroupsByIds ============================== */
+/* ============================== MoveMyBlockGroupsByBlockPackIds ============================== */
 
-export const BatchMoveMyBlockGroupsByIdsRequestSchema =
+export const MoveMyBlockGroupsByBlockPackIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -645,11 +645,11 @@ export const BatchMoveMyBlockGroupsByIdsRequestSchema =
     }),
   });
 
-export type BatchMoveMyBlockGroupsByIdsRequest = z.infer<
-  typeof BatchMoveMyBlockGroupsByIdsRequestSchema
+export type MoveMyBlockGroupsByBlockPackIdsRequest = z.infer<
+  typeof MoveMyBlockGroupsByBlockPackIdsRequestSchema
 >;
 
-export const BatchMoveMyBlockGroupsByIdsResponseSchema =
+export const MoveMyBlockGroupsByBlockPackIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -659,8 +659,8 @@ export const BatchMoveMyBlockGroupsByIdsResponseSchema =
     }),
   });
 
-export type BatchMoveMyBlockGroupsByIdsResponse = z.infer<
-  typeof BatchMoveMyBlockGroupsByIdsResponseSchema
+export type MoveMyBlockGroupsByBlockPackIdsResponse = z.infer<
+  typeof MoveMyBlockGroupsByBlockPackIdsResponseSchema
 >;
 
 /* ============================== RestoreMyBlockGroupById ============================== */

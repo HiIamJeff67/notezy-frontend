@@ -1,7 +1,7 @@
 import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdResponse,
   CreateSubShelvesByRootShelfIdsRequest,
@@ -16,8 +16,8 @@ import {
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfResponse,
-  MoveMySubShelvesRequest,
-  MoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdRequest,
+  MoveMySubShelvesByRootShelfIdResponse,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdResponse,
   RestoreMySubShelvesByIdsRequest,
@@ -522,9 +522,9 @@ export class SubShelfLocalSynchronizer {
     });
   };
 
-  static syncMoveMySubShelves = async (
-    request: MoveMySubShelvesRequest,
-    response: MoveMySubShelvesResponse
+  static syncMoveMySubShelvesByRootShelfId = async (
+    request: MoveMySubShelvesByRootShelfIdRequest,
+    response: MoveMySubShelvesByRootShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
@@ -582,13 +582,13 @@ export class SubShelfLocalSynchronizer {
     });
   };
 
-  static syncBatchMoveMySubShelves = async (
-    request: BatchMoveMySubShelvesRequest,
-    response: BatchMoveMySubShelvesResponse
+  static syncMoveMySubShelvesByRootShelfIds = async (
+    request: MoveMySubShelvesByRootShelfIdsRequest,
+    response: MoveMySubShelvesByRootShelfIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
-      for (const movedSubShelf of request.body.movedSubShelves) {
+      for (const movedSubShelf of request.body.moveSubShelves) {
         if (
           movedSubShelf.sourceRootShelfId !== movedSubShelf.destinationRootShelfId
         ) {
@@ -621,7 +621,7 @@ export class SubShelfLocalSynchronizer {
 
       if (request.affected.childSubShelfIds.length > 0) {
         const destinationRootShelfId =
-          request.body.movedSubShelves[0]?.destinationRootShelfId;
+          request.body.moveSubShelves[0]?.destinationRootShelfId;
         if (destinationRootShelfId) {
           await tx
             .update(SubShelf)

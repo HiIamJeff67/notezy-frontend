@@ -12,12 +12,12 @@ import type {
   VisualizeMyRoutineStatusCountResponse,
 } from "@shared/api/interfaces/routine.interface";
 import {
-  BulkLinkRoutineItemsByIdsRequest,
-  BulkLinkRoutineItemsByIdsResponse,
-  BulkLinkRoutineTagsByIdsRequest,
-  BulkLinkRoutineTagsByIdsResponse,
-  BulkLinkRoutineTasksByIdsRequest,
-  BulkLinkRoutineTasksByIdsResponse,
+  LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsResponse,
+  LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsResponse,
+  LinkRoutineTasksByIdsRequest,
+  LinkRoutineTasksByIdsResponse,
   CreateRoutineByStationIdRequest,
   CreateRoutineByStationIdResponse,
   CreateRoutinesByStationIdsRequest,
@@ -524,16 +524,16 @@ export const LinkRoutineTagById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const BulkLinkRoutineTagsByIds = createServerFn({ method: "POST" })
-  .inputValidator((data: BulkLinkRoutineTagsByIdsRequest) => data)
+export const LinkRoutineTagsByIds = createServerFn({ method: "POST" })
+  .inputValidator((data: LinkRoutineTagsByIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BulkLinkRoutineTagsByIdsResponse> => {
+    async ({ data: request }): Promise<LinkRoutineTagsByIdsResponse> => {
       const url =
         import.meta.env.VITE_API_DOMAIN_URL +
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.bulkLinkRoutineTagsByIds;
+        APIURLPathDictionary.routine.linkRoutineTagsByIds;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -558,7 +558,7 @@ export const BulkLinkRoutineTagsByIds = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BulkLinkRoutineTagsByIdsResponse;
+        (await response.json()) as LinkRoutineTagsByIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -616,16 +616,16 @@ export const LinkRoutineTaskById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const BulkLinkRoutineTasksByIds = createServerFn({ method: "POST" })
-  .inputValidator((data: BulkLinkRoutineTasksByIdsRequest) => data)
+export const LinkRoutineTasksByIds = createServerFn({ method: "POST" })
+  .inputValidator((data: LinkRoutineTasksByIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BulkLinkRoutineTasksByIdsResponse> => {
+    async ({ data: request }): Promise<LinkRoutineTasksByIdsResponse> => {
       const url =
         import.meta.env.VITE_API_DOMAIN_URL +
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.bulkLinkRoutineTasksByIds;
+        APIURLPathDictionary.routine.linkRoutineTasksByIds;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -650,7 +650,7 @@ export const BulkLinkRoutineTasksByIds = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BulkLinkRoutineTasksByIdsResponse;
+        (await response.json()) as LinkRoutineTasksByIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -708,16 +708,16 @@ export const LinkRoutineItemById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const BulkLinkRoutineItemsByIds = createServerFn({ method: "POST" })
-  .inputValidator((data: BulkLinkRoutineItemsByIdsRequest) => data)
+export const LinkRoutineItemsByIds = createServerFn({ method: "POST" })
+  .inputValidator((data: LinkRoutineItemsByIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BulkLinkRoutineItemsByIdsResponse> => {
+    async ({ data: request }): Promise<LinkRoutineItemsByIdsResponse> => {
       const url =
         import.meta.env.VITE_API_DOMAIN_URL +
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.bulkLinkRoutineItemsByIds;
+        APIURLPathDictionary.routine.linkRoutineItemsByIds;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -742,7 +742,7 @@ export const BulkLinkRoutineItemsByIds = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BulkLinkRoutineItemsByIdsResponse;
+        (await response.json()) as LinkRoutineItemsByIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

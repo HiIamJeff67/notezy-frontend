@@ -8,8 +8,8 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdResponse,
   CreateSubShelvesByRootShelfIdsRequest,
@@ -28,8 +28,8 @@ import type {
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfResponse,
-  MoveMySubShelvesRequest,
-  MoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdRequest,
+  MoveMySubShelvesByRootShelfIdResponse,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdResponse,
   RestoreMySubShelvesByIdsRequest,
@@ -40,13 +40,13 @@ import type {
   UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import {
-  mutationFnBatchMoveMySubShelves,
+  mutationFnMoveMySubShelvesByRootShelfIds,
   mutationFnCreateSubShelfByRootShelfId,
   mutationFnCreateSubShelvesByRootShelfIds,
   mutationFnDeleteMySubShelfById,
   mutationFnDeleteMySubShelvesByIds,
   mutationFnMoveMySubShelf,
-  mutationFnMoveMySubShelves,
+  mutationFnMoveMySubShelvesByRootShelfId,
   mutationFnRestoreMySubShelfById,
   mutationFnRestoreMySubShelvesByIds,
   mutationFnUpdateMySubShelfById,
@@ -732,17 +732,17 @@ export const useMoveMySubShelf = () => {
   return mutation;
 };
 
-export const useMoveMySubShelves = () => {
+export const useMoveMySubShelvesByRootShelfId = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: MoveMySubShelvesRequest
-  ): Promise<MoveMySubShelvesResponse> => {
+    request: MoveMySubShelvesByRootShelfIdRequest
+  ): Promise<MoveMySubShelvesByRootShelfIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnMoveMySubShelves(request);
+    return await mutationFnMoveMySubShelvesByRootShelfId(request);
   };
 
   const mutation = useMutation({
@@ -787,13 +787,13 @@ export const useMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await SubShelfLocalSynchronizer.syncMoveMySubShelves(request, response);
+      await SubShelfLocalSynchronizer.syncMoveMySubShelvesByRootShelfId(request, response);
     },
     onError: async (error, request) => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await SubShelfLocalSimulator.simulateMoveMySubShelves(request);
+            await SubShelfLocalSimulator.simulateMoveMySubShelvesByRootShelfId(request);
             break;
         }
       }
@@ -803,17 +803,17 @@ export const useMoveMySubShelves = () => {
   return mutation;
 };
 
-export const useBatchMoveMySubShelves = () => {
+export const useMoveMySubShelvesByRootShelfIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: BatchMoveMySubShelvesRequest
-  ): Promise<BatchMoveMySubShelvesResponse> => {
+    request: MoveMySubShelvesByRootShelfIdsRequest
+  ): Promise<MoveMySubShelvesByRootShelfIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnBatchMoveMySubShelves(request);
+    return await mutationFnMoveMySubShelvesByRootShelfIds(request);
   };
 
   const mutation = useMutation({
@@ -832,7 +832,7 @@ export const useBatchMoveMySubShelves = () => {
       );
       const sourceSubShelfIds = [] as UUID[];
       const destinationSubShelfIds = [] as UUID[];
-      for (const movedSubShelf of request.body.movedSubShelves) {
+      for (const movedSubShelf of request.body.moveSubShelves) {
         sourceSubShelfIds.push(...(movedSubShelf.sourceSubShelfIds as UUID[]));
         destinationSubShelfIds.push(
           movedSubShelf.destinationSubShelfId as UUID
@@ -864,7 +864,7 @@ export const useBatchMoveMySubShelves = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await SubShelfLocalSynchronizer.syncBatchMoveMySubShelves(
+      await SubShelfLocalSynchronizer.syncMoveMySubShelvesByRootShelfIds(
         request,
         response
       );
@@ -873,7 +873,7 @@ export const useBatchMoveMySubShelves = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await SubShelfLocalSimulator.simulateBatchMoveMySubShelves(request);
+            await SubShelfLocalSimulator.simulateMoveMySubShelvesByRootShelfIds(request);
             break;
         }
       }

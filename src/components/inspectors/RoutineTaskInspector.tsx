@@ -13,20 +13,17 @@ import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useMemo, useState } from "react";
+import ContainableSelect from "@/components/commons/ContainableSelect/ContainableSelect";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditors/RoutineTaskPayloadEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
   SelectGroup,
   SelectItem,
   SelectLabel,
   SelectSeparator,
-  SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Sheet,
@@ -154,13 +151,6 @@ const RoutineTaskInspector = ({
       cancelled = true;
     };
   }, [isOpen, routineTaskId]);
-
-  useEffect(() => {
-    if (!isOpen || userManager.userAccount) return;
-    void userManager.fetchUserAccount(
-      LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
-    );
-  }, [isOpen, userManager.fetchUserAccount, userManager.userAccount]);
 
   const estimatedPayloadCostUnit = useMemo(() => {
     try {
@@ -307,7 +297,7 @@ const RoutineTaskInspector = ({
 
             <div className="flex flex-col gap-2">
               <Label>Purpose</Label>
-              <Select
+              <ContainableSelect
                 value={values.purpose}
                 onValueChange={purpose =>
                   setValues(current => ({
@@ -315,75 +305,70 @@ const RoutineTaskInspector = ({
                     purpose: purpose as RoutineTaskPurpose,
                   }))
                 }
+                contentClassName="bg-muted"
+                valueLabel={values.purpose.replace(
+                  /^(Create|Append|Update|Reset)(.+)$/,
+                  "$1．$2"
+                )}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {values.purpose.replace(
-                      /^(Create|Append|Update|Reset)(.+)$/,
-                      "$1．$2"
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-muted">
-                  <SelectGroup>
-                    <SelectLabel>Create</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
-                      Routine
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Append</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.AppendBlock}>
-                      Block
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Update</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
-                      Block
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
-                      Routine
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Reset</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetBlock}>
-                      Block
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                <SelectGroup>
+                  <SelectLabel>Create</SelectLabel>
+                  <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
+                    RootShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
+                    SubShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
+                    BlockPack
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
+                    Routine
+                  </SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>Append</SelectLabel>
+                  <SelectItem value={RoutineTaskPurpose.AppendBlock}>
+                    Block
+                  </SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>Update</SelectLabel>
+                  <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
+                    RootShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
+                    SubShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
+                    BlockPack
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
+                    Block
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
+                    Routine
+                  </SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>Reset</SelectLabel>
+                  <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
+                    RootShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
+                    SubShelf
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
+                    BlockPack
+                  </SelectItem>
+                  <SelectItem value={RoutineTaskPurpose.ResetBlock}>
+                    Block
+                  </SelectItem>
+                </SelectGroup>
+              </ContainableSelect>
             </div>
 
             <div className="flex gap-4">
@@ -445,7 +430,7 @@ const RoutineTaskInspector = ({
 
             <div className="flex flex-col gap-2">
               <Label>Recurring</Label>
-              <Select
+              <ContainableSelect
                 value={values.period ?? "OneShot"}
                 onValueChange={period =>
                   setValues(current => ({
@@ -454,19 +439,15 @@ const RoutineTaskInspector = ({
                       period === "OneShot" ? null : (period as RoutinePeriod),
                   }))
                 }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-muted">
-                  <SelectItem value="OneShot">One-shot</SelectItem>
-                  {AllRoutinePeriods.map(routinePeriod => (
-                    <SelectItem key={routinePeriod} value={routinePeriod}>
-                      {routinePeriod}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                contentClassName="bg-muted"
+                options={[
+                  { value: "OneShot", label: "One-shot" },
+                  ...AllRoutinePeriods.map(routinePeriod => ({
+                    value: routinePeriod,
+                    label: routinePeriod,
+                  })),
+                ]}
+              />
             </div>
 
             <div className="flex flex-col gap-2">

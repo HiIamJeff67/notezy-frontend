@@ -1,10 +1,10 @@
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsRequestSchema,
-  BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsRequestSchema,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsRequestSchema,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsRequestSchema,
   DeleteMyBlockGroupByIdRequestSchema,
   DeleteMyBlockGroupsByIdsRequest,
   DeleteMyBlockGroupsByIdsRequestSchema,
@@ -13,7 +13,7 @@ import {
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequestSchema,
   InsertBlockGroupsByBlockPackIdRequestSchema,
   MoveMyBlockGroupByIdRequestSchema,
-  MoveMyBlockGroupsByIdsRequestSchema,
+  MoveMyBlockGroupsByBlockPackIdRequestSchema,
 } from "@shared/api/interfaces/blockGroup.interface";
 import { Transaction } from "@shared/api/local/schemas";
 import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
@@ -29,19 +29,19 @@ import {
 } from "./TransactionSynchronizerProvider";
 
 interface BlockGroupMutators {
-  batchInsertBlockGroupsAndBlocksMutator: {
+  insertBlockGroupsAndBlocksMutator: {
     mutateAsync: (
-      request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+      request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
     ) => Promise<unknown>;
   };
-  batchInsertBlockGroupsMutator: {
+  insertBlockGroupsMutator: {
     mutateAsync: (
-      request: BatchInsertBlockGroupsByBlockPackIdsRequest
+      request: InsertBlockGroupsByBlockPackIdsRequest
     ) => Promise<unknown>;
   };
-  batchMoveBlockGroupsMutator: {
+  moveBlockGroupsMutator: {
     mutateAsync: (
-      request: BatchMoveMyBlockGroupsByIdsRequest
+      request: MoveMyBlockGroupsByBlockPackIdsRequest
     ) => Promise<unknown>;
   };
   deleteBlockGroupsMutator: {
@@ -62,21 +62,21 @@ export const buildBlockGroupSyncResult = ({
   onParsed,
 }: BuildBlockGroupSyncResultOptions): SyncBuildResult => {
   const insertBlockGroupsWithBlocksState: EntityState<
-    BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest["body"]["blockGroupContents"]
+    InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest["body"]["blockGroupContents"]
   > = {
     body: [],
     sequences: new Set<number>(),
   };
 
   const insertBlockGroupsState: EntityState<
-    BatchInsertBlockGroupsByBlockPackIdsRequest["body"]["blockPackContents"]
+    InsertBlockGroupsByBlockPackIdsRequest["body"]["blockPackContents"]
   > = {
     body: [],
     sequences: new Set<number>(),
   };
 
   const moveBlockGroupsState: EntityState<
-    BatchMoveMyBlockGroupsByIdsRequest["body"]["movedBlockGroups"]
+    MoveMyBlockGroupsByBlockPackIdsRequest["body"]["movedBlockGroups"]
   > = {
     body: [],
     sequences: new Set<number>(),
@@ -143,7 +143,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const batchWithBlocks =
-          BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.safeParse(
+          InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.safeParse(
             request
           );
         if (batchWithBlocks.success) {
@@ -160,7 +160,7 @@ export const buildBlockGroupSyncResult = ({
           insertBlockGroupsState.body.push({
             blockPackId: oneWithoutBlocks.data.body.blockPackId,
             blockGroupId: oneWithoutBlocks.data.body.blockGroupId,
-            prevBlockGroupId: oneWithoutBlocks.data.body.prevBlockGroupId,
+            prevBlockGroupIds: oneWithoutBlocks.data.body.prevBlockGroupId,
           });
           insertBlockGroupsState.sequences.add(transaction.sequence);
           break;
@@ -172,7 +172,8 @@ export const buildBlockGroupSyncResult = ({
           insertBlockGroupsState.body.push(
             ...manyWithoutBlocks.data.body.blockPackContents.map(content => ({
               blockPackId: manyWithoutBlocks.data.body.blockPackId,
-              ...content,
+              blockGroupId: content.blockGroupId,
+              prevBlockGroupIds: content.prevBlockGroupId,
             }))
           );
           insertBlockGroupsState.sequences.add(transaction.sequence);
@@ -180,7 +181,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const batchWithoutBlocks =
-          BatchInsertBlockGroupsByBlockPackIdsRequestSchema.safeParse(request);
+          InsertBlockGroupsByBlockPackIdsRequestSchema.safeParse(request);
         if (batchWithoutBlocks.success) {
           insertBlockGroupsState.body.push(
             ...batchWithoutBlocks.data.body.blockPackContents
@@ -206,7 +207,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const oneToMany =
-          MoveMyBlockGroupsByIdsRequestSchema.safeParse(request);
+          MoveMyBlockGroupsByBlockPackIdRequestSchema.safeParse(request);
         if (oneToMany.success) {
           oneToMany.data.body.movableBlockGroupIds.forEach((id, index) => {
             moveBlockGroupsState.body.push({
@@ -223,7 +224,7 @@ export const buildBlockGroupSyncResult = ({
         }
 
         const many =
-          BatchMoveMyBlockGroupsByIdsRequestSchema.safeParse(request);
+          MoveMyBlockGroupsByBlockPackIdsRequestSchema.safeParse(request);
         if (many.success) {
           moveBlockGroupsState.body.push(...many.data.body.movedBlockGroups);
           moveBlockGroupsState.sequences.add(transaction.sequence);
@@ -268,7 +269,7 @@ export const buildBlockGroupSyncResult = ({
   }
 
   if (insertBlockGroupsWithBlocksState.body.length > 0) {
-    const request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest = {
+    const request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest = {
       header,
       body: {
         blockGroupContents: insertBlockGroupsWithBlocksState.body,
@@ -277,12 +278,12 @@ export const buildBlockGroupSyncResult = ({
     syncJobs.push({
       sequences: insertBlockGroupsWithBlocksState.sequences,
       run: () =>
-        mutators.batchInsertBlockGroupsAndBlocksMutator.mutateAsync(request),
+        mutators.insertBlockGroupsAndBlocksMutator.mutateAsync(request),
     });
   }
 
   if (insertBlockGroupsState.body.length > 0) {
-    const request: BatchInsertBlockGroupsByBlockPackIdsRequest = {
+    const request: InsertBlockGroupsByBlockPackIdsRequest = {
       header,
       body: {
         blockPackContents: insertBlockGroupsState.body,
@@ -290,12 +291,12 @@ export const buildBlockGroupSyncResult = ({
     };
     syncJobs.push({
       sequences: insertBlockGroupsState.sequences,
-      run: () => mutators.batchInsertBlockGroupsMutator.mutateAsync(request),
+      run: () => mutators.insertBlockGroupsMutator.mutateAsync(request),
     });
   }
 
   if (moveBlockGroupsState.body.length > 0) {
-    const request: BatchMoveMyBlockGroupsByIdsRequest = {
+    const request: MoveMyBlockGroupsByBlockPackIdsRequest = {
       header,
       body: {
         movedBlockGroups: moveBlockGroupsState.body,
@@ -303,7 +304,7 @@ export const buildBlockGroupSyncResult = ({
     };
     syncJobs.push({
       sequences: moveBlockGroupsState.sequences,
-      run: () => mutators.batchMoveBlockGroupsMutator.mutateAsync(request),
+      run: () => mutators.moveBlockGroupsMutator.mutateAsync(request),
     });
   }
 

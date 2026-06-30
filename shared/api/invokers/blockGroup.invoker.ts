@@ -4,9 +4,9 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
-  BatchInsertBlockGroupsByBlockPackIds,
-  BatchMoveMyBlockGroupsByIds,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  InsertBlockGroupsByBlockPackIds,
+  MoveMyBlockGroupsByBlockPackIds,
   DeleteMyBlockGroupById,
   DeleteMyBlockGroupsByIds,
   GetAllMyBlockGroupsByBlockPackId,
@@ -21,23 +21,23 @@ import {
   InsertBlockGroupsByBlockPackId,
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
   MoveMyBlockGroupById,
-  MoveMyBlockGroupsByIds,
+  MoveMyBlockGroupsByBlockPackId,
   RestoreMyBlockGroupById,
   RestoreMyBlockGroupsByIds,
 } from "@shared/api/functions/blockGroup.serverFn";
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsRequestSchema,
-  BatchInsertBlockGroupsByBlockPackIdsResponse,
-  BatchInsertBlockGroupsByBlockPackIdsResponseSchema,
-  type BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsRequestSchema,
-  type BatchMoveMyBlockGroupsByIdsResponse,
-  BatchMoveMyBlockGroupsByIdsResponseSchema,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsRequestSchema,
+  InsertBlockGroupsByBlockPackIdsResponse,
+  InsertBlockGroupsByBlockPackIdsResponseSchema,
+  type MoveMyBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsRequestSchema,
+  type MoveMyBlockGroupsByBlockPackIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdsResponseSchema,
   type DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdRequestSchema,
   type DeleteMyBlockGroupByIdResponse,
@@ -94,10 +94,10 @@ import {
   MoveMyBlockGroupByIdRequestSchema,
   type MoveMyBlockGroupByIdResponse,
   MoveMyBlockGroupByIdResponseSchema,
-  type MoveMyBlockGroupsByIdsRequest,
-  MoveMyBlockGroupsByIdsRequestSchema,
-  type MoveMyBlockGroupsByIdsResponse,
-  MoveMyBlockGroupsByIdsResponseSchema,
+  type MoveMyBlockGroupsByBlockPackIdRequest,
+  MoveMyBlockGroupsByBlockPackIdRequestSchema,
+  type MoveMyBlockGroupsByBlockPackIdResponse,
+  MoveMyBlockGroupsByBlockPackIdResponseSchema,
   type RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupByIdRequestSchema,
   type RestoreMyBlockGroupByIdResponse,
@@ -337,18 +337,18 @@ export const mutationFnInsertBlockGroupsByBlockPackId = async (
   }
 };
 
-export const mutationFnBatchInsertBlockGroupsByBlockPackIds = async (
-  request: BatchInsertBlockGroupsByBlockPackIdsRequest
-): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
+export const mutationFnInsertBlockGroupsByBlockPackIds = async (
+  request: InsertBlockGroupsByBlockPackIdsRequest
+): Promise<InsertBlockGroupsByBlockPackIdsResponse> => {
   try {
     const validatedRequest =
-      BatchInsertBlockGroupsByBlockPackIdsRequestSchema.parse(request);
-    const response = await BatchInsertBlockGroupsByBlockPackIds({
+      InsertBlockGroupsByBlockPackIdsRequestSchema.parse(request);
+    const response = await InsertBlockGroupsByBlockPackIds({
       data: validatedRequest,
     });
-    return BatchInsertBlockGroupsByBlockPackIdsResponseSchema.parse(response);
+    return InsertBlockGroupsByBlockPackIdsResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnBatchInsertBlockGroupsByBlockPackIds", error);
+    console.error("error happening in mutationFnInsertBlockGroupsByBlockPackIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -428,25 +428,25 @@ export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackId = async (
   }
 };
 
-export const mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
+export const mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackIds =
   async (
-    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
-  ): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
+    request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+  ): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
     try {
       const validatedRequest =
-        BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.parse(
+        InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequestSchema.parse(
           request
         );
-      const response = await BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+      const response = await InsertBlockGroupsAndTheirBlocksByBlockPackIds(
         {
           data: validatedRequest,
         }
       );
-      return BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema.parse(
+      return InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponseSchema.parse(
         response
       );
     } catch (error) {
-      console.error("error happening in mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds", error);
+      console.error("error happening in mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackIds", error);
       if (error instanceof ZodError) {
         const errorMessage = error.issues
           .map(issue => issue.message)
@@ -505,8 +505,8 @@ export const mutationFnMoveMyBlockGroupById = async (
   request: MoveMyBlockGroupByIdRequest
 ): Promise<MoveMyBlockGroupByIdResponse> => {
   try {
-    const validatedRequest = MoveMyBlockGroupsByIdsRequestSchema.parse(request);
-    const response = await MoveMyBlockGroupsByIds({
+    const validatedRequest = MoveMyBlockGroupsByBlockPackIdRequestSchema.parse(request);
+    const response = await MoveMyBlockGroupsByBlockPackId({
       data: validatedRequest,
     });
     return MoveMyBlockGroupByIdResponseSchema.parse(response);
@@ -529,17 +529,17 @@ export const mutationFnMoveMyBlockGroupById = async (
   }
 };
 
-export const mutationFnMoveMyBlockGroupsByIds = async (
-  request: MoveMyBlockGroupsByIdsRequest
-): Promise<MoveMyBlockGroupsByIdsResponse> => {
+export const mutationFnMoveMyBlockGroupsByBlockPackId = async (
+  request: MoveMyBlockGroupsByBlockPackIdRequest
+): Promise<MoveMyBlockGroupsByBlockPackIdResponse> => {
   try {
     const validatedRequest = MoveMyBlockGroupByIdRequestSchema.parse(request);
     const response = await MoveMyBlockGroupById({
       data: validatedRequest,
     });
-    return MoveMyBlockGroupsByIdsResponseSchema.parse(response);
+    return MoveMyBlockGroupsByBlockPackIdResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnMoveMyBlockGroupsByIds", error);
+    console.error("error happening in mutationFnMoveMyBlockGroupsByBlockPackId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -557,18 +557,18 @@ export const mutationFnMoveMyBlockGroupsByIds = async (
   }
 };
 
-export const mutationFnBatchMoveMyBlockGroupsByIds = async (
-  request: BatchMoveMyBlockGroupsByIdsRequest
-): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
+export const mutationFnMoveMyBlockGroupsByBlockPackIds = async (
+  request: MoveMyBlockGroupsByBlockPackIdsRequest
+): Promise<MoveMyBlockGroupsByBlockPackIdsResponse> => {
   try {
     const validatedRequest =
-      BatchMoveMyBlockGroupsByIdsRequestSchema.parse(request);
-    const response = await BatchMoveMyBlockGroupsByIds({
+      MoveMyBlockGroupsByBlockPackIdsRequestSchema.parse(request);
+    const response = await MoveMyBlockGroupsByBlockPackIds({
       data: validatedRequest,
     });
-    return BatchMoveMyBlockGroupsByIdsResponseSchema.parse(response);
+    return MoveMyBlockGroupsByBlockPackIdsResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnBatchMoveMyBlockGroupsByIds", error);
+    console.error("error happening in mutationFnMoveMyBlockGroupsByBlockPackIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

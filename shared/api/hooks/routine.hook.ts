@@ -9,9 +9,9 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
-  BulkLinkRoutineItemsByIdsRequest,
-  BulkLinkRoutineTagsByIdsRequest,
-  BulkLinkRoutineTasksByIdsRequest,
+  LinkRoutineItemsByIdsRequest,
+  LinkRoutineTagsByIdsRequest,
+  LinkRoutineTasksByIdsRequest,
   CreateRoutineByStationIdRequest,
   CreateRoutinesByStationIdsRequest,
   DeleteMyRoutineByIdRequest,
@@ -41,9 +41,9 @@ import type {
   VisualizeMyRoutineStatusCountResponse,
 } from "@shared/api/interfaces/routine.interface";
 import {
-  mutationFnBulkLinkRoutineItemsByIds,
-  mutationFnBulkLinkRoutineTagsByIds,
-  mutationFnBulkLinkRoutineTasksByIds,
+  mutationFnLinkRoutineItemsByIds,
+  mutationFnLinkRoutineTagsByIds,
+  mutationFnLinkRoutineTasksByIds,
   mutationFnCreateRoutineByStationId,
   mutationFnCreateRoutinesByStationIds,
   mutationFnDeleteMyRoutineById,
@@ -738,20 +738,20 @@ export const useLinkRoutineTagById = () => {
   return mutation;
 };
 
-export const useBulkLinkRoutineTagsByIds = () => {
+export const useLinkRoutineTagsByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
-  const perform = async (request: BulkLinkRoutineTagsByIdsRequest) => {
+  const perform = async (request: LinkRoutineTagsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-    return await mutationFnBulkLinkRoutineTagsByIds(request);
+    return await mutationFnLinkRoutineTagsByIds(request);
   };
 
   const mutation = useMutation({
     mutationFn: perform,
-    onSuccess: async (response, request: BulkLinkRoutineTagsByIdsRequest) => {
+    onSuccess: async (response, request: LinkRoutineTagsByIdsRequest) => {
       if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -778,7 +778,7 @@ export const useBulkLinkRoutineTagsByIds = () => {
       apolloClient.cache.evict({ fieldName: "searchRoutines" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
-      await RoutineLocalSynchronizer.syncBulkLinkRoutineTagsByIds(
+      await RoutineLocalSynchronizer.syncLinkRoutineTagsByIds(
         request,
         response
       );
@@ -789,7 +789,7 @@ export const useBulkLinkRoutineTagsByIds = () => {
         error.unWrap.reason ===
           ExceptionReasonDictionary.client.fetch.missingNetwork
       ) {
-        await RoutineLocalSimulator.simulateBulkLinkRoutineTagsByIds(request);
+        await RoutineLocalSimulator.simulateLinkRoutineTagsByIds(request);
       }
     },
   });
@@ -832,13 +832,13 @@ export const useLinkRoutineTaskById = () => {
   return mutation;
 };
 
-export const useBulkLinkRoutineTasksByIds = () => {
+export const useLinkRoutineTasksByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: mutationFnBulkLinkRoutineTasksByIds,
-    onSuccess: async (response, request: BulkLinkRoutineTasksByIdsRequest) => {
+    mutationFn: mutationFnLinkRoutineTasksByIds,
+    onSuccess: async (response, request: LinkRoutineTasksByIdsRequest) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -923,20 +923,20 @@ export const useLinkRoutineItemById = () => {
   return mutation;
 };
 
-export const useBulkLinkRoutineItemsByIds = () => {
+export const useLinkRoutineItemsByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
-  const perform = async (request: BulkLinkRoutineItemsByIdsRequest) => {
+  const perform = async (request: LinkRoutineItemsByIdsRequest) => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
-    return await mutationFnBulkLinkRoutineItemsByIds(request);
+    return await mutationFnLinkRoutineItemsByIds(request);
   };
 
   const mutation = useMutation({
     mutationFn: perform,
-    onSuccess: async (response, request: BulkLinkRoutineItemsByIdsRequest) => {
+    onSuccess: async (response, request: LinkRoutineItemsByIdsRequest) => {
       if (response.success === false) return;
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -960,7 +960,7 @@ export const useBulkLinkRoutineItemsByIds = () => {
       apolloClient.cache.evict({ fieldName: "searchRoutines" });
       apolloClient.cache.evict({ fieldName: "searchItems" });
       apolloClient.cache.gc();
-      await RoutineLocalSynchronizer.syncBulkLinkRoutineItemsByIds(
+      await RoutineLocalSynchronizer.syncLinkRoutineItemsByIds(
         request,
         response
       );
@@ -971,7 +971,7 @@ export const useBulkLinkRoutineItemsByIds = () => {
         error.unWrap.reason ===
           ExceptionReasonDictionary.client.fetch.missingNetwork
       ) {
-        await RoutineLocalSimulator.simulateBulkLinkRoutineItemsByIds(request);
+        await RoutineLocalSimulator.simulateLinkRoutineItemsByIds(request);
       }
     },
   });

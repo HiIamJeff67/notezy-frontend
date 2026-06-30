@@ -5,7 +5,7 @@ import {
   useUpdateMyBlocksByIds,
 } from "@shared/api/hooks/block.hook";
 import {
-  useBatchMoveMyBlockGroupsByIds,
+  useMoveMyBlockGroupsByBlockPackIds,
   useDeleteMyBlockGroupsByIds,
   useInsertBlockGroupsAndTheirBlocksByBlockPackId,
   useInsertBlockGroupsByBlockPackId,
@@ -16,7 +16,7 @@ import {
   UpdateMyBlocksByIdsRequest,
 } from "@shared/api/interfaces/block.interface";
 import {
-  BatchMoveMyBlockGroupsByIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
   DeleteMyBlockGroupsByIdsRequest,
   InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest,
   InsertBlockGroupsByBlockPackIdRequest,
@@ -88,7 +88,7 @@ export const BlockEditorProvider = ({
     useInsertBlockGroupsAndTheirBlocksByBlockPackId();
   const insertBlockGroupsMutator = useInsertBlockGroupsByBlockPackId();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
-  const batchMoveBlockGroupsMutator = useBatchMoveMyBlockGroupsByIds();
+  const moveBlockGroupsMutator = useMoveMyBlockGroupsByBlockPackIds();
   const deleteBlocksMutator = useDeleteMyBlocksByIds();
   const deleteBlockGroupsMutator = useDeleteMyBlockGroupsByIds();
 
@@ -261,7 +261,7 @@ export const BlockEditorProvider = ({
     insertBlockGroupsAndBlocksRequest: InsertBlockGroupsAndTheirBlocksByBlockPackIdRequest;
     insertBlockGroupsRequest: InsertBlockGroupsByBlockPackIdRequest;
     updateBlocksRequest: UpdateMyBlocksByIdsRequest;
-    moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest;
+    moveBlockGroupsRequest: MoveMyBlockGroupsByBlockPackIdsRequest;
     deleteBlocksRequest: DeleteMyBlocksByIdsRequest;
     deleteBlockGroupsRequest: DeleteMyBlockGroupsByIdsRequest;
   } => {
@@ -315,7 +315,7 @@ export const BlockEditorProvider = ({
         blockPackIds: [blockPackMeta.id],
       },
     };
-    const moveBlockGroupsRequest: BatchMoveMyBlockGroupsByIdsRequest = {
+    const moveBlockGroupsRequest: MoveMyBlockGroupsByBlockPackIdsRequest = {
       header: {
         userAgent: userAgent,
         authorization: getAuthorization(accessToken),
@@ -728,7 +728,7 @@ export const BlockEditorProvider = ({
         updateBlocksRequest.body.updatedBlocks.length > 0 &&
           updateBlocksMutator.mutateAsync(updateBlocksRequest),
         moveBlockGroupsRequest.body.movedBlockGroups.length > 0 &&
-          batchMoveBlockGroupsMutator.mutateAsync(moveBlockGroupsRequest),
+          moveBlockGroupsMutator.mutateAsync(moveBlockGroupsRequest),
         deleteBlocksRequest.body.blockIds.length > 0 &&
           deleteBlocksMutator.mutateAsync(deleteBlocksRequest),
         deleteBlockGroupsRequest.body.blockGroupIds.length > 0 &&

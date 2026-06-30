@@ -1,10 +1,10 @@
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsResponse,
-  BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsResponse,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsResponse,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdResponse,
   DeleteMyBlockGroupsByIdsRequest,
@@ -30,8 +30,8 @@ import {
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
   MoveMyBlockGroupByIdRequest,
   MoveMyBlockGroupByIdResponse,
-  MoveMyBlockGroupsByIdsRequest,
-  MoveMyBlockGroupsByIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdRequest,
+  MoveMyBlockGroupsByBlockPackIdResponse,
   RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupByIdResponse,
   RestoreMyBlockGroupsByIdsRequest,
@@ -441,9 +441,9 @@ export class BlockGroupLocalSynchronizer {
     await localDB.insert(BlockGroup).values(blockGroups);
   };
 
-  static syncBatchInsertBlockGroupsByBlockPackIds = async (
-    request: BatchInsertBlockGroupsByBlockPackIdsRequest,
-    response: BatchInsertBlockGroupsByBlockPackIdsResponse
+  static syncInsertBlockGroupsByBlockPackIds = async (
+    request: InsertBlockGroupsByBlockPackIdsRequest,
+    response: InsertBlockGroupsByBlockPackIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     const blockGroups = request.body.blockPackContents.map((content, index) => ({
@@ -605,9 +605,9 @@ export class BlockGroupLocalSynchronizer {
     });
   };
 
-  static syncBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = async (
-    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-    response: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse
+  static syncInsertBlockGroupsAndTheirBlocksByBlockPackIds = async (
+    request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+    response: InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -801,9 +801,9 @@ export class BlockGroupLocalSynchronizer {
       );
   };
 
-  static syncMoveMyBlockGroupsByIds = async (
-    request: MoveMyBlockGroupsByIdsRequest,
-    response: MoveMyBlockGroupsByIdsResponse
+  static syncMoveMyBlockGroupsByBlockPackId = async (
+    request: MoveMyBlockGroupsByBlockPackIdRequest,
+    response: MoveMyBlockGroupsByBlockPackIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -831,9 +831,9 @@ export class BlockGroupLocalSynchronizer {
       );
   };
 
-  static syncBatchMoveMyBlockGroupsByIds = async (
-    request: BatchMoveMyBlockGroupsByIdsRequest,
-    response: BatchMoveMyBlockGroupsByIdsResponse
+  static syncMoveMyBlockGroupsByBlockPackIds = async (
+    request: MoveMyBlockGroupsByBlockPackIdsRequest,
+    response: MoveMyBlockGroupsByBlockPackIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 

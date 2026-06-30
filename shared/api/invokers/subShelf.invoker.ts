@@ -4,7 +4,7 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BatchMoveMySubShelves,
+  MoveMySubShelvesByRootShelfIds,
   CreateSubShelfByRootShelfId,
   CreateSubShelvesByRootShelfIds,
   DeleteMySubShelfById,
@@ -14,17 +14,17 @@ import {
   GetMySubShelvesAndItemsByPrevSubShelfId,
   GetMySubShelvesByPrevSubShelfId,
   MoveMySubShelf,
-  MoveMySubShelves,
+  MoveMySubShelvesByRootShelfId,
   RestoreMySubShelfById,
   RestoreMySubShelvesByIds,
   UpdateMySubShelfById,
   UpdateMySubShelvesByIds,
 } from "@shared/api/functions/subShelf.serverFn";
 import {
-  type BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesRequestSchema,
-  type BatchMoveMySubShelvesResponse,
-  BatchMoveMySubShelvesResponseSchema,
+  type MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsRequestSchema,
+  type MoveMySubShelvesByRootShelfIdsResponse,
+  MoveMySubShelvesByRootShelfIdsResponseSchema,
   type CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdRequestSchema,
   type CreateSubShelfByRootShelfIdResponse,
@@ -61,10 +61,10 @@ import {
   MoveMySubShelfRequestSchema,
   type MoveMySubShelfResponse,
   MoveMySubShelfResponseSchema,
-  type MoveMySubShelvesRequest,
-  MoveMySubShelvesRequestSchema,
-  type MoveMySubShelvesResponse,
-  MoveMySubShelvesResponseSchema,
+  type MoveMySubShelvesByRootShelfIdRequest,
+  MoveMySubShelvesByRootShelfIdRequestSchema,
+  type MoveMySubShelvesByRootShelfIdResponse,
+  MoveMySubShelvesByRootShelfIdResponseSchema,
   type RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdRequestSchema,
   type RestoreMySubShelfByIdResponse,
@@ -333,15 +333,15 @@ export const mutationFnMoveMySubShelf = async (
   }
 };
 
-export const mutationFnMoveMySubShelves = async (
-  request: MoveMySubShelvesRequest
-): Promise<MoveMySubShelvesResponse> => {
+export const mutationFnMoveMySubShelvesByRootShelfId = async (
+  request: MoveMySubShelvesByRootShelfIdRequest
+): Promise<MoveMySubShelvesByRootShelfIdResponse> => {
   try {
-    const validatedRequest = MoveMySubShelvesRequestSchema.parse(request);
-    const response = await MoveMySubShelves({ data: validatedRequest });
-    return MoveMySubShelvesResponseSchema.parse(response);
+    const validatedRequest = MoveMySubShelvesByRootShelfIdRequestSchema.parse(request);
+    const response = await MoveMySubShelvesByRootShelfId({ data: validatedRequest });
+    return MoveMySubShelvesByRootShelfIdResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnMoveMySubShelves", error);
+    console.error("error happening in mutationFnMoveMySubShelvesByRootShelfId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -358,17 +358,17 @@ export const mutationFnMoveMySubShelves = async (
   }
 };
 
-export const mutationFnBatchMoveMySubShelves = async (
-  request: BatchMoveMySubShelvesRequest
-): Promise<BatchMoveMySubShelvesResponse> => {
+export const mutationFnMoveMySubShelvesByRootShelfIds = async (
+  request: MoveMySubShelvesByRootShelfIdsRequest
+): Promise<MoveMySubShelvesByRootShelfIdsResponse> => {
   try {
-    const validatedRequest = BatchMoveMySubShelvesRequestSchema.parse(request);
-    const response = await BatchMoveMySubShelves({
+    const validatedRequest = MoveMySubShelvesByRootShelfIdsRequestSchema.parse(request);
+    const response = await MoveMySubShelvesByRootShelfIds({
       data: validatedRequest,
     });
-    return BatchMoveMySubShelvesResponseSchema.parse(response);
+    return MoveMySubShelvesByRootShelfIdsResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnBatchMoveMySubShelves", error);
+    console.error("error happening in mutationFnMoveMySubShelvesByRootShelfIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

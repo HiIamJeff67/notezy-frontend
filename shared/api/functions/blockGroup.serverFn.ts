@@ -2,12 +2,12 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsResponse,
-  BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsResponse,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsResponse,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdResponse,
   DeleteMyBlockGroupsByIdsRequest,
@@ -36,8 +36,8 @@ import {
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
   MoveMyBlockGroupByIdRequest,
   MoveMyBlockGroupByIdResponse,
-  MoveMyBlockGroupsByIdsRequest,
-  MoveMyBlockGroupsByIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdRequest,
+  MoveMyBlockGroupsByBlockPackIdResponse,
   RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupByIdResponse,
   RestoreMyBlockGroupsByIdsRequest,
@@ -446,21 +446,21 @@ export const InsertBlockGroupsByBlockPackId = createServerFn({
     }
   );
 
-export const BatchInsertBlockGroupsByBlockPackIds = createServerFn({
+export const InsertBlockGroupsByBlockPackIds = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: BatchInsertBlockGroupsByBlockPackIdsRequest) => data)
+  .inputValidator((data: InsertBlockGroupsByBlockPackIdsRequest) => data)
   .handler(
     async ({
       data: request,
-    }): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
+    }): Promise<InsertBlockGroupsByBlockPackIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsByBlockPackIds}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsByBlockPackIds}`,
         {
           method: "POST",
           headers: {
@@ -481,7 +481,7 @@ export const BatchInsertBlockGroupsByBlockPackIds = createServerFn({
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BatchInsertBlockGroupsByBlockPackIdsResponse;
+        (await response.json()) as InsertBlockGroupsByBlockPackIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -597,22 +597,22 @@ export const InsertBlockGroupsAndTheirBlocksByBlockPackId = createServerFn({
     }
   );
 
-export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
+export const InsertBlockGroupsAndTheirBlocksByBlockPackIds =
   createServerFn({ method: "POST" })
     .inputValidator(
-      (data: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest) => data
+      (data: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest) => data
     )
     .handler(
       async ({
         data: request,
-      }): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
+      }): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
         const inboundCookie = getRequestHeader("cookie");
         const userAgent =
           request.header?.userAgent ??
           getRequestHeader("User-Agent") ??
           "unknown";
         const response = await fetch(
-          `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchInsertBlockGroupsAndTheirBlocksByBlockPackIds}`,
+          `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.insertBlockGroupsAndTheirBlocksByBlockPackIds}`,
           {
             method: "POST",
             headers: {
@@ -633,7 +633,7 @@ export const BatchInsertBlockGroupsAndTheirBlocksByBlockPackIds =
         }
         forwardUpstreamSetCookies(response);
         const formattedResponse =
-          (await response.json()) as BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse;
+          (await response.json()) as InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse;
         if (formattedResponse.exception != null) {
           throw new NotezyAPIError(
             new NotezyException(formattedResponse.exception)
@@ -741,17 +741,17 @@ export const MoveMyBlockGroupById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyBlockGroupsByIds = createServerFn({ method: "POST" })
-  .inputValidator((data: MoveMyBlockGroupsByIdsRequest) => data)
+export const MoveMyBlockGroupsByBlockPackId = createServerFn({ method: "POST" })
+  .inputValidator((data: MoveMyBlockGroupsByBlockPackIdRequest) => data)
   .handler(
-    async ({ data: request }): Promise<MoveMyBlockGroupsByIdsResponse> => {
+    async ({ data: request }): Promise<MoveMyBlockGroupsByBlockPackIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByIds}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByBlockPackId}`,
         {
           method: "PUT",
           headers: {
@@ -772,7 +772,7 @@ export const MoveMyBlockGroupsByIds = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as MoveMyBlockGroupsByIdsResponse;
+        (await response.json()) as MoveMyBlockGroupsByBlockPackIdResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -786,19 +786,19 @@ export const MoveMyBlockGroupsByIds = createServerFn({ method: "POST" })
     }
   );
 
-export const BatchMoveMyBlockGroupsByIds = createServerFn({
+export const MoveMyBlockGroupsByBlockPackIds = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: BatchMoveMyBlockGroupsByIdsRequest) => data)
+  .inputValidator((data: MoveMyBlockGroupsByBlockPackIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
+    async ({ data: request }): Promise<MoveMyBlockGroupsByBlockPackIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.batchMoveMyBlockGroupsByIds}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockGroup.moveMyBlockGroupsByBlockPackIds}`,
         {
           method: "PUT",
           headers: {
@@ -819,7 +819,7 @@ export const BatchMoveMyBlockGroupsByIds = createServerFn({
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BatchMoveMyBlockGroupsByIdsResponse;
+        (await response.json()) as MoveMyBlockGroupsByBlockPackIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

@@ -206,7 +206,7 @@ const CreateRoutineTaskDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutineTask) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
+      <DialogContent className="max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-2xl [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
         <DialogHeader>
           <DialogTitle>Create routine task</DialogTitle>
           <DialogDescription>
@@ -252,7 +252,7 @@ const CreateRoutineTaskDialog = ({
                     )}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="z-[160]">
+                <SelectContent className="z-[160] bg-card">
                   <SelectGroup>
                     <SelectLabel>Create</SelectLabel>
                     <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
@@ -327,7 +327,7 @@ const CreateRoutineTaskDialog = ({
                 <SelectTrigger className="w-full rounded-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[160]">
+                <SelectContent className="z-[160] bg-card">
                   <SelectItem value="OneShot">One-shot</SelectItem>
                   {AllRoutinePeriods.map(routinePeriod => (
                     <SelectItem key={routinePeriod} value={routinePeriod}>
@@ -349,6 +349,8 @@ const CreateRoutineTaskDialog = ({
                 setScheduledAt(value);
               }}
               placeholder="Select first execution time"
+              className="bg-card/45 hover:bg-card/60"
+              contentClassName="bg-card"
             />
           </div>
 
@@ -359,7 +361,7 @@ const CreateRoutineTaskDialog = ({
               role="button"
               tabIndex={0}
               aria-invalid={payloadError.length > 0}
-              className={`group relative cursor-pointer overflow-hidden border bg-background/45 ${
+              className={`group relative cursor-pointer overflow-hidden border bg-card/45 ${
                 isPayloadOverflowing ? "rounded-b-none" : "rounded-b-sm"
               }`}
               style={{ height: payloadTextareaHeight }}
@@ -441,8 +443,8 @@ const CreateRoutineTaskDialog = ({
               >
                 {payload}
               </pre>
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/40 px-6 text-center text-foreground text-xs opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
-                <span className="rounded-sm bg-background/55 px-3 py-1.5 shadow-sm">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/35 px-6 text-center text-foreground text-xs opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+                <span className="rounded-sm bg-card/70 px-3 py-1.5 shadow-sm">
                   Click to import JSON from clipboard, paste JSON, or drag a
                   JSON file here.
                 </span>
@@ -451,7 +453,7 @@ const CreateRoutineTaskDialog = ({
             {isPayloadOverflowing && (
               <button
                 type="button"
-                className="flex h-8 items-center justify-center gap-1 rounded-b-sm border border-t-0 bg-card/40 text-xs text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                className="flex h-8 items-center justify-center gap-1 rounded-b-sm border border-t-0 bg-card/45 text-xs text-muted-foreground transition-colors hover:bg-card/65 hover:text-foreground"
                 onClick={() =>
                   setIsPayloadExpanded(
                     previousIsPayloadExpanded => !previousIsPayloadExpanded
@@ -466,7 +468,7 @@ const CreateRoutineTaskDialog = ({
                 {isPayloadExpanded ? "Collapse payload" : "Expand payload"}
               </button>
             )}
-            <div className="flex items-start justify-between gap-3 rounded-sm border bg-card/35 px-3 py-2">
+            <div className="flex items-start justify-between gap-3 rounded-sm border bg-card/45 px-3 py-2">
               <div className="flex min-w-0 flex-col gap-1">
                 <span className="text-xs text-muted-foreground">
                   Routine task payload usage:{" "}

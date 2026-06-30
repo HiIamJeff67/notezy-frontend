@@ -1,5 +1,5 @@
 import {
-  BatchMoveMyBlockPacksByIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
   CreateBlockPackRequest,
   CreateBlockPacksRequest,
   DeleteMyBlockPackByIdRequest,
@@ -9,7 +9,7 @@ import {
   GetMyBlockPackByIdRequest,
   GetMyBlockPacksByParentSubShelfIdRequest,
   MoveMyBlockPackByIdRequest,
-  MoveMyBlockPacksByIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdRequest,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPacksByIdsRequest,
   UpdateMyBlockPackByIdRequest,
@@ -506,8 +506,8 @@ export class BlockPackLocalSimulator {
     });
   };
 
-  static simulateMoveMyBlockPacksByIds = async (
-    request: MoveMyBlockPacksByIdsRequest
+  static simulateMoveMyBlockPacksByParentSubShelfId = async (
+    request: MoveMyBlockPacksByParentSubShelfIdRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -548,8 +548,8 @@ export class BlockPackLocalSimulator {
     });
   };
 
-  static simulateBatchMoveMyBlockPacksByIds = async (
-    request: BatchMoveMyBlockPacksByIdsRequest
+  static simulateMoveMyBlockPacksByParentSubShelfIds = async (
+    request: MoveMyBlockPacksByParentSubShelfIdsRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 

@@ -2,8 +2,8 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
   CreateBlockPacksRequest,
@@ -22,8 +22,8 @@ import {
   GetMyBlockPacksByParentSubShelfIdResponse,
   MoveMyBlockPackByIdRequest,
   MoveMyBlockPackByIdResponse,
-  MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdRequest,
+  MoveMyBlockPacksByParentSubShelfIdResponse,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdResponse,
   RestoreMyBlockPacksByIdsRequest,
@@ -453,17 +453,17 @@ export const MoveMyBlockPackById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyBlockPacksByIds = createServerFn({ method: "POST" })
-  .inputValidator((data: MoveMyBlockPacksByIdsRequest) => data)
+export const MoveMyBlockPacksByParentSubShelfId = createServerFn({ method: "POST" })
+  .inputValidator((data: MoveMyBlockPacksByParentSubShelfIdRequest) => data)
   .handler(
-    async ({ data: request }): Promise<MoveMyBlockPacksByIdsResponse> => {
+    async ({ data: request }): Promise<MoveMyBlockPacksByParentSubShelfIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPacksByIds}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPacksByParentSubShelfId}`,
         {
           method: "PUT",
           headers: {
@@ -484,7 +484,7 @@ export const MoveMyBlockPacksByIds = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as MoveMyBlockPacksByIdsResponse;
+        (await response.json()) as MoveMyBlockPacksByParentSubShelfIdResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -498,19 +498,19 @@ export const MoveMyBlockPacksByIds = createServerFn({ method: "POST" })
     }
   );
 
-export const BatchMoveMyBlockPacksByIds = createServerFn({
+export const MoveMyBlockPacksByParentSubShelfIds = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: BatchMoveMyBlockPacksByIdsRequest) => data)
+  .inputValidator((data: MoveMyBlockPacksByParentSubShelfIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
+    async ({ data: request }): Promise<MoveMyBlockPacksByParentSubShelfIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.batchMoveMyBlockPacksByIds}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPacksByParentSubShelfIds}`,
         {
           method: "PUT",
           headers: {
@@ -531,7 +531,7 @@ export const BatchMoveMyBlockPacksByIds = createServerFn({
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BatchMoveMyBlockPacksByIdsResponse;
+        (await response.json()) as MoveMyBlockPacksByParentSubShelfIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

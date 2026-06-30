@@ -417,9 +417,9 @@ export type MoveMySubShelfResponse = z.infer<
   typeof MoveMySubShelfResponseSchema
 >;
 
-/* ============================== MoveMySubShelves ============================== */
+/* ============================== MoveMySubShelvesByRootShelfId ============================== */
 
-export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
+export const MoveMySubShelvesByRootShelfIdRequestSchema = NotezyRequestSchema.extend({
   header: z
     .object({
       userAgent: z.string().min(1).optional(),
@@ -430,7 +430,7 @@ export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
     sourceRootShelfId: z.uuidv4(),
     sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
     destinationRootShelfId: z.uuidv4(),
-    destinationSubShelfId: z.uuidv4(),
+    destinationSubShelfId: z.uuidv4().nullable(),
   }),
   affected: z.object({
     rootShelfIds: z.array(z.uuidv4()),
@@ -438,11 +438,11 @@ export const MoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type MoveMySubShelvesRequest = z.infer<
-  typeof MoveMySubShelvesRequestSchema
+export type MoveMySubShelvesByRootShelfIdRequest = z.infer<
+  typeof MoveMySubShelvesByRootShelfIdRequestSchema
 >;
 
-export const MoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
+export const MoveMySubShelvesByRootShelfIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
@@ -451,13 +451,13 @@ export const MoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
   }),
 });
 
-export type MoveMySubShelvesResponse = z.infer<
-  typeof MoveMySubShelvesResponseSchema
+export type MoveMySubShelvesByRootShelfIdResponse = z.infer<
+  typeof MoveMySubShelvesByRootShelfIdResponseSchema
 >;
 
-/* ============================== BatchMoveMySubShelves ============================== */
+/* ============================== MoveMySubShelvesByRootShelfIds ============================== */
 
-export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
+export const MoveMySubShelvesByRootShelfIdsRequestSchema = NotezyRequestSchema.extend({
   header: z
     .object({
       userAgent: z.string().min(1).optional(),
@@ -465,12 +465,12 @@ export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
     })
     .optional(),
   body: z.object({
-    movedSubShelves: z.array(
+    moveSubShelves: z.array(
       z.object({
         sourceRootShelfId: z.uuidv4(),
         sourceSubShelfIds: z.array(z.uuidv4()).min(1).max(128),
         destinationRootShelfId: z.uuidv4(),
-        destinationSubShelfId: z.uuidv4(),
+        destinationSubShelfId: z.uuidv4().nullable(),
       })
     ),
   }),
@@ -480,11 +480,11 @@ export const BatchMoveMySubShelvesRequestSchema = NotezyRequestSchema.extend({
   }),
 });
 
-export type BatchMoveMySubShelvesRequest = z.infer<
-  typeof BatchMoveMySubShelvesRequestSchema
+export type MoveMySubShelvesByRootShelfIdsRequest = z.infer<
+  typeof MoveMySubShelvesByRootShelfIdsRequestSchema
 >;
 
-export const BatchMoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
+export const MoveMySubShelvesByRootShelfIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
@@ -493,8 +493,8 @@ export const BatchMoveMySubShelvesResponseSchema = NotezyResponseSchema.extend({
   }),
 });
 
-export type BatchMoveMySubShelvesResponse = z.infer<
-  typeof BatchMoveMySubShelvesResponseSchema
+export type MoveMySubShelvesByRootShelfIdsResponse = z.infer<
+  typeof MoveMySubShelvesByRootShelfIdsResponseSchema
 >;
 
 /* ============================== RestoreMySubShelfById ============================== */

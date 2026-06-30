@@ -1,8 +1,8 @@
 import {
-  type BulkLinkRoutineItemsByIdsRequest,
-  BulkLinkRoutineItemsByIdsRequestSchema,
-  type BulkLinkRoutineTagsByIdsRequest,
-  BulkLinkRoutineTagsByIdsRequestSchema,
+  type LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsRequestSchema,
+  type LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsRequestSchema,
   type LinkRoutineItemByIdRequest,
   LinkRoutineItemByIdRequestSchema,
   type LinkRoutineTagByIdRequest,
@@ -22,15 +22,15 @@ interface RoutineRelationMutators {
   linkRoutineTagMutator: {
     mutateAsync: (request: LinkRoutineTagByIdRequest) => Promise<unknown>;
   };
-  bulkLinkRoutineTagsMutator: {
-    mutateAsync: (request: BulkLinkRoutineTagsByIdsRequest) => Promise<unknown>;
+  linkRoutineTagsMutator: {
+    mutateAsync: (request: LinkRoutineTagsByIdsRequest) => Promise<unknown>;
   };
   linkRoutineItemMutator: {
     mutateAsync: (request: LinkRoutineItemByIdRequest) => Promise<unknown>;
   };
-  bulkLinkRoutineItemsMutator: {
+  linkRoutineItemsMutator: {
     mutateAsync: (
-      request: BulkLinkRoutineItemsByIdsRequest
+      request: LinkRoutineItemsByIdsRequest
     ) => Promise<unknown>;
   };
 }
@@ -81,7 +81,7 @@ export const buildRoutineRelationSyncResult = ({
         continue;
       }
 
-      const many = BulkLinkRoutineTagsByIdsRequestSchema.safeParse(request);
+      const many = LinkRoutineTagsByIdsRequestSchema.safeParse(request);
       if (many.success) {
         const expectedAction = many.data.body.isUnlink
           ? TransactionActionType.DELETE
@@ -91,7 +91,7 @@ export const buildRoutineRelationSyncResult = ({
           continue;
         }
         operations.push(() =>
-          mutators.bulkLinkRoutineTagsMutator.mutateAsync({
+          mutators.linkRoutineTagsMutator.mutateAsync({
             header,
             body: many.data.body,
           })
@@ -121,7 +121,7 @@ export const buildRoutineRelationSyncResult = ({
         continue;
       }
 
-      const many = BulkLinkRoutineItemsByIdsRequestSchema.safeParse(request);
+      const many = LinkRoutineItemsByIdsRequestSchema.safeParse(request);
       if (many.success) {
         const expectedAction = many.data.body.isUnlink
           ? TransactionActionType.DELETE
@@ -131,7 +131,7 @@ export const buildRoutineRelationSyncResult = ({
           continue;
         }
         operations.push(() =>
-          mutators.bulkLinkRoutineItemsMutator.mutateAsync({
+          mutators.linkRoutineItemsMutator.mutateAsync({
             header,
             body: many.data.body,
           })

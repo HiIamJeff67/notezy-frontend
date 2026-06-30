@@ -2,8 +2,8 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  BatchMoveMySubShelvesRequest,
-  BatchMoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdResponse,
   CreateSubShelvesByRootShelfIdsRequest,
@@ -22,8 +22,8 @@ import {
   GetMySubShelvesByPrevSubShelfIdResponse,
   MoveMySubShelfRequest,
   MoveMySubShelfResponse,
-  MoveMySubShelvesRequest,
-  MoveMySubShelvesResponse,
+  MoveMySubShelvesByRootShelfIdRequest,
+  MoveMySubShelvesByRootShelfIdResponse,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdResponse,
   RestoreMySubShelvesByIdsRequest,
@@ -461,14 +461,14 @@ export const MoveMySubShelf = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMySubShelves = createServerFn({ method: "POST" })
-  .inputValidator((data: MoveMySubShelvesRequest) => data)
-  .handler(async ({ data: request }): Promise<MoveMySubShelvesResponse> => {
+export const MoveMySubShelvesByRootShelfId = createServerFn({ method: "POST" })
+  .inputValidator((data: MoveMySubShelvesByRootShelfIdRequest) => data)
+  .handler(async ({ data: request }): Promise<MoveMySubShelvesByRootShelfIdResponse> => {
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelves}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelvesByRootShelfId}`,
       {
         method: "PUT",
         headers: {
@@ -489,7 +489,7 @@ export const MoveMySubShelves = createServerFn({ method: "POST" })
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
-      (await response.json()) as MoveMySubShelvesResponse;
+      (await response.json()) as MoveMySubShelvesByRootShelfIdResponse;
     if (formattedResponse.exception != null) {
       throw new NotezyAPIError(
         new NotezyException(formattedResponse.exception)
@@ -502,17 +502,17 @@ export const MoveMySubShelves = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const BatchMoveMySubShelves = createServerFn({ method: "POST" })
-  .inputValidator((data: BatchMoveMySubShelvesRequest) => data)
+export const MoveMySubShelvesByRootShelfIds = createServerFn({ method: "POST" })
+  .inputValidator((data: MoveMySubShelvesByRootShelfIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<BatchMoveMySubShelvesResponse> => {
+    async ({ data: request }): Promise<MoveMySubShelvesByRootShelfIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.batchMoveMySubShelves}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelvesByRootShelfIds}`,
         {
           method: "PUT",
           headers: {
@@ -533,7 +533,7 @@ export const BatchMoveMySubShelves = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as BatchMoveMySubShelvesResponse;
+        (await response.json()) as MoveMySubShelvesByRootShelfIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

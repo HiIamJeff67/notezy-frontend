@@ -4,10 +4,10 @@ import {
   RoutineStatus,
 } from "@shared/api/interfaces/enums";
 import type {
-  BulkLinkRoutineItemsByIdsRequest,
-  BulkLinkRoutineItemsByIdsResponse,
-  BulkLinkRoutineTagsByIdsRequest,
-  BulkLinkRoutineTagsByIdsResponse,
+  LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsResponse,
+  LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsResponse,
   CreateRoutineByStationIdRequest,
   CreateRoutineByStationIdResponse,
   CreateRoutinesByStationIdsRequest,
@@ -725,9 +725,9 @@ export class RoutineLocalSynchronizer {
     });
   };
 
-  static syncBulkLinkRoutineTagsByIds = async (
-    request: BulkLinkRoutineTagsByIdsRequest,
-    response: BulkLinkRoutineTagsByIdsResponse
+  static syncLinkRoutineTagsByIds = async (
+    request: LinkRoutineTagsByIdsRequest,
+    response: LinkRoutineTagsByIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -777,9 +777,9 @@ export class RoutineLocalSynchronizer {
     });
   };
 
-  static syncBulkLinkRoutineItemsByIds = async (
-    request: BulkLinkRoutineItemsByIdsRequest,
-    response: BulkLinkRoutineItemsByIdsResponse
+  static syncLinkRoutineItemsByIds = async (
+    request: LinkRoutineItemsByIdsRequest,
+    response: LinkRoutineItemsByIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 

@@ -8,8 +8,8 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
   CreateBlockPacksRequest,
@@ -28,8 +28,8 @@ import type {
   GetMyBlockPacksByParentSubShelfIdResponse,
   MoveMyBlockPackByIdRequest,
   MoveMyBlockPackByIdResponse,
-  MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdRequest,
+  MoveMyBlockPacksByParentSubShelfIdResponse,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdResponse,
   RestoreMyBlockPacksByIdsRequest,
@@ -40,13 +40,13 @@ import type {
   UpdateMyBlockPacksByIdsResponse,
 } from "@shared/api/interfaces/blockPack.interface";
 import {
-  mutationFnBatchMoveMyBlockPacksByIds,
+  mutationFnMoveMyBlockPacksByParentSubShelfIds,
   mutationFnCreateBlockPack,
   mutationFnCreateBlockPacks,
   mutationFnDeleteMyBlockPackById,
   mutationFnDeleteMyBlockPacksByIds,
   mutationFnMoveMyBlockPackById,
-  mutationFnMoveMyBlockPacksByIds,
+  mutationFnMoveMyBlockPacksByParentSubShelfId,
   mutationFnRestoreMyBlockPackById,
   mutationFnRestoreMyBlockPacksByIds,
   mutationFnUpdateMyBlockPackById,
@@ -744,17 +744,17 @@ export const useMoveMyBlockPackById = () => {
   return mutation;
 };
 
-export const useMoveMyBlockPacksByIds = () => {
+export const useMoveMyBlockPacksByParentSubShelfId = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: MoveMyBlockPacksByIdsRequest
-  ): Promise<MoveMyBlockPacksByIdsResponse> => {
+    request: MoveMyBlockPacksByParentSubShelfIdRequest
+  ): Promise<MoveMyBlockPacksByParentSubShelfIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnMoveMyBlockPacksByIds(request);
+    return await mutationFnMoveMyBlockPacksByParentSubShelfId(request);
   };
 
   const mutation = useMutation({
@@ -797,7 +797,7 @@ export const useMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockPackLocalSynchronizer.syncMoveMyBlockPacksByIds(
+      await BlockPackLocalSynchronizer.syncMoveMyBlockPacksByParentSubShelfId(
         variables,
         response
       );
@@ -806,7 +806,7 @@ export const useMoveMyBlockPacksByIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockPackLocalSimulator.simulateMoveMyBlockPacksByIds(
+            await BlockPackLocalSimulator.simulateMoveMyBlockPacksByParentSubShelfId(
               variables
             );
             break;
@@ -818,17 +818,17 @@ export const useMoveMyBlockPacksByIds = () => {
   return mutation;
 };
 
-export const useBatchMoveMyBlockPacksByIds = () => {
+export const useMoveMyBlockPacksByParentSubShelfIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: BatchMoveMyBlockPacksByIdsRequest
-  ): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
+    request: MoveMyBlockPacksByParentSubShelfIdsRequest
+  ): Promise<MoveMyBlockPacksByParentSubShelfIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnBatchMoveMyBlockPacksByIds(request);
+    return await mutationFnMoveMyBlockPacksByParentSubShelfIds(request);
   };
 
   const mutation = useMutation({
@@ -882,7 +882,7 @@ export const useBatchMoveMyBlockPacksByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockPackLocalSynchronizer.syncBatchMoveMyBlockPacksByIds(
+      await BlockPackLocalSynchronizer.syncMoveMyBlockPacksByParentSubShelfIds(
         variables,
         response
       );
@@ -891,7 +891,7 @@ export const useBatchMoveMyBlockPacksByIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockPackLocalSimulator.simulateBatchMoveMyBlockPacksByIds(
+            await BlockPackLocalSimulator.simulateMoveMyBlockPacksByParentSubShelfIds(
               variables
             );
             break;

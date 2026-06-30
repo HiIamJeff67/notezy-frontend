@@ -22,8 +22,14 @@ export const GetMyAccountResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     countryCode: z.string().nullable(),
     phoneNumber: z.string().nullable(),
-    googleCredential: z.string().nullable(),
-    discordCredential: z.string().nullable(),
+    googleCredential: z
+      .string()
+      .nullish()
+      .transform(value => value ?? null),
+    discordCredential: z
+      .string()
+      .nullish()
+      .transform(value => value ?? null),
     rootShelfCount: z.int32().min(0),
     blockPackCount: z.int32().min(0),
     blockCount: z.int32().min(0),

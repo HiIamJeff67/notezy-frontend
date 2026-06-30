@@ -4,7 +4,7 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  BatchMoveMyBlockPacksByIds,
+  MoveMyBlockPacksByParentSubShelfIds,
   CreateBlockPack,
   CreateBlockPacks,
   DeleteMyBlockPackById,
@@ -14,17 +14,17 @@ import {
   GetMyBlockPackById,
   GetMyBlockPacksByParentSubShelfId,
   MoveMyBlockPackById,
-  MoveMyBlockPacksByIds,
+  MoveMyBlockPacksByParentSubShelfId,
   RestoreMyBlockPackById,
   RestoreMyBlockPacksByIds,
   UpdateMyBlockPackById,
   UpdateMyBlockPacksByIds,
 } from "@shared/api/functions/blockPack.serverFn";
 import {
-  type BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsRequestSchema,
-  type BatchMoveMyBlockPacksByIdsResponse,
-  BatchMoveMyBlockPacksByIdsResponseSchema,
+  type MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsRequestSchema,
+  type MoveMyBlockPacksByParentSubShelfIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdsResponseSchema,
   type CreateBlockPackRequest,
   CreateBlockPackRequestSchema,
   type CreateBlockPackResponse,
@@ -61,10 +61,10 @@ import {
   MoveMyBlockPackByIdRequestSchema,
   type MoveMyBlockPackByIdResponse,
   MoveMyBlockPackByIdResponseSchema,
-  type MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsRequestSchema,
-  type MoveMyBlockPacksByIdsResponse,
-  MoveMyBlockPacksByIdsResponseSchema,
+  type MoveMyBlockPacksByParentSubShelfIdRequest,
+  MoveMyBlockPacksByParentSubShelfIdRequestSchema,
+  type MoveMyBlockPacksByParentSubShelfIdResponse,
+  MoveMyBlockPacksByParentSubShelfIdResponseSchema,
   type RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdRequestSchema,
   type RestoreMyBlockPackByIdResponse,
@@ -336,17 +336,17 @@ export const mutationFnMoveMyBlockPackById = async (
   }
 };
 
-export const mutationFnMoveMyBlockPacksByIds = async (
-  request: MoveMyBlockPacksByIdsRequest
-): Promise<MoveMyBlockPacksByIdsResponse> => {
+export const mutationFnMoveMyBlockPacksByParentSubShelfId = async (
+  request: MoveMyBlockPacksByParentSubShelfIdRequest
+): Promise<MoveMyBlockPacksByParentSubShelfIdResponse> => {
   try {
-    const validatedRequest = MoveMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await MoveMyBlockPacksByIds({
+    const validatedRequest = MoveMyBlockPacksByParentSubShelfIdRequestSchema.parse(request);
+    const response = await MoveMyBlockPacksByParentSubShelfId({
       data: validatedRequest,
     });
-    return MoveMyBlockPacksByIdsResponseSchema.parse(response);
+    return MoveMyBlockPacksByParentSubShelfIdResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnMoveMyBlockPacksByIds", error);
+    console.error("error happening in mutationFnMoveMyBlockPacksByParentSubShelfId", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)
@@ -364,18 +364,18 @@ export const mutationFnMoveMyBlockPacksByIds = async (
   }
 };
 
-export const mutationFnBatchMoveMyBlockPacksByIds = async (
-  request: BatchMoveMyBlockPacksByIdsRequest
-): Promise<BatchMoveMyBlockPacksByIdsResponse> => {
+export const mutationFnMoveMyBlockPacksByParentSubShelfIds = async (
+  request: MoveMyBlockPacksByParentSubShelfIdsRequest
+): Promise<MoveMyBlockPacksByParentSubShelfIdsResponse> => {
   try {
     const validatedRequest =
-      BatchMoveMyBlockPacksByIdsRequestSchema.parse(request);
-    const response = await BatchMoveMyBlockPacksByIds({
+      MoveMyBlockPacksByParentSubShelfIdsRequestSchema.parse(request);
+    const response = await MoveMyBlockPacksByParentSubShelfIds({
       data: validatedRequest,
     });
-    return BatchMoveMyBlockPacksByIdsResponseSchema.parse(response);
+    return MoveMyBlockPacksByParentSubShelfIdsResponseSchema.parse(response);
   } catch (error) {
-    console.error("error happening in mutationFnBatchMoveMyBlockPacksByIds", error);
+    console.error("error happening in mutationFnMoveMyBlockPacksByParentSubShelfIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

@@ -1,6 +1,6 @@
 import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import {
-  BatchMoveMySubShelvesRequest,
+  MoveMySubShelvesByRootShelfIdsRequest,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelvesByRootShelfIdsRequest,
   DeleteMySubShelfByIdRequest,
@@ -10,7 +10,7 @@ import {
   GetMySubShelvesAndItemsByPrevSubShelfIdRequest,
   GetMySubShelvesByPrevSubShelfIdRequest,
   MoveMySubShelfRequest,
-  MoveMySubShelvesRequest,
+  MoveMySubShelvesByRootShelfIdRequest,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelvesByIdsRequest,
   UpdateMySubShelfByIdRequest,
@@ -607,8 +607,8 @@ export class SubShelfLocalSimulator {
     });
   };
 
-  static simulateMoveMySubShelves = async (
-    request: MoveMySubShelvesRequest
+  static simulateMoveMySubShelvesByRootShelfId = async (
+    request: MoveMySubShelvesByRootShelfIdRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -680,8 +680,8 @@ export class SubShelfLocalSimulator {
     });
   };
 
-  static simulateBatchMoveMySubShelves = async (
-    request: BatchMoveMySubShelvesRequest
+  static simulateMoveMySubShelvesByRootShelfIds = async (
+    request: MoveMySubShelvesByRootShelfIdsRequest
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
@@ -691,7 +691,7 @@ export class SubShelfLocalSimulator {
       });
       if (!loggedInUser) return;
 
-      for (const movedSubShelf of request.body.movedSubShelves) {
+      for (const movedSubShelf of request.body.moveSubShelves) {
         if (
           movedSubShelf.sourceRootShelfId !==
           movedSubShelf.destinationRootShelfId
@@ -725,7 +725,7 @@ export class SubShelfLocalSimulator {
 
       if (request.affected.childSubShelfIds.length > 0) {
         const destinationRootShelfId =
-          request.body.movedSubShelves[0]?.destinationRootShelfId;
+          request.body.moveSubShelves[0]?.destinationRootShelfId;
         if (destinationRootShelfId) {
           await tx
             .update(SubShelf)

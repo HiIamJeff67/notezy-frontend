@@ -8,12 +8,12 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
-  BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
-  BatchInsertBlockGroupsByBlockPackIdsRequest,
-  BatchInsertBlockGroupsByBlockPackIdsResponse,
-  BatchMoveMyBlockGroupsByIdsRequest,
-  BatchMoveMyBlockGroupsByIdsResponse,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest,
+  InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse,
+  InsertBlockGroupsByBlockPackIdsRequest,
+  InsertBlockGroupsByBlockPackIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdsRequest,
+  MoveMyBlockGroupsByBlockPackIdsResponse,
   DeleteMyBlockGroupByIdRequest,
   DeleteMyBlockGroupByIdResponse,
   DeleteMyBlockGroupsByIdsRequest,
@@ -42,17 +42,17 @@ import type {
   InsertSequentialBlockGroupsAndTheirBlocksByBlockPackIdResponse,
   MoveMyBlockGroupByIdRequest,
   MoveMyBlockGroupByIdResponse,
-  MoveMyBlockGroupsByIdsRequest,
-  MoveMyBlockGroupsByIdsResponse,
+  MoveMyBlockGroupsByBlockPackIdRequest,
+  MoveMyBlockGroupsByBlockPackIdResponse,
   RestoreMyBlockGroupByIdRequest,
   RestoreMyBlockGroupByIdResponse,
   RestoreMyBlockGroupsByIdsRequest,
   RestoreMyBlockGroupsByIdsResponse,
 } from "@shared/api/interfaces/blockGroup.interface";
 import {
-  mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds,
-  mutationFnBatchInsertBlockGroupsByBlockPackIds,
-  mutationFnBatchMoveMyBlockGroupsByIds,
+  mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackIds,
+  mutationFnInsertBlockGroupsByBlockPackIds,
+  mutationFnMoveMyBlockGroupsByBlockPackIds,
   mutationFnDeleteMyBlockGroupById,
   mutationFnDeleteMyBlockGroupsByIds,
   mutationFnInsertBlockGroupAndItsBlocksByBlockPackId,
@@ -61,7 +61,7 @@ import {
   mutationFnInsertBlockGroupsByBlockPackId,
   mutationFnInsertSequentialBlockGroupsAndTheirBlocksByBlockPackId,
   mutationFnMoveMyBlockGroupById,
-  mutationFnMoveMyBlockGroupsByIds,
+  mutationFnMoveMyBlockGroupsByBlockPackId,
   mutationFnRestoreMyBlockGroupById,
   mutationFnRestoreMyBlockGroupsByIds,
   queryFnGetAllMyBlockGroupsByBlockPackId,
@@ -772,17 +772,17 @@ export const useInsertBlockGroupsByBlockPackId = () => {
   return mutation;
 };
 
-export const useBatchInsertBlockGroupsByBlockPackIds = () => {
+export const useInsertBlockGroupsByBlockPackIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: BatchInsertBlockGroupsByBlockPackIdsRequest
-  ): Promise<BatchInsertBlockGroupsByBlockPackIdsResponse> => {
+    request: InsertBlockGroupsByBlockPackIdsRequest
+  ): Promise<InsertBlockGroupsByBlockPackIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnBatchInsertBlockGroupsByBlockPackIds(request);
+    return await mutationFnInsertBlockGroupsByBlockPackIds(request);
   };
 
   const mutation = useMutation({
@@ -823,7 +823,7 @@ export const useBatchInsertBlockGroupsByBlockPackIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockGroupLocalSynchronizer.syncBatchInsertBlockGroupsByBlockPackIds(
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupsByBlockPackIds(
         request,
         response
       );
@@ -832,7 +832,7 @@ export const useBatchInsertBlockGroupsByBlockPackIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockGroupLocalSimulator.simulateBatchInsertBlockGroupsByBlockPackIds(
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupsByBlockPackIds(
               request
             );
             break;
@@ -992,17 +992,17 @@ export const useInsertBlockGroupsAndTheirBlocksByBlockPackId = () => {
   return mutation;
 };
 
-export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
+export const useInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
-  ): Promise<BatchInsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
+    request: InsertBlockGroupsAndTheirBlocksByBlockPackIdsRequest
+  ): Promise<InsertBlockGroupsAndTheirBlocksByBlockPackIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+    return await mutationFnInsertBlockGroupsAndTheirBlocksByBlockPackIds(
       request
     );
   };
@@ -1045,7 +1045,7 @@ export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockGroupLocalSynchronizer.syncBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+      await BlockGroupLocalSynchronizer.syncInsertBlockGroupsAndTheirBlocksByBlockPackIds(
         request,
         response
       );
@@ -1054,7 +1054,7 @@ export const useBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockGroupLocalSimulator.simulateBatchInsertBlockGroupsAndTheirBlocksByBlockPackIds(
+            await BlockGroupLocalSimulator.simulateInsertBlockGroupsAndTheirBlocksByBlockPackIds(
               request
             );
             break;
@@ -1202,17 +1202,17 @@ export const useMoveMyBlockGroupById = () => {
   return mutation;
 };
 
-export const useMoveMyBlockGroupsByIds = () => {
+export const useMoveMyBlockGroupsByBlockPackId = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: MoveMyBlockGroupsByIdsRequest
-  ): Promise<MoveMyBlockGroupsByIdsResponse> => {
+    request: MoveMyBlockGroupsByBlockPackIdRequest
+  ): Promise<MoveMyBlockGroupsByBlockPackIdResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnMoveMyBlockGroupsByIds(request);
+    return await mutationFnMoveMyBlockGroupsByBlockPackId(request);
   };
 
   const mutation = useMutation({
@@ -1258,7 +1258,7 @@ export const useMoveMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockGroupLocalSynchronizer.syncMoveMyBlockGroupsByIds(
+      await BlockGroupLocalSynchronizer.syncMoveMyBlockGroupsByBlockPackId(
         request,
         response
       );
@@ -1267,7 +1267,7 @@ export const useMoveMyBlockGroupsByIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupsByIds(
+            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupsByBlockPackId(
               request
             );
             break;
@@ -1279,17 +1279,17 @@ export const useMoveMyBlockGroupsByIds = () => {
   return mutation;
 };
 
-export const useBatchMoveMyBlockGroupsByIds = () => {
+export const useMoveMyBlockGroupsByBlockPackIds = () => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request: BatchMoveMyBlockGroupsByIdsRequest
-  ): Promise<BatchMoveMyBlockGroupsByIdsResponse> => {
+    request: MoveMyBlockGroupsByBlockPackIdsRequest
+  ): Promise<MoveMyBlockGroupsByBlockPackIdsResponse> => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
 
-    return await mutationFnBatchMoveMyBlockGroupsByIds(request);
+    return await mutationFnMoveMyBlockGroupsByBlockPackIds(request);
   };
 
   const mutation = useMutation({
@@ -1347,7 +1347,7 @@ export const useBatchMoveMyBlockGroupsByIds = () => {
           queryClient.invalidateQueries({ queryKey: targetKey })
         )
       );
-      await BlockGroupLocalSynchronizer.syncBatchMoveMyBlockGroupsByIds(
+      await BlockGroupLocalSynchronizer.syncMoveMyBlockGroupsByBlockPackIds(
         request,
         response
       );
@@ -1356,7 +1356,7 @@ export const useBatchMoveMyBlockGroupsByIds = () => {
       if (error instanceof NotezyFetchError) {
         switch (error.unWrap.reason) {
           case ExceptionReasonDictionary.client.fetch.missingNetwork:
-            await BlockGroupLocalSimulator.simulateBatchMoveMyBlockGroupsByIds(
+            await BlockGroupLocalSimulator.simulateMoveMyBlockGroupsByBlockPackIds(
               request
             );
             break;

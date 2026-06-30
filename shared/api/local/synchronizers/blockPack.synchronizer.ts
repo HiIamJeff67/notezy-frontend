@@ -1,6 +1,6 @@
 import {
-  BatchMoveMyBlockPacksByIdsRequest,
-  BatchMoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
   CreateBlockPacksRequest,
@@ -15,8 +15,8 @@ import {
   GetMyBlockPacksByParentSubShelfIdResponse,
   MoveMyBlockPackByIdRequest,
   MoveMyBlockPackByIdResponse,
-  MoveMyBlockPacksByIdsRequest,
-  MoveMyBlockPacksByIdsResponse,
+  MoveMyBlockPacksByParentSubShelfIdRequest,
+  MoveMyBlockPacksByParentSubShelfIdResponse,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdResponse,
   RestoreMyBlockPacksByIdsRequest,
@@ -427,9 +427,9 @@ export class BlockPackLocalSynchronizer {
       );
   };
 
-  static syncMoveMyBlockPacksByIds = async (
-    request: MoveMyBlockPacksByIdsRequest,
-    response: MoveMyBlockPacksByIdsResponse
+  static syncMoveMyBlockPacksByParentSubShelfId = async (
+    request: MoveMyBlockPacksByParentSubShelfIdRequest,
+    response: MoveMyBlockPacksByParentSubShelfIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB
@@ -454,9 +454,9 @@ export class BlockPackLocalSynchronizer {
       );
   };
 
-  static syncBatchMoveMyBlockPacksByIds = async (
-    request: BatchMoveMyBlockPacksByIdsRequest,
-    response: BatchMoveMyBlockPacksByIdsResponse
+  static syncMoveMyBlockPacksByParentSubShelfIds = async (
+    request: MoveMyBlockPacksByParentSubShelfIdsRequest,
+    response: MoveMyBlockPacksByParentSubShelfIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {

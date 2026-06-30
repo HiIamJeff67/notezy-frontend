@@ -445,9 +445,9 @@ export type LinkRoutineTagByIdResponse = z.infer<
   typeof LinkRoutineTagByIdResponseSchema
 >;
 
-/* ============================== BulkLinkRoutineTagsByIds ============================== */
+/* ============================== LinkRoutineTagsByIds ============================== */
 
-export const BulkLinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend(
+export const LinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend(
   {
     header: z
       .object({
@@ -467,11 +467,11 @@ export const BulkLinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend(
   }
 );
 
-export type BulkLinkRoutineTagsByIdsRequest = z.infer<
-  typeof BulkLinkRoutineTagsByIdsRequestSchema
+export type LinkRoutineTagsByIdsRequest = z.infer<
+  typeof LinkRoutineTagsByIdsRequestSchema
 >;
 
-export const BulkLinkRoutineTagsByIdsResponseSchema =
+export const LinkRoutineTagsByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -481,8 +481,8 @@ export const BulkLinkRoutineTagsByIdsResponseSchema =
     }),
   });
 
-export type BulkLinkRoutineTagsByIdsResponse = z.infer<
-  typeof BulkLinkRoutineTagsByIdsResponseSchema
+export type LinkRoutineTagsByIdsResponse = z.infer<
+  typeof LinkRoutineTagsByIdsResponseSchema
 >;
 
 /* ============================== LinkRoutineTaskById ============================== */
@@ -518,9 +518,9 @@ export type LinkRoutineTaskByIdResponse = z.infer<
   typeof LinkRoutineTaskByIdResponseSchema
 >;
 
-/* ============================== BulkLinkRoutineTasksByIds ============================== */
+/* ============================== LinkRoutineTasksByIds ============================== */
 
-export const BulkLinkRoutineTasksByIdsRequestSchema =
+export const LinkRoutineTasksByIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -539,11 +539,11 @@ export const BulkLinkRoutineTasksByIdsRequestSchema =
     }),
   });
 
-export type BulkLinkRoutineTasksByIdsRequest = z.infer<
-  typeof BulkLinkRoutineTasksByIdsRequestSchema
+export type LinkRoutineTasksByIdsRequest = z.infer<
+  typeof LinkRoutineTasksByIdsRequestSchema
 >;
 
-export const BulkLinkRoutineTasksByIdsResponseSchema =
+export const LinkRoutineTasksByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -553,8 +553,8 @@ export const BulkLinkRoutineTasksByIdsResponseSchema =
     }),
   });
 
-export type BulkLinkRoutineTasksByIdsResponse = z.infer<
-  typeof BulkLinkRoutineTasksByIdsResponseSchema
+export type LinkRoutineTasksByIdsResponse = z.infer<
+  typeof LinkRoutineTasksByIdsResponseSchema
 >;
 
 /* ============================== LinkRoutineItemById ============================== */
@@ -591,9 +591,9 @@ export type LinkRoutineItemByIdResponse = z.infer<
   typeof LinkRoutineItemByIdResponseSchema
 >;
 
-/* ============================== BulkLinkRoutineItemsByIds ============================== */
+/* ============================== LinkRoutineItemsByIds ============================== */
 
-export const BulkLinkRoutineItemsByIdsRequestSchema =
+export const LinkRoutineItemsByIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -613,11 +613,11 @@ export const BulkLinkRoutineItemsByIdsRequestSchema =
     }),
   });
 
-export type BulkLinkRoutineItemsByIdsRequest = z.infer<
-  typeof BulkLinkRoutineItemsByIdsRequestSchema
+export type LinkRoutineItemsByIdsRequest = z.infer<
+  typeof LinkRoutineItemsByIdsRequestSchema
 >;
 
-export const BulkLinkRoutineItemsByIdsResponseSchema =
+export const LinkRoutineItemsByIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       updatedAt: z.coerce.date(),
@@ -627,8 +627,8 @@ export const BulkLinkRoutineItemsByIdsResponseSchema =
     }),
   });
 
-export type BulkLinkRoutineItemsByIdsResponse = z.infer<
-  typeof BulkLinkRoutineItemsByIdsResponseSchema
+export type LinkRoutineItemsByIdsResponse = z.infer<
+  typeof LinkRoutineItemsByIdsResponseSchema
 >;
 
 /* ============================== RestoreMyRoutineById ============================== */

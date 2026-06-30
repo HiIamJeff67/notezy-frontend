@@ -113,7 +113,7 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
               }}
             >
               <SquarePen className="mr-2 size-4" />
-              Open
+              Open in Inspector
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />

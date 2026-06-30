@@ -144,7 +144,7 @@ const AccountSettingsPanel = ({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="min-w-4/5 p-0 overflow-hidden border-none">
+      <DialogContent className="min-w-4/5 overflow-hidden border-none p-0 [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60">
         <DialogTitle className="visibility: hidden"></DialogTitle>
         <div className="flex h-[520px]">
           <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
