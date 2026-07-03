@@ -26,6 +26,10 @@ import {
   HardDeleteMyRoutineTaskByIdResponse,
   HardDeleteMyRoutineTasksByIdsRequest,
   HardDeleteMyRoutineTasksByIdsResponse,
+  PauseMyRoutineTaskByIdRequest,
+  PauseMyRoutineTaskByIdResponse,
+  ResumeMyRoutineTaskByIdRequest,
+  ResumeMyRoutineTaskByIdResponse,
   UpdateMyRoutineTaskByIdRequest,
   UpdateMyRoutineTaskByIdResponse,
 } from "@shared/api/interfaces/routineTask.interface";
@@ -366,6 +370,102 @@ export const UpdateMyRoutineTaskById = createServerFn({ method: "POST" })
       forwardUpstreamSetCookies(response);
       const formattedResponse =
         (await response.json()) as UpdateMyRoutineTaskByIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
+
+export const PauseMyRoutineTaskById = createServerFn({ method: "POST" })
+  .inputValidator((data: PauseMyRoutineTaskByIdRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<PauseMyRoutineTaskByIdResponse> => {
+      const url =
+        import.meta.env.VITE_API_DOMAIN_URL +
+        "/" +
+        CurrentAPIBaseURL +
+        "/" +
+        APIURLPathDictionary.routineTask.pauseMyRoutineTaskById;
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        body: JSON.stringify(request.body),
+        credentials: "include",
+      });
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as PauseMyRoutineTaskByIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
+
+export const ResumeMyRoutineTaskById = createServerFn({ method: "POST" })
+  .inputValidator((data: ResumeMyRoutineTaskByIdRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<ResumeMyRoutineTaskByIdResponse> => {
+      const url =
+        import.meta.env.VITE_API_DOMAIN_URL +
+        "/" +
+        CurrentAPIBaseURL +
+        "/" +
+        APIURLPathDictionary.routineTask.resumeMyRoutineTaskById;
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": userAgent,
+          ...(request.header?.authorization
+            ? { Authorization: request.header.authorization }
+            : {}),
+          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+        },
+        body: JSON.stringify(request.body),
+        credentials: "include",
+      });
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as ResumeMyRoutineTaskByIdResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

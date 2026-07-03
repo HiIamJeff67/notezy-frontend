@@ -21,6 +21,15 @@ export async function fetchVisualizeResponse<TResponse>(
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(request.param)) {
     if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(
+          key,
+          entry instanceof Date ? entry.toISOString() : String(entry)
+        );
+      }
+      continue;
+    }
     params.set(
       key,
       value instanceof Date ? value.toISOString() : String(value)

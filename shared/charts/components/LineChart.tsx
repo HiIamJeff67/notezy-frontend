@@ -12,10 +12,13 @@ import type {
   ChartActive,
   ChartMargin,
   ChartTooltipContext,
+  ChartValueMode,
 } from "../types";
 import {
+  buildIntegerTicks,
   buildLinearTicks,
   createBandScale,
+  createIntegerDomain,
   createLinearDomain,
   createLinearScale,
   isFiniteChartValue,
@@ -24,6 +27,7 @@ import {
 import {
   ChartFrame,
   formatAxisValue,
+  formatInteger,
   formatNumber,
   type TooltipPosition,
 } from "./ChartFrame";
@@ -46,6 +50,7 @@ export interface LineChartProps<TMeta = unknown> {
   formatX?: (value: string) => string;
   formatY?: (value: number) => string;
   maxXAxisLabels?: number;
+  valueMode?: ChartValueMode;
 }
 
 export function LineChart<TMeta = unknown>({
@@ -64,8 +69,9 @@ export function LineChart<TMeta = unknown>({
   tooltip,
   onActiveChange,
   formatX = formatAxisValue,
-  formatY = formatNumber,
+  formatY,
   maxXAxisLabels = 8,
+  valueMode = "continuous",
 }: LineChartProps<TMeta>) {
   const [active, setActive] = useState<ChartActive<TMeta> | null>(null);
   const [tooltipPosition, setTooltipPosition] =
@@ -73,27 +79,36 @@ export function LineChart<TMeta = unknown>({
   const mergedMargin = { ...DEFAULT_CHART_MARGIN, ...margin };
   const innerWidth = Math.max(
     0,
-    DEFAULT_VIEWBOX_WIDTH - mergedMargin.left - mergedMargin.right,
+    DEFAULT_VIEWBOX_WIDTH - mergedMargin.left - mergedMargin.right
   );
   const innerHeight = Math.max(
     0,
-    DEFAULT_VIEWBOX_HEIGHT - mergedMargin.top - mergedMargin.bottom,
+    DEFAULT_VIEWBOX_HEIGHT - mergedMargin.top - mergedMargin.bottom
   );
   const inner = {
     x: [mergedMargin.left, mergedMargin.left + innerWidth] as [number, number],
     y: [mergedMargin.top + innerHeight, mergedMargin.top] as [number, number],
   };
   const xScale = createBandScale(
-    data.data.map((datum) => datum.id),
+    data.data.map(datum => datum.id),
     inner.x,
-    0.12,
+    0.12
   );
-  const chartValues = data.data.flatMap((datum) =>
-    data.series.map((series) => datum.values[series.id] ?? 0),
+  const chartValues = data.data.flatMap(datum =>
+    data.series.map(series => datum.values[series.id] ?? 0)
   );
-  const domain = valueDomain ?? createLinearDomain(chartValues);
+  const domain =
+    valueDomain ??
+    (valueMode === "integer"
+      ? createIntegerDomain(chartValues)
+      : createLinearDomain(chartValues));
   const yScale = createLinearScale(domain, inner.y);
-  const ticks = buildLinearTicks(domain);
+  const ticks =
+    valueMode === "integer"
+      ? buildIntegerTicks(domain)
+      : buildLinearTicks(domain);
+  const valueFormatter =
+    formatY ?? (valueMode === "integer" ? formatInteger : formatNumber);
   const legendItems = data.series.map((series, index) => ({
     id: series.id,
     label: series.label,
@@ -103,13 +118,13 @@ export function LineChart<TMeta = unknown>({
   const isEmpty =
     data.series.length === 0 ||
     data.data.length === 0 ||
-    chartValues.every((value) => !isFiniteChartValue(value));
+    chartValues.every(value => !isFiniteChartValue(value));
 
   const setActivePoint = (
     datum: CartesianChartDatum<TMeta>,
     seriesIndex: number,
     pointX: number,
-    pointY: number,
+    pointY: number
   ) => {
     const series = data.series[seriesIndex];
     const value = datum.values[series.id] ?? 0;
@@ -147,7 +162,7 @@ export function LineChart<TMeta = unknown>({
       ariaLabel={ariaLabel}
       className={className}
       emptyMessage={emptyMessage}
-      formatValue={formatY}
+      formatValue={valueFormatter}
       height={height}
       isEmpty={isEmpty}
       legendItems={legendItems}
@@ -160,7 +175,7 @@ export function LineChart<TMeta = unknown>({
     >
       <g onMouseLeave={clearActive}>
         {showGrid &&
-          ticks.map((tick) => {
+          ticks.map(tick => {
             const y = yScale(tick);
             return (
               <g key={tick}>
@@ -180,7 +195,7 @@ export function LineChart<TMeta = unknown>({
                   x={mergedMargin.left - 8}
                   y={y + 4}
                 >
-                  {formatY(tick)}
+                  {valueFormatter(tick)}
                 </text>
               </g>
             );
@@ -195,7 +210,7 @@ export function LineChart<TMeta = unknown>({
           const label = datum.label ?? formatX(datum.x);
           const labelLines = splitSvgTextLines(
             label,
-            Math.max(4, Math.floor(xScale.bandwidth / 6)),
+            Math.max(4, Math.floor(xScale.bandwidth / 6))
           );
 
           return (
@@ -221,7 +236,7 @@ export function LineChart<TMeta = unknown>({
         })}
         {data.series.map((series, seriesIndex) => {
           const color = getChartColor(seriesIndex, series.color);
-          const points = data.data.map((datum) => {
+          const points = data.data.map(datum => {
             const x = xScale.getPosition(datum.id) + xScale.bandwidth / 2;
             const value = datum.values[series.id] ?? 0;
             return {
@@ -232,7 +247,7 @@ export function LineChart<TMeta = unknown>({
           let path = "";
           let segmentStarted = false;
 
-          points.forEach((point) => {
+          points.forEach(point => {
             if (point.y === null) {
               segmentStarted = false;
               return;
@@ -257,7 +272,7 @@ export function LineChart<TMeta = unknown>({
                 strokeLinejoin="round"
                 strokeWidth={2.5}
               />
-              {data.data.map((datum) => {
+              {data.data.map(datum => {
                 const value = datum.values[series.id] ?? 0;
 
                 if (!isFiniteChartValue(value)) {
@@ -271,7 +286,7 @@ export function LineChart<TMeta = unknown>({
                   <circle
                     aria-label={`${series.label}: ${
                       datum.label ?? formatX(datum.x)
-                    } ${formatY(value)}`}
+                    } ${valueFormatter(value)}`}
                     cx={x}
                     cy={y}
                     fill="var(--background)"

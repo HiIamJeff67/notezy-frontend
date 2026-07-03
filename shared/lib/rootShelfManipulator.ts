@@ -445,18 +445,9 @@ export class RootShelfManipulator {
         }
         visited.add(current.id);
 
-        const uniqueMaterialNamesSet: Set<string> = new Set<string>();
-
         for (const [materialId, material] of Object.entries(
           current.materialNodes
         )) {
-          if (uniqueMaterialNamesSet.has(material.name)) {
-            throw new Error(
-              `Repeated material names detected in the same shelf`
-            );
-          }
-          uniqueMaterialNamesSet.add(material.name);
-
           if (uniqueItemIdsSet.has(materialId as UUID)) {
             throw new Error(
               `Repeated material ids detected in the same shelf tree`

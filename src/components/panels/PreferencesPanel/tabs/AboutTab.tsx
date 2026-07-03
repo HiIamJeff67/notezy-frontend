@@ -1,4 +1,4 @@
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import { RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, SettingRow } from "../PreferenceRows";

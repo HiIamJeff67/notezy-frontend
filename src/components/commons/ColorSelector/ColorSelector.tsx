@@ -34,12 +34,16 @@ const ColorSelector = ({
   value,
   onValueChange,
   disabled = false,
-  className = "bg-popover",
+  className,
 }: ColorSelectorProps) => {
   const userManager = useUser();
   const languageManager = useLanguage();
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null
+  );
   const [isCustomColorOpen, setIsCustomColorOpen] = useState<boolean>(false);
   const [customColor, setCustomColor] = useState<string>(
     isColor(value) ? value : "#64748b"
@@ -139,6 +143,11 @@ const ColorSelector = ({
       onOpenChange={open => {
         setIsOpen(open);
         if (open) {
+          setPortalContainer(
+            (triggerRef.current?.closest(
+              '[data-slot="sheet-content"], [data-slot="dialog-content"]'
+            ) ?? null) as HTMLElement | null
+          );
           setCustomColor(isColor(value) ? value : "#64748b");
         } else {
           setIsCustomColorOpen(false);
@@ -147,11 +156,12 @@ const ColorSelector = ({
     >
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           type="button"
           variant="outline"
           size="icon"
           disabled={disabled}
-          className="size-10 shrink-0 rounded-sm bg-transparent"
+          className={cn("size-10 shrink-0 rounded-sm bg-transparent")}
           aria-label="Select color"
         >
           {value ? (
@@ -166,10 +176,11 @@ const ColorSelector = ({
       </PopoverTrigger>
 
       <PopoverContent
+        container={portalContainer}
         align="start"
         sideOffset={6}
         className={cn(
-          "z-[160] flex w-72 flex-col gap-3 rounded-sm p-3",
+          "z-[160] flex w-72 flex-col gap-3 rounded-sm border bg-background/35 p-3 shadow-md backdrop-blur-xl",
           className
         )}
       >

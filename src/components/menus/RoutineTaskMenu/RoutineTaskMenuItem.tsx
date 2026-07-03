@@ -1,7 +1,18 @@
 import { RoutineTaskStatus } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
-import { Copy, SquarePen, Trash2 } from "lucide-react";
+import {
+  Copy,
+  HistoryIcon,
+  Pause,
+  Play,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
+import RoutineTaskRecordDialog from "@/components/core/RoutineOverviewer/RoutineTaskRecordDialog";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -30,17 +41,13 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
   const languageManager = useLanguage();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
+  const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
   const statusDotClassName =
-    routineTask.status === RoutineTaskStatus.Success
-      ? "bg-emerald-500"
-      : routineTask.status === RoutineTaskStatus.Fail ||
-          routineTask.status === RoutineTaskStatus.Cancel
-        ? "bg-destructive"
-        : routineTask.status === RoutineTaskStatus.Running
-          ? "bg-sky-500"
-          : routineTask.status === RoutineTaskStatus.Pause
-            ? "bg-amber-500"
-            : "bg-muted-foreground";
+    routineTask.status === RoutineTaskStatus.Running
+      ? "bg-sky-500"
+      : routineTask.status === RoutineTaskStatus.Pause
+        ? "bg-amber-500"
+        : "bg-muted-foreground";
 
   return (
     <SidebarMenuSubItem>
@@ -70,39 +77,39 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
             align="start"
             sideOffset={8}
             collisionPadding={12}
-            className="z-[120] w-72 rounded-sm p-3"
+            className="z-[90] w-72 rounded-sm p-3 text-xs"
           >
-            <div className="flex min-w-0 flex-col gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
-                  {routineTask.title}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {routineTask.status} · {routineTask.purpose}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
-                <div className="flex min-w-20 flex-col gap-1">
-                  <span className="text-muted-foreground">Priority</span>
-                  <span>{routineTask.priority}</span>
-                </div>
-                <div className="flex min-w-20 flex-col gap-1">
-                  <span className="text-muted-foreground">Attempts</span>
-                  <span>
-                    {routineTask.attempts} / {routineTask.maxAttempts}
-                  </span>
-                </div>
-                <div className="flex w-full flex-col gap-1">
-                  <span className="text-muted-foreground">Scheduled</span>
-                  <span>{routineTask.scheduledAt.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
+            <HoverDetailCard
+              title={routineTask.title}
+              subtitle="Routine Task"
+              id={routineTask.id}
+              rows={[
+                { field: "Status", value: routineTask.status },
+                { field: "Purpose", value: routineTask.purpose },
+                { field: "Priority", value: routineTask.priority },
+                {
+                  field: "Attempts",
+                  value: `${routineTask.attempts} / ${routineTask.maxAttempts}`,
+                },
+                {
+                  field: "Next",
+                  value: new Date(routineTask.nextScheduledAt).toLocaleString(),
+                },
+                {
+                  field: "System",
+                  value: new Date(routineTask.scheduledAt).toLocaleString(),
+                },
+              ]}
+            />
           </HoverCardContent>
         </HoverCard>
         <ContextMenuContent className="min-w-36">
           <ContextMenuLabel>View</ContextMenuLabel>
           <ContextMenuGroup>
+            <ContextMenuItem onClick={() => setIsRecordDialogOpen(true)}>
+              <HistoryIcon className="mr-2 size-4" />
+              View all records
+            </ContextMenuItem>
             <ContextMenuItem
               onClick={() => {
                 stationRoutineManager.selectRoutineTask(routineTask.id);
@@ -133,6 +140,35 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           <ContextMenuSeparator />
           <ContextMenuLabel>Edit</ContextMenuLabel>
           <ContextMenuGroup>
+            <ContextMenuCopyItems
+              id={routineTask.id}
+              name={routineTask.title}
+              nameLabel="Title"
+            />
+            {routineTask.status === RoutineTaskStatus.Idle ? (
+              <ContextMenuItem
+                onClick={() => {
+                  void stationRoutineManager
+                    .pauseRoutineTask(routineTask.id)
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <Pause className="mr-2 size-4" />
+                Pause
+              </ContextMenuItem>
+            ) : null}
+            {routineTask.status === RoutineTaskStatus.Pause ? (
+              <ContextMenuItem
+                onClick={() => {
+                  void stationRoutineManager
+                    .resumeRoutineTask(routineTask.id)
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <Play className="mr-2 size-4" />
+                Resume
+              </ContextMenuItem>
+            ) : null}
             <ContextMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() =>
@@ -149,6 +185,12 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           </ContextMenuGroup>
         </ContextMenuContent>
       </ContextMenu>
+      <RoutineTaskRecordDialog
+        open={isRecordDialogOpen}
+        onOpenChange={setIsRecordDialogOpen}
+        routineTitle={routineTask.title}
+        routineTaskIds={[routineTask.id]}
+      />
     </SidebarMenuSubItem>
   );
 };

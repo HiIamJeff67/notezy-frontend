@@ -9,10 +9,45 @@ import {
 } from "@shared/api/interfaces/enums";
 import { z } from "zod";
 import {
+  RoutineTaskPayloadSchema,
+  RoutineTaskPayloadSizeSchema,
+} from "./routineTaskPayload.interface";
+import {
   VisualizePermissionRequestSchema,
   VisualizeResponseSchema,
   VisualizeTimeBucketRequestSchema,
 } from "./visualize.interface";
+
+const CreateRoutineTaskBodySchema = z
+  .object({
+    stationId: z.uuidv4(),
+    title: z.string().min(1).max(128),
+    purpose: z.enum(AllRoutineTaskPurposes),
+    payload: RoutineTaskPayloadSizeSchema,
+    priority: z.int32().min(0).max(100),
+    maxAttempts: z.int32().min(1).max(20),
+    period: z.enum(AllRoutinePeriods).nullable().optional(),
+    nextScheduledAt: z.coerce.date(),
+  })
+  .partial({
+    priority: true,
+    maxAttempts: true,
+  })
+  .superRefine((body, ctx) => {
+    const result = RoutineTaskPayloadSchema.safeParse({
+      purpose: body.purpose,
+      payload: body.payload,
+    });
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        ctx.addIssue({
+          code: "custom",
+          path: issue.path,
+          message: issue.message,
+        });
+      }
+    }
+  });
 
 /* ============================== Visualize Routine Task Charts ============================== */
 
@@ -103,6 +138,7 @@ export const GetMyRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend({
     attempts: z.int32(),
     maxAttempts: z.int32(),
     period: z.enum(AllRoutinePeriods).nullable(),
+    nextScheduledAt: z.coerce.date(),
     scheduledAt: z.coerce.date(),
     actualStartedAt: z.coerce.date().nullable(),
     actualEndedAt: z.coerce.date().nullable(),
@@ -152,6 +188,7 @@ export const GetAllMyRoutineTasksByStationIdsResponseSchema =
         attempts: z.int32(),
         maxAttempts: z.int32(),
         period: z.enum(AllRoutinePeriods).nullable(),
+        nextScheduledAt: z.coerce.date(),
         scheduledAt: z.coerce.date(),
         actualStartedAt: z.coerce.date().nullable(),
         actualEndedAt: z.coerce.date().nullable(),
@@ -203,6 +240,7 @@ export const GetAllMyRoutineTasksResponseSchema = NotezyResponseSchema.extend({
       attempts: z.int32(),
       maxAttempts: z.int32(),
       period: z.enum(AllRoutinePeriods).nullable(),
+      nextScheduledAt: z.coerce.date(),
       scheduledAt: z.coerce.date(),
       actualStartedAt: z.coerce.date().nullable(),
       actualEndedAt: z.coerce.date().nullable(),
@@ -229,32 +267,7 @@ export const CreateRoutineTaskByStationIdRequestSchema =
         authorization: z.string().optional(),
       })
       .optional(),
-    body: z
-      .object({
-        stationId: z.uuidv4(),
-        title: z.string().min(1).max(128),
-        purpose: z.enum(AllRoutineTaskPurposes),
-        payload: z.any().refine(value => {
-          try {
-            return (
-              new TextEncoder().encode(JSON.stringify(value ?? {})).length <=
-              16_777_216
-            );
-          } catch {
-            return false;
-          }
-        }, "Payload must be smaller than 16 MiB."),
-        priority: z.int32().min(0),
-        maxAttempts: z.int32().min(1).max(20),
-        period: z.enum(AllRoutinePeriods).nullable(),
-        scheduledAt: z.coerce.date(),
-      })
-      .partial({
-        payload: true,
-        priority: true,
-        maxAttempts: true,
-        period: true,
-      }),
+    body: CreateRoutineTaskBodySchema,
   });
 
 export type CreateRoutineTaskByStationIdRequest = z.infer<
@@ -305,7 +318,7 @@ export const UpdateMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
         priority: z.int32().min(0),
         maxAttempts: z.int32().min(1).max(20),
         period: z.enum(AllRoutinePeriods).nullable(),
-        scheduledAt: z.coerce.date(),
+        nextScheduledAt: z.coerce.date(),
       })
       .partial(),
     setNull: z.record(z.string(), z.boolean()).optional(),
@@ -328,6 +341,55 @@ export const UpdateMyRoutineTaskByIdResponseSchema =
 
 export type UpdateMyRoutineTaskByIdResponse = z.infer<
   typeof UpdateMyRoutineTaskByIdResponseSchema
+>;
+
+/* ============================== PauseMyRoutineTaskById ============================== */
+
+export const PauseMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    routineTaskId: z.uuidv4(),
+  }),
+});
+
+export type PauseMyRoutineTaskByIdRequest = z.infer<
+  typeof PauseMyRoutineTaskByIdRequestSchema
+>;
+
+export const PauseMyRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend(
+  {
+    data: z.object({
+      updatedAt: z.coerce.date(),
+    }),
+    embedded: z.object({
+      publicId: z.string(),
+    }),
+  }
+);
+
+export type PauseMyRoutineTaskByIdResponse = z.infer<
+  typeof PauseMyRoutineTaskByIdResponseSchema
+>;
+
+/* ============================== ResumeMyRoutineTaskById ============================== */
+
+export const ResumeMyRoutineTaskByIdRequestSchema =
+  PauseMyRoutineTaskByIdRequestSchema;
+
+export type ResumeMyRoutineTaskByIdRequest = z.infer<
+  typeof ResumeMyRoutineTaskByIdRequestSchema
+>;
+
+export const ResumeMyRoutineTaskByIdResponseSchema =
+  PauseMyRoutineTaskByIdResponseSchema;
+
+export type ResumeMyRoutineTaskByIdResponse = z.infer<
+  typeof ResumeMyRoutineTaskByIdResponseSchema
 >;
 
 /* ============================== HardDeleteMyRoutineTaskById ============================== */

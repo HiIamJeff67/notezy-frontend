@@ -9,6 +9,8 @@ export * from "./materialContentType.enum";
 export * from "./routinePeriod.enum";
 export * from "./routineStatus.enum";
 export * from "./routineTaskPurpose.enum";
+export * from "./routineTaskRecordErrorCode.enum";
+export * from "./routineTaskRecordStatus.enum";
 export * from "./routineTaskStatus.enum";
 export * from "./supportedIcon.enum";
 export * from "./userGender.enum";

@@ -6,6 +6,8 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, SquareDotIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ShelfIcon from "@/components/icons/ShelfIcon";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
@@ -25,6 +27,11 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -133,32 +140,58 @@ const RootShelfMenuItem = ({
               )}
             </div>
           ) : (
-            <ContextMenuTrigger asChild>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton
-                  ref={node => {
-                    drop(node);
-                  }}
-                  className="w-full rounded-sm
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <ContextMenuTrigger asChild>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      ref={node => {
+                        drop(node);
+                      }}
+                      className="w-full rounded-sm
                         whitespace-nowrap text-ellipsis overflow-hidden"
-                  onClick={async () => {
-                    shelfItemManager.toggleRootShelf(summary.root);
-                    if (!summary.root.isExpanded) {
-                      await shelfItemManager.expandRootShelf(
-                        rootShelfEdge.node
-                      );
-                    }
-                  }}
-                >
-                  {summary.root.isOpen ? (
-                    <EmptyShelfIcon size={16} />
-                  ) : (
-                    <ShelfIcon size={16} />
-                  )}
-                  <span>{summary.root.name}</span>
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-            </ContextMenuTrigger>
+                      onClick={async () => {
+                        shelfItemManager.toggleRootShelf(summary.root);
+                        if (!summary.root.isExpanded) {
+                          await shelfItemManager.expandRootShelf(
+                            rootShelfEdge.node
+                          );
+                        }
+                      }}
+                    >
+                      {summary.root.isOpen ? (
+                        <EmptyShelfIcon size={16} />
+                      ) : (
+                        <ShelfIcon size={16} />
+                      )}
+                      <span>{summary.root.name}</span>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                </ContextMenuTrigger>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="right"
+                align="start"
+                sideOffset={8}
+                className="z-[90] w-72 rounded-sm p-3 text-xs"
+              >
+                <HoverDetailCard
+                  title={summary.root.name}
+                  subtitle="Root Shelf"
+                  id={summary.root.id}
+                  rows={[
+                    { field: "Sub Shelves", value: summary.root.subShelfCount },
+                    { field: "Items", value: summary.root.itemCount },
+                    {
+                      field: "Updated",
+                      value: new Date(
+                        summary.root.updatedAt
+                      ).toLocaleDateString(),
+                    },
+                  ]}
+                />
+              </HoverCardContent>
+            </HoverCard>
           )}
           {!shelfItemManager.isNewRootShelfName() && summary.hasChanged && (
             <SidebarMenuAction className="bg-transparent hover:bg-transparent p-0.5 flex justify-center items-center">
@@ -183,6 +216,10 @@ const RootShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuCopyItems
+                id={summary.root.id}
+                name={summary.root.name}
+              />
               <ContextMenuItem
                 onClick={() =>
                   shelfItemManager.startRenamingRootShelfNode(summary.root)

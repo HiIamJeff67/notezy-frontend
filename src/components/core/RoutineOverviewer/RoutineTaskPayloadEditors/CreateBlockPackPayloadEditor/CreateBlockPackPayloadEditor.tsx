@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { RoutineTaskNamePattern } from "../NamePatternEditor";
 import CreateBlockPackPayloadEditorSidebar from "./CreateBlockPackPayloadEditorSidebar";
 import CreateBlockPackPayloadTemplateEditor from "./CreateBlockPackPayloadTemplateEditor";
 // @ts-ignore allow side-effect import of BlockNote
@@ -70,6 +71,13 @@ const CreateBlockPackPayloadEditor = ({
       ? parsedInitialPayload.template.name
       : "Routine block pack"
   );
+  const [templateNamePattern, setTemplateNamePattern] =
+    useState<RoutineTaskNamePattern>(
+      parsedInitialPayload.template?.namePattern &&
+        typeof parsedInitialPayload.template.namePattern === "object"
+        ? parsedInitialPayload.template.namePattern
+        : {}
+    );
   const [blockPackId, setBlockPackId] = useState<string>(
     typeof parsedInitialPayload.blockPackId === "string"
       ? parsedInitialPayload.blockPackId
@@ -215,6 +223,12 @@ const CreateBlockPackPayloadEditor = ({
       typeof parsedInitialPayload.template?.name === "string"
         ? parsedInitialPayload.template.name
         : "Routine block pack"
+    );
+    setTemplateNamePattern(
+      parsedInitialPayload.template?.namePattern &&
+        typeof parsedInitialPayload.template.namePattern === "object"
+        ? parsedInitialPayload.template.namePattern
+        : {}
     );
     setBlockPackId(
       typeof parsedInitialPayload.blockPackId === "string"
@@ -364,6 +378,9 @@ const CreateBlockPackPayloadEditor = ({
         targetSubShelfId,
         template: {
           name: templateName.trim() || "Routine block pack",
+          ...(Object.keys(templateNamePattern).length > 0 && {
+            namePattern: templateNamePattern,
+          }),
           icon: null,
           headerBackgroundURL: null,
           finalBlockGroupClientId: null,
@@ -439,6 +456,7 @@ const CreateBlockPackPayloadEditor = ({
     rawPayload,
     targetSubShelfId,
     templateName,
+    templateNamePattern,
     usesBlockLiteEditor,
   ]);
 
@@ -468,6 +486,8 @@ const CreateBlockPackPayloadEditor = ({
               setTargetSubShelfId={setTargetSubShelfId}
               templateName={templateName}
               setTemplateName={setTemplateName}
+              templateNamePattern={templateNamePattern}
+              setTemplateNamePattern={setTemplateNamePattern}
               blockPackId={blockPackId}
               setBlockPackId={setBlockPackId}
               blockId={blockId}
@@ -494,6 +514,10 @@ const CreateBlockPackPayloadEditor = ({
                 onRemovePatternBlock={removePatternBlock}
                 onClose={onClose}
                 onConfirm={onConfirm}
+                isSaveDisabled={
+                  purpose === RoutineTaskPurpose.CreateBlockPack &&
+                  targetSubShelfId.trim().length === 0
+                }
               />
             ) : (
               <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-background/30">

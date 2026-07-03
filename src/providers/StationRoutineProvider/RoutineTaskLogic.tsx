@@ -8,6 +8,8 @@ import { useSearchRoutineTasksLazyQuery } from "@shared/api/graphql/hooks/useSea
 import {
   useCreateRoutineTaskByStationId,
   useGetAllMyRoutineTasksByStationIds,
+  usePauseMyRoutineTaskById,
+  useResumeMyRoutineTaskById,
   useUpdateMyRoutineTaskById,
 } from "@shared/api/hooks/routineTask.hook";
 import {
@@ -40,6 +42,8 @@ export const useRoutineTaskLogic = ({
   const getAllRoutineTasksByStationIdsQuerier =
     useGetAllMyRoutineTasksByStationIds();
   const updateRoutineTaskMutator = useUpdateMyRoutineTaskById();
+  const pauseRoutineTaskMutator = usePauseMyRoutineTaskById();
+  const resumeRoutineTaskMutator = useResumeMyRoutineTaskById();
 
   const [selectedRoutineTaskId, selectRoutineTask] = useState<UUID | null>(
     null
@@ -93,6 +97,7 @@ export const useRoutineTaskLogic = ({
           attempts: routineTask.attempts,
           maxAttempts: routineTask.maxAttempts,
           period: routineTask.period,
+          nextScheduledAt: routineTask.nextScheduledAt,
           scheduledAt: routineTask.scheduledAt,
           actualStartedAt: routineTask.actualStartedAt,
           actualEndedAt: routineTask.actualEndedAt,
@@ -172,14 +177,13 @@ export const useRoutineTaskLogic = ({
           attempts: number;
           maxAttempts: number;
           period: GraphQLRoutinePeriod | null;
+          nextScheduledAt?: Date | string | number;
           scheduledAt: Date | string | number;
           actualStartedAt: Date | string | number | null;
           actualEndedAt: Date | string | number | null;
           updatedAt: Date | string | number;
           createdAt: Date | string | number;
-          routines?: Array<{
-            id: UUID;
-          }>;
+          routineIds?: UUID[];
         };
         const existingRoutineTask = stationNode.routineTasks.find(
           routineTask => routineTask.id === node.id
@@ -204,16 +208,7 @@ export const useRoutineTaskLogic = ({
                 : node.status ===
                     GraphQLRoutineTaskStatus.RoutineTaskStatusPause
                   ? RoutineTaskStatus.Pause
-                  : node.status ===
-                      GraphQLRoutineTaskStatus.RoutineTaskStatusCancel
-                    ? RoutineTaskStatus.Cancel
-                    : node.status ===
-                        GraphQLRoutineTaskStatus.RoutineTaskStatusSuccess
-                      ? RoutineTaskStatus.Success
-                      : node.status ===
-                          GraphQLRoutineTaskStatus.RoutineTaskStatusFail
-                        ? RoutineTaskStatus.Fail
-                        : RoutineTaskStatus.Idle,
+                  : RoutineTaskStatus.Idle,
           attempts: node.attempts,
           maxAttempts: node.maxAttempts,
           period:
@@ -224,6 +219,7 @@ export const useRoutineTaskLogic = ({
                 : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
                   ? RoutinePeriod.Monthly
                   : null,
+          nextScheduledAt: new Date(node.nextScheduledAt ?? node.scheduledAt),
           scheduledAt: new Date(node.scheduledAt),
           actualStartedAt:
             node.actualStartedAt === null
@@ -238,12 +234,12 @@ export const useRoutineTaskLogic = ({
           Object.assign(existingRoutineTask, routineTaskNode);
           return {
             routineTask: existingRoutineTask,
-            linkedRoutineIds: (node.routines ?? []).map(routine => routine.id),
+            linkedRoutineIds: node.routineIds ?? [],
           };
         }
         return {
           routineTask: routineTaskNode,
-          linkedRoutineIds: (node.routines ?? []).map(routine => routine.id),
+          linkedRoutineIds: node.routineIds ?? [],
         };
       });
       const searchedRoutineTaskNodes = searchedRoutineTasks.map(
@@ -366,7 +362,7 @@ export const useRoutineTaskLogic = ({
       stationId: UUID,
       title: string,
       purpose: RoutineTaskPurpose,
-      scheduledAt: Date,
+      nextScheduledAt: Date,
       period: RoutinePeriod | null = null,
       payload: unknown = {},
       priority: number = 0,
@@ -390,7 +386,7 @@ export const useRoutineTaskLogic = ({
           payload,
           priority,
           maxAttempts,
-          scheduledAt,
+          nextScheduledAt,
           period,
         },
       });
@@ -410,7 +406,8 @@ export const useRoutineTaskLogic = ({
         attempts: 0,
         maxAttempts,
         period,
-        scheduledAt,
+        nextScheduledAt,
+        scheduledAt: nextScheduledAt,
         actualStartedAt: null,
         actualEndedAt: null,
         updatedAt: response.data.createdAt,
@@ -438,7 +435,7 @@ export const useRoutineTaskLogic = ({
         sourceRoutineTask.stationId,
         `${sourceRoutineTask.title} Copy`,
         sourceRoutineTask.purpose,
-        sourceRoutineTask.scheduledAt,
+        sourceRoutineTask.nextScheduledAt,
         sourceRoutineTask.period,
         sourceRoutineTask.payload,
         sourceRoutineTask.priority,
@@ -525,6 +522,12 @@ export const useRoutineTaskLogic = ({
 
       for (const routineTaskNode of routineTaskNodes) {
         Object.assign(routineTaskNode, values);
+        if (
+          values.nextScheduledAt !== undefined &&
+          routineTaskNode.scheduledAt < values.nextScheduledAt
+        ) {
+          routineTaskNode.scheduledAt = values.nextScheduledAt;
+        }
         if (values.payload !== undefined) {
           routineTaskNode.costUnit = Math.ceil(
             new Blob([JSON.stringify(values.payload ?? {})]).size / 1024
@@ -537,6 +540,88 @@ export const useRoutineTaskLogic = ({
       return routineTaskNodes.values().next().value as RoutineTaskNode;
     },
     [forceUpdate, stationsRef, updateRoutineTaskMutator]
+  );
+
+  const pauseRoutineTask = useCallback(
+    async (routineTaskId: UUID): Promise<void> => {
+      const routineTaskNodes = new Set<RoutineTaskNode>();
+      for (const stationNode of stationsRef.current.values()) {
+        const stationRoutineTaskNode = stationNode.routineTasks.find(
+          stationRoutineTask => stationRoutineTask.id === routineTaskId
+        );
+        if (stationRoutineTaskNode)
+          routineTaskNodes.add(stationRoutineTaskNode);
+        for (const routineNode of stationNode.routines) {
+          const routineTaskNode = routineNode.routineTasks.find(
+            routineTask => routineTask.id === routineTaskId
+          );
+          if (routineTaskNode) routineTaskNodes.add(routineTaskNode);
+        }
+      }
+      if (routineTaskNodes.size === 0) {
+        throw new Error("routine task does not exist");
+      }
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await pauseRoutineTaskMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: { routineTaskId },
+      });
+      if (response.success === false) throw response.exception;
+
+      for (const routineTaskNode of routineTaskNodes) {
+        routineTaskNode.status = RoutineTaskStatus.Pause;
+        routineTaskNode.updatedAt = response.data.updatedAt;
+      }
+      forceUpdate();
+    },
+    [forceUpdate, pauseRoutineTaskMutator, stationsRef]
+  );
+
+  const resumeRoutineTask = useCallback(
+    async (routineTaskId: UUID): Promise<void> => {
+      const routineTaskNodes = new Set<RoutineTaskNode>();
+      for (const stationNode of stationsRef.current.values()) {
+        const stationRoutineTaskNode = stationNode.routineTasks.find(
+          stationRoutineTask => stationRoutineTask.id === routineTaskId
+        );
+        if (stationRoutineTaskNode)
+          routineTaskNodes.add(stationRoutineTaskNode);
+        for (const routineNode of stationNode.routines) {
+          const routineTaskNode = routineNode.routineTasks.find(
+            routineTask => routineTask.id === routineTaskId
+          );
+          if (routineTaskNode) routineTaskNodes.add(routineTaskNode);
+        }
+      }
+      if (routineTaskNodes.size === 0) {
+        throw new Error("routine task does not exist");
+      }
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await resumeRoutineTaskMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: { routineTaskId },
+      });
+      if (response.success === false) throw response.exception;
+
+      for (const routineTaskNode of routineTaskNodes) {
+        routineTaskNode.status = RoutineTaskStatus.Idle;
+        routineTaskNode.updatedAt = response.data.updatedAt;
+      }
+      forceUpdate();
+    },
+    [forceUpdate, resumeRoutineTaskMutator, stationsRef]
   );
 
   return {
@@ -556,5 +641,9 @@ export const useRoutineTaskLogic = ({
     isCreatingRoutineTask: createRoutineTaskMutator.isPending,
     updateRoutineTask,
     isUpdatingRoutineTask: updateRoutineTaskMutator.isPending,
+    pauseRoutineTask,
+    isPausingRoutineTask: pauseRoutineTaskMutator.isPending,
+    resumeRoutineTask,
+    isResumingRoutineTask: resumeRoutineTaskMutator.isPending,
   };
 };

@@ -3,6 +3,8 @@ import toast from "@shared/lib/toast";
 import { BlockPackNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -12,6 +14,11 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
 
@@ -42,19 +49,41 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
-        <SidebarMenuButton
-          className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden 
-            ${
-              shelfItemManager.isFocused(current.id)
-                ? "bg-primary/60"
-                : "bg-transparent"
-            }`}
-          onClick={handleBlockPackOnClick}
+      <HoverCard openDelay={250} closeDelay={100}>
+        <HoverCardTrigger asChild>
+          <ContextMenuTrigger asChild>
+            <SidebarMenuButton
+              className={`w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden ${
+                shelfItemManager.isFocused(current.id)
+                  ? "bg-primary/60"
+                  : "bg-transparent"
+              }`}
+              onClick={handleBlockPackOnClick}
+            >
+              <span>{current.name}</span>
+            </SidebarMenuButton>
+          </ContextMenuTrigger>
+        </HoverCardTrigger>
+        <HoverCardContent
+          side="right"
+          align="start"
+          sideOffset={8}
+          className="z-[90] w-72 rounded-sm p-3 text-xs"
         >
-          <span>{current.name}</span>
-        </SidebarMenuButton>
-      </ContextMenuTrigger>
+          <HoverDetailCard
+            title={current.name}
+            subtitle="Block Pack"
+            id={current.id}
+            rows={[
+              { field: "Blocks", value: current.blockCount },
+              {
+                field: "Updated",
+                value: new Date(current.updatedAt).toLocaleDateString(),
+              },
+            ]}
+          />
+        </HoverCardContent>
+      </HoverCard>
       <ContextMenuContent>
         <ContextMenuLabel>View</ContextMenuLabel>
         <ContextMenuGroup>
@@ -65,6 +94,7 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
         <ContextMenuSeparator />
         <ContextMenuLabel>Edit</ContextMenuLabel>
         <ContextMenuGroup>
+          <ContextMenuCopyItems id={current.id} name={current.name} />
           <ContextMenuItem
             onClick={() => shelfItemManager.startRenamingItemNode(current)}
           >

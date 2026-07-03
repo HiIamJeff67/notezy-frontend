@@ -10,6 +10,8 @@ import {
   GetMyRoutineTaskById,
   HardDeleteMyRoutineTaskById,
   HardDeleteMyRoutineTasksByIds,
+  PauseMyRoutineTaskById,
+  ResumeMyRoutineTaskById,
   UpdateMyRoutineTaskById,
   VisualizeMyRoutineTaskActualEndedAtCount,
   VisualizeMyRoutineTaskActualStartedAtCount,
@@ -42,6 +44,14 @@ import {
   HardDeleteMyRoutineTasksByIdsRequestSchema,
   HardDeleteMyRoutineTasksByIdsResponse,
   HardDeleteMyRoutineTasksByIdsResponseSchema,
+  PauseMyRoutineTaskByIdRequest,
+  PauseMyRoutineTaskByIdRequestSchema,
+  PauseMyRoutineTaskByIdResponse,
+  PauseMyRoutineTaskByIdResponseSchema,
+  ResumeMyRoutineTaskByIdRequest,
+  ResumeMyRoutineTaskByIdRequestSchema,
+  ResumeMyRoutineTaskByIdResponse,
+  ResumeMyRoutineTaskByIdResponseSchema,
   UpdateMyRoutineTaskByIdRequest,
   UpdateMyRoutineTaskByIdRequestSchema,
   UpdateMyRoutineTaskByIdResponse,
@@ -254,6 +264,64 @@ export const mutationFnUpdateMyRoutineTaskById = async (
   } catch (error) {
     console.error(
       "error happening in mutationFnUpdateMyRoutineTaskById",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnPauseMyRoutineTaskById = async (
+  request: PauseMyRoutineTaskByIdRequest
+): Promise<PauseMyRoutineTaskByIdResponse> => {
+  try {
+    const validatedRequest = PauseMyRoutineTaskByIdRequestSchema.parse(request);
+    const response = await PauseMyRoutineTaskById({
+      data: validatedRequest,
+    });
+    return PauseMyRoutineTaskByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in mutationFnPauseMyRoutineTaskById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnResumeMyRoutineTaskById = async (
+  request: ResumeMyRoutineTaskByIdRequest
+): Promise<ResumeMyRoutineTaskByIdResponse> => {
+  try {
+    const validatedRequest =
+      ResumeMyRoutineTaskByIdRequestSchema.parse(request);
+    const response = await ResumeMyRoutineTaskById({
+      data: validatedRequest,
+    });
+    return ResumeMyRoutineTaskByIdResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnResumeMyRoutineTaskById",
       error
     );
     if (error instanceof ZodError) {

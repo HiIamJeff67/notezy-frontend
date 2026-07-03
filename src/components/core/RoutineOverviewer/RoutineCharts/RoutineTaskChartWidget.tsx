@@ -6,7 +6,7 @@ import {
   useVisualizeMyRoutineTaskStatusCount,
 } from "@shared/api/hooks/routineTask.hook";
 import { AccessControlPermission } from "@shared/api/interfaces/enums";
-import { Chart } from "@shared/charts/components";
+import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
 import type { RoutineTaskChartType } from "./chartWidget.type";
@@ -75,9 +75,6 @@ const RoutineTaskChartWidget = ({
   const points = query.data?.data.data ?? [];
   const displayPoints =
     query.isError || !hasPositiveChartValue(points) ? [] : points;
-  const valueMode = displayPoints.some(point => !Number.isInteger(point.value))
-    ? "continuous"
-    : "integer";
   const data = { data: displayPoints };
   const series = {
     id: "routineTaskCount",
@@ -105,7 +102,7 @@ const RoutineTaskChartWidget = ({
       onValueChange={onChartTypeChange}
       onRemove={onRemove}
     >
-      <Chart
+      <IntChart
         ariaLabel={`Routine task ${chartType}`}
         chartType={chartKind}
         data={data}
@@ -114,7 +111,6 @@ const RoutineTaskChartWidget = ({
         loading={query.isPending}
         series={series}
         showLegend={false}
-        valueMode={valueMode}
       />
     </ChartWidgetFrame>
   );

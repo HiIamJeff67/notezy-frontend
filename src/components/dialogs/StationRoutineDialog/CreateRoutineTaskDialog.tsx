@@ -4,6 +4,7 @@ import {
   RoutineTaskPurpose,
   UserPlan,
 } from "@shared/api/interfaces/enums";
+import { CreateRoutineTaskByStationIdRequestSchema } from "@shared/api/interfaces/routineTask.interface";
 import { PlanLimitations } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
@@ -61,7 +62,7 @@ const CreateRoutineTaskDialog = ({
   const [payload, setPayload] = useState<string>("{}");
   const [priority, setPriority] = useState<string>("0");
   const [maxAttempts, setMaxAttempts] = useState<string>("1");
-  const [scheduledAt, setScheduledAt] = useState<Date | undefined>();
+  const [nextScheduledAt, setNextScheduledAt] = useState<Date | undefined>();
   const [period, setPeriod] = useState<RoutinePeriod | null>(null);
   const [payloadError, setPayloadError] = useState<string>("");
   const [isPayloadEditorOpen, setIsPayloadEditorOpen] =
@@ -79,7 +80,7 @@ const CreateRoutineTaskDialog = ({
     setPayload("{}");
     setPriority("0");
     setMaxAttempts("1");
-    setScheduledAt(undefined);
+    setNextScheduledAt(undefined);
     setPeriod(null);
     setPayloadError("");
     setIsPayloadEditorOpen(false);
@@ -131,39 +132,47 @@ const CreateRoutineTaskDialog = ({
     estimatedPayloadCostUnit !== null &&
     estimatedUsageAfterCreate > maxRoutineTaskCostUnitCount;
 
-  const createRoutineTask = async () => {
-    const trimmedTitle = title.trim();
-    const parsedPriority = Number(priority);
-    const parsedMaxAttempts = Number(maxAttempts);
-    if (
-      trimmedTitle.length === 0 ||
-      !Number.isInteger(parsedPriority) ||
-      parsedPriority < 0 ||
-      !Number.isInteger(parsedMaxAttempts) ||
-      parsedMaxAttempts < 1 ||
-      parsedMaxAttempts > 20
-    ) {
-      return;
-    }
-    if (!scheduledAt) {
-      return;
-    }
-
-    let parsedPayload: unknown;
+  const validation = useMemo(() => {
     try {
-      parsedPayload = JSON.parse(payload);
-      setPayloadError("");
+      return CreateRoutineTaskByStationIdRequestSchema.safeParse({
+        body: {
+          stationId,
+          title: title.trim(),
+          purpose,
+          payload: JSON.parse(payload),
+          priority: Number(priority),
+          maxAttempts: Number(maxAttempts),
+          period,
+          nextScheduledAt,
+        },
+      });
     } catch {
+      return null;
+    }
+  }, [
+    maxAttempts,
+    nextScheduledAt,
+    payload,
+    period,
+    priority,
+    purpose,
+    stationId,
+    title,
+  ]);
+
+  const createRoutineTask = async () => {
+    if (validation === null) {
       setPayloadError("Payload must be valid JSON.");
       return;
     }
-    if (
-      new TextEncoder().encode(JSON.stringify(parsedPayload ?? {})).length >
-      16_777_216
-    ) {
-      setPayloadError("Payload must be smaller than 16 MiB.");
+    if (!validation.success) {
+      setPayloadError(
+        validation.error.issues[0]?.message ?? "Invalid payload."
+      );
       return;
     }
+    setPayloadError("");
+
     if (isRoutineTaskCostUnitExceeded) {
       toast.error(
         "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
@@ -173,14 +182,14 @@ const CreateRoutineTaskDialog = ({
 
     try {
       const routineTaskNode = await stationRoutineManager.createRoutineTask(
-        stationId,
-        trimmedTitle,
-        purpose,
-        scheduledAt,
-        period,
-        parsedPayload,
-        parsedPriority,
-        parsedMaxAttempts
+        validation.data.body.stationId as UUID,
+        validation.data.body.title,
+        validation.data.body.purpose,
+        validation.data.body.nextScheduledAt,
+        validation.data.body.period ?? null,
+        validation.data.body.payload,
+        validation.data.body.priority ?? 0,
+        validation.data.body.maxAttempts ?? 1
       );
       await onCreated?.(routineTaskNode.id);
       userManager.updateUserAccount({
@@ -340,18 +349,25 @@ const CreateRoutineTaskDialog = ({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Scheduled at</Label>
+            <Label>Next scheduled at</Label>
             <DatePicker
-              value={scheduledAt}
+              value={nextScheduledAt}
               onValueChange={value => {
                 if (!value) return;
                 value.setSeconds(0, 0);
-                setScheduledAt(value);
+                setNextScheduledAt(value);
               }}
-              placeholder="Select first execution time"
+              placeholder="Select next execution time"
               className="bg-card/45 hover:bg-card/60"
               contentClassName="bg-card"
             />
+            {nextScheduledAt && (
+              <span className="text-xs text-muted-foreground">
+                Next expected run time: {nextScheduledAt.toLocaleString()}.
+                Updating this later will not force an immediate rerun if the
+                system schedule is already later.
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -516,6 +532,7 @@ const CreateRoutineTaskDialog = ({
                 id="routine-task-priority"
                 type="number"
                 min={0}
+                max={100}
                 step={1}
                 value={priority}
                 autoComplete="off"
@@ -551,9 +568,7 @@ const CreateRoutineTaskDialog = ({
               variant="default"
               disabled={
                 stationRoutineManager.isCreatingRoutineTask ||
-                title.trim().length === 0 ||
-                !scheduledAt ||
-                estimatedPayloadCostUnit === null ||
+                validation?.success !== true ||
                 isRoutineTaskCostUnitExceeded
               }
             >

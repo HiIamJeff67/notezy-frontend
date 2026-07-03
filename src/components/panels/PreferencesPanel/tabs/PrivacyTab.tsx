@@ -1,4 +1,4 @@
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import { EyeOffIcon } from "lucide-react";
 import { Section, SwitchRow } from "../PreferenceRows";
 

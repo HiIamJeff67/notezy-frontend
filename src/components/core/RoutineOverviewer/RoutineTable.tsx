@@ -42,9 +42,9 @@ import { useStationRoutine } from "@/hooks";
 
 const RoutineTable = () => {
   const stationRoutineManager = useStationRoutine();
-  const [executeSearchRoutines] = useSearchRoutinesLazyQuery({
-    fetchPolicy: "network-only",
-    nextFetchPolicy: "network-only",
+  const [executeSearchRoutines, routineSearch] = useSearchRoutinesLazyQuery({
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
   const [routines, setRoutines] = useState<
     Array<RoutineNode & { routineTaskIds: UUID[] }>
@@ -57,6 +57,7 @@ const RoutineTable = () => {
   const [isSearchingRoutines, setIsSearchingRoutines] =
     useState<boolean>(false);
   const isSearchingRoutinesRef = useRef<boolean>(false);
+  const hasExecutedInitialSearchRef = useRef<boolean>(false);
   const [status, setStatus] = useState<RoutineStatus | "All">("All");
   const [startsAfter, setStartsAfter] = useState<Date | undefined>();
   const [endsBefore, setEndsBefore] = useState<Date | undefined>();
@@ -69,6 +70,121 @@ const RoutineTable = () => {
   const stationPresenceSignature = effectiveStationIds.join("|");
   const routineTagPresenceSignature =
     stationRoutineManager.presence.routineTagIds.join("|");
+
+  const applySearchRoutinesData = useCallback(
+    (data?: any): void => {
+      const isAllRoutineTagsSelected =
+        stationRoutineManager.routineTags.length === 0 ||
+        stationRoutineManager.presence.routineTagIds.length ===
+          stationRoutineManager.routineTags.length;
+      const shouldFilterRoutineTagsInView =
+        stationRoutineManager.routineTags.length > 0 &&
+        stationRoutineManager.presence.showUntaggedRoutines &&
+        !isAllRoutineTagsSelected;
+      const shouldShowOnlyUntaggedRoutines =
+        stationRoutineManager.routineTags.length > 0 &&
+        stationRoutineManager.presence.showUntaggedRoutines &&
+        stationRoutineManager.presence.routineTagIds.length === 0;
+      const searchedRoutines = (data?.searchRoutines.searchEdges ?? [])
+        .map((edge: any) => {
+          const node = edge.node as unknown as {
+            id: UUID;
+            stationId: UUID;
+            title: string;
+            status: GraphQLRoutineStatus;
+            isPinned: boolean;
+            scheduledStartAt: Date | string | number;
+            scheduledEndAt: Date | string | number;
+            period: GraphQLRoutinePeriod | null;
+            timezone: string;
+            deletedAt: Date | string | number | null;
+            updatedAt: Date | string | number;
+            createdAt: Date | string | number;
+            tagIds?: UUID[];
+            taskIds?: UUID[];
+            itemIds?: UUID[];
+          };
+          const routineTagIds = node.tagIds ?? [];
+          if (shouldShowOnlyUntaggedRoutines && routineTagIds.length > 0) {
+            return null;
+          }
+          if (
+            shouldFilterRoutineTagsInView &&
+            routineTagIds.length > 0 &&
+            !routineTagIds.some(routineTagId =>
+              stationRoutineManager.presence.routineTagIds.includes(
+                routineTagId
+              )
+            )
+          ) {
+            return null;
+          }
+
+          const routineTaskIds = node.taskIds ?? [];
+          const routine: RoutineNode & { routineTaskIds: UUID[] } = {
+            id: node.id,
+            stationId: node.stationId,
+            title: node.title,
+            description: "",
+            status:
+              node.status === GraphQLRoutineStatus.RoutineStatusCompleted
+                ? RoutineStatus.Completed
+                : node.status === GraphQLRoutineStatus.RoutineStatusInProgress
+                  ? RoutineStatus.InProgress
+                  : node.status === GraphQLRoutineStatus.RoutineStatusOverDue
+                    ? RoutineStatus.OverDue
+                    : RoutineStatus.Scheduled,
+            isPinned: node.isPinned,
+            scheduledStartAt: new Date(node.scheduledStartAt),
+            scheduledEndAt: new Date(node.scheduledEndAt),
+            period:
+              node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
+                ? RoutinePeriod.Daily
+                : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
+                  ? RoutinePeriod.Weekly
+                  : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
+                    ? RoutinePeriod.Monthly
+                    : null,
+            timezone: node.timezone,
+            deletedAt:
+              node.deletedAt === null ? null : new Date(node.deletedAt),
+            updatedAt: new Date(node.updatedAt),
+            createdAt: new Date(node.createdAt),
+            isOpen: false,
+            routineTagIds,
+            itemIds: node.itemIds ?? [],
+            routineTasks: routineTaskIds.flatMap(routineTaskId => {
+              const routineTask =
+                stationRoutineManager.getRoutineTaskById(routineTaskId);
+              return routineTask ? [routineTask] : [];
+            }),
+            routineTaskIds,
+          };
+          return routine;
+        })
+        .filter(
+          (
+            routine: (RoutineNode & { routineTaskIds: UUID[] }) | null
+          ): routine is RoutineNode & { routineTaskIds: UUID[] } =>
+            routine !== null
+        );
+
+      setRoutines(searchedRoutines);
+      setRoutineTotalCount(data?.searchRoutines.totalCount ?? 0);
+      setRoutineSearchCursor(
+        data?.searchRoutines.searchPageInfo.endEncodedSearchCursor ?? null
+      );
+      setHasMoreRoutines(
+        data?.searchRoutines.searchPageInfo.hasNextPage ?? false
+      );
+    },
+    [
+      stationRoutineManager.getRoutineTaskById,
+      stationRoutineManager.presence.routineTagIds,
+      stationRoutineManager.presence.showUntaggedRoutines,
+      stationRoutineManager.routineTags.length,
+    ]
+  );
 
   const searchRoutines = useCallback(
     async (reset: boolean): Promise<void> => {
@@ -120,125 +236,55 @@ const RoutineTable = () => {
           stationRoutineManager.routineTags.length > 0 &&
           stationRoutineManager.presence.showUntaggedRoutines &&
           stationRoutineManager.presence.routineTagIds.length === 0;
-        const result = await executeSearchRoutines({
-          variables: {
-            input: {
-              query: stationRoutineManager.presence.query,
-              after: reset ? undefined : (routineSearchCursor ?? undefined),
-              first: reset ? 20 : 10,
-              stationIds: isAllStationsSelected ? [] : effectiveStationIds,
-              tagIds:
-                shouldFilterRoutineTagsInView ||
-                shouldShowOnlyUntaggedRoutines ||
-                isAllRoutineTagsSelected
-                  ? []
-                  : stationRoutineManager.presence.routineTagIds,
-              sortBy: SearchRoutineSortBy.Title,
-              sortOrder: SearchSortOrder.Asc,
-            },
+        const variables = {
+          input: {
+            query: stationRoutineManager.presence.query,
+            after: reset ? undefined : (routineSearchCursor ?? undefined),
+            first: reset ? 20 : 10,
+            stationIds: isAllStationsSelected ? [] : effectiveStationIds,
+            tagIds:
+              shouldFilterRoutineTagsInView ||
+              shouldShowOnlyUntaggedRoutines ||
+              isAllRoutineTagsSelected
+                ? []
+                : stationRoutineManager.presence.routineTagIds,
+            sortBy: SearchRoutineSortBy.Title,
+            sortOrder: SearchSortOrder.Asc,
           },
-        }).retain();
-        const searchedRoutines = (result.data?.searchRoutines.searchEdges ?? [])
-          .map(edge => {
-            const node = edge.node as unknown as {
-              id: UUID;
-              stationId: UUID;
-              title: string;
-              status: GraphQLRoutineStatus;
-              isPinned: boolean;
-              scheduledStartAt: Date | string | number;
-              scheduledEndAt: Date | string | number;
-              period: GraphQLRoutinePeriod | null;
-              timezone: string;
-              deletedAt: Date | string | number | null;
-              updatedAt: Date | string | number;
-              createdAt: Date | string | number;
-              tagIds?: UUID[];
-              taskIds?: UUID[];
-              itemIds?: UUID[];
-            };
-            const routineTagIds = node.tagIds ?? [];
-            if (shouldShowOnlyUntaggedRoutines && routineTagIds.length > 0) {
-              return null;
-            }
-            if (
-              shouldFilterRoutineTagsInView &&
-              routineTagIds.length > 0 &&
-              !routineTagIds.some(routineTagId =>
-                stationRoutineManager.presence.routineTagIds.includes(
-                  routineTagId
-                )
-              )
-            ) {
-              return null;
-            }
+        };
 
-            const routineTaskIds = node.taskIds ?? [];
-            const routine: RoutineNode & { routineTaskIds: UUID[] } = {
-              id: node.id,
-              stationId: node.stationId,
-              title: node.title,
-              description: "",
-              status:
-                node.status === GraphQLRoutineStatus.RoutineStatusCompleted
-                  ? RoutineStatus.Completed
-                  : node.status === GraphQLRoutineStatus.RoutineStatusInProgress
-                    ? RoutineStatus.InProgress
-                    : node.status === GraphQLRoutineStatus.RoutineStatusOverDue
-                      ? RoutineStatus.OverDue
-                      : RoutineStatus.Scheduled,
-              isPinned: node.isPinned,
-              scheduledStartAt: new Date(node.scheduledStartAt),
-              scheduledEndAt: new Date(node.scheduledEndAt),
-              period:
-                node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
-                  ? RoutinePeriod.Daily
-                  : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
-                    ? RoutinePeriod.Weekly
-                    : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
-                      ? RoutinePeriod.Monthly
-                      : null,
-              timezone: node.timezone,
-              deletedAt:
-                node.deletedAt === null ? null : new Date(node.deletedAt),
-              updatedAt: new Date(node.updatedAt),
-              createdAt: new Date(node.createdAt),
-              isOpen: false,
-              routineTagIds,
-              itemIds: node.itemIds ?? [],
-              routineTasks: routineTaskIds.flatMap(routineTaskId => {
-                const routineTask =
-                  stationRoutineManager.getRoutineTaskById(routineTaskId);
-                return routineTask ? [routineTask] : [];
-              }),
-              routineTaskIds,
-            };
-            return routine;
-          })
-          .filter(
-            (routine): routine is RoutineNode & { routineTaskIds: UUID[] } =>
-              routine !== null
-          );
-        setRoutines(previousRoutines => {
-          if (reset) return searchedRoutines;
-          const searchedRoutineIds = new Set(
-            searchedRoutines.map(routine => routine.id)
-          );
-          return [
-            ...previousRoutines.filter(
-              routine => !searchedRoutineIds.has(routine.id)
-            ),
-            ...searchedRoutines,
-          ];
-        });
-        setRoutineTotalCount(result.data?.searchRoutines.totalCount ?? 0);
-        setRoutineSearchCursor(
-          result.data?.searchRoutines.searchPageInfo.endEncodedSearchCursor ??
-            null
-        );
-        setHasMoreRoutines(
-          result.data?.searchRoutines.searchPageInfo.hasNextPage ?? false
-        );
+        if (reset || !hasExecutedInitialSearchRef.current) {
+          hasExecutedInitialSearchRef.current = true;
+          await executeSearchRoutines({ variables }).retain();
+        } else {
+          await routineSearch.fetchMore({
+            variables,
+            updateQuery: (previous, { fetchMoreResult }) => {
+              if (!fetchMoreResult) return previous;
+              const existingRoutineIds = new Set(
+                previous.searchRoutines.searchEdges.map(edge => {
+                  const node = edge.node as unknown as { id: UUID };
+                  return node.id;
+                })
+              );
+              return {
+                ...fetchMoreResult,
+                searchRoutines: {
+                  ...fetchMoreResult.searchRoutines,
+                  searchEdges: [
+                    ...previous.searchRoutines.searchEdges,
+                    ...fetchMoreResult.searchRoutines.searchEdges.filter(
+                      edge => {
+                        const node = edge.node as unknown as { id: UUID };
+                        return !existingRoutineIds.has(node.id);
+                      }
+                    ),
+                  ],
+                },
+              };
+            },
+          });
+        }
       } finally {
         isSearchingRoutinesRef.current = false;
         setIsSearchingRoutines(false);
@@ -249,15 +295,20 @@ const RoutineTable = () => {
       stationPresenceSignature,
       hasMoreRoutines,
       routineSearchCursor,
-      stationRoutineManager.getRoutineTaskById,
       stationRoutineManager.presence.query,
       stationRoutineManager.presence.routineTagIds,
       stationRoutineManager.presence.showUntaggedRoutines,
       stationRoutineManager.routineTags.length,
       stationRoutineManager.stations.length,
       stationRoutineManager.viewMode,
+      routineSearch.fetchMore,
     ]
   );
+
+  useEffect(() => {
+    if (!routineSearch.data) return;
+    applySearchRoutinesData(routineSearch.data);
+  }, [applySearchRoutinesData, routineSearch.data]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -546,20 +597,12 @@ const RoutineTable = () => {
                                     <span
                                       className={`size-2.5 shrink-0 rounded-full ${
                                         routineTask.status ===
-                                        RoutineTaskStatus.Success
-                                          ? "bg-emerald-500"
+                                        RoutineTaskStatus.Running
+                                          ? "bg-sky-500"
                                           : routineTask.status ===
-                                                RoutineTaskStatus.Fail ||
-                                              routineTask.status ===
-                                                RoutineTaskStatus.Cancel
-                                            ? "bg-destructive"
-                                            : routineTask.status ===
-                                                RoutineTaskStatus.Running
-                                              ? "bg-sky-500"
-                                              : routineTask.status ===
-                                                  RoutineTaskStatus.Pause
-                                                ? "bg-amber-500"
-                                                : "bg-muted-foreground"
+                                              RoutineTaskStatus.Pause
+                                            ? "bg-amber-500"
+                                            : "bg-muted-foreground"
                                       }`}
                                     />
                                     <span className="min-w-0 flex-1 truncate">

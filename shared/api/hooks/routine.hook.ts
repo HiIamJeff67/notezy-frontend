@@ -8,10 +8,11 @@ import {
 } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import {
+  RoutinePeriod as GraphQLRoutinePeriod,
+  RoutineStatus as GraphQLRoutineStatus,
+} from "@shared/api/graphql/generated/graphql";
 import type {
-  LinkRoutineItemsByIdsRequest,
-  LinkRoutineTagsByIdsRequest,
-  LinkRoutineTasksByIdsRequest,
   CreateRoutineByStationIdRequest,
   CreateRoutinesByStationIdsRequest,
   DeleteMyRoutineByIdRequest,
@@ -25,8 +26,11 @@ import type {
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutinesByIdsRequest,
   LinkRoutineItemByIdRequest,
+  LinkRoutineItemsByIdsRequest,
   LinkRoutineTagByIdRequest,
+  LinkRoutineTagsByIdsRequest,
   LinkRoutineTaskByIdRequest,
+  LinkRoutineTasksByIdsRequest,
   RestoreMyRoutineByIdRequest,
   RestoreMyRoutinesByIdsRequest,
   UpdateMyRoutineByIdRequest,
@@ -41,9 +45,6 @@ import type {
   VisualizeMyRoutineStatusCountResponse,
 } from "@shared/api/interfaces/routine.interface";
 import {
-  mutationFnLinkRoutineItemsByIds,
-  mutationFnLinkRoutineTagsByIds,
-  mutationFnLinkRoutineTasksByIds,
   mutationFnCreateRoutineByStationId,
   mutationFnCreateRoutinesByStationIds,
   mutationFnDeleteMyRoutineById,
@@ -51,8 +52,11 @@ import {
   mutationFnHardDeleteMyRoutineById,
   mutationFnHardDeleteMyRoutinesByIds,
   mutationFnLinkRoutineItemById,
+  mutationFnLinkRoutineItemsByIds,
   mutationFnLinkRoutineTagById,
+  mutationFnLinkRoutineTagsByIds,
   mutationFnLinkRoutineTaskById,
+  mutationFnLinkRoutineTasksByIds,
   mutationFnRestoreMyRoutineById,
   mutationFnRestoreMyRoutinesByIds,
   mutationFnUpdateMyRoutineById,
@@ -80,6 +84,225 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { useVisualizeQuery } from "./visualize.hook";
+
+const getSearchInput = (storeFieldName: string) => {
+  const start = storeFieldName.indexOf("(");
+  if (start === -1) return undefined;
+  try {
+    return JSON.parse(storeFieldName.slice(start + 1, -1)).input;
+  } catch {
+    return undefined;
+  }
+};
+
+const toGraphQLRoutineStatus = (status?: string | null) =>
+  status
+    ? {
+        Scheduled: GraphQLRoutineStatus.RoutineStatusScheduled,
+        InProgress: GraphQLRoutineStatus.RoutineStatusInProgress,
+        Completed: GraphQLRoutineStatus.RoutineStatusCompleted,
+        OverDue: GraphQLRoutineStatus.RoutineStatusOverDue,
+      }[status]
+    : GraphQLRoutineStatus.RoutineStatusScheduled;
+
+const toGraphQLRoutinePeriod = (period?: string | null) =>
+  period
+    ? {
+        Daily: GraphQLRoutinePeriod.RoutinePeriodDaily,
+        Weekly: GraphQLRoutinePeriod.RoutinePeriodWeekly,
+        Monthly: GraphQLRoutinePeriod.RoutinePeriodMonthly,
+      }[period]
+    : null;
+
+const toSearchRoutinePatch = (values: Record<string, any>, updatedAt: Date) => {
+  const patch: Record<string, any> = { updatedAt };
+  for (const key of [
+    "stationId",
+    "title",
+    "isPinned",
+    "scheduledStartAt",
+    "scheduledEndAt",
+    "timezone",
+  ]) {
+    if (values[key] !== undefined) patch[key] = values[key];
+  }
+  if (values.status !== undefined)
+    patch.status = toGraphQLRoutineStatus(values.status);
+  if (values.period !== undefined)
+    patch.period = toGraphQLRoutinePeriod(values.period);
+  return patch;
+};
+
+const routineMatchesSearchInput = (routine: any, input: any) => {
+  const query = input?.query?.trim().toLowerCase();
+  const stationIds = input?.stationIds ?? [];
+  const tagIds = input?.tagIds ?? [];
+  if (query && !routine.title.toLowerCase().includes(query)) return false;
+  if (stationIds.length > 0 && !stationIds.includes(routine.stationId))
+    return false;
+  if (
+    tagIds.length > 0 &&
+    !tagIds.some((tagId: string) => routine.tagIds.includes(tagId))
+  )
+    return false;
+  return true;
+};
+
+const upsertSearchRoutine = (
+  apolloClient: ReturnType<typeof useApolloClient>,
+  routine: any
+) => {
+  apolloClient.cache.modify({
+    fields: {
+      searchRoutines(existing, { readField, storeFieldName }) {
+        if (!existing?.searchEdges) return existing;
+        const input = getSearchInput(storeFieldName);
+        if (input?.after) return existing;
+        if (!routineMatchesSearchInput(routine, input)) return existing;
+
+        const existed = existing.searchEdges.some(
+          (edge: any) => readField("id", edge.node) === routine.id
+        );
+        const edges = existing.searchEdges.filter(
+          (edge: any) => readField("id", edge.node) !== routine.id
+        );
+        const nextEdges = [
+          {
+            __typename: "SearchRoutineEdge",
+            encodedSearchCursor: routine.id,
+            node: routine,
+          },
+          ...edges,
+        ];
+        return {
+          ...existing,
+          totalCount: existed
+            ? (existing.totalCount ?? nextEdges.length)
+            : Math.max(existing.totalCount ?? 0, edges.length) + 1,
+          searchEdges: nextEdges,
+        };
+      },
+    },
+  });
+};
+
+const patchSearchRoutine = (
+  apolloClient: ReturnType<typeof useApolloClient>,
+  routineId: string,
+  patch: any
+) => {
+  apolloClient.cache.modify({
+    fields: {
+      searchRoutines(existing, { readField, storeFieldName }) {
+        if (!existing?.searchEdges) return existing;
+        const input = getSearchInput(storeFieldName);
+        const nextEdges = existing.searchEdges.flatMap((edge: any) => {
+          if (readField("id", edge.node) !== routineId) return [edge];
+          const node = {
+            ...edge.node,
+            id: routineId,
+            stationId: readField("stationId", edge.node),
+            title: readField("title", edge.node),
+            tagIds: (readField("tagIds", edge.node) as string[]) ?? [],
+            ...patch,
+          };
+          return routineMatchesSearchInput(node, input)
+            ? [{ ...edge, node }]
+            : [];
+        });
+        return {
+          ...existing,
+          totalCount: Math.max(
+            0,
+            (existing.totalCount ?? nextEdges.length) -
+              (existing.searchEdges.length - nextEdges.length)
+          ),
+          searchEdges: nextEdges,
+        };
+      },
+    },
+  });
+};
+
+const patchSearchRoutineIdList = (
+  apolloClient: ReturnType<typeof useApolloClient>,
+  routineId: string,
+  fieldName: "tagIds" | "taskIds" | "itemIds",
+  value: string,
+  isRemove: boolean
+) => {
+  apolloClient.cache.modify({
+    fields: {
+      searchRoutines(existing, { readField }) {
+        if (!existing?.searchEdges) return existing;
+        return {
+          ...existing,
+          searchEdges: existing.searchEdges.map((edge: any) => {
+            if (readField("id", edge.node) !== routineId) return edge;
+            const current = (readField(fieldName, edge.node) as string[]) ?? [];
+            const next = isRemove
+              ? current.filter(id => id !== value)
+              : Array.from(new Set([...current, value]));
+            return { ...edge, node: { ...edge.node, [fieldName]: next } };
+          }),
+        };
+      },
+    },
+  });
+};
+
+const patchSearchRoutineTaskRoutineIds = (
+  apolloClient: ReturnType<typeof useApolloClient>,
+  routineTaskId: string,
+  routineId: string,
+  isRemove: boolean
+) => {
+  apolloClient.cache.modify({
+    fields: {
+      searchRoutineTasks(existing, { readField }) {
+        if (!existing?.searchEdges) return existing;
+        return {
+          ...existing,
+          searchEdges: existing.searchEdges.map((edge: any) => {
+            if (readField("id", edge.node) !== routineTaskId) return edge;
+            const current =
+              (readField("routineIds", edge.node) as string[]) ?? [];
+            const routineIds = isRemove
+              ? current.filter(id => id !== routineId)
+              : Array.from(new Set([...current, routineId]));
+            return { ...edge, node: { ...edge.node, routineIds } };
+          }),
+        };
+      },
+    },
+  });
+};
+
+const removeSearchRoutines = (
+  apolloClient: ReturnType<typeof useApolloClient>,
+  routineIds: string[]
+) => {
+  apolloClient.cache.modify({
+    fields: {
+      searchRoutines(existing, { readField }) {
+        if (!existing?.searchEdges) return existing;
+        const nextEdges = existing.searchEdges.filter(
+          (edge: any) =>
+            !routineIds.includes(readField("id", edge.node) as string)
+        );
+        return {
+          ...existing,
+          totalCount: Math.max(
+            0,
+            (existing.totalCount ?? nextEdges.length) -
+              (existing.searchEdges.length - nextEdges.length)
+          ),
+          searchEdges: nextEdges,
+        };
+      },
+    },
+  });
+};
 
 export const useVisualizeMyRoutineStatusCount = (
   request?: VisualizeMyRoutineStatusCountRequest,
@@ -487,13 +710,31 @@ export const useCreateRoutineByStationId = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      const scheduledStartAt =
+        request.body.scheduledStartAt ?? response.data.createdAt;
+      upsertSearchRoutine(apolloClient, {
+        __typename: "PrivateSearchableRoutine",
+        id: response.data.id,
+        stationId: request.body.stationId,
+        title: request.body.title,
+        status: toGraphQLRoutineStatus(request.body.status),
+        isPinned: request.body.isPinned ?? false,
+        scheduledStartAt,
+        scheduledEndAt: request.body.scheduledEndAt ?? scheduledStartAt,
+        period: toGraphQLRoutinePeriod(request.body.period),
+        timezone:
+          request.body.timezone ??
+          Intl.DateTimeFormat().resolvedOptions().timeZone,
+        deletedAt: null,
+        updatedAt: response.data.createdAt,
+        createdAt: response.data.createdAt,
+        tagIds: [],
+        taskIds: [],
+        itemIds: [],
+      });
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
-      await apolloClient.refetchQueries({
-        include: ["SearchRoutines"],
-      });
       await RoutineLocalSynchronizer.syncCreateRoutineByStationId(
         request,
         response
@@ -552,13 +793,39 @@ export const useCreateRoutinesByStationIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      for (
+        let index = 0;
+        index < response.data.ids.length &&
+        index < request.body.createdRoutines.length;
+        index++
+      ) {
+        const routine = request.body.createdRoutines[index];
+        const scheduledStartAt =
+          routine.scheduledStartAt ?? response.data.createdAt;
+        upsertSearchRoutine(apolloClient, {
+          __typename: "PrivateSearchableRoutine",
+          id: response.data.ids[index],
+          stationId: routine.stationId,
+          title: routine.title,
+          status: toGraphQLRoutineStatus(routine.status),
+          isPinned: routine.isPinned ?? false,
+          scheduledStartAt,
+          scheduledEndAt: routine.scheduledEndAt ?? scheduledStartAt,
+          period: toGraphQLRoutinePeriod(routine.period),
+          timezone:
+            routine.timezone ??
+            Intl.DateTimeFormat().resolvedOptions().timeZone,
+          deletedAt: null,
+          updatedAt: response.data.createdAt,
+          createdAt: response.data.createdAt,
+          tagIds: [],
+          taskIds: [],
+          itemIds: [],
+        });
+      }
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
-      await apolloClient.refetchQueries({
-        include: ["SearchRoutines"],
-      });
       await RoutineLocalSynchronizer.syncCreateRoutinesByStationIds(
         request,
         response
@@ -611,7 +878,11 @@ export const useUpdateMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      patchSearchRoutine(
+        apolloClient,
+        request.body.routineId,
+        toSearchRoutinePatch(request.body.values, response.data.updatedAt)
+      );
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncUpdateMyRoutineById(request, response);
@@ -664,7 +935,13 @@ export const useUpdateMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      for (const routine of request.body.updatedRoutines) {
+        patchSearchRoutine(
+          apolloClient,
+          routine.routineId,
+          toSearchRoutinePatch(routine.values, response.data.updatedAt)
+        );
+      }
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncUpdateMyRoutinesByIds(
@@ -719,7 +996,13 @@ export const useLinkRoutineTagById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      patchSearchRoutineIdList(
+        apolloClient,
+        request.body.routineId,
+        "tagIds",
+        request.body.routineTagId,
+        request.body.isUnlink
+      );
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineTagById(request, response);
@@ -775,7 +1058,15 @@ export const useLinkRoutineTagsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      for (const item of request.body.linkedRoutinesAndTags) {
+        patchSearchRoutineIdList(
+          apolloClient,
+          item.routineId,
+          "tagIds",
+          item.routineTagId,
+          request.body.isUnlink
+        );
+      }
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineTagsByIds(
@@ -822,8 +1113,19 @@ export const useLinkRoutineTaskById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
-      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      patchSearchRoutineIdList(
+        apolloClient,
+        request.body.routineId,
+        "taskIds",
+        request.body.routineTaskId,
+        request.body.isUnlink
+      );
+      patchSearchRoutineTaskRoutineIds(
+        apolloClient,
+        request.body.routineTaskId,
+        request.body.routineId,
+        request.body.isUnlink
+      );
       apolloClient.cache.gc();
     },
     onError: error => {},
@@ -861,8 +1163,21 @@ export const useLinkRoutineTasksByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
-      apolloClient.cache.evict({ fieldName: "searchRoutineTasks" });
+      for (const item of request.body.linkedRoutinesAndTasks) {
+        patchSearchRoutineIdList(
+          apolloClient,
+          item.routineId,
+          "taskIds",
+          item.routineTaskId,
+          request.body.isUnlink
+        );
+        patchSearchRoutineTaskRoutineIds(
+          apolloClient,
+          item.routineTaskId,
+          item.routineId,
+          request.body.isUnlink
+        );
+      }
       apolloClient.cache.gc();
     },
     onError: error => {},
@@ -904,7 +1219,13 @@ export const useLinkRoutineItemById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      patchSearchRoutineIdList(
+        apolloClient,
+        request.body.routineId,
+        "itemIds",
+        request.body.itemId,
+        request.body.isUnlink
+      );
       apolloClient.cache.evict({ fieldName: "searchItems" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineItemById(request, response);
@@ -957,7 +1278,15 @@ export const useLinkRoutineItemsByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      for (const item of request.body.linkedRoutinesAndItems) {
+        patchSearchRoutineIdList(
+          apolloClient,
+          item.routineId,
+          "itemIds",
+          item.itemId,
+          request.body.isUnlink
+        );
+      }
       apolloClient.cache.evict({ fieldName: "searchItems" });
       apolloClient.cache.gc();
       await RoutineLocalSynchronizer.syncLinkRoutineItemsByIds(
@@ -1125,7 +1454,7 @@ export const useDeleteMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      removeSearchRoutines(apolloClient, [request.body.routineId]);
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
@@ -1180,7 +1509,7 @@ export const useDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      removeSearchRoutines(apolloClient, request.body.routineIds);
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
@@ -1236,7 +1565,7 @@ export const useHardDeleteMyRoutineById = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      removeSearchRoutines(apolloClient, [request.body.routineId]);
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();
@@ -1294,7 +1623,7 @@ export const useHardDeleteMyRoutinesByIds = () => {
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
-      apolloClient.cache.evict({ fieldName: "searchRoutines" });
+      removeSearchRoutines(apolloClient, request.body.routineIds);
       apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.evict({ fieldName: "searchRoutineTags" });
       apolloClient.cache.gc();

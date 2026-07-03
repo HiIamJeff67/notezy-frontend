@@ -17,6 +17,7 @@ export interface RoutineTaskNode {
   attempts: number;
   maxAttempts: number;
   period: RoutinePeriod | null;
+  nextScheduledAt: Date;
   scheduledAt: Date;
   actualStartedAt: Date | null;
   actualEndedAt: Date | null;
@@ -39,6 +40,7 @@ export const getDefaultRoutineTaskNode = (
   attempts: 0,
   maxAttempts: 1,
   period: null,
+  nextScheduledAt: new Date(),
   scheduledAt: new Date(),
   actualStartedAt: null,
   actualEndedAt: null,

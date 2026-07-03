@@ -11,6 +11,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
 import {
   Collapsible,
@@ -29,6 +31,11 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   SidebarMenuBadge,
   SidebarMenuButton,
@@ -105,33 +112,71 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               )}
             </div>
           ) : (
-            <ContextMenuTrigger asChild>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton
-                  className="w-full rounded-sm"
-                  onClick={() => {
-                    stationRoutineManager.selectRoutineTag(routineTag.id);
-                    void stationRoutineManager
-                      .toggleRoutineTag(routineTag.id)
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
-                  }}
-                >
-                  {routineTag.isOpen ? <ChevronDown /> : <ChevronRight />}
-                  <span
-                    className="size-3 shrink-0 rounded-[2px] border border-border/60"
-                    style={{ backgroundColor: routineTag.color }}
-                  />
-                  {routineTag.icon && (
-                    <span className="shrink-0 select-none text-sm">
-                      {routineTag.icon}
-                    </span>
-                  )}
-                  <span>{routineTag.name}</span>
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-            </ContextMenuTrigger>
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <ContextMenuTrigger asChild>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className="w-full rounded-sm"
+                      onClick={() => {
+                        stationRoutineManager.selectRoutineTag(routineTag.id);
+                        void stationRoutineManager
+                          .toggleRoutineTag(routineTag.id)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }}
+                    >
+                      {routineTag.isOpen ? <ChevronDown /> : <ChevronRight />}
+                      <span
+                        className="size-3 shrink-0 rounded-[2px] border border-border/60"
+                        style={{ backgroundColor: routineTag.color }}
+                      />
+                      {routineTag.icon && (
+                        <span className="shrink-0 select-none text-sm">
+                          {routineTag.icon}
+                        </span>
+                      )}
+                      <span>{routineTag.name}</span>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                </ContextMenuTrigger>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="right"
+                align="start"
+                sideOffset={8}
+                className="z-[90] w-72 rounded-sm p-3 text-xs"
+              >
+                <HoverDetailCard
+                  title={routineTag.name}
+                  subtitle="Routine Tag"
+                  id={routineTag.id}
+                  rows={[
+                    {
+                      field: "Color",
+                      value: (
+                        <span className="inline-flex min-w-0 items-center justify-end gap-1.5">
+                          <span
+                            className="size-2.5 shrink-0 rounded-[2px] border border-border/60"
+                            style={{ backgroundColor: routineTag.color }}
+                          />
+                          <span className="truncate">{routineTag.color}</span>
+                        </span>
+                      ),
+                    },
+                    { field: "Icon", value: routineTag.icon ?? "None" },
+                    { field: "Routines", value: routineTag.routineCount },
+                    {
+                      field: "Updated",
+                      value: new Date(
+                        routineTag.updatedAt
+                      ).toLocaleDateString(),
+                    },
+                  ]}
+                />
+              </HoverCardContent>
+            </HoverCard>
           )}
 
           <ContextMenuContent className="min-w-40">
@@ -147,7 +192,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 }}
               >
                 <SquarePen className="mr-2 size-4" />
-                Open
+                Open in Inspector
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
@@ -210,6 +255,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuCopyItems id={routineTag.id} name={routineTag.name} />
               <ContextMenuItem
                 onClick={() =>
                   stationRoutineManager.startRenamingRoutineTag(routineTag)

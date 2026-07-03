@@ -105,6 +105,11 @@ function BlockPackEditorIndexRoute() {
 
         if (!isActive) return;
 
+        console.log("blockGroupsAndTheirBlocks response:", {
+          blockPackId: loaderData.blockPackId,
+          response: blockGroupResponse,
+        });
+
         if (!blockPackResponse?.data) {
           setIsNotFound(true);
           setBlockPackMeta(null);

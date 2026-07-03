@@ -35,6 +35,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import NamePatternEditor, {
+  type RoutineTaskNamePattern,
+} from "../NamePatternEditor";
 import { ShelfLocationPicker } from "../PayloadSearchPickers";
 import type {
   PatternBlock,
@@ -47,6 +50,8 @@ interface CreateBlockPackPayloadEditorSidebarProps {
   setTargetSubShelfId: Dispatch<SetStateAction<string>>;
   templateName: string;
   setTemplateName: Dispatch<SetStateAction<string>>;
+  templateNamePattern: RoutineTaskNamePattern;
+  setTemplateNamePattern: Dispatch<SetStateAction<RoutineTaskNamePattern>>;
   blockPackId: string;
   setBlockPackId: Dispatch<SetStateAction<string>>;
   blockId: string;
@@ -67,6 +72,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
   setTargetSubShelfId,
   templateName,
   setTemplateName,
+  templateNamePattern,
+  setTemplateNamePattern,
   blockPackId,
   setBlockPackId,
   blockId,
@@ -237,8 +244,14 @@ const CreateBlockPackPayloadEditorSidebar = ({
             <Input
               value={templateName}
               onChange={event => setTemplateName(event.currentTarget.value)}
+              placeholder="ex. Daily {{date}}"
             />
           </div>
+          <NamePatternEditor
+            label="Name Pattern"
+            pattern={templateNamePattern}
+            onPatternChange={setTemplateNamePattern}
+          />
         </>
       )}
       {purpose === "AppendBlock" && (

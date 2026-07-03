@@ -1,5 +1,5 @@
-import type { PreferencePage } from "@shared/api/hooks/localPreferences.hook";
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+import type { PreferencePage } from "@/hooks/localPreferences";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import type { LucideIcon } from "lucide-react";
 import {
   BellIcon,

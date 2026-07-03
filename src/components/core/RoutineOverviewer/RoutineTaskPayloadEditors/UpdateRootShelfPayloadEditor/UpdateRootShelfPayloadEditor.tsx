@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
+import NamePatternEditor, {
+  type RoutineTaskNamePattern,
+} from "../NamePatternEditor";
 import { RootShelfPicker } from "../PayloadSearchPickers";
 
 interface PayloadEditorProps {
@@ -22,6 +25,7 @@ const UpdateRootShelfPayloadEditor = ({
 }: PayloadEditorProps) => {
   const [rootShelfId, setRootShelfId] = useState("");
   const [name, setName] = useState("");
+  const [namePattern, setNamePattern] = useState<RoutineTaskNamePattern>({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -29,9 +33,11 @@ const UpdateRootShelfPayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setRootShelfId(payload.rootShelfId ?? "");
       setName(payload.name ?? "");
+      setNamePattern(payload.namePattern ?? {});
     } catch {
       setRootShelfId("");
       setName("");
+      setNamePattern({});
     }
   }, [initialPayload, isOpen]);
 
@@ -42,7 +48,11 @@ const UpdateRootShelfPayloadEditor = ({
       title="Update Root Shelf Payload"
       description="Update fields on an existing root shelf."
       payloadPreview={JSON.stringify(
-        { rootShelfId, ...(name.trim() && { name }) },
+        {
+          rootShelfId,
+          ...(name.trim() && { name }),
+          ...(Object.keys(namePattern).length > 0 && { namePattern }),
+        },
         null,
         2
       )}
@@ -60,6 +70,11 @@ const UpdateRootShelfPayloadEditor = ({
           placeholder="(Optional)"
         />
       </div>
+      <NamePatternEditor
+        label="Name Pattern"
+        pattern={namePattern}
+        onPatternChange={setNamePattern}
+      />
     </FormPayloadEditor>
   );
 };

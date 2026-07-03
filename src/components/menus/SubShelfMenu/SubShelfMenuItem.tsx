@@ -7,6 +7,8 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
 import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
 import MaterialMenu from "@/components/menus/MaterialMenu/MaterialMenu";
@@ -29,6 +31,11 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   SidebarMenuButton,
   SidebarMenuItem,
@@ -177,25 +184,63 @@ const SubShelfMenuItem = ({
         style={{ opacity: isDragging ? 0.5 : 1 }}
       >
         <ContextMenu>
-          <ContextMenuTrigger asChild>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton
-                ref={node => {
-                  drop(node);
-                }}
-                className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
-                onClick={async () => {
-                  shelfItemManager.toggleSubShelf(current);
-                  if (!current.isExpanded) {
-                    await shelfItemManager.expandSubShelf(root, current);
-                  }
-                }}
-              >
-                {current.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                <span>{current.name}</span>
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
-          </ContextMenuTrigger>
+          <HoverCard openDelay={250} closeDelay={100}>
+            <HoverCardTrigger asChild>
+              <ContextMenuTrigger asChild>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    ref={node => {
+                      drop(node);
+                    }}
+                    className="w-full rounded-sm whitespace-nowrap text-ellipsis overflow-hidden"
+                    onClick={async () => {
+                      shelfItemManager.toggleSubShelf(current);
+                      if (!current.isExpanded) {
+                        await shelfItemManager.expandSubShelf(root, current);
+                      }
+                    }}
+                  >
+                    {current.isOpen ? (
+                      <ChevronDownIcon />
+                    ) : (
+                      <ChevronRightIcon />
+                    )}
+                    <span>{current.name}</span>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </ContextMenuTrigger>
+            </HoverCardTrigger>
+            <HoverCardContent
+              side="right"
+              align="start"
+              sideOffset={8}
+              className="z-[90] w-72 rounded-sm p-3 text-xs"
+            >
+              <HoverDetailCard
+                title={current.name}
+                subtitle="Sub Shelf"
+                id={current.id}
+                rows={[
+                  {
+                    field: "Sub Shelves",
+                    value: Object.keys(current.children).length,
+                  },
+                  {
+                    field: "Materials",
+                    value: Object.keys(current.materialNodes).length,
+                  },
+                  {
+                    field: "Block Packs",
+                    value: Object.keys(current.blockPackNodes).length,
+                  },
+                  {
+                    field: "Updated",
+                    value: new Date(current.updatedAt).toLocaleDateString(),
+                  },
+                ]}
+              />
+            </HoverCardContent>
+          </HoverCard>
           <ContextMenuContent>
             <ContextMenuLabel>Add</ContextMenuLabel>
             <ContextMenuGroup>
@@ -217,6 +262,7 @@ const SubShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuCopyItems id={current.id} name={current.name} />
               <ContextMenuItem
                 onClick={() =>
                   shelfItemManager.startRenamingSubShelfNode(current)

@@ -119,8 +119,10 @@ export const APIURLPathDictionary = {
     updateMyBlockPackById: "blockPack/updateMyBlockPackById",
     updateMyBlockPacksByIds: "blockPack/updateMyBlockPacksByIds",
     moveMyBlockPackById: "blockPack/moveMyBlockPackById",
-    moveMyBlockPacksByParentSubShelfId: "blockPack/moveMyBlockPacksByParentSubShelfId",
-    moveMyBlockPacksByParentSubShelfIds: "blockPack/moveMyBlockPacksByParentSubShelfIds",
+    moveMyBlockPacksByParentSubShelfId:
+      "blockPack/moveMyBlockPacksByParentSubShelfId",
+    moveMyBlockPacksByParentSubShelfIds:
+      "blockPack/moveMyBlockPacksByParentSubShelfIds",
     restoreMyBlockPackById: "blockPack/restoreMyBlockPackById",
     restoreMyBlockPacksByIds: "blockPack/restoreMyBlockPacksByIds",
     deleteMyBlockPackById: "blockPack/deleteMyBlockPackById",
@@ -152,7 +154,8 @@ export const APIURLPathDictionary = {
       "blockGroup/insertSequentialBlockGroupsAndTheirBlocksByBlockPackId",
     moveMyBlockGroupById: "blockGroup/moveMyBlockGroupById",
     moveMyBlockGroupsByBlockPackId: "blockGroup/moveMyBlockGroupsByBlockPackId",
-    moveMyBlockGroupsByBlockPackIds: "blockGroup/moveMyBlockGroupsByBlockPackIds",
+    moveMyBlockGroupsByBlockPackIds:
+      "blockGroup/moveMyBlockGroupsByBlockPackIds",
     restoreMyBlockGroupById: "blockGroup/restoreMyBlockGroupById",
     restoreMyBlockGroupsByIds: "blockGroup/restoreMyBlockGroupsByIds",
     deleteMyBlockGroupById: "blockGroup/deleteMyBlockGroupById",
@@ -243,8 +246,24 @@ export const APIURLPathDictionary = {
     getAllMyRoutineTasks: "routineTask/getAllMyRoutineTasks",
     createRoutineTaskByStationId: "routineTask/createRoutineTaskByStationId",
     updateMyRoutineTaskById: "routineTask/updateMyRoutineTaskById",
+    pauseMyRoutineTaskById: "routineTask/pauseMyRoutineTaskById",
+    resumeMyRoutineTaskById: "routineTask/resumeMyRoutineTaskById",
     hardDeleteMyRoutineTaskById: "routineTask/hardDeleteMyRoutineTaskById",
     hardDeleteMyRoutineTasksByIds: "routineTask/hardDeleteMyRoutineTasksByIds",
+  },
+  routineTaskRecord: {
+    visualizeMyRoutineTaskRecordStatusCount:
+      "routineTaskRecord/visualizeMyRoutineTaskRecordStatusCount",
+    visualizeMyRoutineTaskRecordPurposeCount:
+      "routineTaskRecord/visualizeMyRoutineTaskRecordPurposeCount",
+    visualizeMyRoutineTaskRecordScheduledAtCount:
+      "routineTaskRecord/visualizeMyRoutineTaskRecordScheduledAtCount",
+    visualizeMyRoutineTaskRecordActualStartedAtCount:
+      "routineTaskRecord/visualizeMyRoutineTaskRecordActualStartedAtCount",
+    visualizeMyRoutineTaskRecordActualEndedAtCount:
+      "routineTaskRecord/visualizeMyRoutineTaskRecordActualEndedAtCount",
+    getAllMyRoutineTaskRecordsByRoutineTaskId:
+      "routineTaskRecord/getAllMyRoutineTaskRecordsByRoutineTaskId",
   },
 };
 

@@ -17,3 +17,4 @@ export * from "./useTheme";
 export * from "./useThemeStore";
 export * from "./useUser";
 export * from "./useWidget";
+export * from "./localPreferences";

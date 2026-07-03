@@ -13,6 +13,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
 import {
@@ -113,30 +115,59 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               )}
             </div>
           ) : (
-            <ContextMenuTrigger asChild>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton
-                  className="w-full rounded-sm pr-24"
-                  onClick={() => {
-                    void stationRoutineManager
-                      .toggleStation(station.id)
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
-                  }}
-                >
-                  {station.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                  {station.icon ? (
-                    <span className="shrink-0 select-none text-sm">
-                      {station.icon}
-                    </span>
-                  ) : (
-                    <TrainStationIcon size={16} />
-                  )}
-                  <span className="min-w-0 truncate">{station.name}</span>
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-            </ContextMenuTrigger>
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <ContextMenuTrigger asChild>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className="w-full rounded-sm pr-24"
+                      onClick={() => {
+                        void stationRoutineManager
+                          .toggleStation(station.id)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }}
+                    >
+                      {station.isOpen ? (
+                        <ChevronDownIcon />
+                      ) : (
+                        <ChevronRightIcon />
+                      )}
+                      {station.icon ? (
+                        <span className="shrink-0 select-none text-sm">
+                          {station.icon}
+                        </span>
+                      ) : (
+                        <TrainStationIcon size={16} />
+                      )}
+                      <span className="min-w-0 truncate">{station.name}</span>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                </ContextMenuTrigger>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="right"
+                align="start"
+                sideOffset={8}
+                className="z-[90] w-72 rounded-sm p-3 text-xs"
+              >
+                <HoverDetailCard
+                  title={station.name}
+                  subtitle="Station"
+                  id={station.id}
+                  rows={[
+                    {
+                      field: "Description",
+                      value: station.description || "None",
+                    },
+                    { field: "Routines", value: station.routineCount },
+                    { field: "Tasks", value: routineTaskCount },
+                    { field: "Permission", value: station.permission },
+                  ]}
+                />
+              </HoverCardContent>
+            </HoverCard>
           )}
           <ContextMenuContent className="min-w-40">
             <ContextMenuLabel>View</ContextMenuLabel>
@@ -188,6 +219,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuCopyItems id={station.id} name={station.name} />
               <ContextMenuItem
                 onClick={() =>
                   stationRoutineManager.startRenamingStation(station)

@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Copy,
   FileText,
+  HistoryIcon,
   LoaderCircle,
   Package,
   PackagePlus,
@@ -19,7 +20,10 @@ import {
   Tags,
   Trash2,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
+import RoutineTaskRecordDialog from "@/components/core/RoutineOverviewer/RoutineTaskRecordDialog";
 import RoutineTaskMenu from "@/components/menus/RoutineTaskMenu/RoutineTaskMenu";
 import {
   Collapsible,
@@ -39,6 +43,11 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
@@ -62,6 +71,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
   const shelfItemManager = useShelfItem();
+  const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
 
   const searchedItems =
     shelfItemManager.itemSearch.data?.searchItems?.searchEdges?.map(edge => {
@@ -153,33 +163,77 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               )}
             </div>
           ) : (
-            <ContextMenuTrigger asChild>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuSubButton
-                  isActive={
-                    stationRoutineManager.selectedRoutineId === routine.id
-                  }
-                  className="cursor-pointer select-none"
-                  onClick={() => {
-                    stationRoutineManager.selectStation(station.id);
-                    stationRoutineManager.selectRoutine(routine.id);
-                    void stationRoutineManager
-                      .toggleRoutine(station.id, routine.id)
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
-                  }}
-                >
-                  {routine.isOpen ? <ChevronDown /> : <ChevronRight />}
-                  <span>{routine.title}</span>
-                </SidebarMenuSubButton>
-              </CollapsibleTrigger>
-            </ContextMenuTrigger>
+            <HoverCard openDelay={250} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <ContextMenuTrigger asChild>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuSubButton
+                      isActive={
+                        stationRoutineManager.selectedRoutineId === routine.id
+                      }
+                      className="cursor-pointer select-none"
+                      onClick={() => {
+                        stationRoutineManager.selectStation(station.id);
+                        stationRoutineManager.selectRoutine(routine.id);
+                        void stationRoutineManager
+                          .toggleRoutine(station.id, routine.id)
+                          .catch(error =>
+                            toast.error(languageManager.tError(error))
+                          );
+                      }}
+                    >
+                      {routine.isOpen ? <ChevronDown /> : <ChevronRight />}
+                      <span>{routine.title}</span>
+                    </SidebarMenuSubButton>
+                  </CollapsibleTrigger>
+                </ContextMenuTrigger>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="right"
+                align="start"
+                sideOffset={8}
+                className="z-[90] w-80 rounded-sm p-3 text-xs"
+              >
+                <HoverDetailCard
+                  title={routine.title}
+                  subtitle="Routine"
+                  id={routine.id}
+                  rows={[
+                    {
+                      field: "Station",
+                      value: station.name,
+                    },
+                    {
+                      field: "Description",
+                      value: routine.description || "None",
+                    },
+                    { field: "Status", value: routine.status },
+                    { field: "Period", value: routine.period ?? "One-shot" },
+                    { field: "Tags", value: routine.routineTagIds.length },
+                    { field: "Tasks", value: routine.routineTaskIds.length },
+                    {
+                      field: "Start",
+                      value: new Date(
+                        routine.scheduledStartAt
+                      ).toLocaleString(),
+                    },
+                    {
+                      field: "End",
+                      value: new Date(routine.scheduledEndAt).toLocaleString(),
+                    },
+                  ]}
+                />
+              </HoverCardContent>
+            </HoverCard>
           )}
 
           <ContextMenuContent className="min-w-44">
             <ContextMenuLabel>View</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuItem onClick={() => setIsRecordDialogOpen(true)}>
+                <HistoryIcon className="mr-2 size-4" />
+                View all task records
+              </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
                   stationRoutineManager.selectStation(station.id);
@@ -467,6 +521,11 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
+              <ContextMenuCopyItems
+                id={routine.id}
+                name={routine.title}
+                nameLabel="Title"
+              />
               <ContextMenuItem
                 onClick={() =>
                   stationRoutineManager.startRenamingRoutine(routine)
@@ -490,6 +549,12 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
             </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
+        <RoutineTaskRecordDialog
+          open={isRecordDialogOpen}
+          onOpenChange={setIsRecordDialogOpen}
+          routineTitle={routine.title}
+          routineTaskIds={routine.routineTaskIds}
+        />
 
         {!stationRoutineManager.isRoutineEditing(routine.id) && (
           <CollapsibleContent>

@@ -25,6 +25,7 @@ interface CreateBlockPackPayloadTemplateEditorProps {
   onRemovePatternBlock: (blockId: string) => void;
   onClose: () => void;
   onConfirm: (payload: string) => void;
+  isSaveDisabled?: boolean;
 }
 
 const CreateBlockPackPayloadTemplateEditor = ({
@@ -37,6 +38,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
   onRemovePatternBlock,
   onClose,
   onConfirm,
+  isSaveDisabled = false,
 }: CreateBlockPackPayloadTemplateEditorProps) => (
   <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-background/30">
     <div
@@ -143,6 +145,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
         type="button"
         variant="outline"
         size="sm"
+        disabled={isSaveDisabled}
         onClick={() => {
           onConfirm(payloadPreview);
           onClose();

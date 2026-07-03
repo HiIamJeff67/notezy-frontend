@@ -1,4 +1,4 @@
-import { Chart } from "@shared/charts/components";
+import { IntChart } from "@shared/charts/components";
 import type {
   TwoDimensionalChartType,
   TwoDimensionalData,
@@ -65,7 +65,7 @@ const AddChartDialog = ({
       </DialogHeader>
       <div className="custom-scrollbar min-h-0 overflow-y-auto px-6 py-5">
         <div className="flex flex-col gap-6">
-          {(["Overall", "Routine", "Routine Task"] as const).map((section) => (
+          {(["Overall", "Routine", "Routine Task"] as const).map(section => (
             <fieldset
               className="min-w-0 rounded-md border border-border/70 px-4 pb-4"
               key={section}
@@ -75,8 +75,8 @@ const AddChartDialog = ({
               </legend>
               <div className="grid min-w-0 grid-cols-1 gap-3 pt-2 sm:grid-cols-2 lg:grid-cols-3">
                 {Object.values(CHART_DEFINITIONS)
-                  .filter((definition) => definition.section === section)
-                  .map((definition) => {
+                  .filter(definition => definition.section === section)
+                  .map(definition => {
                     const chartType: TwoDimensionalChartType =
                       definition.id === "routine:statusCount"
                         ? "pie"
@@ -92,7 +92,7 @@ const AddChartDialog = ({
                           ? timePreviewData
                           : categoricalPreviewData;
                     const isActive = activeChartComponentIds.includes(
-                      definition.id,
+                      definition.id
                     );
 
                     return (
@@ -100,7 +100,7 @@ const AddChartDialog = ({
                         className={cn(
                           "group relative z-0 flex min-w-0 cursor-pointer flex-col rounded-md border border-border/70 bg-background p-3 text-left transition-colors hover:z-10 hover:border-primary/45",
                           isActive &&
-                            "cursor-not-allowed opacity-55 hover:border-border/70",
+                            "cursor-not-allowed opacity-55 hover:border-border/70"
                         )}
                         disabled={isActive}
                         key={definition.id}
@@ -116,7 +116,7 @@ const AddChartDialog = ({
                         </p>
                         <div className="relative mt-2 min-w-0 overflow-visible rounded-sm border border-border/60 bg-muted/45">
                           <div className="pointer-events-none min-w-0 p-2">
-                            <Chart
+                            <IntChart
                               ariaLabel={`${definition.title} chart preview`}
                               chartType={chartType}
                               data={data}
@@ -129,15 +129,12 @@ const AddChartDialog = ({
                               }}
                               showGrid={false}
                               showLegend={false}
-                              valueMode={
-                                chartType === "line" ? "continuous" : "integer"
-                              }
                             />
                           </div>
                           <div
                             className={cn(
                               "absolute inset-0 z-40 flex items-center justify-center rounded-sm bg-background/85 text-sm font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100",
-                              isActive && "opacity-100",
+                              isActive && "opacity-100"
                             )}
                           >
                             {isActive ? "已加入" : "點擊以新增"}

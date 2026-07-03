@@ -1,4 +1,4 @@
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import { ClipboardIcon, HardDriveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";

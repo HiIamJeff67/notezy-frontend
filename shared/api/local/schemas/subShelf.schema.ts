@@ -1,12 +1,11 @@
 import { BlockPack, RootShelf } from "@shared/api/local/schemas";
 import { UUID } from "crypto";
-import { isNotNull, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   foreignKey,
   integer,
   sqliteTable,
   text,
-  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 // the same schemas as the subShelf in api interface
@@ -32,9 +31,6 @@ export const SubShelf = sqliteTable(
       .default(new Date()),
   },
   table => [
-    uniqueIndex("sub_shelf_unique_idx_name_root_shelf_id_path")
-      .on(table.name, table.rootShelfId, table.path)
-      .where(isNotNull(table.deletedAt)),
     foreignKey({
       columns: [table.prevSubShelfId],
       foreignColumns: [table.id],

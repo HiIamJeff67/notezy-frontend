@@ -25,6 +25,9 @@ export const RoutineTask = sqliteTable("RoutineTaskTable", {
   attempts: integer("attempts").notNull().default(0),
   maxAttempts: integer("max_attempts").notNull().default(1),
   period: text("period").$type<RoutinePeriod>(),
+  nextScheduledAt: integer("next_scheduled_at", { mode: "timestamp" })
+    .notNull()
+    .default(new Date()),
   scheduledAt: integer("scheduled_at", { mode: "timestamp" })
     .notNull()
     .default(new Date()),

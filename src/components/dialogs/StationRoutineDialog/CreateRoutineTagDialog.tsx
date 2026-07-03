@@ -103,7 +103,6 @@ const CreateRoutineTagDialog = ({
                 value={icon}
                 onValueChange={setIcon}
                 disabled={stationRoutineManager.isCreatingRoutineTag}
-                className="bg-card/45"
               />
             </div>
 
@@ -113,7 +112,6 @@ const CreateRoutineTagDialog = ({
                 value={color}
                 onValueChange={setColor}
                 disabled={stationRoutineManager.isCreatingRoutineTag}
-                className="bg-card/45"
               />
             </div>
           </div>

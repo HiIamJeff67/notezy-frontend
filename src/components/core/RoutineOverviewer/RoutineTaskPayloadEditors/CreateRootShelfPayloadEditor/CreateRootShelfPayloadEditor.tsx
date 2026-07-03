@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
+import NamePatternEditor, {
+  type RoutineTaskNamePattern,
+} from "../NamePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -20,13 +23,17 @@ const CreateRootShelfPayloadEditor = ({
   onConfirm,
 }: PayloadEditorProps) => {
   const [name, setName] = useState("");
+  const [namePattern, setNamePattern] = useState<RoutineTaskNamePattern>({});
 
   useEffect(() => {
     if (!isOpen) return;
     try {
-      setName(JSON.parse(initialPayload).name ?? "");
+      const payload = JSON.parse(initialPayload);
+      setName(payload.name ?? "");
+      setNamePattern(payload.namePattern ?? {});
     } catch {
       setName("");
+      setNamePattern({});
     }
   }, [initialPayload, isOpen]);
 
@@ -36,7 +43,14 @@ const CreateRootShelfPayloadEditor = ({
       purpose={purpose}
       title="Create Root Shelf Payload"
       description="Create an empty root shelf."
-      payloadPreview={JSON.stringify({ ...(name.trim() && { name }) }, null, 2)}
+      payloadPreview={JSON.stringify(
+        {
+          ...(name.trim() && { name }),
+          ...(Object.keys(namePattern).length > 0 && { namePattern }),
+        },
+        null,
+        2
+      )}
       contentWidthClassName="!w-[min(900px,94vw)]"
       formWidthClassName="max-w-[420px]"
       onClose={onClose}
@@ -50,6 +64,11 @@ const CreateRootShelfPayloadEditor = ({
           placeholder="ex. School"
         />
       </div>
+      <NamePatternEditor
+        label="Name Pattern"
+        pattern={namePattern}
+        onPatternChange={setNamePattern}
+      />
     </FormPayloadEditor>
   );
 };

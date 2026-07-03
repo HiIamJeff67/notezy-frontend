@@ -65,6 +65,14 @@ export function PieChart<TMeta = unknown>({
     value: Math.max(0, Number.isFinite(slice.value) ? slice.value : 0),
   }));
   const total = positiveSlices.reduce((sum, slice) => sum + slice.value, 0);
+  const activeValue = active?.value ?? total;
+  const activePercentage =
+    total > 0
+      ? new Intl.NumberFormat(undefined, {
+          maximumFractionDigits: 1,
+          style: "percent",
+        }).format(activeValue / total)
+      : "0%";
   let currentAngle = -90;
   const geometries =
     total > 0
@@ -180,16 +188,19 @@ export function PieChart<TMeta = unknown>({
           );
         })}
         {innerRadius > 0 && (
-          <text
-            fill="var(--muted-foreground)"
-            fontSize={12}
-            textAnchor="middle"
-            x={centerX}
-            y={centerY + 4}
-          >
-            {valueFormatter(
-              geometries.reduce((total, geometry) => total + geometry.value, 0)
-            )}
+          <text fill="var(--muted-foreground)" textAnchor="middle" x={centerX}>
+            <tspan
+              className="fill-foreground"
+              fontSize={14}
+              fontWeight={600}
+              x={centerX}
+              y={centerY - 2}
+            >
+              {valueFormatter(activeValue)}
+            </tspan>
+            <tspan fontSize={11} x={centerX} y={centerY + 14}>
+              {activePercentage}
+            </tspan>
           </text>
         )}
       </g>

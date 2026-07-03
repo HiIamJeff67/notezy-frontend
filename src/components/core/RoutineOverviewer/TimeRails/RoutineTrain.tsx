@@ -3,6 +3,7 @@ import type { RoutineNode } from "@shared/types/routineNode.type";
 import { cn } from "@shared/util/utils";
 import { Bookmark } from "lucide-react";
 import type { PointerEvent } from "react";
+import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   HoverCard,
   HoverCardContent,
@@ -93,26 +94,26 @@ const RoutineTrain = ({
       <HoverCardContent
         align="center"
         side="bottom"
-        className="w-80 rounded-sm p-3"
+        className="w-80 rounded-sm p-3 text-xs"
       >
-        <div className="space-y-2">
-          <div>
-            <p className="truncate text-sm font-medium">{routine.title}</p>
-            <p className="text-xs text-muted-foreground">{stationName}</p>
-          </div>
-          <div className="grid grid-cols-[72px_1fr] gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Status</span>
-            <span>{routine.status}</span>
-            <span className="text-muted-foreground">Start</span>
-            <span>{routine.scheduledStartAt.toLocaleString()}</span>
-            <span className="text-muted-foreground">End</span>
-            <span>{routine.scheduledEndAt.toLocaleString()}</span>
-            <span className="text-muted-foreground">Tags</span>
-            <span>
-              {tagNames.length > 0 ? tagNames.join(", ") : "Untagged"}
-            </span>
-          </div>
-        </div>
+        <HoverDetailCard
+          title={routine.title}
+          subtitle={stationName}
+          id={routine.id}
+          rows={[
+            { field: "Status", value: routine.status },
+            { field: "Period", value: routine.period ?? "One-shot" },
+            {
+              field: "Start",
+              value: routine.scheduledStartAt.toLocaleString(),
+            },
+            { field: "End", value: routine.scheduledEndAt.toLocaleString() },
+            {
+              field: "Tags",
+              value: tagNames.length > 0 ? tagNames.join(", ") : "Untagged",
+            },
+          ]}
+        />
       </HoverCardContent>
     </HoverCard>
   );

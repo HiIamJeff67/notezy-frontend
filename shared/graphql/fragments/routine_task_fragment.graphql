@@ -9,11 +9,13 @@ fragment FragmentedBasicPrivateRoutineTask on PrivateRoutineTask {
   attempts
   maxAttempts
   period
+  nextScheduledAt
   scheduledAt
   actualStartedAt
   actualEndedAt
   updatedAt
   createdAt
+  routineIds
 }
 
 fragment FragmentedPrivateRoutineTask on PrivateRoutineTask {

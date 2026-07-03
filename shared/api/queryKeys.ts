@@ -265,4 +265,86 @@ export const queryKeys = {
         areDeleted,
       ] as const,
   },
+  routineTaskRecord: {
+    all: () => ["routineTaskRecord"] as const,
+    recentByRoutineTaskId: (routineTaskId?: UUID, limit?: number) =>
+      [
+        "routineTaskRecord",
+        "recentByRoutineTaskId",
+        routineTaskId,
+        limit,
+      ] as const,
+    visualizeMyStatusCount: (permission?: string, routineTaskIds?: UUID[]) =>
+      [
+        "routineTaskRecord",
+        "visualizeMyStatusCount",
+        permission,
+        routineTaskIds && routineTaskIds.length > 0
+          ? routineTaskIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+    visualizeMyPurposeCount: (permission?: string, routineTaskIds?: UUID[]) =>
+      [
+        "routineTaskRecord",
+        "visualizeMyPurposeCount",
+        permission,
+        routineTaskIds && routineTaskIds.length > 0
+          ? routineTaskIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+    visualizeMyScheduledAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date,
+      routineTaskIds?: UUID[]
+    ) =>
+      [
+        "routineTaskRecord",
+        "visualizeMyScheduledAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+        routineTaskIds && routineTaskIds.length > 0
+          ? routineTaskIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+    visualizeMyActualStartedAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date,
+      routineTaskIds?: UUID[]
+    ) =>
+      [
+        "routineTaskRecord",
+        "visualizeMyActualStartedAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+        routineTaskIds && routineTaskIds.length > 0
+          ? routineTaskIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+    visualizeMyActualEndedAtCount: (
+      permission?: string,
+      timeHourUnit?: number,
+      startedAt?: Date,
+      endedAt?: Date,
+      routineTaskIds?: UUID[]
+    ) =>
+      [
+        "routineTaskRecord",
+        "visualizeMyActualEndedAtCount",
+        permission,
+        timeHourUnit,
+        startedAt?.getTime(),
+        endedAt?.getTime(),
+        routineTaskIds && routineTaskIds.length > 0
+          ? routineTaskIds.slice().sort().join(",")
+          : undefined,
+      ] as const,
+  },
 };

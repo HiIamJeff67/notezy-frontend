@@ -9,6 +9,7 @@ import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import ColorSelector from "@/components/commons/ColorSelector/ColorSelector";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
+import InspectorLoadingCover from "@/components/inspectors/InspectorLoadingCover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,102 +140,102 @@ const RoutineTagInspector = ({
         overlayClassName="z-[110]"
         className="z-[110] flex h-full w-full flex-col gap-0 bg-muted p-0 sm:max-w-md"
       >
-        <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
-          <SheetTitle className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0">Edit routine tag of </span>
-            <span className="min-w-0 truncate text-foreground">
-              "{values.name || "Routine tag"}"
-            </span>
-          </SheetTitle>
-          <SheetDescription>
-            Change the classification used to group routines.
-          </SheetDescription>
-          {isLoadingRoutineTagDetail && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Spinner />
-              Loading routine tag details
-            </div>
-          )}
-        </SheetHeader>
+        <div className="relative flex h-full min-h-0 w-full flex-col">
+          <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
+            <SheetTitle className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0">Edit routine tag of </span>
+              <span className="min-w-0 truncate text-foreground">
+                "{values.name || "Routine tag"}"
+              </span>
+            </SheetTitle>
+            <SheetDescription>
+              Change the classification used to group routines.
+            </SheetDescription>
+          </SheetHeader>
+          <InspectorLoadingCover
+            label="Loading"
+            show={isLoadingRoutineTagDetail}
+          />
 
-        <form
-          autoComplete="off"
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={async event => {
-            event.preventDefault();
-            await saveRoutineTag();
-          }}
-        >
-          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="routine-tag-inspector-name">Name</Label>
-              <Input
-                id="routine-tag-inspector-name"
-                value={values.name}
-                autoComplete="off"
-                maxLength={128}
-                autoFocus
-                onChange={event => {
-                  const name = event.currentTarget.value;
-                  setValues(current => ({
-                    ...current,
-                    name,
-                  }));
-                }}
-              />
-            </div>
-
-            <div className="flex items-end gap-4">
-              <div className="flex shrink-0 flex-col gap-2">
-                <Label>Color</Label>
-                <ColorSelector
-                  value={values.color}
-                  onValueChange={color =>
-                    setValues(current => ({ ...current, color }))
-                  }
-                  disabled={stationRoutineManager.isUpdatingRoutineTag}
-                  className="bg-muted"
+          <form
+            autoComplete="off"
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={async event => {
+              event.preventDefault();
+              await saveRoutineTag();
+            }}
+          >
+            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-tag-inspector-name">Name</Label>
+                <Input
+                  id="routine-tag-inspector-name"
+                  value={values.name}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => {
+                    const name = event.currentTarget.value;
+                    setValues(current => ({
+                      ...current,
+                      name,
+                    }));
+                  }}
                 />
               </div>
 
-              <div className="flex shrink-0 flex-col gap-2">
-                <Label>Icon</Label>
-                <SupportedIconTable
-                  value={values.icon}
-                  onValueChange={icon =>
-                    setValues(current => ({ ...current, icon }))
-                  }
-                  disabled={stationRoutineManager.isUpdatingRoutineTag}
-                  className="bg-muted"
-                />
+              <div className="flex items-end gap-4">
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Color</Label>
+                  <ColorSelector
+                    value={values.color}
+                    onValueChange={color =>
+                      setValues(current => ({ ...current, color }))
+                    }
+                    disabled={stationRoutineManager.isUpdatingRoutineTag}
+                    className="bg-muted"
+                  />
+                </div>
+
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Icon</Label>
+                  <SupportedIconTable
+                    value={values.icon}
+                    onValueChange={icon =>
+                      setValues(current => ({ ...current, icon }))
+                    }
+                    disabled={stationRoutineManager.isUpdatingRoutineTag}
+                    className="bg-muted"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          <SheetFooter className="shrink-0 flex-col gap-2 border-t border-border px-6 py-5 sm:flex-col sm:space-x-0">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={
-                stationRoutineManager.isUpdatingRoutineTag ||
-                isLoadingRoutineTagDetail ||
-                values.name.trim().length === 0
-              }
-            >
-              {stationRoutineManager.isUpdatingRoutineTag && <Spinner />}
-              Save
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="w-full"
-              disabled={stationRoutineManager.isUpdatingRoutineTag}
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-          </SheetFooter>
-        </form>
+            <SheetFooter className="shrink-0 flex-col gap-2 border-t border-border px-6 py-5 sm:flex-col sm:space-x-0">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  stationRoutineManager.isUpdatingRoutineTag ||
+                  isLoadingRoutineTagDetail ||
+                  values.name.trim().length === 0
+                }
+              >
+                {stationRoutineManager.isUpdatingRoutineTag && <Spinner />}
+                Save
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="w-full"
+                disabled={stationRoutineManager.isUpdatingRoutineTag}
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+            </SheetFooter>
+          </form>
+        </div>
       </SheetContent>
     </Sheet>
   );

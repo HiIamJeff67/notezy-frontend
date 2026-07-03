@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import FormPayloadEditor from "../FormPayloadEditor";
+import NamePatternEditor, {
+  type RoutineTaskNamePattern,
+} from "../NamePatternEditor";
 import { StationPicker } from "../PayloadSearchPickers";
 
 interface PayloadEditorProps {
@@ -36,6 +39,7 @@ const CreateRoutinePayloadEditor = ({
 }: PayloadEditorProps) => {
   const [stationId, setStationId] = useState("");
   const [title, setTitle] = useState("");
+  const [titlePattern, setTitlePattern] = useState<RoutineTaskNamePattern>({});
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Scheduled");
   const [isPinned, setIsPinned] = useState(false);
@@ -52,6 +56,7 @@ const CreateRoutinePayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setStationId(payload.stationId ?? "");
       setTitle(payload.title ?? "");
+      setTitlePattern(payload.titlePattern ?? {});
       setDescription(payload.description ?? "");
       setStatus(payload.status ?? "Scheduled");
       setIsPinned(Boolean(payload.isPinned));
@@ -72,6 +77,7 @@ const CreateRoutinePayloadEditor = ({
     } catch {
       setStationId("");
       setTitle("");
+      setTitlePattern({});
       setDescription("");
       setStatus("Scheduled");
       setIsPinned(false);
@@ -92,6 +98,7 @@ const CreateRoutinePayloadEditor = ({
         {
           stationId,
           ...(title.trim() && { title: title.trim() }),
+          ...(Object.keys(titlePattern).length > 0 && { titlePattern }),
           description,
           status,
           isPinned,
@@ -117,6 +124,7 @@ const CreateRoutinePayloadEditor = ({
           <Input
             value={title}
             onChange={event => setTitle(event.target.value)}
+            placeholder="ex. Review {{date}}"
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -135,6 +143,11 @@ const CreateRoutinePayloadEditor = ({
           </Select>
         </div>
       </div>
+      <NamePatternEditor
+        label="Title Pattern"
+        pattern={titlePattern}
+        onPatternChange={setTitlePattern}
+      />
       <div className="flex flex-col gap-2">
         <Label>Description</Label>
         <Textarea

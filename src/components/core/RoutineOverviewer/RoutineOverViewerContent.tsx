@@ -24,6 +24,7 @@ import RoutineOverviewerCharts from "./RoutineOverviewerCharts";
 
 import RoutineScopeBar from "./RoutineScopeBar";
 import RoutineTable from "./RoutineTable";
+import RoutineTaskRecordTable from "./RoutineTaskRecordTable";
 import RoutineTaskTable from "./RoutineTaskTable";
 import TimeRails from "./TimeRails/TimeRails";
 
@@ -271,6 +272,7 @@ const RoutineOverviewerContent = ({
           )}
           <RoutineTable />
           <RoutineTaskTable />
+          <RoutineTaskRecordTable />
         </div>
       </div>
       {showCharts && (

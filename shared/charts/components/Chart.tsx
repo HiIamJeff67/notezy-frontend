@@ -14,7 +14,7 @@ import { ColumnChart } from "./ColumnChart";
 import { LineChart } from "./LineChart";
 import { PieChart } from "./PieChart";
 
-interface BaseChartProps<TMeta = unknown> {
+export interface BaseChartProps<TMeta = unknown> {
   data: TwoDimensionalData<TMeta>;
   chartType: TwoDimensionalChartType;
   series: ChartSeries;
@@ -69,5 +69,17 @@ export function Chart<TMeta = unknown>({
     );
   }
 
-  return <LineChart {...props} data={cartesianData} />;
+  return <LineChart {...props} data={cartesianData} valueMode={valueMode} />;
+}
+
+export function IntChart<TMeta = unknown>({
+  ...props
+}: Omit<BaseChartProps<TMeta>, "valueMode">) {
+  return <Chart {...props} valueMode="integer" />;
+}
+
+export function FloatChart<TMeta = unknown>({
+  ...props
+}: Omit<BaseChartProps<TMeta>, "valueMode">) {
+  return <Chart {...props} valueMode="continuous" />;
 }

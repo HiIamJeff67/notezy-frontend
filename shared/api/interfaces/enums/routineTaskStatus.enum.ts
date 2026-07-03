@@ -3,9 +3,6 @@ export enum RoutineTaskStatus {
   Waiting = "Waiting",
   Running = "Running",
   Pause = "Pause",
-  Cancel = "Cancel",
-  Success = "Success",
-  Fail = "Fail",
 }
 
 export const AllRoutineTaskStatuses: RoutineTaskStatus[] =

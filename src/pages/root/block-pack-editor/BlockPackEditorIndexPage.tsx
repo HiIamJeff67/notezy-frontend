@@ -35,7 +35,7 @@ const BlockPackEditorIndexPage = () => {
         Ready to start a new block pack space?
       </div>
       <Input
-        placeholder="type your new and unique shelf name here"
+        placeholder="type your new shelf name here"
         value={newShelfName}
         onChange={e => setNewShelfName(e.target.value)}
         className="w-2/3"

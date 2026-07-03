@@ -2,8 +2,8 @@ import type {
   EditorWidth,
   PasteBehavior,
   StartSurface,
-} from "@shared/api/hooks/localPreferences.hook";
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+} from "@/hooks/localPreferences";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import { KeyboardIcon } from "lucide-react";
 import {
   Select,

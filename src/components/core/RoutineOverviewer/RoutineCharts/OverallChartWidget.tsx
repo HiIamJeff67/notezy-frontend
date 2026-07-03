@@ -1,6 +1,6 @@
 import { useVisualizeMyTotalCount } from "@shared/api/hooks/station.hook";
 import { AccessControlPermission } from "@shared/api/interfaces/enums";
-import { Chart } from "@shared/charts/components";
+import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
 import type { OverallChartType } from "./chartWidget.type";
@@ -31,7 +31,7 @@ const OverallChartWidget = ({
       onValueChange={onChartTypeChange}
       onRemove={onRemove}
     >
-      <Chart
+      <IntChart
         ariaLabel="Workspace total counts"
         chartType="column"
         data={{ data: displayPoints }}
@@ -44,7 +44,6 @@ const OverallChartWidget = ({
           color: "var(--chart-1)",
         }}
         showLegend={false}
-        valueMode="integer"
       />
     </ChartWidgetFrame>
   );

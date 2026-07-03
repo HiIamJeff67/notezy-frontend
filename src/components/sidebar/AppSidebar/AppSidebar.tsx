@@ -173,8 +173,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
               onClick={() =>
                 modalManager.open("CreateShelfItemDialog", {
                   dialogHeader: "Create a root shelf",
-                  dialogDescription:
-                    "Typing an new name of the created root shelf. Note that duplicate root shelf name is not allowed.",
+                  dialogDescription: "Type a name for the new root shelf.",
                   disableInput: false,
                   inputPlaceholder: "Type new name here",
                   onCreate: async (newRootShelfName: string) => {
@@ -231,14 +230,14 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                       <SidebarMenuSubItem className="w-full">
                         <StationMenu />
                         <div className="my-2 flex flex-col gap-1 border-t border-sidebar-border pt-2">
-                          <div className="flex h-7 items-center justify-between px-2 text-xs text-muted-foreground">
+                          <div className="group/routine-tags-label flex h-7 items-center justify-between px-2 text-xs text-muted-foreground">
                             <div className="flex min-w-0 items-center gap-2">
                               <TagIcon className="size-3.5 shrink-0" />
                               <span className="truncate">Routine tags</span>
                             </div>
                             <button
                               type="button"
-                              className="flex size-5 shrink-0 items-center justify-center rounded-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              className="flex size-5 shrink-0 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/routine-tags-label:opacity-100 focus-visible:opacity-100"
                               aria-label="Create routine tag"
                               title="Create routine tag"
                               onClick={() =>

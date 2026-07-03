@@ -5,7 +5,7 @@ import {
   useVisualizeMyRoutineStatusCount,
 } from "@shared/api/hooks/routine.hook";
 import { AccessControlPermission } from "@shared/api/interfaces/enums";
-import { Chart } from "@shared/charts/components";
+import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
 import type { RoutineChartType } from "./chartWidget.type";
@@ -75,9 +75,6 @@ const RoutineChartWidget = ({
   const points = query.data?.data.data ?? [];
   const displayPoints =
     query.isError || !hasPositiveChartValue(points) ? [] : points;
-  const valueMode = displayPoints.some(point => !Number.isInteger(point.value))
-    ? "continuous"
-    : "integer";
   const data = { data: displayPoints };
   const series = {
     id: "routineCount",
@@ -105,7 +102,7 @@ const RoutineChartWidget = ({
       onValueChange={onChartTypeChange}
       onRemove={onRemove}
     >
-      <Chart
+      <IntChart
         ariaLabel={`Routine ${chartType}`}
         chartType={chartKind}
         data={data}
@@ -115,7 +112,6 @@ const RoutineChartWidget = ({
         loading={query.isPending}
         series={series}
         showLegend={chartKind === "pie"}
-        valueMode={valueMode}
       />
     </ChartWidgetFrame>
   );

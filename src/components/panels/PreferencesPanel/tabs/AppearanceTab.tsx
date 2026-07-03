@@ -1,8 +1,8 @@
 import type {
   Density,
   PanelDock,
-} from "@shared/api/hooks/localPreferences.hook";
-import { useLocalPreferences } from "@shared/api/hooks/localPreferences.hook";
+} from "@/hooks/localPreferences";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import {
   Select,
   SelectContent,
