@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -23,17 +23,17 @@ const CreateRootShelfPayloadEditor = ({
   onConfirm,
 }: PayloadEditorProps) => {
   const [name, setName] = useState("");
-  const [namePattern, setNamePattern] = useState<RoutineTaskNamePattern>({});
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
 
   useEffect(() => {
     if (!isOpen) return;
     try {
       const payload = JSON.parse(initialPayload);
       setName(payload.name ?? "");
-      setNamePattern(payload.namePattern ?? {});
+      setPattern(payload.pattern ?? {});
     } catch {
       setName("");
-      setNamePattern({});
+      setPattern({});
     }
   }, [initialPayload, isOpen]);
 
@@ -46,7 +46,7 @@ const CreateRootShelfPayloadEditor = ({
       payloadPreview={JSON.stringify(
         {
           ...(name.trim() && { name }),
-          ...(Object.keys(namePattern).length > 0 && { namePattern }),
+          ...(Object.keys(pattern).length > 0 && { pattern }),
         },
         null,
         2
@@ -64,10 +64,10 @@ const CreateRootShelfPayloadEditor = ({
           placeholder="ex. School"
         />
       </div>
-      <NamePatternEditor
-        label="Name Pattern"
-        pattern={namePattern}
-        onPatternChange={setNamePattern}
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
       />
     </FormPayloadEditor>
   );

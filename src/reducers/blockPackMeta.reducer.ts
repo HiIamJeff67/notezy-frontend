@@ -3,18 +3,6 @@ import { SupportedIcon } from "@shared/api/interfaces/enums/supportedIcon.enum";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";
 
-export interface BlockGroupMeta {
-  id: UUID;
-  blockPackId: UUID;
-  prevBlockGroupId: UUID | null;
-  syncBlockGroupId: UUID | null;
-  size: number;
-  deletedAt: Date | null;
-  updatedAt: Date;
-  createdAt: Date;
-  rawArborizedEditableBlock: PartialBlock;
-}
-
 export interface BlockPackMeta {
   id: UUID;
   parentId: UUID;
@@ -27,26 +15,8 @@ export interface BlockPackMeta {
   deletedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
-  blockGroups: BlockGroupMeta[];
+  blocks: PartialBlock[];
 }
-
-export const getDefaultBlockGroupMeta = (
-  blockGroupId: UUID,
-  blockPackId: UUID,
-  prevBlockGroupId: UUID | null = null,
-  syncBlockGroupId: UUID | null = null,
-  rawArborizedEditableBlock: PartialBlock = {}
-): BlockGroupMeta => ({
-  id: blockGroupId,
-  blockPackId,
-  prevBlockGroupId,
-  syncBlockGroupId,
-  size: 0,
-  deletedAt: null,
-  updatedAt: new Date(),
-  createdAt: new Date(),
-  rawArborizedEditableBlock,
-});
 
 export const getDefaultBlockPackMeta = (
   blockPackId: UUID,
@@ -64,7 +34,7 @@ export const getDefaultBlockPackMeta = (
   deletedAt: null,
   updatedAt: new Date(),
   createdAt: new Date(),
-  blockGroups: [],
+  blocks: [],
 });
 
 export type BlockPackMetaAction =
@@ -78,7 +48,7 @@ export type BlockPackMetaAction =
   | { type: "setBlockCount"; newBlockCount: number }
   | { type: "setUpdatedAt"; newUpdatedAt: Date }
   | { type: "setCreatedAt"; newCreatedAt: Date }
-  | { type: "setBlockGroupMetas"; newBlockGroupMetas: BlockGroupMeta[] };
+  | { type: "setBlocks"; newBlocks: PartialBlock[] };
 
 export function blockPackMetaReducer(
   state: BlockPackMeta,
@@ -99,8 +69,8 @@ export function blockPackMetaReducer(
       return { ...state, updatedAt: action.newUpdatedAt };
     case "setCreatedAt":
       return { ...state, createdAt: action.newCreatedAt };
-    case "setBlockGroupMetas":
-      return { ...state, blockGroups: action.newBlockGroupMetas };
+    case "setBlocks":
+      return { ...state, blocks: action.newBlocks };
     default:
       return state;
   }

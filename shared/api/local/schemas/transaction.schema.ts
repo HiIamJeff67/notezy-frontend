@@ -9,7 +9,7 @@ export const Transaction = sqliteTable("TransactionTable", {
   ownerPublicId: text("owner_public_id")
     .notNull()
     .references(() => User.publicId),
-  entityType: text("entity_type").$type<TransactionEntityType>().notNull(), // "RootShelf", "SubShelf", "BlockPack", "BlockGroup", "Block"
+  entityType: text("entity_type").$type<TransactionEntityType>().notNull(), // "RootShelf", "SubShelf", "BlockPack", "Block"
   actionType: text("action_type").$type<TransactionActionType>().notNull(), // "CREATE", "UPDATE", "MOVE", "RESTORE", "DELETE", etc.
   body: text("body", { mode: "json" }).notNull(), // parsed request body
   affected: text("affected", { mode: "json" }),

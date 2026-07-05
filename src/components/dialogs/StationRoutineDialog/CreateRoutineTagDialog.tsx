@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
+import CreateRoutineTagDialogSkeleton from "./CreateRoutineTagDialogSkeleton";
 
 interface CreateRoutineTagDialogProps extends ModalProps {
   onCreated?: (routineTagId: UUID) => void | Promise<void>;
@@ -34,12 +35,20 @@ const CreateRoutineTagDialog = ({
   const [name, setName] = useState<string>("");
   const [color, setColor] = useState<string>("#6b7280");
   const [icon, setIcon] = useState<SupportedIcon | null>(null);
+  const [isOpening, setIsOpening] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) return;
     setName("");
     setColor("#6b7280");
     setIcon(null);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsOpening(true);
+    const frame = window.requestAnimationFrame(() => setIsOpening(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [isOpen]);
 
   const createRoutineTag = async () => {
@@ -83,38 +92,44 @@ const CreateRoutineTagDialog = ({
             await createRoutineTag();
           }}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="routine-tag-name">Name</Label>
-            <Input
-              id="routine-tag-name"
-              value={name}
-              autoComplete="off"
-              maxLength={128}
-              autoFocus
-              onChange={event => setName(event.currentTarget.value)}
-              placeholder="High priority"
-            />
-          </div>
+          {isOpening ? (
+            <CreateRoutineTagDialogSkeleton />
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-tag-name">Name</Label>
+                <Input
+                  id="routine-tag-name"
+                  value={name}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => setName(event.currentTarget.value)}
+                  placeholder="High priority"
+                />
+              </div>
 
-          <div className="flex items-end gap-3">
-            <div className="flex shrink-0 flex-col gap-2">
-              <Label>Icon</Label>
-              <SupportedIconTable
-                value={icon}
-                onValueChange={setIcon}
-                disabled={stationRoutineManager.isCreatingRoutineTag}
-              />
-            </div>
+              <div className="flex items-end gap-3">
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Icon</Label>
+                  <SupportedIconTable
+                    value={icon}
+                    onValueChange={setIcon}
+                    disabled={stationRoutineManager.isCreatingRoutineTag}
+                  />
+                </div>
 
-            <div className="flex shrink-0 flex-col gap-2">
-              <Label>Color</Label>
-              <ColorSelector
-                value={color}
-                onValueChange={setColor}
-                disabled={stationRoutineManager.isCreatingRoutineTag}
-              />
-            </div>
-          </div>
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Color</Label>
+                  <ColorSelector
+                    value={color}
+                    onValueChange={setColor}
+                    disabled={stationRoutineManager.isCreatingRoutineTag}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <DialogFooter>
             <Button

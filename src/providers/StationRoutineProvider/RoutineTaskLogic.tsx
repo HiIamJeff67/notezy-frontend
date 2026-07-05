@@ -562,23 +562,42 @@ export const useRoutineTaskLogic = ({
         throw new Error("routine task does not exist");
       }
 
+      const snapshots = [...routineTaskNodes].map(routineTaskNode => ({
+        routineTaskNode,
+        status: routineTaskNode.status,
+        updatedAt: routineTaskNode.updatedAt,
+      }));
+      for (const routineTaskNode of routineTaskNodes) {
+        routineTaskNode.status = RoutineTaskStatus.Pause;
+        routineTaskNode.updatedAt = new Date();
+      }
+      forceUpdate();
+
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
       );
-      const response = await pauseRoutineTaskMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: { routineTaskId },
-      });
-      if (response.success === false) throw response.exception;
+      try {
+        const response = await pauseRoutineTaskMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: { routineTaskId },
+        });
+        if (response.success === false) throw response.exception;
 
-      for (const routineTaskNode of routineTaskNodes) {
-        routineTaskNode.status = RoutineTaskStatus.Pause;
-        routineTaskNode.updatedAt = response.data.updatedAt;
+        for (const routineTaskNode of routineTaskNodes) {
+          routineTaskNode.updatedAt = response.data.updatedAt;
+        }
+        forceUpdate();
+      } catch (error) {
+        for (const snapshot of snapshots) {
+          snapshot.routineTaskNode.status = snapshot.status;
+          snapshot.routineTaskNode.updatedAt = snapshot.updatedAt;
+        }
+        forceUpdate();
+        throw error;
       }
-      forceUpdate();
     },
     [forceUpdate, pauseRoutineTaskMutator, stationsRef]
   );
@@ -603,23 +622,42 @@ export const useRoutineTaskLogic = ({
         throw new Error("routine task does not exist");
       }
 
+      const snapshots = [...routineTaskNodes].map(routineTaskNode => ({
+        routineTaskNode,
+        status: routineTaskNode.status,
+        updatedAt: routineTaskNode.updatedAt,
+      }));
+      for (const routineTaskNode of routineTaskNodes) {
+        routineTaskNode.status = RoutineTaskStatus.Idle;
+        routineTaskNode.updatedAt = new Date();
+      }
+      forceUpdate();
+
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
       );
-      const response = await resumeRoutineTaskMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: { routineTaskId },
-      });
-      if (response.success === false) throw response.exception;
+      try {
+        const response = await resumeRoutineTaskMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: { routineTaskId },
+        });
+        if (response.success === false) throw response.exception;
 
-      for (const routineTaskNode of routineTaskNodes) {
-        routineTaskNode.status = RoutineTaskStatus.Idle;
-        routineTaskNode.updatedAt = response.data.updatedAt;
+        for (const routineTaskNode of routineTaskNodes) {
+          routineTaskNode.updatedAt = response.data.updatedAt;
+        }
+        forceUpdate();
+      } catch (error) {
+        for (const snapshot of snapshots) {
+          snapshot.routineTaskNode.status = snapshot.status;
+          snapshot.routineTaskNode.updatedAt = snapshot.updatedAt;
+        }
+        forceUpdate();
+        throw error;
       }
-      forceUpdate();
     },
     [forceUpdate, resumeRoutineTaskMutator, stationsRef]
   );

@@ -68,7 +68,6 @@ export const buildBlockSyncResult = ({
     body: [],
     sequences: new Set<number>(),
   };
-  const deleteBlockGroupIds = new Set<string>();
   const deleteBlockPackIds = new Set<string>();
 
   const parseFailedSequences = new Set<number>();
@@ -92,12 +91,8 @@ export const buildBlockSyncResult = ({
       case TransactionActionType.CREATE: {
         const one = InsertBlockRequestSchema.safeParse(request);
         if (one.success) {
-          insertBlocksState.body.push({
-            parentBlockId: one.data.body.parentBlockId,
-            blockGroupId: one.data.body.blockGroupId,
-            arborizedEditableBlock: one.data.body.arborizedEditableBlock,
-          });
-          insertBlockPackIds.add(one.data.affected.blockPackId);
+          insertBlocksState.body.push(one.data.body);
+          mergeSet(insertBlockPackIds, one.data.affected.blockPackIds);
           insertBlocksState.sequences.add(transaction.sequence);
           break;
         }
@@ -119,9 +114,9 @@ export const buildBlockSyncResult = ({
           updateBlocksState.body.push({
             blockId: one.data.body.blockId,
             values: one.data.body.values,
-            setNull: one.data.body.setNull,
+            ...(one.data.body.setNull ? { setNull: one.data.body.setNull } : {}),
           });
-          updateBlockPackIds.add(one.data.affected.blockPackId);
+          mergeSet(updateBlockPackIds, one.data.affected.blockPackIds);
           updateBlocksState.sequences.add(transaction.sequence);
           break;
         }
@@ -141,8 +136,7 @@ export const buildBlockSyncResult = ({
         const one = DeleteMyBlockByIdRequestSchema.safeParse(request);
         if (one.success) {
           deleteBlocksState.body.push(one.data.body.blockId);
-          deleteBlockGroupIds.add(one.data.affected.blockGroupId);
-          deleteBlockPackIds.add(one.data.affected.blockPackId);
+          mergeSet(deleteBlockPackIds, one.data.affected.blockPackIds);
           deleteBlocksState.sequences.add(transaction.sequence);
           break;
         }
@@ -150,7 +144,6 @@ export const buildBlockSyncResult = ({
         const many = DeleteMyBlocksByIdsRequestSchema.safeParse(request);
         if (many.success) {
           deleteBlocksState.body.push(...many.data.body.blockIds);
-          mergeSet(deleteBlockGroupIds, many.data.affected.blockGroupIds);
           mergeSet(deleteBlockPackIds, many.data.affected.blockPackIds);
           deleteBlocksState.sequences.add(transaction.sequence);
           break;
@@ -205,7 +198,6 @@ export const buildBlockSyncResult = ({
         blockIds: deleteBlocksState.body,
       },
       affected: {
-        blockGroupIds: Array.from(deleteBlockGroupIds),
         blockPackIds: Array.from(deleteBlockPackIds),
       },
     };

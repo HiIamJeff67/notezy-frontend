@@ -28,6 +28,51 @@ export const RoutineTaskPayloadSchema = z
     const addPayloadIssue = (path: (string | number)[], message: string) =>
       ctx.addIssue({ code: "custom", path: ["payload", ...path], message });
 
+    if (payload.pattern !== undefined) {
+      if (typeof payload.pattern !== "object" || payload.pattern === null) {
+        addPayloadIssue(["pattern"], "Pattern must be an object.");
+      } else {
+        for (const [key, binding] of Object.entries(payload.pattern)) {
+          if (typeof binding !== "object" || binding === null) {
+            addPayloadIssue(["pattern", key], "Pattern binding is invalid.");
+            continue;
+          }
+          const source = (binding as Record<string, unknown>).source;
+          if (
+            source !== "scheduledAt" &&
+            source !== "recordId" &&
+            source !== "shortRecordId" &&
+            source !== "routineTaskId" &&
+            source !== "blockText" &&
+            source !== "blockCheckboxCount"
+          ) {
+            addPayloadIssue(["pattern", key, "source"], "Source is invalid.");
+          }
+          if (
+            source === "blockText" &&
+            !uuidSchema.safeParse((binding as Record<string, unknown>).blockId)
+              .success
+          ) {
+            addPayloadIssue(
+              ["pattern", key, "blockId"],
+              "Block ID is invalid."
+            );
+          }
+          if (
+            source === "blockCheckboxCount" &&
+            !uuidSchema.safeParse(
+              (binding as Record<string, unknown>).blockPackId
+            ).success
+          ) {
+            addPayloadIssue(
+              ["pattern", key, "blockPackId"],
+              "BlockPack ID is invalid."
+            );
+          }
+        }
+      }
+    }
+
     if (
       purpose === RoutineTaskPurpose.CreateRootShelf &&
       (typeof payload.name !== "string" || payload.name.trim().length === 0)
@@ -61,10 +106,8 @@ export const RoutineTaskPayloadSchema = z
       (!uuidSchema.safeParse(payload.targetSubShelfId).success ||
         typeof payload.template?.name !== "string" ||
         payload.template.name.trim().length === 0 ||
-        !Array.isArray(payload.template?.blockGroups) ||
-        payload.template.blockGroups.length === 0 ||
-        typeof payload.pattern !== "object" ||
-        payload.pattern === null)
+        !Array.isArray(payload.template?.blocks) ||
+        payload.template.blocks.length === 0)
     ) {
       addPayloadIssue(
         [],

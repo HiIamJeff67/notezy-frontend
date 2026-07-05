@@ -1,5 +1,11 @@
 import { PartialBlock } from "@blocknote/core";
 import {
+  AddBlockButton,
+  DragHandleButton,
+  SideMenu,
+  SideMenuController,
+} from "@blocknote/react";
+import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
   convertBlocksToJSON,
@@ -9,8 +15,8 @@ import {
 } from "@shared/util/convertBlocksToFiles";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
-import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
+import BlockPackStateSonner from "@/components/sonners/BlockPackStateSonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -97,11 +103,6 @@ const BlockPackEditorContent = ({
 
         editor.replaceBlocks([editor.document[0]?.id], blocks);
 
-        // dispatchMeta({
-        //   type: "setBlockGroupMetas",
-        //   newBlockGroupMetas: {},
-        // });
-
         toast.success(`Imported ${file.name}`);
       } catch (error) {
         toast.error(languageManager.tError(error));
@@ -161,6 +162,7 @@ const BlockPackEditorContent = ({
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
+      <BlockPackStateSonner state={state} />
       <header className="w-full h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-background/15 backdrop-blur-md border-b border-background/10">
         <div className="flex justify-start items-center gap-2">
           {sidebarManager.isMobile && <SidebarTrigger />}
@@ -168,7 +170,7 @@ const BlockPackEditorContent = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="font-semibold text-2xl select-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="h-9 max-w-full gap-2 border-none px-2 text-2xl font-semibold select-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 <TruncatedText width="1/2">{blockPackMeta.name}</TruncatedText>
                 <ChevronDownIcon
@@ -320,14 +322,21 @@ const BlockPackEditorContent = ({
         )}
       />
       <div className="w-full h-full rounded-none p-8 z-0">
-        {state === "idle" ? (
-          <BlockNoteView
-            editor={editor}
-            className="caret-muted-foreground z-10"
+        <BlockNoteView
+          editor={editor}
+          sideMenu={false}
+          className="notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4"
+        >
+          <SideMenuController
+            floatingOptions={{ placement: "left" }}
+            sideMenu={sideMenuProps => (
+              <SideMenu {...sideMenuProps}>
+                <AddBlockButton {...sideMenuProps} />
+                <DragHandleButton {...sideMenuProps} />
+              </SideMenu>
+            )}
           />
-        ) : (
-          <StrictLoadingCover />
-        )}
+        </BlockNoteView>
       </div>
     </div>
   );

@@ -12,14 +12,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -35,10 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
 import { ShelfLocationPicker } from "../PayloadSearchPickers";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 import type {
   PatternBlock,
   SelectedBlockPayloadTarget,
@@ -50,8 +42,8 @@ interface CreateBlockPackPayloadEditorSidebarProps {
   setTargetSubShelfId: Dispatch<SetStateAction<string>>;
   templateName: string;
   setTemplateName: Dispatch<SetStateAction<string>>;
-  templateNamePattern: RoutineTaskNamePattern;
-  setTemplateNamePattern: Dispatch<SetStateAction<RoutineTaskNamePattern>>;
+  templatePattern: RoutineTaskTemplatePattern;
+  setTemplatePattern: Dispatch<SetStateAction<RoutineTaskTemplatePattern>>;
   blockPackId: string;
   setBlockPackId: Dispatch<SetStateAction<string>>;
   blockId: string;
@@ -72,8 +64,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
   setTargetSubShelfId,
   templateName,
   setTemplateName,
-  templateNamePattern,
-  setTemplateNamePattern,
+  templatePattern,
+  setTemplatePattern,
   blockPackId,
   setBlockPackId,
   blockId,
@@ -93,6 +85,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
   });
   const [isPatternBlockPickerOpen, setIsPatternBlockPickerOpen] =
     useState(false);
+  const [isTemplateTableExpanded, setIsTemplateTableExpanded] = useState(true);
   const [selectedAvailablePatternIds, setSelectedAvailablePatternIds] =
     useState<Set<string>>(new Set());
   const [isBlockPickerOpen, setIsBlockPickerOpen] = useState(false);
@@ -247,12 +240,19 @@ const CreateBlockPackPayloadEditorSidebar = ({
               placeholder="ex. Daily {{date}}"
             />
           </div>
-          <NamePatternEditor
-            label="Name Pattern"
-            pattern={templateNamePattern}
-            onPatternChange={setTemplateNamePattern}
+          <TemplatePatternEditor
+            label="Pattern Table"
+            pattern={templatePattern}
+            onPatternChange={setTemplatePattern}
           />
         </>
+      )}
+      {(purpose === "AppendBlock" || purpose === "UpdateBlock") && (
+        <TemplatePatternEditor
+          label="Pattern Table"
+          pattern={templatePattern}
+          onPatternChange={setTemplatePattern}
+        />
       )}
       {purpose === "AppendBlock" && (
         <>
@@ -414,9 +414,9 @@ const CreateBlockPackPayloadEditorSidebar = ({
 
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold">Pattern Table</div>
+          <div className="text-sm font-semibold">Template Table</div>
           <div className="text-xs text-muted-foreground">
-            Manage reusable values generated from selected blocks.
+            Blocks scanned for token replacement.
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -446,7 +446,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                 <div className="shrink-0 border-b px-3 py-2">
                   <div className="text-sm font-semibold">Select Block</div>
                   <div className="text-xs text-muted-foreground">
-                    Choose a block to add into Pattern Table.
+                    Choose blocks to mark as templates.
                   </div>
                 </div>
                 <div className="min-h-0 flex-1 p-2">
@@ -646,7 +646,13 @@ const CreateBlockPackPayloadEditorSidebar = ({
       </div>
 
       <Separator />
-      <div className="h-72 min-h-72 shrink-0 overflow-y-auto rounded-sm border bg-muted/35">
+      <div
+        className={
+          isTemplateTableExpanded
+            ? "h-72 min-h-72 shrink-0 overflow-y-auto rounded-t-sm border bg-muted/35"
+            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-muted/35"
+        }
+      >
         <Table className="table-fixed">
           <TableHeader>
             <TableRow className="transition-none hover:bg-transparent">
@@ -654,7 +660,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
               <TableHead className="h-8 w-16 p-1.5">ID</TableHead>
               <TableHead className="h-8 w-20 p-1.5">Type</TableHead>
               <TableHead className="h-8 w-28 p-1.5">Content</TableHead>
-              <TableHead className="h-8 w-auto p-1.5">Reference</TableHead>
+              <TableHead className="h-8 w-auto p-1.5">Template</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -664,7 +670,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                   colSpan={5}
                   className="h-56 px-2 py-6 text-center text-xs text-muted-foreground"
                 >
-                  No pattern blocks
+                  No template blocks
                 </TableCell>
               </TableRow>
             ) : (
@@ -695,9 +701,9 @@ const CreateBlockPackPayloadEditorSidebar = ({
                     onClick={() => {
                       void navigator.clipboard
                         .writeText(patternBlock.id)
-                        .then(() => toast.success("Pattern block id copied"))
+                        .then(() => toast.success("Template block id copied"))
                         .catch(() =>
-                          toast.error("Unable to copy pattern block id")
+                          toast.error("Unable to copy template block id")
                         );
                     }}
                   >
@@ -732,102 +738,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
                       </HoverCard>
                     ) : null}
                   </TableCell>
-                  <TableCell className="min-w-0 p-1.5">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-full min-w-0 justify-start px-2 text-xs"
-                        >
-                          <span className="truncate">
-                            {patternBlock.reference}
-                          </span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="z-[190] w-48">
-                        <DropdownMenuLabel className="text-muted-foreground">
-                          Value
-                        </DropdownMenuLabel>
-                        {[
-                          ["{{currentDate}}", "Current date"],
-                          ["{{currentTime}}", "Current time"],
-                          ["{{routineTitle}}", "Routine title"],
-                          ["{{item.id}}", "Item id"],
-                          ["{{item.name}}", "Item name"],
-                          ["{{rootShelf.id}}", "RootShelf id"],
-                          ["{{subShelf.id}}", "SubShelf id"],
-                        ].map(([value, label]) => (
-                          <DropdownMenuItem
-                            key={value}
-                            onSelect={() =>
-                              setPatternBlocks(previousPatternBlocks =>
-                                previousPatternBlocks.map(
-                                  previousPatternBlock =>
-                                    previousPatternBlock.id === patternBlock.id
-                                      ? {
-                                          ...previousPatternBlock,
-                                          reference: value,
-                                        }
-                                      : previousPatternBlock
-                                )
-                              )
-                            }
-                          >
-                            {label}
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <div
-                          className="flex flex-col gap-1.5 px-2 py-1.5"
-                          onKeyDown={event => event.stopPropagation()}
-                        >
-                          <Label className="text-xs text-muted-foreground">
-                            Custom string
-                          </Label>
-                          <Input
-                            value={
-                              patternBlock.reference.startsWith("{{")
-                                ? ""
-                                : patternBlock.reference
-                            }
-                            onChange={event =>
-                              setPatternBlocks(previousPatternBlocks =>
-                                previousPatternBlocks.map(
-                                  previousPatternBlock =>
-                                    previousPatternBlock.id === patternBlock.id
-                                      ? {
-                                          ...previousPatternBlock,
-                                          reference: event.currentTarget.value,
-                                        }
-                                      : previousPatternBlock
-                                )
-                              )
-                            }
-                            className="h-8"
-                            placeholder="ex. Specific text"
-                          />
-                        </div>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            setPatternBlocks(previousPatternBlocks =>
-                              previousPatternBlocks.map(previousPatternBlock =>
-                                previousPatternBlock.id === patternBlock.id
-                                  ? {
-                                      ...previousPatternBlock,
-                                      reference: patternBlock.id,
-                                    }
-                                  : previousPatternBlock
-                              )
-                            )
-                          }
-                        >
-                          This block id
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <TableCell className="min-w-0 truncate p-1.5 text-xs text-muted-foreground">
+                    props.template
                   </TableCell>
                 </TableRow>
               ))
@@ -835,6 +747,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
           </TableBody>
         </Table>
       </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="-mt-px h-8 min-h-8 w-full shrink-0 rounded-t-none rounded-b-sm py-0"
+        onClick={() => setIsTemplateTableExpanded(current => !current)}
+      >
+        {isTemplateTableExpanded ? "Close" : "Expand"}
+      </Button>
       <Separator />
 
       <div className="flex shrink-0 flex-col gap-2">

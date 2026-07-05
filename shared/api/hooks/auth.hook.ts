@@ -286,10 +286,7 @@ export const useResetMe = () => {
         queryKeys.subShelf.all(),
         queryKeys.material.all(),
         queryKeys.blockPack.all(),
-        queryKeys.blockGroup.all(),
         queryKeys.block.all(),
-        queryKeys.blockPackWithBlockGroup.all(),
-        queryKeys.blockGroupWithBlock.all(),
       ];
       Promise.all(
         targetKeys.map(targetKey =>

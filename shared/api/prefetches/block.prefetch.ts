@@ -1,8 +1,6 @@
 import {
   GetAllMyBlocksRequest,
   GetMyBlockByIdRequest,
-  GetMyBlocksByBlockGroupIdRequest,
-  GetMyBlocksByBlockGroupIdsRequest,
   GetMyBlocksByBlockPackIdRequest,
   GetMyBlocksByIdsRequest,
 } from "@shared/api/interfaces/block.interface";
@@ -10,8 +8,6 @@ import { duplicateResponse } from "@shared/api/interfaces/context.interface";
 import {
   queryFnGetAllMyBlocks,
   queryFnGetMyBlockById,
-  queryFnGetMyBlocksByBlockGroupId,
-  queryFnGetMyBlocksByBlockGroupIds,
   queryFnGetMyBlocksByBlockPackId,
   queryFnGetMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
@@ -73,70 +69,6 @@ export const prefetchGetMyBlocksByIds = (initialQueryClient?: QueryClient) => {
     prefetchQuery: prefetchQuery,
     nextQueryClient: queryClient,
     name: "GET_MY_BLOCKS_BY_IDS_PREFETCH" as const,
-  };
-};
-
-export const prefetchGetMyBlocksByBlockGroupId = (
-  initialQueryClient?: QueryClient
-) => {
-  const queryClient = initialQueryClient ?? getQueryClient();
-
-  const prefetchQuery = async (
-    prefetchRequest: GetMyBlocksByBlockGroupIdRequest
-  ): Promise<void> => {
-    await queryClient.prefetchQuery({
-      queryKey: queryKeys.block.manyByBlockGroupId(
-        prefetchRequest.param.blockGroupId as UUID
-      ),
-      queryFn: async () =>
-        await queryFnGetMyBlocksByBlockGroupId(prefetchRequest),
-      staleTime: PrefetchQueryDefaultOptions.staleTime as number,
-    });
-  };
-
-  return {
-    prefetchQuery: prefetchQuery,
-    nextQueryClient: queryClient,
-    name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_ID_PREFETCH" as const,
-  };
-};
-
-export const prefetchGetMyBlocksByBlockGroupIds = (
-  initialQueryClient: QueryClient
-) => {
-  const queryClient = initialQueryClient ?? getQueryClient();
-
-  const prefetchQuery = async (
-    prefetchRequest: GetMyBlocksByBlockGroupIdsRequest
-  ): Promise<void> => {
-    await queryClient.prefetchQuery({
-      queryKey: queryKeys.block.manyByBlockGroupIds(
-        prefetchRequest.param.blockGroupIds as UUID[]
-      ),
-      queryFn: async () => {
-        const response =
-          await queryFnGetMyBlocksByBlockGroupIds(prefetchRequest);
-
-        prefetchRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
-          queryClient.setQueriesData(
-            {
-              queryKey: queryKeys.block.manyByBlockGroupId(
-                blockGroupId as UUID
-              ),
-            },
-            duplicateResponse(response, undefined, response.data[index])
-          );
-        });
-
-        return response;
-      },
-    });
-  };
-
-  return {
-    prefetchQuery: prefetchQuery,
-    nextQueryClient: queryClient,
-    name: "GET_MY_BLOCKS_BY_BLOCK_GROUP_IDS_PREFETCH" as const,
   };
 };
 

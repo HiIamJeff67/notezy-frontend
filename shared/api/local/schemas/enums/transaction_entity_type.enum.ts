@@ -3,7 +3,6 @@ export enum TransactionEntityType {
   SubShelf = "SubShelf",
   Item = "Item",
   BlockPack = "BlockPack",
-  BlockGroup = "BlockGroup",
   Block = "Block",
   Station = "Station",
   Routine = "Routine",

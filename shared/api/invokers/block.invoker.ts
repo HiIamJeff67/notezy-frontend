@@ -8,8 +8,6 @@ import {
   DeleteMyBlocksByIds,
   GetAllMyBlocks,
   GetMyBlockById,
-  GetMyBlocksByBlockGroupId,
-  GetMyBlocksByBlockGroupIds,
   GetMyBlocksByBlockPackId,
   GetMyBlocksByIds,
   InsertBlock,
@@ -36,14 +34,6 @@ import {
   GetMyBlockByIdRequestSchema,
   GetMyBlockByIdResponse,
   GetMyBlockByIdResponseSchema,
-  type GetMyBlocksByBlockGroupIdRequest,
-  GetMyBlocksByBlockGroupIdRequestSchema,
-  GetMyBlocksByBlockGroupIdResponse,
-  GetMyBlocksByBlockGroupIdResponseSchema,
-  type GetMyBlocksByBlockGroupIdsRequest,
-  GetMyBlocksByBlockGroupIdsRequestSchema,
-  GetMyBlocksByBlockGroupIdsResponse,
-  GetMyBlocksByBlockGroupIdsResponseSchema,
   type GetMyBlocksByBlockPackIdRequest,
   GetMyBlocksByBlockPackIdRequestSchema,
   GetMyBlocksByBlockPackIdResponse,
@@ -114,64 +104,6 @@ export const queryFnGetMyBlocksByIds = async (
     return GetMyBlocksByIdsResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyBlocksByIds", error);
-    if (error instanceof ZodError) {
-      throw new NotezyValidationError(
-        ValidationClientException.ZodParsingFailed(error)
-      );
-    } else if (error instanceof NotezyAPIError) {
-      switch (error.unWrap.reason) {
-        default:
-          throw error;
-      }
-    } else if (error instanceof TypeError) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
-    throw error;
-  }
-};
-
-export const queryFnGetMyBlocksByBlockGroupId = async (
-  request: GetMyBlocksByBlockGroupIdRequest
-): Promise<GetMyBlocksByBlockGroupIdResponse> => {
-  try {
-    const validatedRequest =
-      GetMyBlocksByBlockGroupIdRequestSchema.parse(request);
-    const response = await GetMyBlocksByBlockGroupId({
-      data: validatedRequest,
-    });
-    return GetMyBlocksByBlockGroupIdResponseSchema.parse(response);
-  } catch (error) {
-    console.error("error happening in queryFnGetMyBlocksByBlockGroupId", error);
-    if (error instanceof ZodError) {
-      throw new NotezyValidationError(
-        ValidationClientException.ZodParsingFailed(error)
-      );
-    } else if (error instanceof NotezyAPIError) {
-      switch (error.unWrap.reason) {
-        default:
-          throw error;
-      }
-    } else if (error instanceof TypeError) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
-    throw error;
-  }
-};
-
-export const queryFnGetMyBlocksByBlockGroupIds = async (
-  request: GetMyBlocksByBlockGroupIdsRequest
-): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
-  try {
-    const validatedRequest =
-      GetMyBlocksByBlockGroupIdsRequestSchema.parse(request);
-    const response = await GetMyBlocksByBlockGroupIds({
-      data: validatedRequest,
-    });
-    return GetMyBlocksByBlockGroupIdsResponseSchema.parse(response);
-  } catch (error) {
-    console.error("error happening in queryFnGetMyBlocksByBlockGroupIds", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

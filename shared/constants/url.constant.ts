@@ -108,8 +108,6 @@ export const APIURLPathDictionary = {
   blockPack: {
     getMyBlockPackById: "blockPack/getMyBlockPackById",
     getMyBlockPackAndItsParentById: "blockPack/getMyBlockPackAndItsParentById",
-    getMyBlockPackAndItsBlockGroupsAndTheirBlocksById:
-      "blockPack/getMyBlockPackAndItsBlockGroupsAndTheirBlocksById",
     getMyBlockPacksByParentSubShelfId:
       "blockPack/getMyBlockPacksByParentSubShelfId",
     getAllMyBlockPacksByRootShelfId:
@@ -128,46 +126,13 @@ export const APIURLPathDictionary = {
     deleteMyBlockPackById: "blockPack/deleteMyBlockPackById",
     deleteMyBlockPacksByIds: "blockPack/deleteMyBlockPacksByIds",
   },
-  blockGroup: {
-    getMyBlockGroupById: "blockGroup/getMyBlockGroupById",
-    getMyBlockGroupAndItsBlocksById:
-      "blockGroup/getMyBlockGroupAndItsBlocksById",
-    getMyBlockGroupsAndTheirBlocksByIds:
-      "blockGroup/getMyBlockGroupsAndTheirBlocksByIds",
-    getMyBlockGroupsAndTheirBlocksByBlockPackId:
-      "blockGroup/getMyBlockGroupsAndTheirBlocksByBlockPackId",
-    getMyBlockGroupsByPrevBlockGroupId:
-      "blockGroup/getMyBlockGroupsByPrevBlockGroupId",
-    getAllMyBlockGroupsByBlockPackId:
-      "blockGroup/getAllMyBlockGroupsByBlockPackId",
-    insertBlockGroupByBlockPackId: "blockGroup/insertBlockGroupByBlockPackId",
-    insertBlockGroupsByBlockPackId: "blockGroup/insertBlockGroupsByBlockPackId",
-    insertBlockGroupsByBlockPackIds:
-      "blockGroup/insertBlockGroupsByBlockPackIds",
-    insertBlockGroupAndItsBlocksByBlockPackId:
-      "blockGroup/insertBlockGroupAndItsBlocksByBlockPackId",
-    insertBlockGroupsAndTheirBlocksByBlockPackId:
-      "blockGroup/insertBlockGroupsAndTheirBlocksByBlockPackId",
-    insertBlockGroupsAndTheirBlocksByBlockPackIds:
-      "blockGroup/insertBlockGroupsAndTheirBlocksByBlockPackIds",
-    insertSequentialBlockGroupsAndTheirBlocksByBlockPackId:
-      "blockGroup/insertSequentialBlockGroupsAndTheirBlocksByBlockPackId",
-    moveMyBlockGroupById: "blockGroup/moveMyBlockGroupById",
-    moveMyBlockGroupsByBlockPackId: "blockGroup/moveMyBlockGroupsByBlockPackId",
-    moveMyBlockGroupsByBlockPackIds:
-      "blockGroup/moveMyBlockGroupsByBlockPackIds",
-    restoreMyBlockGroupById: "blockGroup/restoreMyBlockGroupById",
-    restoreMyBlockGroupsByIds: "blockGroup/restoreMyBlockGroupsByIds",
-    deleteMyBlockGroupById: "blockGroup/deleteMyBlockGroupById",
-    deleteMyBlockGroupsByIds: "blockGroup/deleteMyBlockGroupsByIds",
-  },
   block: {
     getMyBlockById: "block/getMyBlockById",
     getMyBlocksByIds: "block/getMyBlocksByIds",
-    getMyBlocksByBlockGroupId: "block/getMyBlocksByBlockGroupId",
-    getMyBlocksByBlockGroupIds: "block/getMyBlocksByBlockGroupIds",
     getMyBlocksByBlockPackId: "block/getMyBlocksByBlockPackId",
     getAllMyBlocks: "block/getAllMyBlocks",
+    appendBlock: "block/appendBlock",
+    appendBlocks: "block/appendBlocks",
     insertBlock: "block/insertBlock",
     insertBlocks: "block/insertBlocks",
     updateMyBlockById: "block/updateMyBlockById",

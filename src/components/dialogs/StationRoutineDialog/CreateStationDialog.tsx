@@ -18,6 +18,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
+import CreateStationDialogSkeleton from "./CreateStationDialogSkeleton";
 
 interface CreateStationDialogProps extends ModalProps {
   onCreated?: (stationId: UUID) => void | Promise<void>;
@@ -35,6 +36,7 @@ const CreateStationDialog = ({
   const [description, setDescription] = useState<string>("");
   const [icon, setIcon] = useState<SupportedIcon | null>(null);
   const [headerBackgroundURL, setHeaderBackgroundURL] = useState<string>("");
+  const [isOpening, setIsOpening] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) return;
@@ -42,6 +44,13 @@ const CreateStationDialog = ({
     setDescription("");
     setIcon(null);
     setHeaderBackgroundURL("");
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsOpening(true);
+    const frame = window.requestAnimationFrame(() => setIsOpening(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [isOpen]);
 
   const createStation = async () => {
@@ -90,56 +99,64 @@ const CreateStationDialog = ({
             await createStation();
           }}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="station-name">Name</Label>
-            <Input
-              id="station-name"
-              value={name}
-              autoComplete="off"
-              maxLength={128}
-              autoFocus
-              onChange={event => setName(event.currentTarget.value)}
-              placeholder="What do you want to handle or manage in this station?"
-            />
-          </div>
+          {isOpening ? (
+            <CreateStationDialogSkeleton />
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="station-name">Name</Label>
+                <Input
+                  id="station-name"
+                  value={name}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => setName(event.currentTarget.value)}
+                  placeholder="What do you want to handle or manage in this station?"
+                />
+              </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="station-description">Description (Optional)</Label>
-            <Textarea
-              id="station-description"
-              value={description}
-              maxLength={1024}
-              onChange={event => setDescription(event.currentTarget.value)}
-              placeholder="Describe the detail about this station"
-              className="min-h-24 resize-none"
-            />
-          </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="station-description">
+                  Description (Optional)
+                </Label>
+                <Textarea
+                  id="station-description"
+                  value={description}
+                  maxLength={1024}
+                  onChange={event => setDescription(event.currentTarget.value)}
+                  placeholder="Describe the detail about this station"
+                  className="min-h-24 resize-none"
+                />
+              </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:shrink-0">
-              <Label>Icon</Label>
-              <SupportedIconTable
-                value={icon}
-                onValueChange={setIcon}
-                disabled={stationRoutineManager.isCreatingStation}
-                className="bg-card/45"
-              />
-            </div>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:shrink-0">
+                  <Label>Icon</Label>
+                  <SupportedIconTable
+                    value={icon}
+                    onValueChange={setIcon}
+                    disabled={stationRoutineManager.isCreatingStation}
+                    className="bg-card/45"
+                  />
+                </div>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <Label htmlFor="station-background-url">Background URL</Label>
-              <Input
-                id="station-background-url"
-                type="url"
-                value={headerBackgroundURL}
-                autoComplete="off"
-                onChange={event =>
-                  setHeaderBackgroundURL(event.currentTarget.value)
-                }
-                placeholder="https://"
-              />
-            </div>
-          </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <Label htmlFor="station-background-url">Background URL</Label>
+                  <Input
+                    id="station-background-url"
+                    type="url"
+                    value={headerBackgroundURL}
+                    autoComplete="off"
+                    onChange={event =>
+                      setHeaderBackgroundURL(event.currentTarget.value)
+                    }
+                    placeholder="https://"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <DialogFooter>
             <Button

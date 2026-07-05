@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
 import { ShelfLocationPicker } from "../PayloadSearchPickers";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ const CreateSubShelfPayloadEditor = ({
   const [rootShelfId, setRootShelfId] = useState("");
   const [prevSubShelfId, setPrevSubShelfId] = useState("");
   const [name, setName] = useState("");
-  const [namePattern, setNamePattern] = useState<RoutineTaskNamePattern>({});
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -35,12 +35,12 @@ const CreateSubShelfPayloadEditor = ({
       setRootShelfId(payload.rootShelfId ?? "");
       setPrevSubShelfId(payload.prevSubShelfId ?? "");
       setName(payload.name ?? "");
-      setNamePattern(payload.namePattern ?? {});
+      setPattern(payload.pattern ?? {});
     } catch {
       setRootShelfId("");
       setPrevSubShelfId("");
       setName("");
-      setNamePattern({});
+      setPattern({});
     }
   }, [initialPayload, isOpen]);
 
@@ -55,7 +55,7 @@ const CreateSubShelfPayloadEditor = ({
           rootShelfId,
           prevSubShelfId: prevSubShelfId.trim() ? prevSubShelfId : null,
           ...(name.trim() && { name }),
-          ...(Object.keys(namePattern).length > 0 && { namePattern }),
+          ...(Object.keys(pattern).length > 0 && { pattern }),
         },
         null,
         2
@@ -88,10 +88,10 @@ const CreateSubShelfPayloadEditor = ({
           placeholder="ex. Notes"
         />
       </div>
-      <NamePatternEditor
-        label="Name Pattern"
-        pattern={namePattern}
-        onPatternChange={setNamePattern}
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
       />
     </FormPayloadEditor>
   );

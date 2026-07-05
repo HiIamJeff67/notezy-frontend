@@ -36,6 +36,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useLanguage, useStationRoutine, useUser } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
+import CreateRoutineTaskDialogSkeleton from "./CreateRoutineTaskDialogSkeleton";
 
 interface CreateRoutineTaskDialogProps extends ModalProps {
   stationId: UUID;
@@ -72,6 +73,7 @@ const CreateRoutineTaskDialog = ({
     useState<boolean>(false);
   const [payloadTextareaHeight, setPayloadTextareaHeight] =
     useState<number>(160);
+  const [isOpening, setIsOpening] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) return;
@@ -87,6 +89,13 @@ const CreateRoutineTaskDialog = ({
     setIsPayloadExpanded(false);
     setIsPayloadOverflowing(false);
     setPayloadTextareaHeight(160);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsOpening(true);
+    const frame = window.requestAnimationFrame(() => setIsOpening(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [isOpen]);
 
   useEffect(() => {
@@ -233,326 +242,341 @@ const CreateRoutineTaskDialog = ({
             await createRoutineTask();
           }}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="routine-task-title">Title</Label>
-            <Input
-              id="routine-task-title"
-              value={title}
-              autoComplete="off"
-              maxLength={128}
-              autoFocus
-              onChange={event => setTitle(event.currentTarget.value)}
-              placeholder="ex. Create the daily note"
-            />
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="flex min-w-0 flex-[1.35] flex-col gap-2">
-              <Label>Purpose</Label>
-              <Select
-                value={purpose}
-                onValueChange={value => setPurpose(value as RoutineTaskPurpose)}
-              >
-                <SelectTrigger className="w-full rounded-sm">
-                  <SelectValue>
-                    {purpose.replace(
-                      /^(Create|Append|Update|Reset)(.+)$/,
-                      "$1．$2"
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="z-[160] bg-card">
-                  <SelectGroup>
-                    <SelectLabel>Create</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
-                      Routine
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Append</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.AppendBlock}>
-                      Block
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Update</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
-                      Block
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
-                      Routine
-                    </SelectItem>
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <SelectLabel>Reset</SelectLabel>
-                    <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
-                      RootShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
-                      SubShelf
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
-                      BlockPack
-                    </SelectItem>
-                    <SelectItem value={RoutineTaskPurpose.ResetBlock}>
-                      Block
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex min-w-36 flex-1 flex-col gap-2">
-              <Label>Recurring</Label>
-              <Select
-                value={period ?? "OneShot"}
-                onValueChange={value =>
-                  setPeriod(
-                    value === "OneShot" ? null : (value as RoutinePeriod)
-                  )
-                }
-              >
-                <SelectTrigger className="w-full rounded-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-[160] bg-card">
-                  <SelectItem value="OneShot">One-shot</SelectItem>
-                  {AllRoutinePeriods.map(routinePeriod => (
-                    <SelectItem key={routinePeriod} value={routinePeriod}>
-                      {routinePeriod}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label>Next scheduled at</Label>
-            <DatePicker
-              value={nextScheduledAt}
-              onValueChange={value => {
-                if (!value) return;
-                value.setSeconds(0, 0);
-                setNextScheduledAt(value);
-              }}
-              placeholder="Select next execution time"
-              className="bg-card/45 hover:bg-card/60"
-              contentClassName="bg-card"
-            />
-            {nextScheduledAt && (
-              <span className="text-xs text-muted-foreground">
-                Next expected run time: {nextScheduledAt.toLocaleString()}.
-                Updating this later will not force an immediate rerun if the
-                system schedule is already later.
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="routine-task-payload">Payload</Label>
-            <div
-              id="routine-task-payload"
-              role="button"
-              tabIndex={0}
-              aria-invalid={payloadError.length > 0}
-              className={`group relative cursor-pointer overflow-hidden border bg-card/45 ${
-                isPayloadOverflowing ? "rounded-b-none" : "rounded-b-sm"
-              }`}
-              style={{ height: payloadTextareaHeight }}
-              onClick={async () => {
-                try {
-                  const clipboardText = await navigator.clipboard.readText();
-                  setPayload(
-                    JSON.stringify(JSON.parse(clipboardText), null, 2)
-                  );
-                  setPayloadError("");
-                  toast.success("Payload imported from clipboard");
-                } catch {
-                  setPayloadError("Clipboard must contain valid JSON.");
-                  toast.error("Clipboard must contain valid JSON.");
-                }
-              }}
-              onPaste={event => {
-                event.preventDefault();
-                try {
-                  setPayload(
-                    JSON.stringify(
-                      JSON.parse(event.clipboardData.getData("text")),
-                      null,
-                      2
-                    )
-                  );
-                  setPayloadError("");
-                  toast.success("Payload imported from clipboard");
-                } catch {
-                  setPayloadError("Pasted content must be valid JSON.");
-                  toast.error("Pasted content must be valid JSON.");
-                }
-              }}
-              onDragOver={event => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = "copy";
-              }}
-              onDrop={event => {
-                event.preventDefault();
-                const droppedFile = event.dataTransfer.files[0];
-                if (droppedFile) {
-                  void droppedFile
-                    .text()
-                    .then(droppedText => {
-                      setPayload(
-                        JSON.stringify(JSON.parse(droppedText), null, 2)
-                      );
-                      setPayloadError("");
-                      toast.success("Payload imported from file");
-                    })
-                    .catch(() => {
-                      setPayloadError("Dropped file must contain valid JSON.");
-                      toast.error("Dropped file must contain valid JSON.");
-                    });
-                  return;
-                }
-
-                try {
-                  setPayload(
-                    JSON.stringify(
-                      JSON.parse(event.dataTransfer.getData("text")),
-                      null,
-                      2
-                    )
-                  );
-                  setPayloadError("");
-                  toast.success("Payload imported");
-                } catch {
-                  setPayloadError("Dropped content must be valid JSON.");
-                  toast.error("Dropped content must be valid JSON.");
-                }
-              }}
-            >
-              <pre
-                ref={payloadPreviewRef}
-                className={`h-full whitespace-pre-wrap break-words p-3 font-mono text-xs ${
-                  isPayloadExpanded ? "overflow-hidden" : "overflow-y-auto"
-                }`}
-              >
-                {payload}
-              </pre>
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/35 px-6 text-center text-foreground text-xs opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
-                <span className="rounded-sm bg-card/70 px-3 py-1.5 shadow-sm">
-                  Click to import JSON from clipboard, paste JSON, or drag a
-                  JSON file here.
-                </span>
+          {isOpening ? (
+            <CreateRoutineTaskDialogSkeleton />
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-task-title">Title</Label>
+                <Input
+                  id="routine-task-title"
+                  value={title}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => setTitle(event.currentTarget.value)}
+                  placeholder="ex. Create the daily note"
+                />
               </div>
-            </div>
-            {isPayloadOverflowing && (
-              <button
-                type="button"
-                className="flex h-8 items-center justify-center gap-1 rounded-b-sm border border-t-0 bg-card/45 text-xs text-muted-foreground transition-colors hover:bg-card/65 hover:text-foreground"
-                onClick={() =>
-                  setIsPayloadExpanded(
-                    previousIsPayloadExpanded => !previousIsPayloadExpanded
-                  )
-                }
-              >
-                {isPayloadExpanded ? (
-                  <ChevronUpIcon className="size-3.5" />
-                ) : (
-                  <ChevronDownIcon className="size-3.5" />
-                )}
-                {isPayloadExpanded ? "Collapse payload" : "Expand payload"}
-              </button>
-            )}
-            <div className="flex items-start justify-between gap-3 rounded-sm border bg-card/45 px-3 py-2">
-              <div className="flex min-w-0 flex-col gap-1">
-                <span className="text-xs text-muted-foreground">
-                  Routine task payload usage:{" "}
-                  {userManager.userAccount
-                    ? routineTaskCostUnitCount
-                    : "Not loaded"}{" "}
-                  / {maxRoutineTaskCostUnitCount} CostUnits.
-                </span>
-                <span
-                  className={`text-xs ${
-                    isRoutineTaskCostUnitExceeded
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {estimatedPayloadCostUnit === null
-                    ? "Payload must be valid JSON to estimate CostUnits."
-                    : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits.`}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Payload hard limit: 16 MiB.
-                </span>
-                {payloadError.length > 0 && (
-                  <span className="text-destructive text-xs">
-                    {payloadError}
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex min-w-0 flex-[1.35] flex-col gap-2">
+                  <Label>Purpose</Label>
+                  <Select
+                    value={purpose}
+                    onValueChange={value =>
+                      setPurpose(value as RoutineTaskPurpose)
+                    }
+                  >
+                    <SelectTrigger className="w-full rounded-sm">
+                      <SelectValue>
+                        {purpose.replace(
+                          /^(Create|Append|Update|Reset)(.+)$/,
+                          "$1．$2"
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="z-[160] bg-card">
+                      <SelectGroup>
+                        <SelectLabel>Create</SelectLabel>
+                        <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
+                          RootShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
+                          SubShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
+                          BlockPack
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
+                          Routine
+                        </SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Append</SelectLabel>
+                        <SelectItem value={RoutineTaskPurpose.AppendBlock}>
+                          Block
+                        </SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Update</SelectLabel>
+                        <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
+                          RootShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
+                          SubShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
+                          BlockPack
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
+                          Block
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
+                          Routine
+                        </SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Reset</SelectLabel>
+                        <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
+                          RootShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
+                          SubShelf
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
+                          BlockPack
+                        </SelectItem>
+                        <SelectItem value={RoutineTaskPurpose.ResetBlock}>
+                          Block
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex min-w-36 flex-1 flex-col gap-2">
+                  <Label>Recurring</Label>
+                  <Select
+                    value={period ?? "OneShot"}
+                    onValueChange={value =>
+                      setPeriod(
+                        value === "OneShot" ? null : (value as RoutinePeriod)
+                      )
+                    }
+                  >
+                    <SelectTrigger className="w-full rounded-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-[160] bg-card">
+                      <SelectItem value="OneShot">One-shot</SelectItem>
+                      {AllRoutinePeriods.map(routinePeriod => (
+                        <SelectItem key={routinePeriod} value={routinePeriod}>
+                          {routinePeriod}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Next scheduled at</Label>
+                <DatePicker
+                  value={nextScheduledAt}
+                  onValueChange={value => {
+                    if (!value) return;
+                    value.setSeconds(0, 0);
+                    setNextScheduledAt(value);
+                  }}
+                  placeholder="Select next execution time"
+                  className="bg-card/45 hover:bg-card/60"
+                  contentClassName="bg-card"
+                />
+                {nextScheduledAt && (
+                  <span className="text-xs text-muted-foreground">
+                    Next expected run time: {nextScheduledAt.toLocaleString()}.
+                    Updating this later will not force an immediate rerun if the
+                    system schedule is already later.
                   </span>
                 )}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                onClick={() => setIsPayloadEditorOpen(true)}
-              >
-                Edit payload
-              </Button>
-            </div>
-          </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
-              <Label htmlFor="routine-task-priority">Priority</Label>
-              <Input
-                id="routine-task-priority"
-                type="number"
-                min={0}
-                max={100}
-                step={1}
-                value={priority}
-                autoComplete="off"
-                onChange={event => setPriority(event.currentTarget.value)}
-              />
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
-              <Label htmlFor="routine-task-max-attempts">Max attempts</Label>
-              <Input
-                id="routine-task-max-attempts"
-                type="number"
-                min={1}
-                max={20}
-                step={1}
-                value={maxAttempts}
-                autoComplete="off"
-                onChange={event => setMaxAttempts(event.currentTarget.value)}
-              />
-            </div>
-          </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-task-payload">Payload</Label>
+                <div
+                  id="routine-task-payload"
+                  role="button"
+                  tabIndex={0}
+                  aria-invalid={payloadError.length > 0}
+                  className={`group relative cursor-pointer overflow-hidden border bg-card/45 ${
+                    isPayloadOverflowing ? "rounded-b-none" : "rounded-b-sm"
+                  }`}
+                  style={{ height: payloadTextareaHeight }}
+                  onClick={async () => {
+                    try {
+                      const clipboardText =
+                        await navigator.clipboard.readText();
+                      setPayload(
+                        JSON.stringify(JSON.parse(clipboardText), null, 2)
+                      );
+                      setPayloadError("");
+                      toast.success("Payload imported from clipboard");
+                    } catch {
+                      setPayloadError("Clipboard must contain valid JSON.");
+                      toast.error("Clipboard must contain valid JSON.");
+                    }
+                  }}
+                  onPaste={event => {
+                    event.preventDefault();
+                    try {
+                      setPayload(
+                        JSON.stringify(
+                          JSON.parse(event.clipboardData.getData("text")),
+                          null,
+                          2
+                        )
+                      );
+                      setPayloadError("");
+                      toast.success("Payload imported from clipboard");
+                    } catch {
+                      setPayloadError("Pasted content must be valid JSON.");
+                      toast.error("Pasted content must be valid JSON.");
+                    }
+                  }}
+                  onDragOver={event => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "copy";
+                  }}
+                  onDrop={event => {
+                    event.preventDefault();
+                    const droppedFile = event.dataTransfer.files[0];
+                    if (droppedFile) {
+                      void droppedFile
+                        .text()
+                        .then(droppedText => {
+                          setPayload(
+                            JSON.stringify(JSON.parse(droppedText), null, 2)
+                          );
+                          setPayloadError("");
+                          toast.success("Payload imported from file");
+                        })
+                        .catch(() => {
+                          setPayloadError(
+                            "Dropped file must contain valid JSON."
+                          );
+                          toast.error("Dropped file must contain valid JSON.");
+                        });
+                      return;
+                    }
+
+                    try {
+                      setPayload(
+                        JSON.stringify(
+                          JSON.parse(event.dataTransfer.getData("text")),
+                          null,
+                          2
+                        )
+                      );
+                      setPayloadError("");
+                      toast.success("Payload imported");
+                    } catch {
+                      setPayloadError("Dropped content must be valid JSON.");
+                      toast.error("Dropped content must be valid JSON.");
+                    }
+                  }}
+                >
+                  <pre
+                    ref={payloadPreviewRef}
+                    className={`h-full whitespace-pre-wrap break-words p-3 font-mono text-xs ${
+                      isPayloadExpanded ? "overflow-hidden" : "overflow-y-auto"
+                    }`}
+                  >
+                    {payload}
+                  </pre>
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/35 px-6 text-center text-foreground text-xs opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+                    <span className="rounded-sm bg-card/70 px-3 py-1.5 shadow-sm">
+                      Click to import JSON from clipboard, paste JSON, or drag a
+                      JSON file here.
+                    </span>
+                  </div>
+                </div>
+                {isPayloadOverflowing && (
+                  <button
+                    type="button"
+                    className="flex h-8 items-center justify-center gap-1 rounded-b-sm border border-t-0 bg-card/45 text-xs text-muted-foreground transition-colors hover:bg-card/65 hover:text-foreground"
+                    onClick={() =>
+                      setIsPayloadExpanded(
+                        previousIsPayloadExpanded => !previousIsPayloadExpanded
+                      )
+                    }
+                  >
+                    {isPayloadExpanded ? (
+                      <ChevronUpIcon className="size-3.5" />
+                    ) : (
+                      <ChevronDownIcon className="size-3.5" />
+                    )}
+                    {isPayloadExpanded ? "Collapse payload" : "Expand payload"}
+                  </button>
+                )}
+                <div className="flex items-start justify-between gap-3 rounded-sm border bg-card/45 px-3 py-2">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      Routine task payload usage:{" "}
+                      {userManager.userAccount
+                        ? routineTaskCostUnitCount
+                        : "Not loaded"}{" "}
+                      / {maxRoutineTaskCostUnitCount} CostUnits.
+                    </span>
+                    <span
+                      className={`text-xs ${
+                        isRoutineTaskCostUnitExceeded
+                          ? "text-destructive"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {estimatedPayloadCostUnit === null
+                        ? "Payload must be valid JSON to estimate CostUnits."
+                        : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits.`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Payload hard limit: 16 MiB.
+                    </span>
+                    {payloadError.length > 0 && (
+                      <span className="text-destructive text-xs">
+                        {payloadError}
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => setIsPayloadEditorOpen(true)}
+                  >
+                    Edit payload
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
+                  <Label htmlFor="routine-task-priority">Priority</Label>
+                  <Input
+                    id="routine-task-priority"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={priority}
+                    autoComplete="off"
+                    onChange={event => setPriority(event.currentTarget.value)}
+                  />
+                </div>
+                <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
+                  <Label htmlFor="routine-task-max-attempts">
+                    Max attempts
+                  </Label>
+                  <Input
+                    id="routine-task-max-attempts"
+                    type="number"
+                    min={1}
+                    max={20}
+                    step={1}
+                    value={maxAttempts}
+                    autoComplete="off"
+                    onChange={event =>
+                      setMaxAttempts(event.currentTarget.value)
+                    }
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <DialogFooter>
             <Button

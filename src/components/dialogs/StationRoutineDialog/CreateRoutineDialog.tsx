@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useStationRoutine } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
+import CreateRoutineDialogSkeleton from "./CreateRoutineDialogSkeleton";
 
 interface CreateRoutineDialogProps extends ModalProps {
   stationId: UUID;
@@ -70,6 +71,7 @@ const CreateRoutineDialog = ({
     end: number;
   }>({ start: 1, end: 1 });
   const [isPinned, setIsPinned] = useState<boolean>(false);
+  const [isOpening, setIsOpening] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) return;
@@ -82,6 +84,13 @@ const CreateRoutineDialog = ({
     setWeekdayRange({ start: 1, end: 1 });
     setMonthlyDayRange({ start: 1, end: 1 });
     setIsPinned(false);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsOpening(true);
+    const frame = window.requestAnimationFrame(() => setIsOpening(false));
+    return () => window.cancelAnimationFrame(frame);
   }, [isOpen]);
 
   const hasInvalidSchedule =
@@ -197,174 +206,182 @@ const CreateRoutineDialog = ({
             }
           }}
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="routine-title">Title</Label>
-            <Input
-              id="routine-title"
-              value={title}
-              autoComplete="off"
-              maxLength={128}
-              autoFocus
-              onChange={event => setTitle(event.currentTarget.value)}
-              placeholder="What this routine is aimed to do"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="routine-description">Description</Label>
-            <Textarea
-              id="routine-description"
-              value={description}
-              maxLength={1024}
-              onChange={event => setDescription(event.currentTarget.value)}
-              className="min-h-24 resize-none"
-              placeholder="Describe the detail about this routine"
-            />
-          </div>
-
-          <div className="flex items-center justify-between border-y py-3">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="routine-custom-schedule">Custom schedule</Label>
-              <span className="text-muted-foreground text-xs">
-                Set an explicit start and end time.
-              </span>
-            </div>
-            <Switch
-              id="routine-custom-schedule"
-              checked={
-                hasCustomSchedule ||
-                period === RoutinePeriod.Weekly ||
-                period === RoutinePeriod.Monthly
-              }
-              disabled={
-                period === RoutinePeriod.Weekly ||
-                period === RoutinePeriod.Monthly
-              }
-              onCheckedChange={setHasCustomSchedule}
-            />
-          </div>
-
-          {(hasCustomSchedule ||
-            period === RoutinePeriod.Weekly ||
-            period === RoutinePeriod.Monthly) && (
+          {isOpening ? (
+            <CreateRoutineDialogSkeleton />
+          ) : (
             <>
-              {period === RoutinePeriod.Weekly ? (
-                <div className="flex flex-col gap-2">
-                  <Label>Weekdays</Label>
-                  <WeekdayPicker
-                    value={weekdayRange}
-                    onValueChange={setWeekdayRange}
-                  />
-                </div>
-              ) : period === RoutinePeriod.Monthly ? (
-                <div className="flex flex-col gap-2">
-                  <Label>Month days</Label>
-                  <MonthlyDayPicker
-                    value={monthlyDayRange}
-                    onValueChange={setMonthlyDayRange}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Limited to day 1 - 28 to keep every month valid.
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-title">Title</Label>
+                <Input
+                  id="routine-title"
+                  value={title}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => setTitle(event.currentTarget.value)}
+                  placeholder="What this routine is aimed to do"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-description">Description</Label>
+                <Textarea
+                  id="routine-description"
+                  value={description}
+                  maxLength={1024}
+                  onChange={event => setDescription(event.currentTarget.value)}
+                  className="min-h-24 resize-none"
+                  placeholder="Describe the detail about this routine"
+                />
+              </div>
+
+              <div className="flex items-center justify-between border-y py-3">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="routine-custom-schedule">
+                    Custom schedule
+                  </Label>
+                  <span className="text-muted-foreground text-xs">
+                    Set an explicit start and end time.
                   </span>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <Label>Starts</Label>
-                    {period === RoutinePeriod.Daily ? (
-                      <TimePicker
-                        value={scheduledStartAt}
-                        onValueChange={setScheduledStartAt}
-                        placeholder="Select start time"
-                        className="bg-card/45 hover:bg-card/60"
-                        contentClassName="bg-card"
-                      />
-                    ) : (
-                      <DatePicker
-                        value={scheduledStartAt}
-                        onValueChange={setScheduledStartAt}
-                        placeholder="Select start date and time"
-                        className="bg-card/45 hover:bg-card/60"
-                        contentClassName="bg-card"
-                      />
-                    )}
-                  </div>
+                <Switch
+                  id="routine-custom-schedule"
+                  checked={
+                    hasCustomSchedule ||
+                    period === RoutinePeriod.Weekly ||
+                    period === RoutinePeriod.Monthly
+                  }
+                  disabled={
+                    period === RoutinePeriod.Weekly ||
+                    period === RoutinePeriod.Monthly
+                  }
+                  onCheckedChange={setHasCustomSchedule}
+                />
+              </div>
 
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <Label>Ends</Label>
-                    {period === RoutinePeriod.Daily ? (
-                      <TimePicker
-                        value={scheduledEndAt}
-                        onValueChange={setScheduledEndAt}
-                        isInvalid={hasInvalidSchedule}
-                        placeholder="Select end time"
-                        className="bg-card/45 hover:bg-card/60"
-                        contentClassName="bg-card"
+              {(hasCustomSchedule ||
+                period === RoutinePeriod.Weekly ||
+                period === RoutinePeriod.Monthly) && (
+                <>
+                  {period === RoutinePeriod.Weekly ? (
+                    <div className="flex flex-col gap-2">
+                      <Label>Weekdays</Label>
+                      <WeekdayPicker
+                        value={weekdayRange}
+                        onValueChange={setWeekdayRange}
                       />
-                    ) : (
-                      <DatePicker
-                        value={scheduledEndAt}
-                        onValueChange={setScheduledEndAt}
-                        disabled={
-                          scheduledStartAt
-                            ? { before: scheduledStartAt }
-                            : undefined
-                        }
-                        isInvalid={hasInvalidSchedule}
-                        placeholder="Select end date and time"
-                        className="bg-card/45 hover:bg-card/60"
-                        contentClassName="bg-card"
+                    </div>
+                  ) : period === RoutinePeriod.Monthly ? (
+                    <div className="flex flex-col gap-2">
+                      <Label>Month days</Label>
+                      <MonthlyDayPicker
+                        value={monthlyDayRange}
+                        onValueChange={setMonthlyDayRange}
                       />
-                    )}
-                  </div>
-                </div>
+                      <span className="text-xs text-muted-foreground">
+                        Limited to day 1 - 28 to keep every month valid.
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <Label>Starts</Label>
+                        {period === RoutinePeriod.Daily ? (
+                          <TimePicker
+                            value={scheduledStartAt}
+                            onValueChange={setScheduledStartAt}
+                            placeholder="Select start time"
+                            className="bg-card/45 hover:bg-card/60"
+                            contentClassName="bg-card"
+                          />
+                        ) : (
+                          <DatePicker
+                            value={scheduledStartAt}
+                            onValueChange={setScheduledStartAt}
+                            placeholder="Select start date and time"
+                            className="bg-card/45 hover:bg-card/60"
+                            contentClassName="bg-card"
+                          />
+                        )}
+                      </div>
+
+                      <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <Label>Ends</Label>
+                        {period === RoutinePeriod.Daily ? (
+                          <TimePicker
+                            value={scheduledEndAt}
+                            onValueChange={setScheduledEndAt}
+                            isInvalid={hasInvalidSchedule}
+                            placeholder="Select end time"
+                            className="bg-card/45 hover:bg-card/60"
+                            contentClassName="bg-card"
+                          />
+                        ) : (
+                          <DatePicker
+                            value={scheduledEndAt}
+                            onValueChange={setScheduledEndAt}
+                            disabled={
+                              scheduledStartAt
+                                ? { before: scheduledStartAt }
+                                : undefined
+                            }
+                            isInvalid={hasInvalidSchedule}
+                            placeholder="Select end date and time"
+                            className="bg-card/45 hover:bg-card/60"
+                            contentClassName="bg-card"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+                <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
+                  <Label>Repeat</Label>
+                  <Select
+                    value={period ?? "none"}
+                    onValueChange={value => {
+                      const nextPeriod =
+                        value === "none" ? null : (value as RoutinePeriod);
+                      setPeriod(nextPeriod);
+                      if (
+                        nextPeriod === RoutinePeriod.Weekly ||
+                        nextPeriod === RoutinePeriod.Monthly
+                      ) {
+                        setHasCustomSchedule(true);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full rounded-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-[160] bg-card">
+                      <SelectItem value="none">Does not repeat</SelectItem>
+                      {AllRoutinePeriods.map(routinePeriod => (
+                        <SelectItem key={routinePeriod} value={routinePeriod}>
+                          {routinePeriod}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <label
+                  htmlFor="routine-pinned"
+                  className="flex cursor-pointer items-center gap-2 self-end pb-2 text-sm"
+                >
+                  <Checkbox
+                    id="routine-pinned"
+                    checked={isPinned}
+                    onCheckedChange={checked => setIsPinned(checked === true)}
+                  />
+                  <span>Pin</span>
+                </label>
+              </div>
             </>
           )}
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-            <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
-              <Label>Repeat</Label>
-              <Select
-                value={period ?? "none"}
-                onValueChange={value => {
-                  const nextPeriod =
-                    value === "none" ? null : (value as RoutinePeriod);
-                  setPeriod(nextPeriod);
-                  if (
-                    nextPeriod === RoutinePeriod.Weekly ||
-                    nextPeriod === RoutinePeriod.Monthly
-                  ) {
-                    setHasCustomSchedule(true);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full rounded-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-[160] bg-card">
-                  <SelectItem value="none">Does not repeat</SelectItem>
-                  {AllRoutinePeriods.map(routinePeriod => (
-                    <SelectItem key={routinePeriod} value={routinePeriod}>
-                      {routinePeriod}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <label
-              htmlFor="routine-pinned"
-              className="flex cursor-pointer items-center gap-2 self-end pb-2 text-sm"
-            >
-              <Checkbox
-                id="routine-pinned"
-                checked={isPinned}
-                onCheckedChange={checked => setIsPinned(checked === true)}
-              />
-              <span>Pin</span>
-            </label>
-          </div>
 
           <DialogFooter>
             <Button

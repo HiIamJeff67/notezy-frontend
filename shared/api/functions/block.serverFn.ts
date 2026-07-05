@@ -10,10 +10,6 @@ import {
   GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
   GetMyBlockByIdResponse,
-  GetMyBlocksByBlockGroupIdRequest,
-  GetMyBlocksByBlockGroupIdResponse,
-  GetMyBlocksByBlockGroupIdsRequest,
-  GetMyBlocksByBlockGroupIdsResponse,
   GetMyBlocksByBlockPackIdRequest,
   GetMyBlocksByBlockPackIdResponse,
   GetMyBlocksByIdsRequest,
@@ -126,105 +122,6 @@ export const GetMyBlocksByIds = createServerFn({ method: "GET" })
 
     return formattedResponse;
   });
-
-export const GetMyBlocksByBlockGroupId = createServerFn({
-  method: "GET",
-})
-  .inputValidator((data: GetMyBlocksByBlockGroupIdRequest) => data)
-  .handler(
-    async ({ data: request }): Promise<GetMyBlocksByBlockGroupIdResponse> => {
-      const { blockGroupId } = request.param;
-      const params = new URLSearchParams({ blockGroupId }).toString();
-      const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupId}?${params}`;
-      const inboundCookie = getRequestHeader("cookie");
-      const userAgent =
-        request.header?.userAgent ??
-        getRequestHeader("User-Agent") ??
-        "unknown";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": userAgent,
-          ...(request.header?.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-        },
-        credentials: "include",
-      });
-
-      if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
-      }
-
-      forwardUpstreamSetCookies(response);
-
-      const formattedResponse =
-        (await response.json()) as GetMyBlocksByBlockGroupIdResponse;
-      if (formattedResponse.exception != null) {
-        throw new NotezyAPIError(
-          new NotezyException(formattedResponse.exception)
-        );
-      }
-
-      AccessTokenCookieHandler.ensure(
-        formattedResponse.refreshableTokens?.newAccessToken
-      );
-
-      return formattedResponse;
-    }
-  );
-
-export const GetMyBlocksByBlockGroupIds = createServerFn({
-  method: "GET",
-})
-  .inputValidator((data: GetMyBlocksByBlockGroupIdsRequest) => data)
-  .handler(
-    async ({ data: request }): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
-      const { blockGroupIds } = request.param;
-      const params = new URLSearchParams();
-      blockGroupIds.forEach(id => params.append("blockGroupIds", id));
-      const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockGroupIds}?${params.toString()}`;
-      const inboundCookie = getRequestHeader("cookie");
-      const userAgent =
-        request.header?.userAgent ??
-        getRequestHeader("User-Agent") ??
-        "unknown";
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": userAgent,
-          ...(request.header?.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-        },
-        credentials: "include",
-      });
-
-      if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
-      }
-
-      forwardUpstreamSetCookies(response);
-
-      const formattedResponse =
-        (await response.json()) as GetMyBlocksByBlockGroupIdsResponse;
-      if (formattedResponse.exception != null) {
-        throw new NotezyAPIError(
-          new NotezyException(formattedResponse.exception)
-        );
-      }
-
-      AccessTokenCookieHandler.ensure(
-        formattedResponse.refreshableTokens?.newAccessToken
-      );
-
-      return formattedResponse;
-    }
-  );
 
 export const GetMyBlocksByBlockPackId = createServerFn({
   method: "GET",

@@ -21,6 +21,7 @@ import type {
 } from "./RoutineCharts/chartWidget.type";
 import { CHART_DEFINITIONS } from "./RoutineCharts/chartWidget.type";
 import RoutineOverviewerCharts from "./RoutineOverviewerCharts";
+import RoutineOverviewerContentSkeleton from "./RoutineOverviewerContentSkeleton";
 
 import RoutineScopeBar from "./RoutineScopeBar";
 import RoutineTable from "./RoutineTable";
@@ -78,27 +79,209 @@ const RoutineOverviewerContent = ({
     useState<boolean>(false);
   const [isAddChartDialogOpen, setIsAddChartDialogOpen] =
     useState<boolean>(false);
+  const [isOpening, setIsOpening] = useState<boolean>(true);
   const [cropperAspectRatio, setCropperAspectRatio] = useState<number>(16 / 9);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
   const chartComponentIdsRef = useRef<string[]>([]);
-  const [charts, setCharts] = useState<RoutineOverviewChart[]>([]);
-  const chartTimeHourUnit =
-    stationRoutineManager.timeRailScale === "day" ? 1 : 24;
-
-  useEffect(() => {
+  const debugStateRef = useRef(stationRoutineManager.state);
+  const debugStartedAtRef = useRef(performance.now());
+  const [charts, setCharts] = useState<RoutineOverviewChart[]>(() => {
     const storedCharts = createChartsFromComponentIds(
       LocalStorageManipulator.getItemByKey(
         LocalStorageKey.routineOverviewCharts
       ) ?? []
     );
-    const storedComponentIds = getChartComponentIds(storedCharts);
+    chartComponentIdsRef.current = getChartComponentIds(storedCharts);
+    return storedCharts;
+  });
+  const chartTimeHourUnit =
+    stationRoutineManager.timeRailScale === "day" ? 1 : 24;
+  const headerLeft = sidebarManager.isMobile
+    ? 0
+    : sidebarManager.open
+      ? resizableSidebarManager.width
+      : "var(--sidebar-width-icon)";
 
-    chartComponentIdsRef.current = storedComponentIds;
-    setCharts(storedCharts);
+  useEffect(() => {
+    setIsOpening(false);
+    if (import.meta.env.DEV) {
+      console.info(
+        "[RoutineOverviewer timing]",
+        JSON.stringify({
+          event: "mounted",
+          elapsed:
+            Math.round((performance.now() - debugStartedAtRef.current) * 100) /
+            100,
+          stationRoutineState: stationRoutineManager.state,
+          stations: stationRoutineManager.stations.length,
+          routines: stationRoutineManager.routines.length,
+        })
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    debugStateRef.current = stationRoutineManager.state;
+  }, [stationRoutineManager.state]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    console.info(
+      "[RoutineOverviewer timing]",
+      JSON.stringify({
+        event: "data-state",
+        elapsed:
+          Math.round((performance.now() - debugStartedAtRef.current) * 100) /
+          100,
+        stationRoutineState: stationRoutineManager.state,
+        stations: stationRoutineManager.stations.length,
+        routines: stationRoutineManager.routines.length,
+        timeRailStations: stationRoutineManager.timeRailStations.length,
+      })
+    );
+  }, [
+    stationRoutineManager.routines.length,
+    stationRoutineManager.state,
+    stationRoutineManager.stations.length,
+    stationRoutineManager.timeRailStations.length,
+  ]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || typeof PerformanceObserver === "undefined") {
+      return;
+    }
+
+    const lcpObserver = new PerformanceObserver(list => {
+      for (const entry of list.getEntries()) {
+        const lcpEntry = entry as PerformanceEntry & {
+          element?: Element;
+          loadTime?: number;
+          renderTime?: number;
+          size?: number;
+          url?: string;
+        };
+        const element = lcpEntry.element;
+
+        console.info(
+          "[RoutineOverviewer LCP]",
+          JSON.stringify({
+            time:
+              Math.round(
+                (lcpEntry.renderTime ||
+                  lcpEntry.loadTime ||
+                  lcpEntry.startTime) * 100
+              ) / 100,
+            size: lcpEntry.size,
+            url: lcpEntry.url,
+            tagName: element?.tagName,
+            id: element?.id,
+            className:
+              typeof element?.className === "string"
+                ? element.className
+                : undefined,
+            text: element?.textContent?.trim().slice(0, 180),
+            html:
+              element instanceof HTMLElement
+                ? element.outerHTML.slice(0, 420)
+                : undefined,
+            stationRoutineState: debugStateRef.current,
+            hasHeaderBackgroundImage:
+              backgroundImagesManager.currentBackgroundImage !== null,
+            headerBackgroundHighResolutionMode: "interaction",
+          })
+        );
+      }
+    });
+
+    lcpObserver.observe({
+      buffered: true,
+      type: "largest-contentful-paint",
+    });
+
+    let longTaskObserver: PerformanceObserver | null = null;
+    let layoutShiftObserver: PerformanceObserver | null = null;
+    try {
+      longTaskObserver = new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          if (entry.duration < 50) continue;
+          console.info(
+            "[RoutineOverviewer long task]",
+            JSON.stringify({
+              duration: Math.round(entry.duration * 100) / 100,
+              startTime: Math.round(entry.startTime * 100) / 100,
+              stationRoutineState: debugStateRef.current,
+            })
+          );
+        }
+      });
+      longTaskObserver.observe({
+        buffered: true,
+        type: "longtask",
+      });
+    } catch {
+      longTaskObserver = null;
+    }
+    try {
+      layoutShiftObserver = new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          const layoutShiftEntry = entry as PerformanceEntry & {
+            hadRecentInput?: boolean;
+            sources?: Array<{ node?: Node; previousRect?: DOMRectReadOnly }>;
+            value?: number;
+          };
+          if (layoutShiftEntry.hadRecentInput) continue;
+          console.info(
+            "[RoutineOverviewer layout shift]",
+            JSON.stringify({
+              value: layoutShiftEntry.value,
+              startTime: Math.round(entry.startTime * 100) / 100,
+              sources: layoutShiftEntry.sources?.map(source => {
+                const node = source.node;
+                return {
+                  tagName: node instanceof Element ? node.tagName : undefined,
+                  className:
+                    node instanceof Element &&
+                    typeof node.className === "string"
+                      ? node.className
+                      : undefined,
+                  text:
+                    node instanceof Element
+                      ? node.textContent?.trim().slice(0, 120)
+                      : undefined,
+                  previousRect: source.previousRect
+                    ? {
+                        x: Math.round(source.previousRect.x),
+                        y: Math.round(source.previousRect.y),
+                        width: Math.round(source.previousRect.width),
+                        height: Math.round(source.previousRect.height),
+                      }
+                    : undefined,
+                };
+              }),
+            })
+          );
+        }
+      });
+      layoutShiftObserver.observe({
+        buffered: true,
+        type: "layout-shift",
+      });
+    } catch {
+      layoutShiftObserver = null;
+    }
+
+    return () => {
+      lcpObserver.disconnect();
+      longTaskObserver?.disconnect();
+      layoutShiftObserver?.disconnect();
+    };
+  }, [backgroundImagesManager.currentBackgroundImage]);
+
+  useEffect(() => {
     LocalStorageManipulator.setItem(
       LocalStorageKey.routineOverviewCharts,
-      storedComponentIds
+      chartComponentIdsRef.current
     );
   }, []);
 
@@ -172,6 +355,15 @@ const RoutineOverviewerContent = ({
     }
   }, [backgroundImagesManager.currentBackgroundImage]);
 
+  if (isOpening) {
+    return (
+      <RoutineOverviewerContentSkeleton
+        headerLeft={headerLeft}
+        showCharts={showCharts}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-cover bg-center bg-no-repeat">
       <header
@@ -181,11 +373,7 @@ const RoutineOverviewerContent = ({
           gap-2 bg-background/75 backdrop-blur-md border-background/10
         "
         style={{
-          left: sidebarManager.isMobile
-            ? 0
-            : sidebarManager.open
-              ? resizableSidebarManager.width
-              : "var(--sidebar-width-icon)",
+          left: headerLeft,
           transition: "left 0.2s",
         }}
       >
@@ -201,7 +389,7 @@ const RoutineOverviewerContent = ({
             <Button
               variant="ghost"
               className="
-                fixed right-0 justify-center items-center
+                absolute right-0 bottom-0 justify-center items-center
                 rounded-full shadow-lg w-8 h-8 m-2
                 transition z-100
               "
@@ -242,6 +430,7 @@ const RoutineOverviewerContent = ({
             <ProgressiveBackground
               ref={headerBackgroundImageRef}
               className="w-full h-full shrink-0 border-none relative z-10"
+              loadHighResolution="interaction"
             >
               {isHeaderBackgroundImageEditing && (
                 <ModifyImageHover

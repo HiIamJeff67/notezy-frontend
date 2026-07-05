@@ -38,7 +38,9 @@ export const BackgroundImagesProvider = ({
     const fetchCurrentItems = async () => {
       const [savedCurrentBackgroundImage, savedThumbnails] = await Promise.all([
         IndexedDBManipulator.getItemByKey(IndexedDBKey.currentBackgroundImage),
-        IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImageThumbnails),
+        IndexedDBManipulator.getItemByKey(
+          IndexedDBKey.backgroundImageThumbnails
+        ),
       ]);
 
       if (savedCurrentBackgroundImage) {
@@ -211,7 +213,10 @@ export const BackgroundImagesProvider = ({
       }
 
       await Promise.all([
-        IndexedDBManipulator.setItem(IndexedDBKey.backgroundImages, newImageInfo),
+        IndexedDBManipulator.setItem(
+          IndexedDBKey.backgroundImages,
+          newImageInfo
+        ),
         IndexedDBManipulator.setItem(
           IndexedDBKey.backgroundImageThumbnails,
           newThumbnailsInfo
@@ -235,7 +240,9 @@ export const BackgroundImagesProvider = ({
 
       const [imageInfo, thumbnailsInfo] = await Promise.all([
         IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImages),
-        IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImageThumbnails),
+        IndexedDBManipulator.getItemByKey(
+          IndexedDBKey.backgroundImageThumbnails
+        ),
       ]);
 
       if (!imageInfo || !thumbnailsInfo) return;
@@ -265,7 +272,10 @@ export const BackgroundImagesProvider = ({
       };
 
       await Promise.all([
-        IndexedDBManipulator.setItem(IndexedDBKey.backgroundImages, newImageInfo),
+        IndexedDBManipulator.setItem(
+          IndexedDBKey.backgroundImages,
+          newImageInfo
+        ),
         IndexedDBManipulator.setItem(
           IndexedDBKey.backgroundImageThumbnails,
           newThumbnailsInfo

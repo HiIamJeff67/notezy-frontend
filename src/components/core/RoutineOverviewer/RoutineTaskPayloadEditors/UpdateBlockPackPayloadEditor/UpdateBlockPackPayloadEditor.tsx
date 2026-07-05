@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import FormPayloadEditor from "../FormPayloadEditor";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -22,6 +25,7 @@ const UpdateBlockPackPayloadEditor = ({
 }: PayloadEditorProps) => {
   const [blockPackId, setBlockPackId] = useState("");
   const [updatedBlocks, setUpdatedBlocks] = useState("[]");
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -30,9 +34,11 @@ const UpdateBlockPackPayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setBlockPackId(payload.blockPackId ?? "");
       setUpdatedBlocks(JSON.stringify(payload.updatedBlocks ?? [], null, 2));
+      setPattern(payload.pattern ?? {});
     } catch {
       setBlockPackId("");
       setUpdatedBlocks("[]");
+      setPattern({});
     }
     setError("");
   }, [initialPayload, isOpen]);
@@ -40,7 +46,11 @@ const UpdateBlockPackPayloadEditor = ({
   let payloadPreview = "{}";
   try {
     payloadPreview = JSON.stringify(
-      { blockPackId, updatedBlocks: JSON.parse(updatedBlocks) },
+      {
+        blockPackId,
+        updatedBlocks: JSON.parse(updatedBlocks),
+        ...(Object.keys(pattern).length > 0 && { pattern }),
+      },
       null,
       2
     );
@@ -92,6 +102,11 @@ const UpdateBlockPackPayloadEditor = ({
           block-specific editor for one block.
         </p>
       </div>
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
+      />
     </FormPayloadEditor>
   );
 };

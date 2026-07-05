@@ -1,5 +1,7 @@
-import { useGetMyBlockGroupsAndTheirBlocksByBlockPackId } from "@shared/api/hooks/blockGroup.hook";
+import type { PartialBlock } from "@blocknote/core";
+import { useGetMyBlocksByBlockPackId } from "@shared/api/hooks/block.hook";
 import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
+import type { PrivateBlock } from "@shared/api/interfaces/block.interface";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
@@ -14,10 +16,54 @@ import { useEffect, useState } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import BlockPackEditorNotFoundPage from "@/pages/root/block-pack-editor/BlockPackEditorNotFoundPage";
 import BlockPackEditorPage from "@/pages/root/block-pack-editor/BlockPackEditorPage";
-import {
-  BlockGroupMeta,
-  BlockPackMeta,
-} from "@/reducers/blockPackMeta.reducer";
+import { BlockPackMeta } from "@/reducers/blockPackMeta.reducer";
+
+const ROOT_PARENT_KEY = "ROOT";
+
+const buildBlockTree = (blocks: PrivateBlock[]): PartialBlock[] => {
+  const childrenByParentId = new Map<string, PrivateBlock[]>();
+
+  for (const block of blocks) {
+    const parentKey = block.parentBlockId ?? ROOT_PARENT_KEY;
+    childrenByParentId.set(parentKey, [
+      ...(childrenByParentId.get(parentKey) ?? []),
+      block,
+    ]);
+  }
+
+  const orderSiblings = (siblings: PrivateBlock[]): PrivateBlock[] => {
+    const byId = new Map(siblings.map(block => [block.id, block]));
+    const visited = new Set<string>();
+    const ordered: PrivateBlock[] = [];
+    let current = siblings.find(block => block.prevBlockId === null);
+
+    while (current && !visited.has(current.id)) {
+      ordered.push(current);
+      visited.add(current.id);
+      current = current.nextBlockId ? byId.get(current.nextBlockId) : undefined;
+    }
+
+    for (const block of siblings) {
+      if (!visited.has(block.id)) ordered.push(block);
+    }
+
+    return ordered;
+  };
+
+  const toPartialBlock = (block: PrivateBlock): PartialBlock => ({
+    id: block.id,
+    type: block.type as any,
+    props: block.props as any,
+    content: block.content as any,
+    children: orderSiblings(childrenByParentId.get(block.id) ?? []).map(
+      toPartialBlock
+    ),
+  });
+
+  return orderSiblings(childrenByParentId.get(ROOT_PARENT_KEY) ?? []).map(
+    toPartialBlock
+  );
+};
 
 export const Route = createFileRoute("/_root/block-pack-editor/$blockPackId")({
   ssr: false, // since the blocknote editor view is a client side component
@@ -62,7 +108,7 @@ function BlockPackEditorIndexRoute() {
   });
 
   const blockPackQuerier = useGetMyBlockPackAndItsParentById();
-  const blockGroupQuerier = useGetMyBlockGroupsAndTheirBlocksByBlockPackId();
+  const blocksQuerier = useGetMyBlocksByBlockPackId();
   const [blockPackMeta, setBlockPackMeta] = useState<BlockPackMeta | null>(
     null
   );
@@ -82,7 +128,7 @@ function BlockPackEditorIndexRoute() {
       );
 
       try {
-        const [blockPackResponse, blockGroupResponse] = await Promise.all([
+        const [blockPackResponse, blocksResponse] = await Promise.all([
           blockPackQuerier.fetch({
             header: {
               userAgent: userAgent,
@@ -92,7 +138,7 @@ function BlockPackEditorIndexRoute() {
               blockPackId: loaderData.blockPackId,
             },
           }),
-          blockGroupQuerier.fetch({
+          blocksQuerier.fetch({
             header: {
               userAgent: userAgent,
               authorization: getAuthorization(accessToken),
@@ -104,11 +150,6 @@ function BlockPackEditorIndexRoute() {
         ]);
 
         if (!isActive) return;
-
-        console.log("blockGroupsAndTheirBlocks response:", {
-          blockPackId: loaderData.blockPackId,
-          response: blockGroupResponse,
-        });
 
         if (!blockPackResponse?.data) {
           setIsNotFound(true);
@@ -130,7 +171,7 @@ function BlockPackEditorIndexRoute() {
             : null,
           updatedAt: new Date(blockPackResponse.data.updatedAt),
           createdAt: new Date(blockPackResponse.data.createdAt),
-          blockGroups: blockGroupResponse.data as BlockGroupMeta[],
+          blocks: buildBlockTree(blocksResponse.data),
         });
       } catch {
         if (!isActive) return;

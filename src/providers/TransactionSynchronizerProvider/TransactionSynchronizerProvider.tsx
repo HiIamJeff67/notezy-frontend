@@ -4,12 +4,6 @@ import {
   useUpdateMyBlocksByIds,
 } from "@shared/api/hooks/block.hook";
 import {
-  useInsertBlockGroupsAndTheirBlocksByBlockPackIds,
-  useInsertBlockGroupsByBlockPackIds,
-  useMoveMyBlockGroupsByBlockPackIds,
-  useDeleteMyBlockGroupsByIds,
-} from "@shared/api/hooks/blockGroup.hook";
-import {
   useMoveMyBlockPacksByParentSubShelfIds,
   useCreateBlockPacks,
   useDeleteMyBlockPacksByIds,
@@ -81,7 +75,6 @@ import {
 } from "drizzle-orm";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNetwork } from "@/hooks";
-import { buildBlockGroupSyncResult } from "./BlockGroupSyncLogic";
 import { buildBlockPackSyncResult } from "./BlockPackSyncLogic";
 import { buildBlockSyncResult } from "./BlockSyncLogic";
 import { buildRootShelfSyncResult } from "./RootShelfSyncLogic";
@@ -237,14 +230,8 @@ export const TransactionSynchronizerProvider = ({
   const deleteBlockPacksMutator = useDeleteMyBlockPacksByIds();
 
   const insertBlocksMutator = useInsertBlocks();
-  const insertBlockGroupsAndBlocksMutator =
-    useInsertBlockGroupsAndTheirBlocksByBlockPackIds();
-  const insertBlockGroupsMutator =
-    useInsertBlockGroupsByBlockPackIds();
   const updateBlocksMutator = useUpdateMyBlocksByIds();
-  const moveBlockGroupsMutator = useMoveMyBlockGroupsByBlockPackIds();
   const deleteBlocksMutator = useDeleteMyBlocksByIds();
-  const deleteBlockGroupsMutator = useDeleteMyBlockGroupsByIds();
 
   const [synchronizationProgress, setSynchronizationProgress] =
     useState<number>(0);
@@ -409,7 +396,6 @@ export const TransactionSynchronizerProvider = ({
     const rootShelfTransactions: InferSelectModel<typeof Transaction>[] = [];
     const subShelfTransactions: InferSelectModel<typeof Transaction>[] = [];
     const blockPackTransactions: InferSelectModel<typeof Transaction>[] = [];
-    const blockGroupTransactions: InferSelectModel<typeof Transaction>[] = [];
     const blockTransactions: InferSelectModel<typeof Transaction>[] = [];
     const stationTransactions: InferSelectModel<typeof Transaction>[] = [];
     const routineTransactions: InferSelectModel<typeof Transaction>[] = [];
@@ -426,9 +412,6 @@ export const TransactionSynchronizerProvider = ({
           break;
         case TransactionEntityType.BlockPack:
           blockPackTransactions.push(transaction);
-          break;
-        case TransactionEntityType.BlockGroup:
-          blockGroupTransactions.push(transaction);
           break;
         case TransactionEntityType.Block:
           blockTransactions.push(transaction);
@@ -501,20 +484,6 @@ export const TransactionSynchronizerProvider = ({
             moveBlockPacksMutator,
             restoreBlockPacksMutator,
             deleteBlockPacksMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
-      },
-      {
-        transactions: blockGroupTransactions,
-        result: buildBlockGroupSyncResult({
-          transactions: blockGroupTransactions,
-          header,
-          mutators: {
-            insertBlockGroupsAndBlocksMutator,
-            insertBlockGroupsMutator,
-            moveBlockGroupsMutator,
-            deleteBlockGroupsMutator,
           },
           onParsed: handleOnParsed,
         }),
@@ -644,10 +613,6 @@ export const TransactionSynchronizerProvider = ({
     insertBlocksMutator,
     updateBlocksMutator,
     deleteBlocksMutator,
-    insertBlockGroupsAndBlocksMutator,
-    insertBlockGroupsMutator,
-    moveBlockGroupsMutator,
-    deleteBlockGroupsMutator,
     createStationMutator,
     createStationsMutator,
     updateStationMutator,

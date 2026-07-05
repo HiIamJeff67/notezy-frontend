@@ -546,29 +546,46 @@ export const useRoutineLogic = ({
       }
       if (routineNodes.size === 0) throw new Error("routine does not exist");
 
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await updateRoutineMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId,
-          values,
-          setNull,
-        },
-      });
-      if (response.success === false) throw response.exception;
-
+      const snapshots = [...routineNodes].map(routineNode => ({
+        routineNode,
+        snapshot: { ...routineNode },
+      }));
       for (const routineNode of routineNodes) {
         Object.assign(routineNode, values);
         if (setNull?.period) routineNode.period = null;
-        routineNode.updatedAt = response.data.updatedAt;
+        routineNode.updatedAt = new Date();
       }
       forceUpdate();
-      return routineNodes.values().next().value as RoutineNode;
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      try {
+        const response = await updateRoutineMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: {
+            routineId,
+            values,
+            setNull,
+          },
+        });
+        if (response.success === false) throw response.exception;
+
+        for (const routineNode of routineNodes) {
+          routineNode.updatedAt = response.data.updatedAt;
+        }
+        forceUpdate();
+        return routineNodes.values().next().value as RoutineNode;
+      } catch (error) {
+        for (const { routineNode, snapshot } of snapshots) {
+          Object.assign(routineNode, snapshot);
+        }
+        forceUpdate();
+        throw error;
+      }
     },
     [forceUpdate, routineTagsRef, stationsRef, updateRoutineMutator]
   );
@@ -641,22 +658,6 @@ export const useRoutineLogic = ({
 
   const linkRoutineTag = useCallback(
     async (routineId: UUID, routineTagId: UUID, isUnlink = false) => {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await linkRoutineTagMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId,
-          routineTagId,
-          isUnlink,
-        },
-      });
-      if (response.success === false) throw response.exception;
-
       let routineNode: RoutineNode | undefined;
       for (const stationNode of stationsRef.current.values()) {
         const matchingRoutine = stationNode.routines.find(
@@ -667,15 +668,21 @@ export const useRoutineLogic = ({
           break;
         }
       }
-      if (routineNode) {
-        routineNode.routineTagIds = isUnlink
-          ? routineNode.routineTagIds.filter(id => id !== routineTagId)
-          : Array.from(new Set([...routineNode.routineTagIds, routineTagId]));
-        routineNode.updatedAt = response.data.updatedAt;
-      }
+      if (!routineNode) throw new Error("routine does not exist");
 
       const routineTagNode = routineTagsRef.current.get(routineTagId);
-      if (routineTagNode && routineNode) {
+      const previousRoutineTagIds = [...routineNode.routineTagIds];
+      const previousUpdatedAt = routineNode.updatedAt;
+      const previousTagRoutines = routineTagNode
+        ? [...routineTagNode.routines]
+        : [];
+      const previousTagRoutineCount = routineTagNode?.routineCount ?? 0;
+      routineNode.routineTagIds = isUnlink
+        ? routineNode.routineTagIds.filter(id => id !== routineTagId)
+        : Array.from(new Set([...routineNode.routineTagIds, routineTagId]));
+      routineNode.updatedAt = new Date();
+
+      if (routineTagNode) {
         const wasLinked = routineTagNode.routines.some(
           routine => routine.id === routineId
         );
@@ -697,29 +704,43 @@ export const useRoutineLogic = ({
         }
       }
       forceUpdate();
-      return response;
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      try {
+        const response = await linkRoutineTagMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: {
+            routineId,
+            routineTagId,
+            isUnlink,
+          },
+        });
+        if (response.success === false) throw response.exception;
+
+        routineNode.updatedAt = response.data.updatedAt;
+        forceUpdate();
+        return response;
+      } catch (error) {
+        routineNode.routineTagIds = previousRoutineTagIds;
+        routineNode.updatedAt = previousUpdatedAt;
+        if (routineTagNode) {
+          routineTagNode.routines = previousTagRoutines;
+          routineTagNode.routineCount = previousTagRoutineCount;
+        }
+        forceUpdate();
+        throw error;
+      }
     },
     [forceUpdate, linkRoutineTagMutator, routineTagsRef, stationsRef]
   );
 
   const linkRoutineTask = useCallback(
     async (routineId: UUID, routineTaskId: UUID, isUnlink = false) => {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await linkRoutineTaskMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId,
-          routineTaskId,
-          isUnlink,
-        },
-      });
-      if (response.success === false) throw response.exception;
-
       let routineNode: RoutineNode | undefined;
       let routineTaskNode: RoutineTaskNode | undefined;
       for (const stationNode of stationsRef.current.values()) {
@@ -730,24 +751,56 @@ export const useRoutineLogic = ({
           routineTask => routineTask.id === routineTaskId
         );
       }
-      if (routineNode && routineTaskNode) {
-        routineNode.routineTaskIds = isUnlink
-          ? routineNode.routineTaskIds.filter(id => id !== routineTaskId)
-          : Array.from(new Set([...routineNode.routineTaskIds, routineTaskId]));
-        routineNode.routineTasks = isUnlink
-          ? routineNode.routineTasks.filter(
-              routineTask => routineTask.id !== routineTaskId
-            )
-          : [
+      if (!routineNode) throw new Error("routine does not exist");
+
+      const previousRoutineTaskIds = [...routineNode.routineTaskIds];
+      const previousRoutineTasks = [...routineNode.routineTasks];
+      const previousUpdatedAt = routineNode.updatedAt;
+      routineNode.routineTaskIds = isUnlink
+        ? routineNode.routineTaskIds.filter(id => id !== routineTaskId)
+        : Array.from(new Set([...routineNode.routineTaskIds, routineTaskId]));
+      routineNode.routineTasks = isUnlink
+        ? routineNode.routineTasks.filter(
+            routineTask => routineTask.id !== routineTaskId
+          )
+        : routineTaskNode
+          ? [
               ...routineNode.routineTasks.filter(
                 routineTask => routineTask.id !== routineTaskId
               ),
               routineTaskNode,
-            ];
-        routineNode.updatedAt = response.data.updatedAt;
-      }
+            ]
+          : routineNode.routineTasks;
+      routineNode.updatedAt = new Date();
       forceUpdate();
-      return response;
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      try {
+        const response = await linkRoutineTaskMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: {
+            routineId,
+            routineTaskId,
+            isUnlink,
+          },
+        });
+        if (response.success === false) throw response.exception;
+
+        routineNode.updatedAt = response.data.updatedAt;
+        forceUpdate();
+        return response;
+      } catch (error) {
+        routineNode.routineTaskIds = previousRoutineTaskIds;
+        routineNode.routineTasks = previousRoutineTasks;
+        routineNode.updatedAt = previousUpdatedAt;
+        forceUpdate();
+        throw error;
+      }
     },
     [forceUpdate, linkRoutineTaskMutator, stationsRef]
   );
@@ -759,36 +812,59 @@ export const useRoutineLogic = ({
       itemType: ItemType,
       isUnlink = false
     ) => {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await linkRoutineItemMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          routineId,
-          itemId,
-          itemType,
-          isUnlink,
-        },
-      });
-      if (response.success === false) throw response.exception;
-
+      const routineNodes: RoutineNode[] = [];
       for (const stationNode of stationsRef.current.values()) {
         const routineNode = stationNode.routines.find(
           routine => routine.id === routineId
         );
-        if (!routineNode) continue;
+        if (routineNode) routineNodes.push(routineNode);
+      }
+      if (routineNodes.length === 0) throw new Error("routine does not exist");
 
+      const snapshots = routineNodes.map(routineNode => ({
+        routineNode,
+        itemIds: [...routineNode.itemIds],
+        updatedAt: routineNode.updatedAt,
+      }));
+      for (const routineNode of routineNodes) {
         routineNode.itemIds = isUnlink
           ? routineNode.itemIds.filter(id => id !== itemId)
           : Array.from(new Set([...routineNode.itemIds, itemId]));
-        routineNode.updatedAt = response.data.updatedAt;
+        routineNode.updatedAt = new Date();
       }
       forceUpdate();
-      return response;
+
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      try {
+        const response = await linkRoutineItemMutator.mutateAsync({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          body: {
+            routineId,
+            itemId,
+            itemType,
+            isUnlink,
+          },
+        });
+        if (response.success === false) throw response.exception;
+
+        for (const routineNode of routineNodes) {
+          routineNode.updatedAt = response.data.updatedAt;
+        }
+        forceUpdate();
+        return response;
+      } catch (error) {
+        for (const snapshot of snapshots) {
+          snapshot.routineNode.itemIds = snapshot.itemIds;
+          snapshot.routineNode.updatedAt = snapshot.updatedAt;
+        }
+        forceUpdate();
+        throw error;
+      }
     },
     [forceUpdate, linkRoutineItemMutator, stationsRef]
   );

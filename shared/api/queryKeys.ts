@@ -79,14 +79,6 @@ export const queryKeys = {
     manyByRootShelfId: (rootShelfId?: UUID, areDeleted: boolean = false) =>
       ["blockPack", "manyByRootShelfId", rootShelfId, areDeleted] as const,
   },
-  blockGroup: {
-    all: () => ["blockGroup"] as const,
-    oneById: (id?: UUID) => ["blockGroup", "oneById", id] as const,
-    manyByBlockPackId: (blockPackId?: UUID) =>
-      ["blockPack", "manyByBlockPackId", blockPackId] as const,
-    manyByPrevBlockGroupId: (prevBlockGroupId?: UUID | null) =>
-      ["blockGroup", "manyByPrevBlockGroupId", prevBlockGroupId] as const,
-  },
   block: {
     all: () => ["block"] as const,
     myAll: () => ["block", "myAll"] as const,
@@ -97,38 +89,8 @@ export const queryKeys = {
         "manyByIds",
         ids && ids.length > 0 ? ids.slice().sort().join(",") : undefined,
       ] as const,
-    manyByBlockGroupId: (blockGroupId?: UUID) =>
-      ["block", "manyByBlockGroupId", blockGroupId] as const,
-    manyByBlockGroupIds: (blockGroupIds?: UUID[]) =>
-      [
-        "block",
-        "manyByBlockGroupIds",
-        blockGroupIds && blockGroupIds.length > 0
-          ? blockGroupIds.slice().sort().join(",")
-          : undefined,
-      ] as const,
     manyByBlockPackId: (blockPackId?: UUID) =>
       ["block", "manyByBlockPackId", blockPackId] as const,
-  },
-  blockPackWithBlockGroup: {
-    all: () => ["blockPackWithBlockGroup"] as const,
-    oneById: (blockPackId?: UUID) =>
-      ["blockPackWithBlockGroup", "oneById", blockPackId] as const,
-  },
-  blockGroupWithBlock: {
-    all: () => ["blockGroupWithBlock"] as const,
-    oneById: (blockGroupId?: UUID) =>
-      ["blockGroupWithBlock", "oneById", blockGroupId] as const,
-    manyByIds: (blockGroupIds?: UUID[]) =>
-      [
-        "blockGroupWithBlock",
-        "manyByIds",
-        blockGroupIds && blockGroupIds.length > 0
-          ? blockGroupIds.slice().sort().join(",")
-          : undefined,
-      ] as const,
-    manyByBlockPackId: (blockPackId?: UUID) =>
-      ["blockGroupWithBlock", "manyByBlockPackId", blockPackId] as const,
   },
   station: {
     all: () => ["station"] as const,

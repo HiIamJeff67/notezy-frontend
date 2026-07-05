@@ -1,5 +1,4 @@
 import {
-  BlockGroup,
   RootShelf,
   Transaction,
   UsersToShelves,
@@ -43,6 +42,5 @@ export const UserRelations = relations(User, ({ many }) => ({
   rootShelves: many(RootShelf),
   usersToShelves: many(UsersToShelves),
   usersToStations: many(UsersToStations),
-  blockGroups: many(BlockGroup),
   transactions: many(Transaction),
 }));

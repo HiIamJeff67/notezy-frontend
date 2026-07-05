@@ -5,9 +5,8 @@ import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
 import type { UUID } from "crypto";
 import {
+  BookmarkIcon,
   CheckIcon,
-  ChevronDown,
-  ChevronRight,
   ClipboardList,
   Copy,
   FileText,
@@ -78,8 +77,8 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
       const item = edge.node as unknown as {
         id: UUID;
         type: GraphQLItemType;
-        rootShelf: { name: string };
-        parentSubShelf: { name: string };
+        rootShelf?: { name?: string } | null;
+        parentSubShelf?: { name?: string } | null;
       };
       return {
         id: item.id,
@@ -87,8 +86,8 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
           item.type === GraphQLItemType.ItemTypeBlockPack
             ? ItemType.BlockPack
             : ItemType.Material,
-        rootShelfName: item.rootShelf.name,
-        parentSubShelfName: item.parentSubShelf.name,
+        rootShelfName: item.rootShelf?.name ?? "Unknown root",
+        parentSubShelfName: item.parentSubShelf?.name ?? "Unknown sub shelf",
       };
     }) ?? [];
   const searchedRoutineTasks = stationRoutineManager.routineTasks.filter(
@@ -182,8 +181,10 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                           );
                       }}
                     >
-                      {routine.isOpen ? <ChevronDown /> : <ChevronRight />}
-                      <span>{routine.title}</span>
+                      {routine.isPinned && (
+                        <BookmarkIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                      )}
+                      <span className="min-w-0 truncate">{routine.title}</span>
                     </SidebarMenuSubButton>
                   </CollapsibleTrigger>
                 </ContextMenuTrigger>
@@ -286,9 +287,13 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
-                  void stationRoutineManager
-                    .searchRoutineTags()
-                    .catch(error => toast.error(languageManager.tError(error)));
+                  window.setTimeout(() => {
+                    void stationRoutineManager
+                      .searchRoutineTags()
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }, 0);
                 }}
               >
                 <ContextMenuSubTrigger>
@@ -351,14 +356,18 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
-                  void stationRoutineManager
-                    .searchRoutineTasksByStationId(
-                      station.id,
-                      "",
-                      undefined,
-                      true
-                    )
-                    .catch(error => toast.error(languageManager.tError(error)));
+                  window.setTimeout(() => {
+                    void stationRoutineManager
+                      .searchRoutineTasksByStationId(
+                        station.id,
+                        "",
+                        undefined,
+                        true
+                      )
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }, 0);
                 }}
               >
                 <ContextMenuSubTrigger>
@@ -429,13 +438,17 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
-                  void shelfItemManager
-                    .searchItems({
-                      query: "",
-                      rootShelfId: null,
-                      parentSubShelfId: null,
-                    })
-                    .catch(error => toast.error(languageManager.tError(error)));
+                  window.setTimeout(() => {
+                    void shelfItemManager
+                      .searchItems({
+                        query: "",
+                        rootShelfId: null,
+                        parentSubShelfId: null,
+                      })
+                      .catch(error =>
+                        toast.error(languageManager.tError(error))
+                      );
+                  }, 0);
                 }}
               >
                 <ContextMenuSubTrigger>
@@ -526,6 +539,16 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 name={routine.title}
                 nameLabel="Title"
               />
+              <ContextMenuItem
+                onClick={() => {
+                  void stationRoutineManager
+                    .updateRoutine(routine.id, { isPinned: !routine.isPinned })
+                    .catch(error => toast.error(languageManager.tError(error)));
+                }}
+              >
+                <BookmarkIcon className="mr-2 size-4" />
+                {routine.isPinned ? "Unpin" : "Pin"}
+              </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
                   stationRoutineManager.startRenamingRoutine(routine)

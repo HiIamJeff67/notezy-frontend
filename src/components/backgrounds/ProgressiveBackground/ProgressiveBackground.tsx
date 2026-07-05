@@ -5,17 +5,21 @@ interface ProgressiveBackgroundProps
   extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   children?: React.ReactNode;
+  loadHighResolution?: boolean | "interaction";
 }
 
 export const ProgressiveBackground = React.forwardRef<
   HTMLDivElement,
   ProgressiveBackgroundProps
->(({ className = "", children, ...props }, ref) => {
+>(({ className = "", children, loadHighResolution = true, ...props }, ref) => {
   const backgroundImagesManager = useBackgroundImages();
 
   const [highResolutionImageURL, setHeightResolutionImageURL] = useState<
     string | null
   >(null);
+  const [canLoadHighResolution, setCanLoadHighResolution] = useState(
+    loadHighResolution !== "interaction"
+  );
   const [isLoaded, setIsLoaded] = useState(false);
 
   const loadingTaskTokenRef = useRef(0);
@@ -33,9 +37,38 @@ export const ProgressiveBackground = React.forwardRef<
   ]);
 
   useEffect(() => {
+    if (loadHighResolution !== "interaction") {
+      setCanLoadHighResolution(loadHighResolution !== false);
+      return;
+    }
+
+    setCanLoadHighResolution(false);
+    const allowHighResolutionLoad = () => setCanLoadHighResolution(true);
+    window.addEventListener("pointerdown", allowHighResolutionLoad, {
+      once: true,
+    });
+    window.addEventListener("keydown", allowHighResolutionLoad, { once: true });
+    window.addEventListener("wheel", allowHighResolutionLoad, {
+      once: true,
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("pointerdown", allowHighResolutionLoad);
+      window.removeEventListener("keydown", allowHighResolutionLoad);
+      window.removeEventListener("wheel", allowHighResolutionLoad);
+    };
+  }, [loadHighResolution]);
+
+  useEffect(() => {
     if (backgroundImagesManager.currentBackgroundImage === null) {
       setHeightResolutionImageURL(null);
       setIsLoaded(false);
+      return;
+    }
+    if (!canLoadHighResolution) {
+      setHeightResolutionImageURL(null);
+      setIsLoaded(true);
       return;
     }
 
@@ -64,7 +97,11 @@ export const ProgressiveBackground = React.forwardRef<
       preloadImage.onload = null;
       preloadImage.onerror = null;
     };
-  }, [backgroundImagesManager.currentBackgroundImage]);
+  }, [
+    canLoadHighResolution,
+    backgroundImagesManager.currentBackgroundImage,
+    thumbnailURL,
+  ]);
 
   return (
     <div

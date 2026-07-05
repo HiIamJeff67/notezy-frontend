@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import FormPayloadEditor from "../FormPayloadEditor";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ const UpdateRoutinePayloadEditor = ({
 }: PayloadEditorProps) => {
   const [routineId, setRoutineId] = useState("");
   const [title, setTitle] = useState("");
-  const [titlePattern, setTitlePattern] = useState<RoutineTaskNamePattern>({});
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Scheduled");
   const [isPinned, setIsPinned] = useState(false);
@@ -53,7 +53,7 @@ const UpdateRoutinePayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setRoutineId(payload.routineId ?? "");
       setTitle(payload.title ?? "");
-      setTitlePattern(payload.titlePattern ?? {});
+      setPattern(payload.pattern ?? {});
       setDescription(payload.description ?? "");
       setStatus(payload.status ?? "Scheduled");
       setIsPinned(Boolean(payload.isPinned));
@@ -72,7 +72,7 @@ const UpdateRoutinePayloadEditor = ({
     } catch {
       setRoutineId("");
       setTitle("");
-      setTitlePattern({});
+      setPattern({});
       setDescription("");
       setStatus("Scheduled");
       setIsPinned(false);
@@ -93,7 +93,9 @@ const UpdateRoutinePayloadEditor = ({
         {
           routineId,
           ...(title.trim() && { title: title.trim() }),
-          ...(Object.keys(titlePattern).length > 0 && { titlePattern }),
+          ...(Object.keys(pattern).length > 0 && {
+            pattern,
+          }),
           ...(description.trim() && { description }),
           status,
           isPinned,
@@ -144,10 +146,10 @@ const UpdateRoutinePayloadEditor = ({
           </Select>
         </div>
       </div>
-      <NamePatternEditor
-        label="Title Pattern"
-        pattern={titlePattern}
-        onPatternChange={setTitlePattern}
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
       />
       <div className="flex flex-col gap-2">
         <Label>Description</Label>

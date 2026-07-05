@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import FormPayloadEditor from "../FormPayloadEditor";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
 import { StationPicker } from "../PayloadSearchPickers";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ const CreateRoutinePayloadEditor = ({
 }: PayloadEditorProps) => {
   const [stationId, setStationId] = useState("");
   const [title, setTitle] = useState("");
-  const [titlePattern, setTitlePattern] = useState<RoutineTaskNamePattern>({});
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Scheduled");
   const [isPinned, setIsPinned] = useState(false);
@@ -56,7 +56,7 @@ const CreateRoutinePayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setStationId(payload.stationId ?? "");
       setTitle(payload.title ?? "");
-      setTitlePattern(payload.titlePattern ?? {});
+      setPattern(payload.pattern ?? {});
       setDescription(payload.description ?? "");
       setStatus(payload.status ?? "Scheduled");
       setIsPinned(Boolean(payload.isPinned));
@@ -77,7 +77,7 @@ const CreateRoutinePayloadEditor = ({
     } catch {
       setStationId("");
       setTitle("");
-      setTitlePattern({});
+      setPattern({});
       setDescription("");
       setStatus("Scheduled");
       setIsPinned(false);
@@ -98,7 +98,9 @@ const CreateRoutinePayloadEditor = ({
         {
           stationId,
           ...(title.trim() && { title: title.trim() }),
-          ...(Object.keys(titlePattern).length > 0 && { titlePattern }),
+          ...(Object.keys(pattern).length > 0 && {
+            pattern,
+          }),
           description,
           status,
           isPinned,
@@ -143,10 +145,10 @@ const CreateRoutinePayloadEditor = ({
           </Select>
         </div>
       </div>
-      <NamePatternEditor
-        label="Title Pattern"
-        pattern={titlePattern}
-        onPatternChange={setTitlePattern}
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
       />
       <div className="flex flex-col gap-2">
         <Label>Description</Label>

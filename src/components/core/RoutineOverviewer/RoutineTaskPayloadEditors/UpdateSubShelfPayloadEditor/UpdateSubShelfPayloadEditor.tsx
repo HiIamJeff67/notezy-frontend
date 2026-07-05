@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
-import NamePatternEditor, {
-  type RoutineTaskNamePattern,
-} from "../NamePatternEditor";
 import { SubShelfPicker } from "../PayloadSearchPickers";
+import TemplatePatternEditor, {
+  type RoutineTaskTemplatePattern,
+} from "../TemplatePatternEditor";
 
 interface PayloadEditorProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ const UpdateSubShelfPayloadEditor = ({
 }: PayloadEditorProps) => {
   const [subShelfId, setSubShelfId] = useState("");
   const [name, setName] = useState("");
-  const [namePattern, setNamePattern] = useState<RoutineTaskNamePattern>({});
+  const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,11 +33,11 @@ const UpdateSubShelfPayloadEditor = ({
       const payload = JSON.parse(initialPayload);
       setSubShelfId(payload.subShelfId ?? "");
       setName(payload.name ?? "");
-      setNamePattern(payload.namePattern ?? {});
+      setPattern(payload.pattern ?? {});
     } catch {
       setSubShelfId("");
       setName("");
-      setNamePattern({});
+      setPattern({});
     }
   }, [initialPayload, isOpen]);
 
@@ -51,7 +51,7 @@ const UpdateSubShelfPayloadEditor = ({
         {
           subShelfId,
           ...(name.trim() && { name }),
-          ...(Object.keys(namePattern).length > 0 && { namePattern }),
+          ...(Object.keys(pattern).length > 0 && { pattern }),
         },
         null,
         2
@@ -70,10 +70,10 @@ const UpdateSubShelfPayloadEditor = ({
           placeholder="ex. Archive"
         />
       </div>
-      <NamePatternEditor
-        label="Name Pattern"
-        pattern={namePattern}
-        onPatternChange={setNamePattern}
+      <TemplatePatternEditor
+        label="Pattern Table"
+        pattern={pattern}
+        onPatternChange={setPattern}
       />
     </FormPayloadEditor>
   );

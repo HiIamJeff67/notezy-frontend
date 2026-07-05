@@ -1,4 +1,4 @@
-import { BlockGroup } from "@shared/api/local/schemas";
+import { BlockPack } from "@shared/api/local/schemas";
 import { relations, sql } from "drizzle-orm";
 import {
   foreignKey,
@@ -12,13 +12,15 @@ export const Block = sqliteTable(
   "BlockTable",
   {
     id: text("id").primaryKey(),
-    parentBlockId: text("parent_block_id"),
-    blockGroupId: text("block_group_id")
+    blockPackId: text("block_pack_id")
       .notNull()
-      .references(() => BlockGroup.id, {
+      .references(() => BlockPack.id, {
         onUpdate: "cascade",
         onDelete: "cascade",
       }),
+    parentBlockId: text("parent_block_id"),
+    prevBlockId: text("prev_block_id"),
+    nextBlockId: text("next_block_id"),
     type: text("type").notNull().default("paragraph"),
     props: text("props", { mode: "json" })
       .$type<JSONType>()
@@ -44,10 +46,28 @@ export const Block = sqliteTable(
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
+    foreignKey({
+      columns: [table.prevBlockId],
+      foreignColumns: [table.id],
+      name: "block_fk_prev_block_id",
+    })
+      .onUpdate("cascade")
+      .onDelete("set null"),
+    foreignKey({
+      columns: [table.nextBlockId],
+      foreignColumns: [table.id],
+      name: "block_fk_next_block_id",
+    })
+      .onUpdate("cascade")
+      .onDelete("set null"),
   ]
 );
 
 export const BlockRelations = relations(Block, ({ one, many }) => ({
+  blockPack: one(BlockPack, {
+    fields: [Block.blockPackId],
+    references: [BlockPack.id],
+  }),
   parent: one(Block, {
     fields: [Block.parentBlockId],
     references: [Block.id],
@@ -56,8 +76,14 @@ export const BlockRelations = relations(Block, ({ one, many }) => ({
   children: many(Block, {
     relationName: "block_relation_parent_children",
   }),
-  blockGroup: one(BlockGroup, {
-    fields: [Block.blockGroupId],
-    references: [BlockGroup.id],
+  prev: one(Block, {
+    fields: [Block.prevBlockId],
+    references: [Block.id],
+    relationName: "block_relation_prev_next",
+  }),
+  next: one(Block, {
+    fields: [Block.nextBlockId],
+    references: [Block.prevBlockId],
+    relationName: "block_relation_prev_next",
   }),
 }));

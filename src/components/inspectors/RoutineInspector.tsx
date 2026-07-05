@@ -16,7 +16,6 @@ import TimezoneSelector, {
   SupportedTimezones,
 } from "@/components/commons/TimezoneSelector/TimezoneSelector";
 import WeekdayPicker from "@/components/commons/WeekdayPicker/WeekdayPicker";
-import InspectorLoadingCover from "@/components/inspectors/InspectorLoadingCover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +31,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useStationRoutine } from "@/hooks";
+import RoutineInspectorSkeleton from "./RoutineInspectorSkeleton";
 
 interface RoutineInspectorProps {
   routineId: UUID;
@@ -299,11 +299,6 @@ const RoutineInspector = ({
               Adjust this routine&apos;s schedule and working state.
             </SheetDescription>
           </SheetHeader>
-          <InspectorLoadingCover
-            label="Loading"
-            show={isLoadingRoutineDetail}
-          />
-
           <form
             autoComplete="off"
             className="flex min-h-0 flex-1 flex-col"
@@ -312,218 +307,222 @@ const RoutineInspector = ({
               await saveRoutine();
             }}
           >
-            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-inspector-title">Title</Label>
-                <Input
-                  id="routine-inspector-title"
-                  value={values.title}
-                  autoComplete="off"
-                  maxLength={128}
-                  autoFocus
-                  onChange={event => {
-                    const title = event.currentTarget.value;
-                    setValues(current => ({
-                      ...current,
-                      title,
-                    }));
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-inspector-description">
-                  Description
-                </Label>
-                <Textarea
-                  id="routine-inspector-description"
-                  value={values.description}
-                  maxLength={1024}
-                  className="min-h-48 max-h-72 resize-y overflow-y-auto"
-                  onChange={event => {
-                    const description = event.currentTarget.value;
-                    setValues(current => ({
-                      ...current,
-                      description,
-                    }));
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label>Status</Label>
-                <ContainableSelect
-                  value={values.status}
-                  onValueChange={status =>
-                    setValues(current => ({
-                      ...current,
-                      status: status as RoutineStatus,
-                    }))
-                  }
-                  options={[
-                    {
-                      value: RoutineStatus.Scheduled,
-                      label: "Scheduled",
-                    },
-                    {
-                      value: RoutineStatus.InProgress,
-                      label: "In progress",
-                    },
-                    {
-                      value: RoutineStatus.Completed,
-                      label: "Completed",
-                    },
-                    {
-                      value: RoutineStatus.OverDue,
-                      label: "Overdue",
-                    },
-                  ]}
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3">
-                <div className="flex min-w-0 flex-col gap-1">
-                  <Label htmlFor="routine-inspector-pinned">Pinned</Label>
-                  <span className="text-xs text-muted-foreground">
-                    Keep this routine prominent in routine views.
-                  </span>
+            {isLoadingRoutineDetail ? (
+              <RoutineInspectorSkeleton />
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="routine-inspector-title">Title</Label>
+                  <Input
+                    id="routine-inspector-title"
+                    value={values.title}
+                    autoComplete="off"
+                    maxLength={128}
+                    autoFocus
+                    onChange={event => {
+                      const title = event.currentTarget.value;
+                      setValues(current => ({
+                        ...current,
+                        title,
+                      }));
+                    }}
+                  />
                 </div>
-                <Switch
-                  id="routine-inspector-pinned"
-                  checked={values.isPinned}
-                  onCheckedChange={isPinned =>
-                    setValues(current => ({ ...current, isPinned }))
-                  }
-                />
-              </div>
 
-              <div className="flex flex-col gap-2">
-                {values.period === RoutinePeriod.Weekly ? (
-                  <>
-                    <Label>Weekdays</Label>
-                    <WeekdayPicker
-                      value={weekdayRange}
-                      onValueChange={setWeekdayRange}
-                    />
-                  </>
-                ) : values.period === RoutinePeriod.Monthly ? (
-                  <>
-                    <Label>Month days</Label>
-                    <MonthlyDayPicker
-                      value={monthlyDayRange}
-                      onValueChange={setMonthlyDayRange}
-                    />
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="routine-inspector-description">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="routine-inspector-description"
+                    value={values.description}
+                    maxLength={1024}
+                    className="min-h-48 max-h-72 resize-y overflow-y-auto"
+                    onChange={event => {
+                      const description = event.currentTarget.value;
+                      setValues(current => ({
+                        ...current,
+                        description,
+                      }));
+                    }}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label>Status</Label>
+                  <ContainableSelect
+                    value={values.status}
+                    onValueChange={status =>
+                      setValues(current => ({
+                        ...current,
+                        status: status as RoutineStatus,
+                      }))
+                    }
+                    options={[
+                      {
+                        value: RoutineStatus.Scheduled,
+                        label: "Scheduled",
+                      },
+                      {
+                        value: RoutineStatus.InProgress,
+                        label: "In progress",
+                      },
+                      {
+                        value: RoutineStatus.Completed,
+                        label: "Completed",
+                      },
+                      {
+                        value: RoutineStatus.OverDue,
+                        label: "Overdue",
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <Label htmlFor="routine-inspector-pinned">Pinned</Label>
                     <span className="text-xs text-muted-foreground">
-                      Limited to day 1 - 28 to keep every month valid.
+                      Keep this routine prominent in routine views.
                     </span>
-                  </>
-                ) : (
-                  <>
-                    <Label>Start</Label>
-                    {values.period === RoutinePeriod.Daily ? (
-                      <TimePicker
-                        value={values.scheduledStartAt}
-                        onValueChange={scheduledStartAt => {
-                          if (!scheduledStartAt) return;
-                          setValues(current => ({
-                            ...current,
-                            scheduledStartAt,
-                          }));
-                        }}
-                        placeholder="Select start time"
-                      />
-                    ) : (
-                      <DatePicker
-                        value={values.scheduledStartAt}
-                        onValueChange={scheduledStartAt => {
-                          if (!scheduledStartAt) return;
-                          setValues(current => ({
-                            ...current,
-                            scheduledStartAt,
-                          }));
-                        }}
-                        placeholder="Select start date and time"
-                      />
-                    )}
+                  </div>
+                  <Switch
+                    id="routine-inspector-pinned"
+                    checked={values.isPinned}
+                    onCheckedChange={isPinned =>
+                      setValues(current => ({ ...current, isPinned }))
+                    }
+                  />
+                </div>
 
-                    <Label>End</Label>
-                    {values.period === RoutinePeriod.Daily ? (
-                      <TimePicker
-                        value={values.scheduledEndAt}
-                        onValueChange={scheduledEndAt => {
-                          if (!scheduledEndAt) return;
-                          setValues(current => ({
-                            ...current,
-                            scheduledEndAt,
-                          }));
-                        }}
-                        isInvalid={hasInvalidSchedule}
-                        placeholder="Select end time"
+                <div className="flex flex-col gap-2">
+                  {values.period === RoutinePeriod.Weekly ? (
+                    <>
+                      <Label>Weekdays</Label>
+                      <WeekdayPicker
+                        value={weekdayRange}
+                        onValueChange={setWeekdayRange}
                       />
-                    ) : (
-                      <DatePicker
-                        value={values.scheduledEndAt}
-                        onValueChange={scheduledEndAt => {
-                          if (!scheduledEndAt) return;
-                          setValues(current => ({
-                            ...current,
-                            scheduledEndAt,
-                          }));
-                        }}
-                        disabled={{ before: values.scheduledStartAt }}
-                        isInvalid={hasInvalidSchedule}
-                        placeholder="Select end date and time"
+                    </>
+                  ) : values.period === RoutinePeriod.Monthly ? (
+                    <>
+                      <Label>Month days</Label>
+                      <MonthlyDayPicker
+                        value={monthlyDayRange}
+                        onValueChange={setMonthlyDayRange}
                       />
-                    )}
-                  </>
-                )}
-              </div>
+                      <span className="text-xs text-muted-foreground">
+                        Limited to day 1 - 28 to keep every month valid.
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Label>Start</Label>
+                      {values.period === RoutinePeriod.Daily ? (
+                        <TimePicker
+                          value={values.scheduledStartAt}
+                          onValueChange={scheduledStartAt => {
+                            if (!scheduledStartAt) return;
+                            setValues(current => ({
+                              ...current,
+                              scheduledStartAt,
+                            }));
+                          }}
+                          placeholder="Select start time"
+                        />
+                      ) : (
+                        <DatePicker
+                          value={values.scheduledStartAt}
+                          onValueChange={scheduledStartAt => {
+                            if (!scheduledStartAt) return;
+                            setValues(current => ({
+                              ...current,
+                              scheduledStartAt,
+                            }));
+                          }}
+                          placeholder="Select start date and time"
+                        />
+                      )}
 
-              <div className="flex flex-col gap-2">
-                <Label>Repeat</Label>
-                <ContainableSelect
-                  value={values.period ?? "None"}
-                  onValueChange={period =>
-                    setValues(current => ({
-                      ...current,
-                      period:
-                        period === "None" ? null : (period as RoutinePeriod),
-                    }))
-                  }
-                  options={[
-                    {
-                      value: "None",
-                      label: "None",
-                    },
-                    {
-                      value: RoutinePeriod.Daily,
-                      label: "Daily",
-                    },
-                    {
-                      value: RoutinePeriod.Weekly,
-                      label: "Weekly",
-                    },
-                    {
-                      value: RoutinePeriod.Monthly,
-                      label: "Monthly",
-                    },
-                  ]}
-                />
-              </div>
+                      <Label>End</Label>
+                      {values.period === RoutinePeriod.Daily ? (
+                        <TimePicker
+                          value={values.scheduledEndAt}
+                          onValueChange={scheduledEndAt => {
+                            if (!scheduledEndAt) return;
+                            setValues(current => ({
+                              ...current,
+                              scheduledEndAt,
+                            }));
+                          }}
+                          isInvalid={hasInvalidSchedule}
+                          placeholder="Select end time"
+                        />
+                      ) : (
+                        <DatePicker
+                          value={values.scheduledEndAt}
+                          onValueChange={scheduledEndAt => {
+                            if (!scheduledEndAt) return;
+                            setValues(current => ({
+                              ...current,
+                              scheduledEndAt,
+                            }));
+                          }}
+                          disabled={{ before: values.scheduledStartAt }}
+                          isInvalid={hasInvalidSchedule}
+                          placeholder="Select end date and time"
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
 
-              <div className="flex flex-col gap-2">
-                <Label>Timezone</Label>
-                <TimezoneSelector
-                  value={values.timezone}
-                  onValueChange={timezone =>
-                    setValues(current => ({
-                      ...current,
-                      timezone,
-                    }))
-                  }
-                />
+                <div className="flex flex-col gap-2">
+                  <Label>Repeat</Label>
+                  <ContainableSelect
+                    value={values.period ?? "None"}
+                    onValueChange={period =>
+                      setValues(current => ({
+                        ...current,
+                        period:
+                          period === "None" ? null : (period as RoutinePeriod),
+                      }))
+                    }
+                    options={[
+                      {
+                        value: "None",
+                        label: "None",
+                      },
+                      {
+                        value: RoutinePeriod.Daily,
+                        label: "Daily",
+                      },
+                      {
+                        value: RoutinePeriod.Weekly,
+                        label: "Weekly",
+                      },
+                      {
+                        value: RoutinePeriod.Monthly,
+                        label: "Monthly",
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label>Timezone</Label>
+                  <TimezoneSelector
+                    value={values.timezone}
+                    onValueChange={timezone =>
+                      setValues(current => ({
+                        ...current,
+                        timezone,
+                      }))
+                    }
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <SheetFooter className="shrink-0 flex-col gap-2 border-t border-border px-6 py-5 sm:flex-col sm:space-x-0">
               <Button

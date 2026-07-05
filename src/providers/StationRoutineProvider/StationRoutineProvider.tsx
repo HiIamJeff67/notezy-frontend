@@ -283,7 +283,7 @@ export const StationRoutineProvider = ({
     if (unloadedStationIds.length === 0) return;
 
     let cancelled = false;
-    setState("loading");
+    setState("syncing");
     void (async () => {
       return await Promise.all(
         unloadedStationIds.map(stationId =>

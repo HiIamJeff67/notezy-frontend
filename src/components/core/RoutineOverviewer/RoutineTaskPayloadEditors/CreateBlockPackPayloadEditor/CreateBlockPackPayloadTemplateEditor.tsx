@@ -125,7 +125,6 @@ const CreateBlockPackPayloadTemplateEditor = ({
                             .join("")
                             .trim()
                         : "",
-                      reference: "{{customString}}",
                     });
                   }}
                 />

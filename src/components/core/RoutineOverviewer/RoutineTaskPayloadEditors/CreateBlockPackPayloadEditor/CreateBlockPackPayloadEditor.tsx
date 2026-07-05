@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { RoutineTaskNamePattern } from "../NamePatternEditor";
+import type { RoutineTaskTemplatePattern } from "../TemplatePatternEditor";
 import CreateBlockPackPayloadEditorSidebar from "./CreateBlockPackPayloadEditorSidebar";
 import CreateBlockPackPayloadTemplateEditor from "./CreateBlockPackPayloadTemplateEditor";
 // @ts-ignore allow side-effect import of BlockNote
@@ -24,7 +24,6 @@ export interface PatternBlock {
   id: string;
   type: string;
   label: string;
-  reference: string;
 }
 
 export interface SelectedBlockPayloadTarget {
@@ -71,11 +70,11 @@ const CreateBlockPackPayloadEditor = ({
       ? parsedInitialPayload.template.name
       : "Routine block pack"
   );
-  const [templateNamePattern, setTemplateNamePattern] =
-    useState<RoutineTaskNamePattern>(
-      parsedInitialPayload.template?.namePattern &&
-        typeof parsedInitialPayload.template.namePattern === "object"
-        ? parsedInitialPayload.template.namePattern
+  const [templatePattern, setTemplatePattern] =
+    useState<RoutineTaskTemplatePattern>(
+      parsedInitialPayload.pattern &&
+        typeof parsedInitialPayload.pattern === "object"
+        ? parsedInitialPayload.pattern
         : {}
     );
   const [blockPackId, setBlockPackId] = useState<string>(
@@ -166,7 +165,6 @@ const CreateBlockPackPayloadEditor = ({
               .join("")
               .trim()
           : "",
-        reference: "{{customString}}",
       });
 
       if (Array.isArray(block.children)) {
@@ -224,10 +222,10 @@ const CreateBlockPackPayloadEditor = ({
         ? parsedInitialPayload.template.name
         : "Routine block pack"
     );
-    setTemplateNamePattern(
-      parsedInitialPayload.template?.namePattern &&
-        typeof parsedInitialPayload.template.namePattern === "object"
-        ? parsedInitialPayload.template.namePattern
+    setTemplatePattern(
+      parsedInitialPayload.pattern &&
+        typeof parsedInitialPayload.pattern === "object"
+        ? parsedInitialPayload.pattern
         : {}
     );
     setBlockPackId(
@@ -243,33 +241,35 @@ const CreateBlockPackPayloadEditor = ({
     setSelectedBlock(null);
     setRawPayload(JSON.stringify(parsedInitialPayload, null, 2));
     setSelectedPatternIds(new Set());
-    setPatternBlocks(
-      parsedInitialPayload.pattern &&
-        typeof parsedInitialPayload.pattern === "object"
-        ? Object.values(parsedInitialPayload.pattern).map((pattern: any) => ({
-            id:
-              typeof pattern.blockId === "string"
-                ? pattern.blockId
-                : typeof pattern.id === "string"
-                  ? pattern.id
-                  : crypto.randomUUID(),
-            type: typeof pattern.type === "string" ? pattern.type : "block",
-            label: typeof pattern.label === "string" ? pattern.label : "",
-            reference:
-              typeof pattern.reference === "string"
-                ? pattern.reference
-                : "{{customString}}",
-          }))
-        : []
-    );
+    const nextPatternBlocks: PatternBlock[] = [];
+    const blockStack = Array.isArray(parsedInitialPayload.template?.blocks)
+      ? [...parsedInitialPayload.template.blocks]
+      : [];
+    while (blockStack.length > 0) {
+      const rawBlock = blockStack.shift();
+      const block = rawBlock?.arborizedEditableBlock ?? rawBlock;
+      if (!block) continue;
+      if (block.props?.template === true) {
+        nextPatternBlocks.push({
+          id: block.id ?? crypto.randomUUID(),
+          type: block.type ?? "block",
+          label: Array.isArray(block.content)
+            ? block.content
+                .map((content: any) => content.text ?? "")
+                .join("")
+                .trim()
+            : "",
+        });
+      }
+      if (Array.isArray(block.children)) blockStack.unshift(...block.children);
+    }
+    setPatternBlocks(nextPatternBlocks);
     setPayloadPreview(JSON.stringify(parsedInitialPayload, null, 2));
 
     const blocks =
       purpose === RoutineTaskPurpose.CreateBlockPack &&
-      Array.isArray(parsedInitialPayload.template?.blockGroups)
-        ? parsedInitialPayload.template.blockGroups.map(
-            (blockGroup: any) => blockGroup.arborizedEditableBlock
-          )
+      Array.isArray(parsedInitialPayload.template?.blocks)
+        ? parsedInitialPayload.template.blocks
         : (purpose === RoutineTaskPurpose.AppendBlock ||
               purpose === RoutineTaskPurpose.UpdateBlock) &&
             parsedInitialPayload.arborizedEditableBlock
@@ -342,10 +342,15 @@ const CreateBlockPackPayloadEditor = ({
   const normalizeBlock = (block: any): any => {
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const isTemplateBlock = patternBlocks.some(
+      patternBlock => patternBlock.id === block.id
+    );
     return {
       id: uuidRegex.test(block.id) ? block.id : crypto.randomUUID(),
       type: block.type,
-      props: block.props ?? {},
+      props: isTemplateBlock
+        ? { ...(block.props ?? {}), template: true }
+        : (block.props ?? {}),
       content: block.content ?? [],
       children: Array.isArray(block.children)
         ? block.children.map((child: any) => normalizeBlock(child))
@@ -366,51 +371,36 @@ const CreateBlockPackPayloadEditor = ({
     };
 
     if (purpose === RoutineTaskPurpose.CreateBlockPack) {
-      const blockGroups = normalizedBlocks.map((block: any) => ({
-        clientId: crypto.randomUUID(),
-        arborizedEditableBlock: {
-          ...block,
-          children: [...(block.children ?? [])],
-        },
-      }));
-
       return {
         targetSubShelfId,
         template: {
           name: templateName.trim() || "Routine block pack",
-          ...(Object.keys(templateNamePattern).length > 0 && {
-            namePattern: templateNamePattern,
-          }),
           icon: null,
           headerBackgroundURL: null,
-          finalBlockGroupClientId: null,
-          blockGroups: blockGroups.map((blockGroup: any, index: number) => ({
-            ...blockGroup,
-            prevClientId: index === 0 ? null : blockGroups[index - 1].clientId,
-          })),
+          blocks: normalizedBlocks,
         },
-        pattern: patternBlocks.reduce<Record<string, unknown>>(
-          (pattern, patternBlock) => {
-            pattern[patternBlock.id] = {
-              blockId: patternBlock.id,
-              type: patternBlock.type,
-              label: patternBlock.label,
-              reference: patternBlock.reference,
-            };
-            return pattern;
-          },
-          {}
-        ),
+        ...(Object.keys(templatePattern).length > 0 && {
+          pattern: templatePattern,
+        }),
       };
     }
 
     if (purpose === RoutineTaskPurpose.AppendBlock) {
-      return { blockPackId, arborizedEditableBlock: firstBlock };
+      return {
+        blockPackId,
+        arborizedEditableBlock: firstBlock,
+        ...(Object.keys(templatePattern).length > 0 && {
+          pattern: templatePattern,
+        }),
+      };
     }
 
     return {
       blockId,
       arborizedEditableBlock: firstBlock,
+      ...(Object.keys(templatePattern).length > 0 && {
+        pattern: templatePattern,
+      }),
     };
   };
 
@@ -456,7 +446,7 @@ const CreateBlockPackPayloadEditor = ({
     rawPayload,
     targetSubShelfId,
     templateName,
-    templateNamePattern,
+    templatePattern,
     usesBlockLiteEditor,
   ]);
 
@@ -486,8 +476,8 @@ const CreateBlockPackPayloadEditor = ({
               setTargetSubShelfId={setTargetSubShelfId}
               templateName={templateName}
               setTemplateName={setTemplateName}
-              templateNamePattern={templateNamePattern}
-              setTemplateNamePattern={setTemplateNamePattern}
+              templatePattern={templatePattern}
+              setTemplatePattern={setTemplatePattern}
               blockPackId={blockPackId}
               setBlockPackId={setBlockPackId}
               blockId={blockId}

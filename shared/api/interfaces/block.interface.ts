@@ -1,4 +1,3 @@
-import { PartialBlock } from "@blocknote/core";
 import {
   NotezyRequestSchema,
   NotezyResponseSchema,
@@ -6,15 +5,59 @@ import {
 import { AllBlockTypes } from "@shared/api/interfaces/enums";
 import { z } from "zod";
 
+const HeaderSchema = z
+  .object({
+    userAgent: z.string().min(1).optional(),
+    authorization: z.string().optional(),
+  })
+  .optional();
+
+export type ArborizedEditableBlock = {
+  id: string;
+  type: string;
+  props: unknown;
+  content: unknown[] | Record<string, unknown> | null;
+  children: ArborizedEditableBlock[];
+};
+
+export const ArborizedEditableBlockSchema =
+  z.custom<ArborizedEditableBlock>();
+
+const NullableNumberArraySchema = z.preprocess(
+  value => value ?? [],
+  z.array(z.number())
+);
+
+const NullableSuccessBlockPackAndBlockIdsSchema = z.preprocess(
+  value => value ?? [],
+  z.array(
+    z.object({
+      blockPackId: z.uuidv4(),
+      blockIds: z.array(z.uuidv4()),
+    })
+  )
+);
+
+export const PrivateBlockSchema = z.object({
+  id: z.uuidv4(),
+  blockPackId: z.uuidv4(),
+  parentBlockId: z.uuidv4().nullable(),
+  prevBlockId: z.uuidv4().nullable(),
+  nextBlockId: z.uuidv4().nullable(),
+  type: z.string(),
+  props: z.any(),
+  content: z.any(),
+  deletedAt: z.coerce.date().nullable(),
+  updatedAt: z.coerce.date(),
+  createdAt: z.coerce.date(),
+});
+
+export type PrivateBlock = z.infer<typeof PrivateBlockSchema>;
+
 /* ============================== GetMyBlockById ============================== */
 
 export const GetMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   param: z.object({
     blockId: z.uuidv4(),
   }),
@@ -23,17 +66,7 @@ export const GetMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
 export type GetMyBlockByIdRequest = z.infer<typeof GetMyBlockByIdRequestSchema>;
 
 export const GetMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
-  data: z.object({
-    id: z.uuidv4(),
-    parentBlockId: z.uuidv4().nullable(),
-    blockGroupId: z.uuidv4(),
-    type: z.string(), // enums.BlockType
-    props: z.json(),
-    content: z.array(z.json()),
-    deletedAt: z.coerce.date().nullable(),
-    updatedAt: z.coerce.date(),
-    createdAt: z.coerce.date(),
-  }),
+  data: PrivateBlockSchema,
   embedded: z.object({
     publicId: z.string(),
   }),
@@ -46,12 +79,7 @@ export type GetMyBlockByIdResponse = z.infer<
 /* ============================== GetMyBlocksByIds ============================== */
 
 export const GetMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   param: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
@@ -62,19 +90,7 @@ export type GetMyBlocksByIdsRequest = z.infer<
 >;
 
 export const GetMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
-  data: z.array(
-    z.object({
-      id: z.uuidv4(),
-      parentBlockId: z.uuidv4().nullable(),
-      blockGroupId: z.uuidv4(),
-      type: z.string(),
-      props: z.json(),
-      content: z.array(z.json()),
-      deletedAt: z.coerce.date().nullable(),
-      updatedAt: z.coerce.date(),
-      createdAt: z.coerce.date(),
-    })
-  ),
+  data: z.array(PrivateBlockSchema),
   embedded: z.object({
     publicId: z.string(),
   }),
@@ -84,84 +100,11 @@ export type GetMyBlocksByIdsResponse = z.infer<
   typeof GetMyBlocksByIdsResponseSchema
 >;
 
-/* ============================== GetMyBlocksByBlockGroupId ============================== */
-
-export const GetMyBlocksByBlockGroupIdRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
-      })
-      .optional(),
-    param: z.object({
-      blockGroupId: z.uuidv4(),
-    }),
-  });
-
-export type GetMyBlocksByBlockGroupIdRequest = z.infer<
-  typeof GetMyBlocksByBlockGroupIdRequestSchema
->;
-
-export const GetMyBlocksByBlockGroupIdResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      rawArborizedEditableBlock: z.custom<PartialBlock>(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
-
-export type GetMyBlocksByBlockGroupIdResponse = z.infer<
-  typeof GetMyBlocksByBlockGroupIdResponseSchema
->;
-
-/* ============================== GetMyBlocksByBlockGroupIds ============================== */
-
-export const GetMyBlocksByBlockGroupIdsRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
-      })
-      .optional(),
-    param: z.object({
-      blockGroupIds: z.array(z.uuidv4()),
-    }),
-  });
-
-export type GetMyBlocksByBlockGroupIdsRequest = z.infer<
-  typeof GetMyBlocksByBlockGroupIdsRequestSchema
->;
-
-export const GetMyBlocksByBlockGroupIdsResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.array(
-      z.object({
-        rawArborizedEditableBlock: z.custom<PartialBlock>(),
-      })
-    ),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
-
-export type GetMyBlocksByBlockGroupIdsResponse = z.infer<
-  typeof GetMyBlocksByBlockGroupIdsResponseSchema
->;
-
 /* ============================== GetMyBlocksByBlockPackId ============================== */
 
 export const GetMyBlocksByBlockPackIdRequestSchema = NotezyRequestSchema.extend(
   {
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
-      })
-      .optional(),
+    header: HeaderSchema,
     param: z.object({
       blockPackId: z.uuidv4(),
     }),
@@ -174,19 +117,7 @@ export type GetMyBlocksByBlockPackIdRequest = z.infer<
 
 export const GetMyBlocksByBlockPackIdResponseSchema =
   NotezyResponseSchema.extend({
-    data: z.array(
-      z.object({
-        id: z.uuidv4(),
-        parentBlockId: z.uuidv4().nullable(),
-        blockGroupId: z.uuidv4(),
-        type: z.string(),
-        props: z.json(),
-        content: z.array(z.json()),
-        deletedAt: z.coerce.date().nullable(),
-        updatedAt: z.coerce.date(),
-        createdAt: z.coerce.date(),
-      })
-    ),
+    data: z.array(PrivateBlockSchema),
     embedded: z.object({
       publicId: z.string(),
     }),
@@ -199,30 +130,13 @@ export type GetMyBlocksByBlockPackIdResponse = z.infer<
 /* ============================== GetAllMyBlocks ============================== */
 
 export const GetAllMyBlocksRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
 });
 
 export type GetAllMyBlocksRequest = z.infer<typeof GetAllMyBlocksRequestSchema>;
 
 export const GetAllMyBlocksResponseSchema = NotezyResponseSchema.extend({
-  data: z.array(
-    z.object({
-      id: z.uuidv4(),
-      parentBlockId: z.uuidv4().nullable(),
-      blockGroupId: z.uuidv4(),
-      type: z.string(),
-      props: z.json(),
-      content: z.array(z.json()),
-      deletedAt: z.coerce.date().nullable(),
-      updatedAt: z.coerce.date(),
-      createdAt: z.coerce.date(),
-    })
-  ),
+  data: z.array(PrivateBlockSchema),
   embedded: z.object({
     publicId: z.string(),
   }),
@@ -232,22 +146,18 @@ export type GetAllMyBlocksResponse = z.infer<
   typeof GetAllMyBlocksResponseSchema
 >;
 
-/* ============================== InsertBlock ============================== */
+/* ============================== AppendBlock ============================== */
 
 export const InsertBlockRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
-    parentBlockId: z.uuidv4().nullable(),
-    blockGroupId: z.uuidv4(),
-    arborizedEditableBlock: z.custom<PartialBlock>(),
+    blockPackId: z.uuidv4(),
+    parentBlockId: z.uuidv4().nullable().optional(),
+    prevBlockId: z.uuidv4().nullable().optional(),
+    arborizedEditableBlock: ArborizedEditableBlockSchema,
   }),
   affected: z.object({
-    blockPackId: z.uuidv4(),
+    blockPackIds: z.array(z.uuidv4()),
   }),
 });
 
@@ -255,6 +165,8 @@ export type InsertBlockRequest = z.infer<typeof InsertBlockRequestSchema>;
 
 export const InsertBlockResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
+    blockPackId: z.uuidv4().optional(),
+    blockIds: z.array(z.uuidv4()).optional(),
     createdAt: z.coerce.date(),
   }),
   embedded: z.object({
@@ -267,18 +179,14 @@ export type InsertBlockResponse = z.infer<typeof InsertBlockResponseSchema>;
 /* ============================== InsertBlocks ============================== */
 
 export const InsertBlocksRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     insertedBlocks: z.array(
       z.object({
-        parentBlockId: z.uuidv4().nullable(),
-        blockGroupId: z.uuidv4(),
-        arborizedEditableBlock: z.custom<PartialBlock>(),
+        blockPackId: z.uuidv4(),
+        parentBlockId: z.uuidv4().nullable().optional(),
+        prevBlockId: z.uuidv4().nullable().optional(),
+        arborizedEditableBlock: ArborizedEditableBlockSchema,
       })
     ),
   }),
@@ -292,14 +200,9 @@ export type InsertBlocksRequest = z.infer<typeof InsertBlocksRequestSchema>;
 export const InsertBlocksResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     isAllSuccess: z.boolean(),
-    failedIndexes: z.array(z.number()),
-    successIndexes: z.array(z.number()),
-    successBlockGroupAndBlockIds: z.array(
-      z.object({
-        blockGroupId: z.uuidv4(),
-        blockIds: z.array(z.uuidv4()),
-      })
-    ),
+    failedIndexes: NullableNumberArraySchema,
+    successIndexes: NullableNumberArraySchema,
+    successBlockPackAndBlockIds: NullableSuccessBlockPackAndBlockIdsSchema,
     createdAt: z.coerce.date(),
   }),
   embedded: z.object({
@@ -312,28 +215,28 @@ export type InsertBlocksResponse = z.infer<typeof InsertBlocksResponseSchema>;
 /* ============================== UpdateMyBlockById ============================== */
 
 export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     blockId: z.uuidv4(),
     values: z
       .object({
+        blockPackId: z.uuidv4(),
         parentBlockId: z.uuidv4().nullable(),
-        blockGroupId: z.uuidv4(),
+        prevBlockId: z.uuidv4().nullable(),
         type: z.enum(AllBlockTypes).nullable(),
-        props: z.json(),
-        content: z.array(z.json()),
+        props: z.any(),
+        content: z.any(),
       })
       .partial(),
-    setNull: z.record(z.string(), z.boolean()).optional(),
+    setNull: z
+      .object({
+        ParentBlockId: z.literal(true).optional(),
+        PrevBlockId: z.literal(true).optional(),
+      })
+      .optional(),
   }),
   affected: z.object({
-    blockGroupId: z.uuidv4(),
-    blockPackId: z.uuidv4(),
+    blockPackIds: z.array(z.uuidv4()),
   }),
 });
 
@@ -357,26 +260,27 @@ export type UpdateMyBlockByIdResponse = z.infer<
 /* ============================== UpdateMyBlocksByIds ============================== */
 
 export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     updatedBlocks: z.array(
       z.object({
         blockId: z.uuidv4(),
         values: z
           .object({
+            blockPackId: z.uuidv4(),
             parentBlockId: z.uuidv4().nullable(),
-            blockGroupId: z.uuidv4(),
+            prevBlockId: z.uuidv4().nullable(),
             type: z.enum(AllBlockTypes).nullable(),
-            props: z.json(),
-            content: z.array(z.json()),
+            props: z.any(),
+            content: z.any(),
           })
           .partial(),
-        setNull: z.record(z.string(), z.boolean()).optional(),
+        setNull: z
+          .object({
+            ParentBlockId: z.literal(true).optional(),
+            PrevBlockId: z.literal(true).optional(),
+          })
+          .optional(),
       })
     ),
   }),
@@ -392,14 +296,9 @@ export type UpdateMyBlocksByIdsRequest = z.infer<
 export const UpdateMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     isAllSuccess: z.boolean(),
-    failedIndexes: z.array(z.number()),
-    successIndexes: z.array(z.number()),
-    successBlockGroupAndBlockIds: z.array(
-      z.object({
-        blockGroupId: z.uuidv4(),
-        blockIds: z.array(z.uuidv4()),
-      })
-    ),
+    failedIndexes: NullableNumberArraySchema,
+    successIndexes: NullableNumberArraySchema,
+    successBlockPackAndBlockIds: NullableSuccessBlockPackAndBlockIdsSchema,
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
@@ -414,18 +313,12 @@ export type UpdateMyBlocksByIdsResponse = z.infer<
 /* ============================== RestoreMyBlockById ============================== */
 
 export const RestoreMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     blockId: z.uuidv4(),
   }),
   affected: z.object({
-    blockGroupId: z.uuidv4(),
-    blockPackId: z.uuidv4(),
+    blockPackIds: z.array(z.uuidv4()),
   }),
 });
 
@@ -434,17 +327,7 @@ export type RestoreMyBlockByIdRequest = z.infer<
 >;
 
 export const RestoreMyBlockByIdResponseSchema = NotezyResponseSchema.extend({
-  data: z.object({
-    id: z.uuidv4(),
-    parentBlockId: z.uuidv4().nullable(),
-    blockGroupId: z.uuidv4(),
-    type: z.string(),
-    props: z.json(),
-    content: z.array(z.json()),
-    deletedAt: z.coerce.date().nullable(),
-    updatedAt: z.coerce.date(),
-    createdAt: z.coerce.date(),
-  }),
+  data: PrivateBlockSchema,
   embedded: z.object({
     publicId: z.string(),
   }),
@@ -457,17 +340,11 @@ export type RestoreMyBlockByIdResponse = z.infer<
 /* ============================== RestoreMyBlocksByIds ============================== */
 
 export const RestoreMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
   affected: z.object({
-    blockGroupIds: z.array(z.uuidv4()),
     blockPackIds: z.array(z.uuidv4()),
   }),
 });
@@ -477,19 +354,7 @@ export type RestoreMyBlocksByIdsRequest = z.infer<
 >;
 
 export const RestoreMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
-  data: z.array(
-    z.object({
-      id: z.uuidv4(),
-      parentBlockId: z.uuidv4().nullable(),
-      blockGroupId: z.uuidv4(),
-      type: z.string(),
-      props: z.json(),
-      content: z.array(z.json()),
-      deletedAt: z.coerce.date().nullable(),
-      updatedAt: z.coerce.date(),
-      createdAt: z.coerce.date(),
-    })
-  ),
+  data: z.array(PrivateBlockSchema),
   embedded: z.object({
     publicId: z.string(),
   }),
@@ -502,18 +367,12 @@ export type RestoreMyBlocksByIdsResponse = z.infer<
 /* ============================== DeleteMyBlockById ============================== */
 
 export const DeleteMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     blockId: z.uuidv4(),
   }),
   affected: z.object({
-    blockGroupId: z.uuidv4(),
-    blockPackId: z.uuidv4(),
+    blockPackIds: z.array(z.uuidv4()),
   }),
 });
 
@@ -537,17 +396,11 @@ export type DeleteMyBlockByIdResponse = z.infer<
 /* ============================== DeleteMyBlocksByIds ============================== */
 
 export const DeleteMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
+  header: HeaderSchema,
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
   affected: z.object({
-    blockGroupIds: z.array(z.uuidv4()),
     blockPackIds: z.array(z.uuidv4()),
   }),
 });

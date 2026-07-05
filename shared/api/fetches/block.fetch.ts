@@ -4,10 +4,6 @@ import type {
   GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
   GetMyBlockByIdResponse,
-  GetMyBlocksByBlockGroupIdRequest,
-  GetMyBlocksByBlockGroupIdResponse,
-  GetMyBlocksByBlockGroupIdsRequest,
-  GetMyBlocksByBlockGroupIdsResponse,
   GetMyBlocksByBlockPackIdRequest,
   GetMyBlocksByBlockPackIdResponse,
   GetMyBlocksByIdsRequest,
@@ -17,8 +13,6 @@ import { duplicateResponse } from "@shared/api/interfaces/context.interface";
 import {
   queryFnGetAllMyBlocks,
   queryFnGetMyBlockById,
-  queryFnGetMyBlocksByBlockGroupId,
-  queryFnGetMyBlocksByBlockGroupIds,
   queryFnGetMyBlocksByBlockPackId,
   queryFnGetMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
@@ -74,61 +68,6 @@ export const fetchGetMyBlocksByIds = async (
   });
 
   return response as GetMyBlocksByIdsResponse;
-};
-
-export const fetchGetMyBlocksByBlockGroupId = async (
-  fetchRequest: GetMyBlocksByBlockGroupIdRequest,
-  initialQueryClient?: QueryClient,
-  options?: Partial<FetchQueryOptions>
-): Promise<GetMyBlocksByBlockGroupIdResponse> => {
-  const queryClient = initialQueryClient ?? getQueryClient();
-
-  const response = await queryClient.fetchQuery({
-    queryKey: queryKeys.block.manyByBlockGroupId(
-      fetchRequest.param.blockGroupId as UUID
-    ),
-    queryFn: async () => await queryFnGetMyBlocksByBlockGroupId(fetchRequest),
-    staleTime: QueryAsyncDefaultOptions.staleTime,
-    ...options,
-  });
-
-  return response as GetMyBlocksByBlockGroupIdResponse;
-};
-
-export const fetchGetMyBlocksByBlockGroupIds = async (
-  fetchRequest: GetMyBlocksByBlockGroupIdsRequest,
-  initialQueryClient?: QueryClient,
-  options?: Partial<FetchQueryOptions>
-): Promise<GetMyBlocksByBlockGroupIdsResponse> => {
-  const queryClient = initialQueryClient ?? getQueryClient();
-
-  const response = await queryClient.fetchQuery({
-    queryKey: queryKeys.block.manyByBlockGroupIds(
-      fetchRequest.param.blockGroupIds as UUID[]
-    ),
-    queryFn: async () => {
-      const response = await queryFnGetMyBlocksByBlockGroupIds(fetchRequest);
-
-      if (response.success && response.data) {
-        fetchRequest.param.blockGroupIds.forEach((blockGroupId, index) => {
-          queryClient.setQueriesData(
-            {
-              queryKey: queryKeys.block.manyByBlockGroupId(
-                blockGroupId as UUID
-              ),
-            },
-            duplicateResponse(response, undefined, response.data[index])
-          );
-        });
-      }
-
-      return response;
-    },
-    staleTime: QueryAsyncDefaultOptions.staleTime,
-    ...options,
-  });
-
-  return response as GetMyBlocksByBlockGroupIdsResponse;
 };
 
 export const fetchGetMyBlocksByBlockPackId = async (
