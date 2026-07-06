@@ -9,6 +9,7 @@ import {
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
+  FragmentedBasicPrivateSearchableRoutineFragmentDoc,
   RoutinePeriod as GraphQLRoutinePeriod,
   RoutineStatus as GraphQLRoutineStatus,
 } from "@shared/api/graphql/generated/graphql";
@@ -231,20 +232,89 @@ const patchSearchRoutineIdList = (
   value: string,
   isRemove: boolean
 ) => {
+  const cachedRoutine = apolloClient.cache.readFragment<any>({
+    id: apolloClient.cache.identify({
+      __typename: "PrivateSearchableRoutine",
+      id: routineId,
+    }),
+    fragment: FragmentedBasicPrivateSearchableRoutineFragmentDoc,
+  });
+  const currentIds = (cachedRoutine?.[fieldName] as string[] | undefined) ?? [];
+  const nextIds = isRemove
+    ? currentIds.filter(id => id !== value)
+    : Array.from(new Set([...currentIds, value]));
+  const patchedRoutine = cachedRoutine
+    ? { ...cachedRoutine, [fieldName]: nextIds }
+    : null;
+
+  const cacheId = apolloClient.cache.identify({
+    __typename: "PrivateSearchableRoutine",
+    id: routineId,
+  });
+  if (cacheId) {
+    apolloClient.cache.modify({
+      id: cacheId,
+      fields: {
+        [fieldName](existing: any = []) {
+          return isRemove
+            ? existing.filter((id: string) => id !== value)
+            : Array.from(new Set([...existing, value]));
+        },
+      },
+    });
+  }
+
   apolloClient.cache.modify({
     fields: {
-      searchRoutines(existing, { readField }) {
+      searchRoutines(existing, { readField, storeFieldName, toReference }) {
         if (!existing?.searchEdges) return existing;
+        const input = getSearchInput(storeFieldName);
+        let existed = false;
+        const nextEdges = existing.searchEdges.flatMap((edge: any) => {
+          if (readField("id", edge.node) !== routineId) return [edge];
+          existed = true;
+          const current = (readField(fieldName, edge.node) as string[]) ?? [];
+          const node = patchedRoutine ?? {
+            ...edge.node,
+            id: routineId,
+            stationId: readField("stationId", edge.node),
+            title: readField("title", edge.node),
+            tagIds:
+              fieldName === "tagIds"
+                ? isRemove
+                  ? current.filter(id => id !== value)
+                  : Array.from(new Set([...current, value]))
+                : ((readField("tagIds", edge.node) as string[]) ?? []),
+          };
+          return routineMatchesSearchInput(node, input)
+            ? [
+                {
+                  ...edge,
+                  node: patchedRoutine
+                    ? (toReference(patchedRoutine, true) ?? patchedRoutine)
+                    : node,
+                },
+              ]
+            : [];
+        });
+        if (
+          !existed &&
+          patchedRoutine &&
+          routineMatchesSearchInput(patchedRoutine, input)
+        ) {
+          nextEdges.unshift({
+            __typename: "SearchRoutineEdge",
+            encodedSearchCursor: routineId,
+            node: toReference(patchedRoutine, true) ?? patchedRoutine,
+          });
+        }
         return {
           ...existing,
-          searchEdges: existing.searchEdges.map((edge: any) => {
-            if (readField("id", edge.node) !== routineId) return edge;
-            const current = (readField(fieldName, edge.node) as string[]) ?? [];
-            const next = isRemove
-              ? current.filter(id => id !== value)
-              : Array.from(new Set([...current, value]));
-            return { ...edge, node: { ...edge.node, [fieldName]: next } };
-          }),
+          totalCount:
+            (existing.totalCount ?? existing.searchEdges.length) +
+            nextEdges.length -
+            existing.searchEdges.length,
+          searchEdges: nextEdges,
         };
       },
     },

@@ -19,11 +19,11 @@ import {
   Tags,
   Trash2,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
-import RoutineTaskRecordDialog from "@/components/core/RoutineOverviewer/RoutineTaskRecordDialog";
 import RoutineTaskMenu from "@/components/menus/RoutineTaskMenu/RoutineTaskMenu";
+import RoutineTaskMenuItemSkeleton from "@/components/menus/RoutineTaskMenu/RoutineTaskMenuItemSkeleton";
 import {
   Collapsible,
   CollapsibleContent,
@@ -48,6 +48,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import {
+  SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
@@ -70,7 +71,6 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
   const shelfItemManager = useShelfItem();
-  const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
 
   const searchedItems =
     shelfItemManager.itemSearch.data?.searchItems?.searchEdges?.map(edge => {
@@ -100,8 +100,6 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
         routineTask,
       ])
     ).values()
-  ).sort((leftRoutineTask, rightRoutineTask) =>
-    leftRoutineTask.title.localeCompare(rightRoutineTask.title)
   );
 
   const handleRenameRoutineOnSubmit = useCallback(
@@ -231,7 +229,14 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
           <ContextMenuContent className="min-w-44">
             <ContextMenuLabel>View</ContextMenuLabel>
             <ContextMenuGroup>
-              <ContextMenuItem onClick={() => setIsRecordDialogOpen(true)}>
+              <ContextMenuItem
+                onClick={() =>
+                  modalManager.open("RoutineTaskRecordDialog", {
+                    routineTitle: routine.title,
+                    routineTaskIds: routine.routineTaskIds,
+                  })
+                }
+              >
                 <HistoryIcon className="mr-2 size-4" />
                 View all task records
               </ContextMenuItem>
@@ -572,16 +577,15 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
             </ContextMenuGroup>
           </ContextMenuContent>
         </ContextMenu>
-        <RoutineTaskRecordDialog
-          open={isRecordDialogOpen}
-          onOpenChange={setIsRecordDialogOpen}
-          routineTitle={routine.title}
-          routineTaskIds={routine.routineTaskIds}
-        />
-
         {!stationRoutineManager.isRoutineEditing(routine.id) && (
           <CollapsibleContent>
-            <RoutineTaskMenu routineTasks={routine.routineTasks} />
+            <SidebarMenuSub>
+              {!routine.isExpanded ? (
+                <RoutineTaskMenuItemSkeleton />
+              ) : (
+                <RoutineTaskMenu routineTasks={routine.routineTasks} />
+              )}
+            </SidebarMenuSub>
           </CollapsibleContent>
         )}
       </SidebarMenuSubItem>

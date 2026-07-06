@@ -422,7 +422,6 @@ const DashboardPage = () => {
         <ProgressiveBackground
           ref={headerBackgroundImageRef}
           className={`!w-full !h-60 shrink-0 border-none relative z-${DashboardElementZIndexes.headerBackgroundImage}`}
-          loadHighResolution="interaction"
         >
           {isEditing && (
             <ModifyImageHover

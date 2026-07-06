@@ -5,21 +5,17 @@ interface ProgressiveBackgroundProps
   extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   children?: React.ReactNode;
-  loadHighResolution?: boolean | "interaction";
 }
 
 export const ProgressiveBackground = React.forwardRef<
   HTMLDivElement,
   ProgressiveBackgroundProps
->(({ className = "", children, loadHighResolution = true, ...props }, ref) => {
+>(({ className = "", children, ...props }, ref) => {
   const backgroundImagesManager = useBackgroundImages();
 
   const [highResolutionImageURL, setHeightResolutionImageURL] = useState<
     string | null
   >(null);
-  const [canLoadHighResolution, setCanLoadHighResolution] = useState(
-    loadHighResolution !== "interaction"
-  );
   const [isLoaded, setIsLoaded] = useState(false);
 
   const loadingTaskTokenRef = useRef(0);
@@ -37,38 +33,9 @@ export const ProgressiveBackground = React.forwardRef<
   ]);
 
   useEffect(() => {
-    if (loadHighResolution !== "interaction") {
-      setCanLoadHighResolution(loadHighResolution !== false);
-      return;
-    }
-
-    setCanLoadHighResolution(false);
-    const allowHighResolutionLoad = () => setCanLoadHighResolution(true);
-    window.addEventListener("pointerdown", allowHighResolutionLoad, {
-      once: true,
-    });
-    window.addEventListener("keydown", allowHighResolutionLoad, { once: true });
-    window.addEventListener("wheel", allowHighResolutionLoad, {
-      once: true,
-      passive: true,
-    });
-
-    return () => {
-      window.removeEventListener("pointerdown", allowHighResolutionLoad);
-      window.removeEventListener("keydown", allowHighResolutionLoad);
-      window.removeEventListener("wheel", allowHighResolutionLoad);
-    };
-  }, [loadHighResolution]);
-
-  useEffect(() => {
     if (backgroundImagesManager.currentBackgroundImage === null) {
       setHeightResolutionImageURL(null);
       setIsLoaded(false);
-      return;
-    }
-    if (!canLoadHighResolution) {
-      setHeightResolutionImageURL(null);
-      setIsLoaded(true);
       return;
     }
 
@@ -96,35 +63,42 @@ export const ProgressiveBackground = React.forwardRef<
     return () => {
       preloadImage.onload = null;
       preloadImage.onerror = null;
+      URL.revokeObjectURL(nextObjectURL);
     };
-  }, [
-    canLoadHighResolution,
-    backgroundImagesManager.currentBackgroundImage,
-    thumbnailURL,
-  ]);
+  }, [backgroundImagesManager.currentBackgroundImage]);
 
   return (
     <div
       ref={ref}
       {...props}
-      className={`relative w-full h-full overflow-hidden bg-cover bg-center bg-no-repeat ${className}`}
+      className={`relative w-full h-full overflow-hidden ${className}`}
       style={{
         ...props.style,
-        backgroundImage: `url(${highResolutionImageURL || thumbnailURL})`,
       }}
     >
-      <div
-        className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-[1000ms] ease-out pointer-events-none`}
-        style={{
-          backgroundImage: `url(${thumbnailURL})`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "blur(10px)",
-          transform: "scale(1.05)",
-          opacity: isLoaded ? 0 : 1,
-        }}
-      />
+      {(highResolutionImageURL || thumbnailURL) && (
+        <img
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover"
+          decoding="async"
+          fetchPriority="high"
+          loading="eager"
+          src={highResolutionImageURL || thumbnailURL}
+        />
+      )}
+      {thumbnailURL && (
+        <img
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 size-full scale-105 object-cover blur-[10px] transition-opacity duration-[1000ms] ease-out"
+          decoding="async"
+          src={thumbnailURL}
+          style={{
+            opacity: isLoaded ? 0 : 1,
+          }}
+        />
+      )}
       <div className="relative z-10 w-full h-full">{children}</div>
     </div>
   );

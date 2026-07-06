@@ -9,9 +9,8 @@ import { PlanLimitations } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
-import RoutineTaskPayloadEditor from "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditors/RoutineTaskPayloadEditor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,6 +36,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { useLanguage, useStationRoutine, useUser } from "@/hooks";
 import type { ModalProps } from "@/providers/ModalProvider";
 import CreateRoutineTaskDialogSkeleton from "./CreateRoutineTaskDialogSkeleton";
+
+const RoutineTaskPayloadEditor = lazy(
+  () =>
+    import(
+      "@/components/core/RoutineOverviewer/RoutineTaskPayloadEditors/RoutineTaskPayloadEditor"
+    )
+);
 
 interface CreateRoutineTaskDialogProps extends ModalProps {
   stationId: UUID;
@@ -601,16 +607,20 @@ const CreateRoutineTaskDialog = ({
             </Button>
           </DialogFooter>
         </form>
-        <RoutineTaskPayloadEditor
-          isOpen={isPayloadEditorOpen}
-          purpose={purpose}
-          initialPayload={payload}
-          onClose={() => setIsPayloadEditorOpen(false)}
-          onConfirm={nextPayload => {
-            setPayload(nextPayload);
-            setPayloadError("");
-          }}
-        />
+        {isPayloadEditorOpen && (
+          <Suspense fallback={null}>
+            <RoutineTaskPayloadEditor
+              isOpen={isPayloadEditorOpen}
+              purpose={purpose}
+              initialPayload={payload}
+              onClose={() => setIsPayloadEditorOpen(false)}
+              onConfirm={nextPayload => {
+                setPayload(nextPayload);
+                setPayloadError("");
+              }}
+            />
+          </Suspense>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,12 @@
 import type { UUID } from "crypto";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
 import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
 import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
@@ -11,8 +18,14 @@ import DeleteRoutineDialog from "@/components/dialogs/StationRoutineDialog/Delet
 import DeleteRoutineTagDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTagDialog";
 import DeleteRoutineTaskDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTaskDialog";
 import DeleteStationDialog from "@/components/dialogs/StationRoutineDialog/DeleteStationDialog";
+import RoutineTaskRecordDialogSkeleton from "@/components/dialogs/StationRoutineDialog/RoutineTaskRecordDialogSkeleton";
 import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
 import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
+
+const RoutineTaskRecordDialog = lazy(
+  () =>
+    import("@/components/dialogs/StationRoutineDialog/RoutineTaskRecordDialog")
+);
 
 export interface ModalProps {
   isOpen: boolean;
@@ -74,6 +87,10 @@ export type ModalPropsMap = {
     routineTaskId: UUID;
     routineTaskTitle: string;
     onDeleted?: () => void | Promise<void>;
+  };
+  RoutineTaskRecordDialog: {
+    routineTitle: string;
+    routineTaskIds: UUID[];
   };
   SelectBackgroundImageDialog: {
     cropperAspectRatio: number;
@@ -212,6 +229,19 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
         onClose={close}
         {...getModalProps("DeleteRoutineTaskDialog")}
       />
+      {isOpen("RoutineTaskRecordDialog") && (
+        <Suspense
+          fallback={
+            <RoutineTaskRecordDialogSkeleton isOpen={true} onClose={close} />
+          }
+        >
+          <RoutineTaskRecordDialog
+            isOpen={true}
+            onClose={close}
+            {...getModalProps("RoutineTaskRecordDialog")}
+          />
+        </Suspense>
+      )}
       <SelectBackgroundImageDialog
         isOpen={isOpen("SelectBackgroundImageDialog")}
         onClose={close}

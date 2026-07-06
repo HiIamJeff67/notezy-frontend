@@ -1,11 +1,25 @@
-import { Suspense } from "react";
-import StationMenuItem from "@/components/menus/StationMenu/StationMenuItem";
+import { lazy, Suspense } from "react";
 import StationMenuItemSkeleton from "@/components/menus/StationMenu/StationMenuItemSkeleton";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { useStationRoutine } from "@/hooks";
 
+const StationMenuItem = lazy(
+  () => import("@/components/menus/StationMenu/StationMenuItem")
+);
+
 const StationMenu = () => {
   const stationRoutineManager = useStationRoutine();
+
+  if (
+    stationRoutineManager.state !== "idle" &&
+    stationRoutineManager.stations.length === 0
+  ) {
+    return (
+      <SidebarMenu className="overflow-hidden">
+        <StationMenuItemSkeleton number={4} />
+      </SidebarMenu>
+    );
+  }
 
   return (
     <SidebarMenu className="overflow-hidden">

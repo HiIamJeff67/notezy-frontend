@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { useLanguage, useStationRoutine } from "@/hooks";
-import RoutineTagInspectorSkeleton from "./RoutineTagInspectorSkeleton";
+import InspectorLoadingCover from "./InspectorLoadingCover";
 
 interface RoutineTagInspectorProps {
   routineTagId: UUID;
@@ -86,6 +86,7 @@ const RoutineTagInspector = ({
           routines: [],
           routineCount: 0,
           isOpen: false,
+          isExpanded: true,
         };
         stationRoutineManager.upsertRoutineTagNode(routineTagNode);
         setValues({
@@ -160,55 +161,51 @@ const RoutineTagInspector = ({
               await saveRoutineTag();
             }}
           >
-            {isLoadingRoutineTagDetail ? (
-              <RoutineTagInspectorSkeleton />
-            ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="routine-tag-inspector-name">Name</Label>
-                  <Input
-                    id="routine-tag-inspector-name"
-                    value={values.name}
-                    autoComplete="off"
-                    maxLength={128}
-                    autoFocus
-                    onChange={event => {
-                      const name = event.currentTarget.value;
-                      setValues(current => ({
-                        ...current,
-                        name,
-                      }));
-                    }}
+            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="routine-tag-inspector-name">Name</Label>
+                <Input
+                  id="routine-tag-inspector-name"
+                  value={values.name}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => {
+                    const name = event.currentTarget.value;
+                    setValues(current => ({
+                      ...current,
+                      name,
+                    }));
+                  }}
+                />
+              </div>
+
+              <div className="flex items-end gap-4">
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Color</Label>
+                  <ColorSelector
+                    value={values.color}
+                    onValueChange={color =>
+                      setValues(current => ({ ...current, color }))
+                    }
+                    disabled={stationRoutineManager.isUpdatingRoutineTag}
+                    className="bg-muted"
                   />
                 </div>
 
-                <div className="flex items-end gap-4">
-                  <div className="flex shrink-0 flex-col gap-2">
-                    <Label>Color</Label>
-                    <ColorSelector
-                      value={values.color}
-                      onValueChange={color =>
-                        setValues(current => ({ ...current, color }))
-                      }
-                      disabled={stationRoutineManager.isUpdatingRoutineTag}
-                      className="bg-muted"
-                    />
-                  </div>
-
-                  <div className="flex shrink-0 flex-col gap-2">
-                    <Label>Icon</Label>
-                    <SupportedIconTable
-                      value={values.icon}
-                      onValueChange={icon =>
-                        setValues(current => ({ ...current, icon }))
-                      }
-                      disabled={stationRoutineManager.isUpdatingRoutineTag}
-                      className="bg-muted"
-                    />
-                  </div>
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Icon</Label>
+                  <SupportedIconTable
+                    value={values.icon}
+                    onValueChange={icon =>
+                      setValues(current => ({ ...current, icon }))
+                    }
+                    disabled={stationRoutineManager.isUpdatingRoutineTag}
+                    className="bg-muted"
+                  />
                 </div>
               </div>
-            )}
+            </div>
 
             <SheetFooter className="shrink-0 flex-col gap-2 border-t border-border px-6 py-5 sm:flex-col sm:space-x-0">
               <Button
@@ -234,6 +231,10 @@ const RoutineTagInspector = ({
               </Button>
             </SheetFooter>
           </form>
+          <InspectorLoadingCover
+            label="Loading"
+            show={isLoadingRoutineTagDetail}
+          />
         </div>
       </SheetContent>
     </Sheet>

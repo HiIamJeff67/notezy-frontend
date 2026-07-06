@@ -19,6 +19,7 @@ export interface StationNode {
   createdAt: Date;
 
   isOpen: boolean;
+  isExpanded: boolean;
 
   routines: RoutineNode[];
   routineTasks: RoutineTaskNode[];
@@ -37,6 +38,7 @@ export const getDefaultStationNode = (stationId: UUID): StationNode => ({
   createdAt: new Date(),
 
   isOpen: false,
+  isExpanded: false,
 
   routines: [],
   routineTasks: [],

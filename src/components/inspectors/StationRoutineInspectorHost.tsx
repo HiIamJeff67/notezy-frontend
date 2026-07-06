@@ -6,33 +6,34 @@ import StationInspector from "./StationInspector";
 
 const StationRoutineInspectorHost = () => {
   const stationRoutineManager = useStationRoutine();
+  const inspectorTarget = stationRoutineManager.inspectorTarget;
 
-  if (stationRoutineManager.inspectorTarget === null) return null;
+  if (inspectorTarget === null) return null;
 
-  if (stationRoutineManager.inspectorTarget.type === "station") {
+  if (inspectorTarget.type === "station") {
     return (
       <StationInspector
-        stationId={stationRoutineManager.inspectorTarget.id}
+        stationId={inspectorTarget.id}
         isOpen
         onClose={stationRoutineManager.closeInspector}
       />
     );
   }
 
-  if (stationRoutineManager.inspectorTarget.type === "routine") {
+  if (inspectorTarget.type === "routine") {
     return (
       <RoutineInspector
-        routineId={stationRoutineManager.inspectorTarget.id}
+        routineId={inspectorTarget.id}
         isOpen
         onClose={stationRoutineManager.closeInspector}
       />
     );
   }
 
-  if (stationRoutineManager.inspectorTarget.type === "routineTag") {
+  if (inspectorTarget.type === "routineTag") {
     return (
       <RoutineTagInspector
-        routineTagId={stationRoutineManager.inspectorTarget.id}
+        routineTagId={inspectorTarget.id}
         isOpen
         onClose={stationRoutineManager.closeInspector}
       />
@@ -41,7 +42,7 @@ const StationRoutineInspectorHost = () => {
 
   return (
     <RoutineTaskInspector
-      routineTaskId={stationRoutineManager.inspectorTarget.id}
+      routineTaskId={inspectorTarget.id}
       isOpen
       onClose={stationRoutineManager.closeInspector}
     />

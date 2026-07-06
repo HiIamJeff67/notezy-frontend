@@ -76,8 +76,10 @@ export const useRoutineTagLogic = ({
 
       routineTagNode.isOpen = true;
       forceUpdate();
-      if (routineTagNode.routines.length < routineTagNode.routineCount) {
+      if (!routineTagNode.isExpanded) {
         await expandRoutinesByTagId(routineTagId);
+        routineTagNode.isExpanded = true;
+        forceUpdate();
       }
     },
     [expandRoutinesByTagId, forceUpdate, routineTagsRef]
@@ -115,6 +117,7 @@ export const useRoutineTagLogic = ({
         routines: [],
         routineCount: 0,
         isOpen: false,
+        isExpanded: true,
       };
       routineTagsRef.current.set(routineTagNode.id, routineTagNode);
       forceUpdate();
@@ -144,6 +147,7 @@ export const useRoutineTagLogic = ({
         Object.assign(existingRoutineTag, {
           ...routineTagNode,
           isOpen: existingRoutineTag.isOpen,
+          isExpanded: existingRoutineTag.isExpanded,
           routines: existingRoutineTag.routines,
           routineCount: existingRoutineTag.routineCount,
         });
@@ -369,6 +373,7 @@ export const useRoutineTagLogic = ({
           routines: existingRoutineTag?.routines ?? [],
           routineCount: existingRoutineTag?.routineCount ?? 0,
           isOpen: existingRoutineTag?.isOpen ?? false,
+          isExpanded: existingRoutineTag?.isExpanded ?? false,
         });
       }
       if (searchEdges.length > 0) forceUpdate();

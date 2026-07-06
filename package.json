@@ -119,6 +119,7 @@
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
     "jest": "^30.0.5",
+    "shadcn": "^4.13.0",
     "tailwindcss": "^4.2.4",
     "ts-jest": "^29.4.1",
     "tsx": "^4.21.0",

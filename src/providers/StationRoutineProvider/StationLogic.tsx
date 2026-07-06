@@ -84,8 +84,12 @@ export const useStationLogic = ({
 
       stationNode.isOpen = true;
       forceUpdate();
-      await expandRoutinesByStationId(stationId);
-      await getAllRoutineTasksByStationId(stationId);
+      if (!stationNode.isExpanded) {
+        await expandRoutinesByStationId(stationId);
+        await getAllRoutineTasksByStationId(stationId);
+        stationNode.isExpanded = true;
+        forceUpdate();
+      }
     },
     [
       expandRoutinesByStationId,
@@ -131,6 +135,7 @@ export const useStationLogic = ({
         updatedAt: response.data.createdAt,
         createdAt: response.data.createdAt,
         isOpen: false,
+        isExpanded: true,
         routines: [],
         routineTasks: [],
       };
@@ -148,6 +153,7 @@ export const useStationLogic = ({
         Object.assign(existingStation, {
           ...stationNode,
           isOpen: existingStation.isOpen,
+          isExpanded: existingStation.isExpanded,
           routines: existingStation.routines,
           routineTasks: existingStation.routineTasks,
         });
@@ -390,6 +396,7 @@ export const useStationLogic = ({
           updatedAt: new Date(node.updatedAt),
           createdAt: new Date(node.createdAt),
           isOpen: existingStation?.isOpen ?? false,
+          isExpanded: existingStation?.isExpanded ?? false,
           routines: existingStation?.routines ?? [],
           routineTasks: existingStation?.routineTasks ?? [],
         });

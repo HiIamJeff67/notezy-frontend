@@ -1,15 +1,38 @@
-import RoutineTagMenuItem from "@/components/menus/RoutineTagMenu/RoutineTagMenuItem";
+import { lazy, Suspense } from "react";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { useStationRoutine } from "@/hooks";
+import RoutineTagMenuItemSkeleton from "@/components/menus/RoutineTagMenu/RoutineTagMenuItemSkeleton";
+
+const RoutineTagMenuItem = lazy(() => import("@/components/menus/RoutineTagMenu/RoutineTagMenuItem"));
 
 const RoutineTagMenu = () => {
   const stationRoutineManager = useStationRoutine();
 
+  if (
+    stationRoutineManager.routineTags.length === 0 &&
+    (stationRoutineManager.state !== "idle" ||
+      stationRoutineManager.isSearchingRoutineTags ||
+      !stationRoutineManager.searchRoutineTagsData)
+  ) {
+    return (
+      <SidebarMenu className="overflow-hidden">
+        <RoutineTagMenuItemSkeleton number={4} />
+      </SidebarMenu>
+    );
+  }
+
   return (
     <SidebarMenu className="overflow-hidden">
-      {stationRoutineManager.routineTags.map(routineTag => (
-        <RoutineTagMenuItem key={routineTag.id} routineTag={routineTag} />
-      ))}
+      <Suspense fallback={<RoutineTagMenuItemSkeleton />}>
+        {stationRoutineManager.routineTags.map(routineTag => (
+          <Suspense
+            fallback={<RoutineTagMenuItemSkeleton />}
+            key={routineTag.id}
+          >
+            <RoutineTagMenuItem routineTag={routineTag} />
+          </Suspense>
+        ))}
+      </Suspense>
     </SidebarMenu>
   );
 };

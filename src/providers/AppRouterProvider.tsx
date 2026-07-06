@@ -8,14 +8,18 @@ import {
   createContext,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
 } from "react";
 
-interface AppRouterContextType {
+export interface AppRouterStateContextType {
   isNavigating: boolean;
   params: Record<string, string>;
+}
+
+export interface AppRouterActionsContextType {
   isSamePath: (a: string, b: string) => boolean;
   getCurrentPath: () => string;
   getPrevPaths: () => string[];
@@ -27,9 +31,19 @@ interface AppRouterContextType {
   refresh: () => void;
 }
 
+interface AppRouterContextType
+  extends AppRouterStateContextType,
+    AppRouterActionsContextType {}
+
 export const AppRouterContext = createContext<AppRouterContextType | undefined>(
   undefined
 );
+export const AppRouterStateContext = createContext<
+  AppRouterStateContextType | undefined
+>(undefined);
+export const AppRouterActionsContext = createContext<
+  AppRouterActionsContextType | undefined
+>(undefined);
 
 export const AppRouterProvider = ({
   children,
@@ -141,23 +155,51 @@ export const AppRouterProvider = ({
     });
   }, [router]);
 
-  const contextValue: AppRouterContextType = {
-    isNavigating: isNavigating,
-    params: params as Record<string, string>,
-    isSamePath: isSamePath,
-    getCurrentPath: getCurrentPath,
-    getPrevPaths: getPrevPaths,
-    push: push,
-    forceNavigate: forceNavigate,
-    replace: replace,
-    back: back,
-    forward: forward,
-    refresh: refresh,
-  };
+  const stateValue = useMemo<AppRouterStateContextType>(
+    () => ({
+      isNavigating: isNavigating,
+      params: params as Record<string, string>,
+    }),
+    [isNavigating, params]
+  );
+
+  const actionsValue = useMemo<AppRouterActionsContextType>(
+    () => ({
+      isSamePath: isSamePath,
+      getCurrentPath: getCurrentPath,
+      getPrevPaths: getPrevPaths,
+      push: push,
+      forceNavigate: forceNavigate,
+      replace: replace,
+      back: back,
+      forward: forward,
+      refresh: refresh,
+    }),
+    [
+      back,
+      forceNavigate,
+      forward,
+      getCurrentPath,
+      getPrevPaths,
+      isSamePath,
+      push,
+      refresh,
+      replace,
+    ]
+  );
+
+  const contextValue = useMemo<AppRouterContextType>(
+    () => ({ ...stateValue, ...actionsValue }),
+    [stateValue, actionsValue]
+  );
 
   return (
-    <AppRouterContext.Provider value={contextValue}>
-      {children}
-    </AppRouterContext.Provider>
+    <AppRouterStateContext.Provider value={stateValue}>
+      <AppRouterActionsContext.Provider value={actionsValue}>
+        <AppRouterContext.Provider value={contextValue}>
+          {children}
+        </AppRouterContext.Provider>
+      </AppRouterActionsContext.Provider>
+    </AppRouterStateContext.Provider>
   );
 };

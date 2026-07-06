@@ -17,7 +17,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useAppRouter, useLoading, useNetwork } from "@/hooks";
+import { useAppRouterActions, useLoading, useNetwork } from "@/hooks";
 import { useTransactionSynchronizer } from "@/hooks/useTransactionSynchronizer";
 
 interface UserContextType {
@@ -52,7 +52,7 @@ export const UserContext = createContext<UserContextType | undefined>(
 );
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const router = useAppRouter();
+  const router = useAppRouterActions();
   const loadingManager = useLoading();
   const { isOnline } = useNetwork();
   const { status: transactionSynchronizerStatus } =

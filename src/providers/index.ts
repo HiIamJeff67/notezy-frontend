@@ -1,6 +1,5 @@
 export * from "./AppRouterProvider";
 export * from "./BackgroundImagesProvider";
-export * from "./BlockEditorProvider";
 export * from "./LanguageProvider";
 export * from "./LoadingProvider";
 export * from "./LocalPreferencesProvider";

@@ -52,7 +52,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  useAppRouter,
+  useAppRouterActions,
   useLanguage,
   useResizeSidebar,
   useShelfItem,
@@ -68,7 +68,7 @@ interface AppSidebarProps {
 export function AppSidebar({ disabled = false }: AppSidebarProps) {
   if (disabled) return <></>;
 
-  const router = useAppRouter();
+  const router = useAppRouterActions();
   const languageManager = useLanguage();
   const modalManager = useModal();
   const sidebarManager = useSidebar();

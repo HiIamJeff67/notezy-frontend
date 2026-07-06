@@ -332,6 +332,13 @@ export const StationRoutineProvider = ({
               updatedAt: routine.updatedAt,
               createdAt: routine.createdAt,
               isOpen: existingRoutine?.isOpen ?? false,
+              isExpanded:
+                existingRoutine?.isExpanded ??
+                routine.taskIds.every(taskId =>
+                  stationNode.routineTasks.some(
+                    routineTask => routineTask.id === taskId
+                  )
+                ),
               routineTagIds: routine.tagIds as UUID[],
               routineTaskIds: routine.taskIds as UUID[],
               itemIds: routine.itemIds as UUID[],
@@ -391,6 +398,7 @@ export const StationRoutineProvider = ({
             }
           }
           loadedRoutineStationIdsRef.current.add(stationId);
+          stationNode.isExpanded = true;
         }
         routinesById.clear();
         forceUpdate();

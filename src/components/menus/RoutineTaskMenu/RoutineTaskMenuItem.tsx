@@ -9,10 +9,8 @@ import {
   SquarePen,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
-import RoutineTaskRecordDialog from "@/components/core/RoutineOverviewer/RoutineTaskRecordDialog";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -41,7 +39,6 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
   const languageManager = useLanguage();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
-  const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
   const statusDotClassName =
     routineTask.status === RoutineTaskStatus.Running
       ? "bg-sky-500"
@@ -106,7 +103,14 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
         <ContextMenuContent className="min-w-36">
           <ContextMenuLabel>View</ContextMenuLabel>
           <ContextMenuGroup>
-            <ContextMenuItem onClick={() => setIsRecordDialogOpen(true)}>
+            <ContextMenuItem
+              onClick={() =>
+                modalManager.open("RoutineTaskRecordDialog", {
+                  routineTitle: routineTask.title,
+                  routineTaskIds: [routineTask.id],
+                })
+              }
+            >
               <HistoryIcon className="mr-2 size-4" />
               View all records
             </ContextMenuItem>
@@ -185,12 +189,6 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           </ContextMenuGroup>
         </ContextMenuContent>
       </ContextMenu>
-      <RoutineTaskRecordDialog
-        open={isRecordDialogOpen}
-        onOpenChange={setIsRecordDialogOpen}
-        routineTitle={routineTask.title}
-        routineTaskIds={[routineTask.id]}
-      />
     </SidebarMenuSubItem>
   );
 };

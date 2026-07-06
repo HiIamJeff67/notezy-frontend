@@ -18,6 +18,7 @@ export interface RoutineNode {
   createdAt: Date;
 
   isOpen: boolean;
+  isExpanded: boolean;
 
   routineTagIds: UUID[];
   routineTaskIds: UUID[];
@@ -44,6 +45,7 @@ export const getDefaultRoutineNode = (
   createdAt: new Date(),
 
   isOpen: false,
+  isExpanded: false,
 
   routineTagIds: [],
   routineTaskIds: [],

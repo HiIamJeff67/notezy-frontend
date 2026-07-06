@@ -1,4 +1,3 @@
-import { useTheme } from "@/hooks/useTheme";
 import LoadingIndicator from "./LoadingIndicator";
 
 interface StrictLoadingCoverProps {
@@ -6,8 +5,6 @@ interface StrictLoadingCoverProps {
 }
 
 const StrictLoadingCover = ({ condition }: StrictLoadingCoverProps) => {
-  const themeManager = useTheme();
-
   if (condition !== undefined && condition !== null && !condition) return <></>;
 
   return (

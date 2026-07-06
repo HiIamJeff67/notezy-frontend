@@ -1,7 +1,13 @@
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { CheckIcon, SquarePen } from "lucide-react";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
@@ -27,7 +33,9 @@ import RoutineScopeBar from "./RoutineScopeBar";
 import RoutineTable from "./RoutineTable";
 import RoutineTaskRecordTable from "./RoutineTaskRecordTable";
 import RoutineTaskTable from "./RoutineTaskTable";
-import TimeRails from "./TimeRails/TimeRails";
+import TimeRailsSkeleton from "./TimeRails/TimeRailsSkeleton";
+
+const TimeRails = React.lazy(() => import("./TimeRails/TimeRails"));
 
 function dedupeChartComponentIds(componentIds: string[]) {
   return Array.from(new Set(componentIds));
@@ -80,6 +88,8 @@ const RoutineOverviewerContent = ({
   const [isAddChartDialogOpen, setIsAddChartDialogOpen] =
     useState<boolean>(false);
   const [isOpening, setIsOpening] = useState<boolean>(true);
+  const [shouldRenderTimeRails, setShouldRenderTimeRails] =
+    useState<boolean>(false);
   const [cropperAspectRatio, setCropperAspectRatio] = useState<number>(16 / 9);
 
   const headerBackgroundImageRef = useRef<HTMLDivElement>(null);
@@ -119,6 +129,14 @@ const RoutineOverviewerContent = ({
         })
       );
     }
+  }, []);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setShouldRenderTimeRails(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
@@ -430,7 +448,6 @@ const RoutineOverviewerContent = ({
             <ProgressiveBackground
               ref={headerBackgroundImageRef}
               className="w-full h-full shrink-0 border-none relative z-10"
-              loadHighResolution="interaction"
             >
               {isHeaderBackgroundImageEditing && (
                 <ModifyImageHover
@@ -448,7 +465,13 @@ const RoutineOverviewerContent = ({
           )}
         </div>
         <div className="flex w-full flex-col gap-4 overflow-x-hidden p-4">
-          <TimeRails />
+          {shouldRenderTimeRails ? (
+            <Suspense fallback={<TimeRailsSkeleton />}>
+              <TimeRails />
+            </Suspense>
+          ) : (
+            <TimeRailsSkeleton />
+          )}
           {showCharts && (
             <RoutineOverviewerCharts
               charts={charts}

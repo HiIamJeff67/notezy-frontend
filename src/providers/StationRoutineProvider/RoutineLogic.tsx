@@ -172,6 +172,9 @@ export const useRoutineLogic = ({
           updatedAt: new Date(node.updatedAt),
           createdAt: new Date(node.createdAt),
           isOpen: existingRoutine?.isOpen ?? false,
+          isExpanded:
+            existingRoutine?.isExpanded ??
+            routineTasks.length >= routineTaskIds.length,
           routineTagIds,
           routineTaskIds,
           itemIds: routineItemIds,
@@ -200,6 +203,9 @@ export const useRoutineLogic = ({
           );
           if (!wasLinked) {
             routineTagNode.routines.push(currentRoutine);
+            routineTagNode.routines.sort((leftRoutine, rightRoutine) =>
+              leftRoutine.title.localeCompare(rightRoutine.title)
+            );
           }
           if (tagIds.length === 0 && !wasLinked) {
             routineTagNode.routineCount++;
@@ -235,6 +241,9 @@ export const useRoutineLogic = ({
             }
           }
         }
+        stationNode.routines.sort((leftRoutine, rightRoutine) =>
+          leftRoutine.title.localeCompare(rightRoutine.title)
+        );
         if (stationIds.length === 1 && stationIds[0] === searchedStationId) {
           stationNode.routineCount =
             result.data?.searchRoutines.totalCount ?? searchedRoutines.length;
@@ -260,6 +269,9 @@ export const useRoutineLogic = ({
                   ),
                   ...searchedRoutines,
                 ];
+          routineTagNode.routines.sort((leftRoutine, rightRoutine) =>
+            leftRoutine.title.localeCompare(rightRoutine.title)
+          );
           routineTagNode.routineCount =
             result.data?.searchRoutines.totalCount ?? searchedRoutines.length;
         }
@@ -330,11 +342,12 @@ export const useRoutineLogic = ({
         return;
       }
 
-      if (
-        routineNode.routineTaskIds.length > 0 &&
-        stationNode.routineTasks.length === 0
-      ) {
-        await getAllRoutineTasksByStationId(stationId);
+      if (!routineNode.isExpanded) {
+        routineNode.isOpen = true;
+        forceUpdate();
+        if (routineNode.routineTaskIds.length > 0) {
+          await getAllRoutineTasksByStationId(stationId);
+        }
       }
 
       routineNode.routineTasks = routineNode.routineTaskIds
@@ -347,7 +360,11 @@ export const useRoutineLogic = ({
           (routineTask): routineTask is RoutineTaskNode =>
             routineTask !== undefined
         );
+      routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
       routineNode.isOpen = true;
+      routineNode.isExpanded = true;
       forceUpdate();
     },
     [forceUpdate, getAllRoutineTasksByStationId, stationsRef]
@@ -412,6 +429,7 @@ export const useRoutineLogic = ({
         updatedAt: response.data.createdAt,
         createdAt: response.data.createdAt,
         isOpen: false,
+        isExpanded: true,
         routineTagIds: [],
         routineTaskIds: [],
         itemIds: [],
@@ -437,10 +455,14 @@ export const useRoutineLogic = ({
         Object.assign(existingRoutine, {
           ...routineNode,
           isOpen: existingRoutine.isOpen,
+          isExpanded: existingRoutine.isExpanded,
         });
       } else {
         stationNode.routines.push(routineNode);
       }
+      stationNode.routines.sort((leftRoutine, rightRoutine) =>
+        leftRoutine.title.localeCompare(rightRoutine.title)
+      );
 
       const persistedRoutine = existingRoutine ?? routineNode;
       for (const routineTagNode of routineTagsRef.current.values()) {
@@ -449,6 +471,9 @@ export const useRoutineLogic = ({
         );
         if (persistedRoutine.routineTagIds.includes(routineTagNode.id)) {
           routineTagNode.routines.push(persistedRoutine);
+          routineTagNode.routines.sort((leftRoutine, rightRoutine) =>
+            leftRoutine.title.localeCompare(rightRoutine.title)
+          );
         }
       }
 
@@ -771,6 +796,9 @@ export const useRoutineLogic = ({
               routineTaskNode,
             ]
           : routineNode.routineTasks;
+      routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
       routineNode.updatedAt = new Date();
       forceUpdate();
 

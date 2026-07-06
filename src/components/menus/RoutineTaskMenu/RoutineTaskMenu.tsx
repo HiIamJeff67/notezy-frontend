@@ -1,7 +1,8 @@
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
-import { Suspense } from "react";
-import { SidebarMenuSub } from "@/components/ui/sidebar";
-import RoutineTaskMenuItem from "./RoutineTaskMenuItem";
+import { lazy, Suspense } from "react";
+import RoutineTaskMenuItemSkeleton from "./RoutineTaskMenuItemSkeleton";
+
+const RoutineTaskMenuItem = lazy(() => import("./RoutineTaskMenuItem"));
 
 interface RoutineTaskMenuProps {
   routineTasks: RoutineTaskNode[];
@@ -9,20 +10,18 @@ interface RoutineTaskMenuProps {
 
 const RoutineTaskMenu = ({ routineTasks }: RoutineTaskMenuProps) => {
   return (
-    <SidebarMenuSub>
-      <Suspense fallback={null}>
-        {[...routineTasks]
-          .sort((leftRoutineTask, rightRoutineTask) =>
-            leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-          )
-          .map(routineTask => (
-            <RoutineTaskMenuItem
-              key={routineTask.id}
-              routineTask={routineTask}
-            />
-          ))}
+    <>
+      <Suspense fallback={<RoutineTaskMenuItemSkeleton />}>
+        {routineTasks.map(routineTask => (
+          <Suspense
+            fallback={<RoutineTaskMenuItemSkeleton />}
+            key={routineTask.id}
+          >
+            <RoutineTaskMenuItem routineTask={routineTask} />
+          </Suspense>
+        ))}
       </Suspense>
-    </SidebarMenuSub>
+    </>
   );
 };
 

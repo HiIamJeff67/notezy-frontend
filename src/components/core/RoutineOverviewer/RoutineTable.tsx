@@ -151,6 +151,7 @@ const RoutineTable = () => {
             updatedAt: new Date(node.updatedAt),
             createdAt: new Date(node.createdAt),
             isOpen: false,
+            isExpanded: false,
             routineTagIds,
             itemIds: node.itemIds ?? [],
             routineTasks: routineTaskIds.flatMap(routineTaskId => {

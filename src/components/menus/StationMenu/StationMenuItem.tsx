@@ -17,6 +17,7 @@ import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/Cont
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
+import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuItemSkeleton";
 import {
   Collapsible,
   CollapsibleContent,
@@ -36,7 +37,11 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+} from "@/components/ui/sidebar";
 import {
   useAppRouter,
   useLanguage,
@@ -295,7 +300,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             </div>
           )}
         <CollapsibleContent>
-          <RoutineMenu station={station} routines={station.routines} />
+          <SidebarMenuSub>
+            <RoutineMenu station={station} routines={station.routines} />
+          </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
     </Collapsible>

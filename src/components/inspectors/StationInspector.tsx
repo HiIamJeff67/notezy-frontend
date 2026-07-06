@@ -25,7 +25,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useStationRoutine } from "@/hooks";
-import StationInspectorSkeleton from "./StationInspectorSkeleton";
+import InspectorLoadingCover from "./InspectorLoadingCover";
 
 interface StationInspectorProps {
   stationId: UUID;
@@ -93,6 +93,7 @@ const StationInspector = ({
           updatedAt: response.data.updatedAt,
           createdAt: response.data.createdAt,
           isOpen: false,
+          isExpanded: true,
           routines: [],
           routineTasks: [],
         };
@@ -174,82 +175,78 @@ const StationInspector = ({
               await saveStation();
             }}
           >
-            {isLoadingStationDetail ? (
-              <StationInspectorSkeleton />
-            ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="station-inspector-name">Name</Label>
-                  <Input
-                    id="station-inspector-name"
-                    value={values.name}
-                    autoComplete="off"
-                    maxLength={128}
-                    autoFocus
-                    onChange={event => {
-                      const name = event.currentTarget.value;
-                      setValues(current => ({
-                        ...current,
-                        name,
-                      }));
-                    }}
+            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="station-inspector-name">Name</Label>
+                <Input
+                  id="station-inspector-name"
+                  value={values.name}
+                  autoComplete="off"
+                  maxLength={128}
+                  autoFocus
+                  onChange={event => {
+                    const name = event.currentTarget.value;
+                    setValues(current => ({
+                      ...current,
+                      name,
+                    }));
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="station-inspector-description">
+                  Description
+                </Label>
+                <Textarea
+                  id="station-inspector-description"
+                  value={values.description}
+                  maxLength={1024}
+                  className="min-h-48 max-h-72 resize-y overflow-y-auto"
+                  onChange={event => {
+                    const description = event.currentTarget.value;
+                    setValues(current => ({
+                      ...current,
+                      description,
+                    }));
+                  }}
+                />
+              </div>
+
+              <div className="flex items-end gap-4">
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Label>Icon</Label>
+                  <SupportedIconTable
+                    value={values.icon}
+                    onValueChange={icon =>
+                      setValues(current => ({ ...current, icon }))
+                    }
+                    disabled={stationRoutineManager.isUpdatingStation}
+                    className="bg-muted"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="station-inspector-description">
-                    Description
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <Label htmlFor="station-inspector-background">
+                    Background URL
                   </Label>
-                  <Textarea
-                    id="station-inspector-description"
-                    value={values.description}
-                    maxLength={1024}
-                    className="min-h-48 max-h-72 resize-y overflow-y-auto"
+                  <Input
+                    id="station-inspector-background"
+                    type="url"
+                    value={values.headerBackgroundURL}
+                    autoComplete="off"
+                    placeholder="https://"
                     onChange={event => {
-                      const description = event.currentTarget.value;
+                      const headerBackgroundURL = event.currentTarget.value;
                       setValues(current => ({
                         ...current,
-                        description,
+                        headerBackgroundURL,
                       }));
                     }}
                   />
-                </div>
-
-                <div className="flex items-end gap-4">
-                  <div className="flex shrink-0 flex-col gap-2">
-                    <Label>Icon</Label>
-                    <SupportedIconTable
-                      value={values.icon}
-                      onValueChange={icon =>
-                        setValues(current => ({ ...current, icon }))
-                      }
-                      disabled={stationRoutineManager.isUpdatingStation}
-                      className="bg-muted"
-                    />
-                  </div>
-
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <Label htmlFor="station-inspector-background">
-                      Background URL
-                    </Label>
-                    <Input
-                      id="station-inspector-background"
-                      type="url"
-                      value={values.headerBackgroundURL}
-                      autoComplete="off"
-                      placeholder="https://"
-                      onChange={event => {
-                        const headerBackgroundURL = event.currentTarget.value;
-                        setValues(current => ({
-                          ...current,
-                          headerBackgroundURL,
-                        }));
-                      }}
-                    />
-                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
             <SheetFooter className="shrink-0 flex-col gap-2 border-t border-border px-6 py-5 sm:flex-col sm:space-x-0">
               <Button
@@ -275,6 +272,10 @@ const StationInspector = ({
               </Button>
             </SheetFooter>
           </form>
+          <InspectorLoadingCover
+            label="Loading"
+            show={isLoadingStationDetail}
+          />
         </div>
       </SheetContent>
     </Sheet>

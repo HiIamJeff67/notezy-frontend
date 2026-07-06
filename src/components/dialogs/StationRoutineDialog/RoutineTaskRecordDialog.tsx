@@ -35,17 +35,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStationRoutine } from "@/hooks";
+import type { ModalProps } from "@/providers/ModalProvider";
 
-type RoutineTaskRecordDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface RoutineTaskRecordDialogProps extends ModalProps {
   routineTitle: string;
   routineTaskIds: UUID[];
-};
+}
 
 const RoutineTaskRecordDialog = ({
-  open,
-  onOpenChange,
+  isOpen,
+  onClose,
   routineTitle,
   routineTaskIds,
 }: RoutineTaskRecordDialogProps) => {
@@ -96,7 +95,7 @@ const RoutineTaskRecordDialog = ({
 
   const searchRecords = useCallback(
     async (reset: boolean) => {
-      if (!open || routineTaskIds.length === 0 || isSearchingRef.current) {
+      if (!isOpen || routineTaskIds.length === 0 || isSearchingRef.current) {
         return;
       }
       if (!reset && (!hasMore || !cursor)) return;
@@ -168,13 +167,13 @@ const RoutineTaskRecordDialog = ({
         setIsSearching(false);
       }
     },
-    [cursor, executeSearch, hasMore, open, recordSearch.fetchMore, signature]
+    [cursor, executeSearch, hasMore, isOpen, recordSearch.fetchMore, signature]
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
     void searchRecords(true);
-  }, [open, signature]);
+  }, [isOpen, signature]);
 
   const filteredRecords = records.filter(record => {
     if (status !== "All" && record.status !== status) return false;
@@ -185,7 +184,7 @@ const RoutineTaskRecordDialog = ({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="flex max-h-[82vh] flex-col gap-0 overflow-visible rounded-md bg-muted p-0 sm:max-w-5xl">
         <DialogHeader className="shrink-0 border-b border-border px-6 py-5 pr-12">
           <DialogTitle>Routine task records</DialogTitle>

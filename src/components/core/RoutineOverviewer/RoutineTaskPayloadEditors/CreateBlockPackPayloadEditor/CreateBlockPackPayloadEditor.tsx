@@ -1,6 +1,5 @@
 import { BlockNoteEditor } from "@blocknote/core";
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
-import { convertBlocksToJSON } from "@shared/util/convertBlocksToFiles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -359,7 +358,9 @@ const CreateBlockPackPayloadEditor = ({
   };
 
   const buildBlockPayload = async () => {
-    const jsonBlob = await convertBlocksToJSON(editor);
+    const jsonBlob = new Blob([JSON.stringify(editor.document)], {
+      type: "application/json",
+    });
     const blocks = JSON.parse(await jsonBlob.text());
     const normalizedBlocks = blocks.map((block: any) => normalizeBlock(block));
     const firstBlock = normalizedBlocks[0] ?? {

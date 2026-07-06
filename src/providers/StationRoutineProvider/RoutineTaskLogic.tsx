@@ -110,6 +110,9 @@ export const useRoutineTaskLogic = ({
         }
         return routineTaskNode;
       });
+      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
 
       for (const routineNode of stationNode.routines) {
         routineNode.routineTasks = routineNode.routineTaskIds
@@ -122,6 +125,9 @@ export const useRoutineTaskLogic = ({
             (routineTask): routineTask is RoutineTaskNode =>
               routineTask !== undefined
           );
+        routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+          leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+        );
       }
 
       forceUpdate();
@@ -267,6 +273,9 @@ export const useRoutineTaskLogic = ({
               ),
               ...searchedRoutineTaskNodes,
             ];
+      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
       const searchedRoutineTaskIds = new Set(
         searchedRoutineTaskNodes.map(routineTask => routineTask.id)
       );
@@ -295,6 +304,9 @@ export const useRoutineTaskLogic = ({
               ),
               searchedRoutineTask.routineTask,
             ];
+            routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+              leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+            );
           }
         }
       }
@@ -414,6 +426,9 @@ export const useRoutineTaskLogic = ({
         createdAt: response.data.createdAt,
       };
       stationNode.routineTasks.push(routineTaskNode);
+      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
       forceUpdate();
       return routineTaskNode;
     },
@@ -458,6 +473,9 @@ export const useRoutineTaskLogic = ({
       } else {
         stationNode.routineTasks.push(routineTaskNode);
       }
+      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
 
       const persistedRoutineTask = existingRoutineTask ?? routineTaskNode;
       for (const routineNode of stationNode.routines) {
@@ -471,6 +489,9 @@ export const useRoutineTaskLogic = ({
           ),
           persistedRoutineTask,
         ];
+        routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+          leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+        );
       }
 
       forceUpdate();
@@ -535,6 +556,16 @@ export const useRoutineTaskLogic = ({
         }
         if (setNull?.Period) routineTaskNode.period = null;
         routineTaskNode.updatedAt = response.data.updatedAt;
+      }
+      for (const stationNode of stationsRef.current.values()) {
+        stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+          leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+        );
+        for (const routineNode of stationNode.routines) {
+          routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+            leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+          );
+        }
       }
       forceUpdate();
       return routineTaskNodes.values().next().value as RoutineTaskNode;

@@ -14,6 +14,7 @@ import { useCallback } from "react";
 import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
+import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuItemSkeleton";
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,6 +41,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { useLanguage, useLoading, useModal, useStationRoutine } from "@/hooks";
 
@@ -286,7 +288,13 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
             )}
             <CollapsibleContent>
-              <RoutineMenu routines={routineTag.routines} />
+              <SidebarMenuSub>
+                {!routineTag.isExpanded ? (
+                  <RoutineMenuItemSkeleton />
+                ) : (
+                  <RoutineMenu routines={routineTag.routines} />
+                )}
+              </SidebarMenuSub>
             </CollapsibleContent>
           </>
         )}

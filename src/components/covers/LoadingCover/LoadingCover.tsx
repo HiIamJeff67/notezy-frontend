@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useAppRouter, useLoading } from "@/hooks";
+import { useAppRouterState, useLoading } from "@/hooks";
 import LoadingIndicator from "./LoadingIndicator";
 
 const LoadingCover = () => {
   const { isStrictLoading } = useLoading();
-  const { isNavigating } = useAppRouter();
+  const { isNavigating } = useAppRouterState();
   const isAnyLoading = isStrictLoading || isNavigating;
 
   useEffect(() => {
