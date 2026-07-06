@@ -5,14 +5,14 @@ import {
 } from "@shared/api/interfaces/enums";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { Routine } from "./routine.schema";
 import { RoutinesToTasks } from "./routinesToTasks.schema";
-import { Station } from "./station.schema";
 
 export const RoutineTask = sqliteTable("RoutineTaskTable", {
   id: text("id").primaryKey(),
-  stationId: text("station_id")
+  routineId: text("routine_id")
     .notNull()
-    .references(() => Station.id),
+    .references(() => Routine.id),
   title: text("title").notNull().default("undefined"),
   purpose: text("purpose").$type<RoutineTaskPurpose>().notNull(),
   costUnit: integer("cost_unit").notNull().default(0),
@@ -42,9 +42,9 @@ export const RoutineTask = sqliteTable("RoutineTaskTable", {
 });
 
 export const RoutineTaskRelations = relations(RoutineTask, ({ one, many }) => ({
-  station: one(Station, {
-    fields: [RoutineTask.stationId],
-    references: [Station.id],
+  routine: one(Routine, {
+    fields: [RoutineTask.routineId],
+    references: [Routine.id],
   }),
   routinesToTasks: many(RoutinesToTasks),
 }));

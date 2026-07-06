@@ -98,8 +98,8 @@ export const queryKeys = {
       ["station", "visualizeMyTotalCount", permission] as const,
     myAll: (areDeleted: boolean = false) =>
       ["station", "myAll", areDeleted] as const,
-    oneById: (stationId?: UUID, isDeleted: boolean = false) =>
-      ["station", "oneById", stationId, isDeleted] as const,
+    oneById: (routineId?: UUID, isDeleted: boolean = false) =>
+      ["station", "oneById", routineId, isDeleted] as const,
   },
   routine: {
     all: () => ["routine"] as const,
@@ -142,7 +142,7 @@ export const queryKeys = {
     manyByTimeRange: (
       from?: Date,
       to?: Date,
-      stationIds?: UUID[],
+      routineIds?: UUID[],
       areDeleted: boolean = false
     ) =>
       [
@@ -150,8 +150,8 @@ export const queryKeys = {
         "manyByTimeRange",
         from?.getTime(),
         to?.getTime(),
-        stationIds && stationIds.length > 0
-          ? stationIds.slice().sort().join(",")
+        routineIds && routineIds.length > 0
+          ? routineIds.slice().sort().join(",")
           : undefined,
         areDeleted,
       ] as const,
@@ -215,14 +215,14 @@ export const queryKeys = {
       ["routineTask", "myAll", areDeleted] as const,
     oneById: (routineTaskId?: UUID, isDeleted: boolean = false) =>
       ["routineTask", "oneById", routineTaskId, isDeleted] as const,
-    manyByStationId: (stationId?: UUID, areDeleted: boolean = false) =>
-      ["routineTask", "manyByStationId", stationId, areDeleted] as const,
-    manyByStationIds: (stationIds?: UUID[], areDeleted: boolean = false) =>
+    manyByRoutineId: (routineId?: UUID, areDeleted: boolean = false) =>
+      ["routineTask", "manyByRoutineId", routineId, areDeleted] as const,
+    manyByRoutineIds: (routineIds?: UUID[], areDeleted: boolean = false) =>
       [
         "routineTask",
-        "manyByStationIds",
-        stationIds && stationIds.length > 0
-          ? stationIds.slice().sort().join(",")
+        "manyByRoutineIds",
+        routineIds && routineIds.length > 0
+          ? routineIds.slice().sort().join(",")
           : undefined,
         areDeleted,
       ] as const,

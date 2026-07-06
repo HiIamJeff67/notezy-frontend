@@ -1,6 +1,6 @@
 fragment FragmentedBasicPrivateRoutineTask on PrivateRoutineTask {
   id
-  stationId
+  routineId
   title
   purpose
   costUnit
@@ -15,7 +15,6 @@ fragment FragmentedBasicPrivateRoutineTask on PrivateRoutineTask {
   actualEndedAt
   updatedAt
   createdAt
-  routineIds
 }
 
 fragment FragmentedPrivateRoutineTask on PrivateRoutineTask {

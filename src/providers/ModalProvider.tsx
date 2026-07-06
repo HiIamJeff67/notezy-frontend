@@ -7,24 +7,54 @@ import React, {
   useRef,
   useState,
 } from "react";
-import SelectBackgroundImageDialog from "@/components/dialogs/ImageDialog/SelectBackgroundImageDialog";
-import CreateShelfItemDialog from "@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog";
-import DeleteShelfItemDialog from "@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog";
-import CreateRoutineDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineDialog";
-import CreateRoutineTagDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineTagDialog";
-import CreateRoutineTaskDialog from "@/components/dialogs/StationRoutineDialog/CreateRoutineTaskDialog";
-import CreateStationDialog from "@/components/dialogs/StationRoutineDialog/CreateStationDialog";
-import DeleteRoutineDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineDialog";
-import DeleteRoutineTagDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTagDialog";
-import DeleteRoutineTaskDialog from "@/components/dialogs/StationRoutineDialog/DeleteRoutineTaskDialog";
-import DeleteStationDialog from "@/components/dialogs/StationRoutineDialog/DeleteStationDialog";
 import RoutineTaskRecordDialogSkeleton from "@/components/dialogs/StationRoutineDialog/RoutineTaskRecordDialogSkeleton";
-import AccountSettingsPanel from "@/components/panels/AccountSettingsPanel/AccountSettingsPanel";
-import PreferencesPanel from "@/components/panels/PreferencesPanel/PreferencesPanel";
 
+const SelectBackgroundImageDialog = lazy(
+  () => import("@/components/dialogs/ImageDialog/SelectBackgroundImageDialog")
+);
+const CreateShelfItemDialog = lazy(
+  () => import("@/components/dialogs/ShelfItemDialog/CreateShelfItemDialog")
+);
+const DeleteShelfItemDialog = lazy(
+  () => import("@/components/dialogs/ShelfItemDialog/DeleteShelfItemDialog")
+);
+const CreateRoutineDialog = lazy(
+  () => import("@/components/dialogs/StationRoutineDialog/CreateRoutineDialog")
+);
+const CreateRoutineTagDialog = lazy(
+  () =>
+    import("@/components/dialogs/StationRoutineDialog/CreateRoutineTagDialog")
+);
+const CreateRoutineTaskDialog = lazy(
+  () =>
+    import("@/components/dialogs/StationRoutineDialog/CreateRoutineTaskDialog")
+);
+const CreateStationDialog = lazy(
+  () => import("@/components/dialogs/StationRoutineDialog/CreateStationDialog")
+);
+const DeleteRoutineDialog = lazy(
+  () => import("@/components/dialogs/StationRoutineDialog/DeleteRoutineDialog")
+);
+const DeleteRoutineTagDialog = lazy(
+  () =>
+    import("@/components/dialogs/StationRoutineDialog/DeleteRoutineTagDialog")
+);
+const DeleteRoutineTaskDialog = lazy(
+  () =>
+    import("@/components/dialogs/StationRoutineDialog/DeleteRoutineTaskDialog")
+);
+const DeleteStationDialog = lazy(
+  () => import("@/components/dialogs/StationRoutineDialog/DeleteStationDialog")
+);
 const RoutineTaskRecordDialog = lazy(
   () =>
     import("@/components/dialogs/StationRoutineDialog/RoutineTaskRecordDialog")
+);
+const AccountSettingsPanel = lazy(
+  () => import("@/components/panels/AccountSettingsPanel/AccountSettingsPanel")
+);
+const PreferencesPanel = lazy(
+  () => import("@/components/panels/PreferencesPanel/PreferencesPanel")
 );
 
 export interface ModalProps {
@@ -79,8 +109,9 @@ export type ModalPropsMap = {
     onDeleted?: () => void | Promise<void>;
   };
   CreateRoutineTaskDialog: {
-    stationId: UUID;
+    routineId: UUID;
     stationName?: string;
+    routineTitle?: string;
     onCreated?: (routineTaskId: UUID) => void | Promise<void>;
   };
   DeleteRoutineTaskDialog: {
@@ -163,90 +194,158 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isOpen = (type: ModalType) => activeModals.some(m => m.type === type);
 
-  const getModalProps = (type: ModalType) =>
-    activeModals.find(modal => modal.type === type)?.props;
+  const renderModal = (
+    modal: { type: ModalType; props?: any },
+    index: number
+  ) => {
+    const props = modal.props;
+    const modalKey = `${modal.type}-${index}`;
+
+    switch (modal.type) {
+      case "AccountSettingsPanel":
+        return (
+          <AccountSettingsPanel
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "PreferencesPanel":
+        return (
+          <PreferencesPanel
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "CreateShelfItemDialog":
+        return (
+          <CreateShelfItemDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "DeleteShelfItemDialog":
+        return (
+          <DeleteShelfItemDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "CreateStationDialog":
+        return (
+          <CreateStationDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "DeleteStationDialog":
+        return (
+          <DeleteStationDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "CreateRoutineDialog":
+        return (
+          <CreateRoutineDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "DeleteRoutineDialog":
+        return (
+          <DeleteRoutineDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "CreateRoutineTagDialog":
+        return (
+          <CreateRoutineTagDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "DeleteRoutineTagDialog":
+        return (
+          <DeleteRoutineTagDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "CreateRoutineTaskDialog":
+        return (
+          <CreateRoutineTaskDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "DeleteRoutineTaskDialog":
+        return (
+          <DeleteRoutineTaskDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "RoutineTaskRecordDialog":
+        return (
+          <RoutineTaskRecordDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+      case "SelectBackgroundImageDialog":
+        return (
+          <SelectBackgroundImageDialog
+            isOpen={true}
+            key={modalKey}
+            onClose={close}
+            {...props}
+          />
+        );
+    }
+  };
 
   return (
     <ModalContext.Provider value={{ open, close, closeAll, isOpen }}>
       {children}
-      <AccountSettingsPanel
-        isOpen={isOpen("AccountSettingsPanel")}
-        onClose={close}
-        {...getModalProps("AccountSettingsPanel")}
-      />
-      <PreferencesPanel
-        isOpen={isOpen("PreferencesPanel")}
-        onClose={close}
-        {...getModalProps("PreferencesPanel")}
-      />
-      <CreateShelfItemDialog
-        isOpen={isOpen("CreateShelfItemDialog")}
-        onClose={close}
-        {...getModalProps("CreateShelfItemDialog")}
-      />
-      <DeleteShelfItemDialog
-        isOpen={isOpen("DeleteShelfItemDialog")}
-        onClose={close}
-        {...getModalProps("DeleteShelfItemDialog")}
-      />
-      <CreateStationDialog
-        isOpen={isOpen("CreateStationDialog")}
-        onClose={close}
-        {...getModalProps("CreateStationDialog")}
-      />
-      <DeleteStationDialog
-        isOpen={isOpen("DeleteStationDialog")}
-        onClose={close}
-        {...getModalProps("DeleteStationDialog")}
-      />
-      <CreateRoutineDialog
-        isOpen={isOpen("CreateRoutineDialog")}
-        onClose={close}
-        {...getModalProps("CreateRoutineDialog")}
-      />
-      <DeleteRoutineDialog
-        isOpen={isOpen("DeleteRoutineDialog")}
-        onClose={close}
-        {...getModalProps("DeleteRoutineDialog")}
-      />
-      <CreateRoutineTagDialog
-        isOpen={isOpen("CreateRoutineTagDialog")}
-        onClose={close}
-        {...getModalProps("CreateRoutineTagDialog")}
-      />
-      <DeleteRoutineTagDialog
-        isOpen={isOpen("DeleteRoutineTagDialog")}
-        onClose={close}
-        {...getModalProps("DeleteRoutineTagDialog")}
-      />
-      <CreateRoutineTaskDialog
-        isOpen={isOpen("CreateRoutineTaskDialog")}
-        onClose={close}
-        {...getModalProps("CreateRoutineTaskDialog")}
-      />
-      <DeleteRoutineTaskDialog
-        isOpen={isOpen("DeleteRoutineTaskDialog")}
-        onClose={close}
-        {...getModalProps("DeleteRoutineTaskDialog")}
-      />
-      {isOpen("RoutineTaskRecordDialog") && (
+      {activeModals.map((modal, index) => (
         <Suspense
+          key={`${modal.type}-${index}`}
           fallback={
-            <RoutineTaskRecordDialogSkeleton isOpen={true} onClose={close} />
+            modal.type === "RoutineTaskRecordDialog" ? (
+              <RoutineTaskRecordDialogSkeleton isOpen={true} onClose={close} />
+            ) : null
           }
         >
-          <RoutineTaskRecordDialog
-            isOpen={true}
-            onClose={close}
-            {...getModalProps("RoutineTaskRecordDialog")}
-          />
+          {renderModal(modal, index)}
         </Suspense>
-      )}
-      <SelectBackgroundImageDialog
-        isOpen={isOpen("SelectBackgroundImageDialog")}
-        onClose={close}
-        {...getModalProps("SelectBackgroundImageDialog")}
-      />
+      ))}
     </ModalContext.Provider>
   );
 };

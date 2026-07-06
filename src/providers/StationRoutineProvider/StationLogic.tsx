@@ -30,7 +30,7 @@ interface UseStationLogicProps {
   routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
   expandRoutinesByStationId: (stationId: UUID) => Promise<void>;
-  getAllRoutineTasksByStationId: (stationId: UUID) => Promise<unknown>;
+  getAllRoutineTasksByRoutineIds: (routineIds: UUID[]) => Promise<unknown>;
   selectedRoutineId: UUID | null;
   selectRoutine: (routineId: UUID | null) => void;
 }
@@ -41,7 +41,7 @@ export const useStationLogic = ({
   routineTagsRef,
   forceUpdate,
   expandRoutinesByStationId,
-  getAllRoutineTasksByStationId,
+  getAllRoutineTasksByRoutineIds,
   selectedRoutineId,
   selectRoutine,
 }: UseStationLogicProps) => {
@@ -86,7 +86,9 @@ export const useStationLogic = ({
       forceUpdate();
       if (!stationNode.isExpanded) {
         await expandRoutinesByStationId(stationId);
-        await getAllRoutineTasksByStationId(stationId);
+        await getAllRoutineTasksByRoutineIds(
+          stationNode.routines.map(routine => routine.id)
+        );
         stationNode.isExpanded = true;
         forceUpdate();
       }
@@ -94,7 +96,7 @@ export const useStationLogic = ({
     [
       expandRoutinesByStationId,
       forceUpdate,
-      getAllRoutineTasksByStationId,
+      getAllRoutineTasksByRoutineIds,
       stationsRef,
     ]
   );
@@ -391,7 +393,7 @@ export const useStationLogic = ({
           icon,
           headerBackgroundURL: node.headerBackgroundURL,
           permission: node.permission as unknown as AccessControlPermission,
-          routineCount: existingStation?.routineCount ?? 0,
+          routineCount: node.routineCount,
           deletedAt: node.deletedAt === null ? null : new Date(node.deletedAt),
           updatedAt: new Date(node.updatedAt),
           createdAt: new Date(node.createdAt),

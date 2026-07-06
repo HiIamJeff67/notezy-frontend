@@ -90,18 +90,6 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
         parentSubShelfName: item.parentSubShelf?.name ?? "Unknown sub shelf",
       };
     }) ?? [];
-  const searchedRoutineTasks = stationRoutineManager.routineTasks.filter(
-    routineTask => routineTask.stationId === station.id
-  );
-  const routineTaskCandidates = Array.from(
-    new Map(
-      [...routine.routineTasks, ...searchedRoutineTasks].map(routineTask => [
-        routineTask.id,
-        routineTask,
-      ])
-    ).values()
-  );
-
   const handleRenameRoutineOnSubmit = useCallback(
     async () =>
       await loadingManager.startAsyncTransactionLoading(async () => {
@@ -270,13 +258,10 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               <ContextMenuItem
                 onClick={() =>
                   modalManager.open("CreateRoutineTaskDialog", {
-                    stationId: station.id,
+                    routineId: routine.id,
                     stationName: station.name,
-                    onCreated: async routineTaskId => {
-                      await stationRoutineManager.linkRoutineTask(
-                        routine.id,
-                        routineTaskId
-                      );
+                    routineTitle: routine.title,
+                    onCreated: async () => {
                       routine.isOpen = true;
                     },
                   })
@@ -352,88 +337,6 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                           }}
                         >
                           {routineTag.name}
-                        </ContextMenuCheckboxItem>
-                      );
-                    })
-                  )}
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-              <ContextMenuSub
-                onOpenChange={open => {
-                  if (!open) return;
-                  window.setTimeout(() => {
-                    void stationRoutineManager
-                      .searchRoutineTasksByStationId(
-                        station.id,
-                        "",
-                        undefined,
-                        true
-                      )
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
-                  }, 0);
-                }}
-              >
-                <ContextMenuSubTrigger>
-                  <ClipboardList className="mr-2 size-4" />
-                  Tasks
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent
-                  className="max-h-80 min-w-64 overflow-y-auto"
-                  onScroll={event => {
-                    const target = event.currentTarget;
-                    const pageInfo =
-                      stationRoutineManager.searchRoutineTasksData
-                        ?.searchRoutineTasks?.searchPageInfo;
-                    if (
-                      target.scrollTop + target.clientHeight <
-                        target.scrollHeight - 16 ||
-                      !pageInfo?.hasNextPage ||
-                      stationRoutineManager.isSearchingRoutineTasks
-                    ) {
-                      return;
-                    }
-                    void stationRoutineManager
-                      .loadMoreRoutineTaskCandidates()
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
-                  }}
-                >
-                  {stationRoutineManager.isSearchingRoutineTasks &&
-                  routineTaskCandidates.length === 0 ? (
-                    <ContextMenuItem disabled>
-                      <LoaderCircle className="mr-2 size-4 animate-spin" />
-                      Loading
-                    </ContextMenuItem>
-                  ) : routineTaskCandidates.length === 0 ? (
-                    <ContextMenuItem disabled>No Tasks</ContextMenuItem>
-                  ) : (
-                    routineTaskCandidates.map(routineTask => {
-                      const isLinked = routine.routineTaskIds.includes(
-                        routineTask.id
-                      );
-                      return (
-                        <ContextMenuCheckboxItem
-                          key={routineTask.id}
-                          checked={isLinked}
-                          onSelect={event => event.preventDefault()}
-                          onCheckedChange={() => {
-                            void stationRoutineManager
-                              .linkRoutineTask(
-                                routine.id,
-                                routineTask.id,
-                                isLinked
-                              )
-                              .catch(error =>
-                                toast.error(languageManager.tError(error))
-                              );
-                          }}
-                        >
-                          <span className="min-w-0 truncate">
-                            {routineTask.title}
-                          </span>
                         </ContextMenuCheckboxItem>
                       );
                     })

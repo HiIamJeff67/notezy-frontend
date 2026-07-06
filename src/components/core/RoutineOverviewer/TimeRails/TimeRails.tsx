@@ -1,8 +1,10 @@
+import { useGetAllMyRoutinesByTimeRange } from "@shared/api/hooks/routine.hook";
 import { RoutinePeriod } from "@shared/api/interfaces/enums";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
+import { getAuthorization } from "@shared/util/getAuthorization";
 import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
 import { CalendarClock, CalendarDays } from "lucide-react";
@@ -32,8 +34,13 @@ export type TimeRailsStation = {
 const TimeRails = () => {
   const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
+  const timeRangeRoutinesQuerier = useGetAllMyRoutinesByTimeRange(undefined, {
+    enabled: false,
+  });
 
   const previousScaleRef = useRef(stationRoutineManager.timeRailScale);
+  const timeRangeRoutinesFetchRef = useRef(timeRangeRoutinesQuerier.fetch);
+  const timeRangeFetchTokenRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingScrollAdjustmentRef = useRef<number | null>(null);
   const pendingWheelDeltaRef = useRef<number>(0);
@@ -78,11 +85,227 @@ const TimeRails = () => {
       >
     >
   >({});
+  const [timeRangeRoutines, setTimeRangeRoutines] = useState<RoutineNode[]>([]);
   const stationOrderIds = useMemo(
     () => stationRoutineManager.stations.map(station => station.id),
     [stationRoutineManager.stations]
   );
   const stationOrderIdsSignature = stationOrderIds.join("|");
+  const visibleStationIds = useMemo(
+    () => stationRoutineManager.visibleStations.map(station => station.id),
+    [stationRoutineManager.visibleStations]
+  );
+  const visibleStationIdsSignature = visibleStationIds.join("|");
+
+  useEffect(() => {
+    timeRangeRoutinesFetchRef.current = timeRangeRoutinesQuerier.fetch;
+  }, [timeRangeRoutinesQuerier.fetch]);
+
+  const timeRangeFetchWindow = useMemo(() => {
+    if (stationRoutineManager.timeRailScale === "day") {
+      const visibleDayStartAt = new Date(
+        stationRoutineManager.timeWindow.startAt
+      );
+      visibleDayStartAt.setHours(
+        visibleDayStartAt.getHours() + DayBufferHours,
+        0,
+        0,
+        0
+      );
+      const from = new Date(visibleDayStartAt);
+      from.setDate(from.getDate() - 3);
+      const to = new Date(visibleDayStartAt);
+      to.setDate(to.getDate() + 4);
+      return { from, to };
+    }
+
+    if (stationRoutineManager.timeRailScale === "month") {
+      const visibleMonthStartAt = new Date(
+        stationRoutineManager.timeWindow.startAt
+      );
+      visibleMonthStartAt.setDate(1);
+      visibleMonthStartAt.setHours(0, 0, 0, 0);
+      visibleMonthStartAt.setMonth(visibleMonthStartAt.getMonth() + 1);
+      const from = new Date(visibleMonthStartAt);
+      from.setMonth(from.getMonth() - 2);
+      const to = new Date(visibleMonthStartAt);
+      to.setMonth(to.getMonth() + 3);
+      return { from, to };
+    }
+
+    return {
+      from: new Date(stationRoutineManager.timeWindow.startAt),
+      to: new Date(stationRoutineManager.timeWindow.endAt),
+    };
+  }, [
+    stationRoutineManager.timeRailScale,
+    stationRoutineManager.timeWindow.endAt,
+    stationRoutineManager.timeWindow.startAt,
+  ]);
+  const timeRangeFetchWindowSignature = `${timeRangeFetchWindow.from.getTime()}-${timeRangeFetchWindow.to.getTime()}`;
+
+  useEffect(() => {
+    if (visibleStationIds.length === 0) {
+      setTimeRangeRoutines([]);
+      return;
+    }
+
+    const currentToken = timeRangeFetchTokenRef.current + 1;
+    timeRangeFetchTokenRef.current = currentToken;
+    const accessToken = LocalStorageManipulator.getItemByKey(
+      LocalStorageKey.accessToken
+    );
+
+    void timeRangeRoutinesFetchRef
+      .current({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: {
+          from: timeRangeFetchWindow.from,
+          to: timeRangeFetchWindow.to,
+          stationIds: visibleStationIds,
+          areDeleted: false,
+        },
+      })
+      .then(response => {
+        if (timeRangeFetchTokenRef.current !== currentToken) return;
+        const routineNodes = response.data.map(routine => {
+          const existingRoutine = stationRoutineManager.getRoutineById(
+            routine.id as UUID
+          );
+          return {
+            id: routine.id as UUID,
+            stationId: routine.stationId as UUID,
+            title: routine.title,
+            description: existingRoutine?.description ?? "",
+            status: routine.status,
+            isPinned: routine.isPinned,
+            scheduledStartAt: new Date(routine.scheduledStartAt),
+            scheduledEndAt: new Date(routine.scheduledEndAt),
+            period: routine.period,
+            timezone: routine.timezone,
+            deletedAt:
+              routine.deletedAt === null ? null : new Date(routine.deletedAt),
+            updatedAt: new Date(routine.updatedAt),
+            createdAt: new Date(routine.createdAt),
+            isOpen: existingRoutine?.isOpen ?? false,
+            isExpanded: existingRoutine?.isExpanded ?? false,
+            routineTagIds: routine.tagIds as UUID[],
+            routineTaskIds: routine.taskIds as UUID[],
+            itemIds: routine.itemIds as UUID[],
+            routineTasks: existingRoutine?.routineTasks ?? [],
+          } satisfies RoutineNode;
+        });
+        setTimeRangeRoutines(routineNodes);
+      })
+      .catch(error => {
+        if (timeRangeFetchTokenRef.current !== currentToken) return;
+        console.error("failed to load time rail routines", error);
+        setTimeRangeRoutines([]);
+      });
+  }, [
+    stationRoutineManager.getRoutineById,
+    timeRangeFetchWindow.from,
+    timeRangeFetchWindow.to,
+    timeRangeFetchWindowSignature,
+    visibleStationIds,
+    visibleStationIdsSignature,
+  ]);
+
+  const visibleTimeRangeRoutines = useMemo(() => {
+    const visibleStationIdSet = new Set(visibleStationIds);
+    const selectedRoutineTagIds = new Set(
+      stationRoutineManager.presence.routineTagIds
+    );
+    const isAllRoutineTagsVisible =
+      stationRoutineManager.routineTags.length === selectedRoutineTagIds.size;
+    const query = stationRoutineManager.presence.query.trim().toLowerCase();
+
+    return timeRangeRoutines.filter(routine => {
+      if (!visibleStationIdSet.has(routine.stationId)) return false;
+      if (query.length > 0 && !routine.title.toLowerCase().includes(query)) {
+        return false;
+      }
+      if (routine.routineTagIds.length === 0) {
+        return stationRoutineManager.presence.showUntaggedRoutines;
+      }
+      if (isAllRoutineTagsVisible) return true;
+      return routine.routineTagIds.some(routineTagId =>
+        selectedRoutineTagIds.has(routineTagId)
+      );
+    });
+  }, [
+    stationRoutineManager.presence.query,
+    stationRoutineManager.presence.routineTagIds,
+    stationRoutineManager.presence.showUntaggedRoutines,
+    stationRoutineManager.routineTags.length,
+    timeRangeRoutines,
+    visibleStationIds,
+  ]);
+
+  const timeRailRoutines = useMemo(() => {
+    const routineById = new Map<UUID, RoutineNode>();
+    for (const routine of stationRoutineManager.visibleRoutines) {
+      routineById.set(routine.id, routine);
+    }
+    for (const routine of visibleTimeRangeRoutines) {
+      if (!routineById.has(routine.id)) routineById.set(routine.id, routine);
+    }
+    return Array.from(routineById.values());
+  }, [stationRoutineManager.visibleRoutines, visibleTimeRangeRoutines]);
+
+  const timeRailStations = useMemo(() => {
+    return stationRoutineManager.visibleStations.map(station => {
+      const stationRoutines = timeRailRoutines.filter(routine => {
+        const hasValidSchedule =
+          routine.scheduledStartAt instanceof Date &&
+          routine.scheduledEndAt instanceof Date &&
+          !Number.isNaN(routine.scheduledStartAt.getTime()) &&
+          !Number.isNaN(routine.scheduledEndAt.getTime());
+        if (!hasValidSchedule) return false;
+
+        return (
+          routine.stationId === station.id &&
+          (routine.period === RoutinePeriod.Daily ||
+            routine.period === RoutinePeriod.Weekly ||
+            routine.period === RoutinePeriod.Monthly ||
+            (routine.scheduledStartAt <
+              stationRoutineManager.timeWindow.endAt &&
+              routine.scheduledEndAt >
+                stationRoutineManager.timeWindow.startAt))
+        );
+      });
+      const sortedRoutines = [...stationRoutines].sort(
+        (a, b) => a.scheduledStartAt.getTime() - b.scheduledStartAt.getTime()
+      );
+      const railEndTimes: Date[] = [];
+      const routineRailIndexes: Record<UUID, number> = {};
+
+      for (const routine of sortedRoutines) {
+        const targetRailIndex = railEndTimes.findIndex(
+          endAt => endAt <= routine.scheduledStartAt
+        );
+        const railIndex =
+          targetRailIndex === -1 ? railEndTimes.length : targetRailIndex;
+        routineRailIndexes[routine.id] = railIndex;
+        railEndTimes[railIndex] = routine.scheduledEndAt;
+      }
+
+      return {
+        station,
+        routines: sortedRoutines,
+        routineRailIndexes,
+        railCount: Math.max(railEndTimes.length, 1),
+      };
+    });
+  }, [
+    stationRoutineManager.timeWindow.endAt,
+    stationRoutineManager.timeWindow.startAt,
+    stationRoutineManager.visibleStations,
+    timeRailRoutines,
+  ]);
 
   const orderedTimeRailStations = useMemo(() => {
     const positionMap = new Map<UUID, number>();
@@ -90,13 +313,13 @@ const TimeRails = () => {
       positionMap.set(stationId, index);
     });
 
-    return [...stationRoutineManager.timeRailStations].sort((a, b) => {
+    return [...timeRailStations].sort((a, b) => {
       return (
         (positionMap.get(a.station.id) ?? Number.MAX_SAFE_INTEGER) -
         (positionMap.get(b.station.id) ?? Number.MAX_SAFE_INTEGER)
       );
     });
-  }, [stationPositions, stationRoutineManager.timeRailStations]);
+  }, [stationPositions, timeRailStations]);
 
   useEffect(() => {
     const publicId = userManager.userData?.publicId;

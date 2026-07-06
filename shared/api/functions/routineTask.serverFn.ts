@@ -14,10 +14,10 @@ import type {
   VisualizeMyRoutineTaskStatusCountResponse,
 } from "@shared/api/interfaces/routineTask.interface";
 import {
-  CreateRoutineTaskByStationIdRequest,
-  CreateRoutineTaskByStationIdResponse,
-  GetAllMyRoutineTasksByStationIdsRequest,
-  GetAllMyRoutineTasksByStationIdsResponse,
+  CreateRoutineTaskByRoutineIdRequest,
+  CreateRoutineTaskByRoutineIdResponse,
+  GetAllMyRoutineTasksByRoutineIdsRequest,
+  GetAllMyRoutineTasksByRoutineIdsResponse,
   GetAllMyRoutineTasksRequest,
   GetAllMyRoutineTasksResponse,
   GetMyRoutineTaskByIdRequest,
@@ -177,17 +177,17 @@ export const GetMyRoutineTaskById = createServerFn({ method: "GET" })
     return formattedResponse;
   });
 
-export const GetAllMyRoutineTasksByStationIds = createServerFn({
+export const GetAllMyRoutineTasksByRoutineIds = createServerFn({
   method: "GET",
 })
-  .inputValidator((data: GetAllMyRoutineTasksByStationIdsRequest) => data)
+  .inputValidator((data: GetAllMyRoutineTasksByRoutineIdsRequest) => data)
   .handler(
     async ({
       data: request,
-    }): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+    }): Promise<GetAllMyRoutineTasksByRoutineIdsResponse> => {
       const params = new URLSearchParams();
-      for (const stationId of request.param.stationIds) {
-        params.append("stationIds", stationId);
+      for (const routineId of request.param.routineIds) {
+        params.append("routineIds", routineId);
       }
       params.set("areDeleted", String(request.param.areDeleted ?? false));
       const url =
@@ -195,7 +195,7 @@ export const GetAllMyRoutineTasksByStationIds = createServerFn({
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.getAllMyRoutineTasksByStationIds +
+        APIURLPathDictionary.routineTask.getAllMyRoutineTasksByRoutineIds +
         "?" +
         params.toString();
       const inboundCookie = getRequestHeader("cookie");
@@ -221,7 +221,7 @@ export const GetAllMyRoutineTasksByStationIds = createServerFn({
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as GetAllMyRoutineTasksByStationIdsResponse;
+        (await response.json()) as GetAllMyRoutineTasksByRoutineIdsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)
@@ -285,18 +285,18 @@ export const GetAllMyRoutineTasks = createServerFn({
     return formattedResponse;
   });
 
-export const CreateRoutineTaskByStationId = createServerFn({ method: "POST" })
-  .inputValidator((data: CreateRoutineTaskByStationIdRequest) => data)
+export const CreateRoutineTaskByRoutineId = createServerFn({ method: "POST" })
+  .inputValidator((data: CreateRoutineTaskByRoutineIdRequest) => data)
   .handler(
     async ({
       data: request,
-    }): Promise<CreateRoutineTaskByStationIdResponse> => {
+    }): Promise<CreateRoutineTaskByRoutineIdResponse> => {
       const url =
         import.meta.env.VITE_API_DOMAIN_URL +
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.createRoutineTaskByStationId;
+        APIURLPathDictionary.routineTask.createRoutineTaskByRoutineId;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -321,7 +321,7 @@ export const CreateRoutineTaskByStationId = createServerFn({ method: "POST" })
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
-        (await response.json()) as CreateRoutineTaskByStationIdResponse;
+        (await response.json()) as CreateRoutineTaskByRoutineIdResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

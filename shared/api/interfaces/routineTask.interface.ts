@@ -20,7 +20,7 @@ import {
 
 const CreateRoutineTaskBodySchema = z
   .object({
-    stationId: z.uuidv4(),
+    routineId: z.uuidv4(),
     title: z.string().min(1).max(128),
     purpose: z.enum(AllRoutineTaskPurposes),
     payload: RoutineTaskPayloadSizeSchema,
@@ -128,7 +128,7 @@ export type GetMyRoutineTaskByIdRequest = z.input<
 export const GetMyRoutineTaskByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     id: z.uuidv4(),
-    stationId: z.uuidv4(),
+    routineId: z.uuidv4(),
     title: z.string(),
     purpose: z.enum(AllRoutineTaskPurposes),
     costUnit: z.number(),
@@ -154,9 +154,9 @@ export type GetMyRoutineTaskByIdResponse = z.infer<
   typeof GetMyRoutineTaskByIdResponseSchema
 >;
 
-/* ============================== GetAllMyRoutineTasksByStationIds ============================== */
+/* ============================== GetAllMyRoutineTasksByRoutineIds ============================== */
 
-export const GetAllMyRoutineTasksByStationIdsRequestSchema =
+export const GetAllMyRoutineTasksByRoutineIdsRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -165,21 +165,21 @@ export const GetAllMyRoutineTasksByStationIdsRequestSchema =
       })
       .optional(),
     param: z.object({
-      stationIds: z.array(z.uuidv4()).min(1).max(1024),
+      routineIds: z.array(z.uuidv4()).min(1).max(1024),
       areDeleted: z.boolean().optional().default(false),
     }),
   });
 
-export type GetAllMyRoutineTasksByStationIdsRequest = z.input<
-  typeof GetAllMyRoutineTasksByStationIdsRequestSchema
+export type GetAllMyRoutineTasksByRoutineIdsRequest = z.input<
+  typeof GetAllMyRoutineTasksByRoutineIdsRequestSchema
 >;
 
-export const GetAllMyRoutineTasksByStationIdsResponseSchema =
+export const GetAllMyRoutineTasksByRoutineIdsResponseSchema =
   NotezyResponseSchema.extend({
     data: z.array(
       z.object({
         id: z.uuidv4(),
-        stationId: z.uuidv4(),
+        routineId: z.uuidv4(),
         title: z.string(),
         purpose: z.enum(AllRoutineTaskPurposes),
         costUnit: z.number(),
@@ -201,8 +201,8 @@ export const GetAllMyRoutineTasksByStationIdsResponseSchema =
     }),
   });
 
-export type GetAllMyRoutineTasksByStationIdsResponse = z.infer<
-  typeof GetAllMyRoutineTasksByStationIdsResponseSchema
+export type GetAllMyRoutineTasksByRoutineIdsResponse = z.infer<
+  typeof GetAllMyRoutineTasksByRoutineIdsResponseSchema
 >;
 
 /* ============================== GetAllMyRoutineTasks ============================== */
@@ -230,7 +230,7 @@ export const GetAllMyRoutineTasksResponseSchema = NotezyResponseSchema.extend({
   data: z.array(
     z.object({
       id: z.uuidv4(),
-      stationId: z.uuidv4(),
+      routineId: z.uuidv4(),
       title: z.string(),
       purpose: z.enum(AllRoutineTaskPurposes),
       costUnit: z.number(),
@@ -257,9 +257,9 @@ export type GetAllMyRoutineTasksResponse = z.infer<
   typeof GetAllMyRoutineTasksResponseSchema
 >;
 
-/* ============================== CreateRoutineTaskByStationId ============================== */
+/* ============================== CreateRoutineTaskByRoutineId ============================== */
 
-export const CreateRoutineTaskByStationIdRequestSchema =
+export const CreateRoutineTaskByRoutineIdRequestSchema =
   NotezyRequestSchema.extend({
     header: z
       .object({
@@ -270,11 +270,11 @@ export const CreateRoutineTaskByStationIdRequestSchema =
     body: CreateRoutineTaskBodySchema,
   });
 
-export type CreateRoutineTaskByStationIdRequest = z.infer<
-  typeof CreateRoutineTaskByStationIdRequestSchema
+export type CreateRoutineTaskByRoutineIdRequest = z.infer<
+  typeof CreateRoutineTaskByRoutineIdRequestSchema
 >;
 
-export const CreateRoutineTaskByStationIdResponseSchema =
+export const CreateRoutineTaskByRoutineIdResponseSchema =
   NotezyResponseSchema.extend({
     data: z.object({
       id: z.uuidv4(),
@@ -285,8 +285,8 @@ export const CreateRoutineTaskByStationIdResponseSchema =
     }),
   });
 
-export type CreateRoutineTaskByStationIdResponse = z.infer<
-  typeof CreateRoutineTaskByStationIdResponseSchema
+export type CreateRoutineTaskByRoutineIdResponse = z.infer<
+  typeof CreateRoutineTaskByRoutineIdResponseSchema
 >;
 
 /* ============================== UpdateMyRoutineTaskById ============================== */
@@ -302,7 +302,7 @@ export const UpdateMyRoutineTaskByIdRequestSchema = NotezyRequestSchema.extend({
     routineTaskId: z.uuidv4(),
     values: z
       .object({
-        stationId: z.uuidv4(),
+        routineId: z.uuidv4(),
         title: z.string().min(1).max(128),
         purpose: z.enum(AllRoutineTaskPurposes),
         payload: z.any().refine(value => {

@@ -187,7 +187,7 @@ const RoutineTaskRecordTable = ({
 
   return (
     <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[760px]:flex-col @max-[760px]:items-start">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <HistoryIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
@@ -199,17 +199,20 @@ const RoutineTaskRecordTable = ({
             {totalCount}
           </span>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 @max-[760px]:w-full @max-[760px]:justify-start">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 @max-[1040px]:grid @max-[1040px]:w-full @max-[1040px]:grid-cols-[repeat(auto-fit,minmax(6.75rem,1fr))] @max-[1040px]:justify-start">
           <Select
             value={status}
             onValueChange={value =>
               setStatus(value as RoutineTaskRecordStatus | "All")
             }
           >
-            <SelectTrigger size="sm" className="h-8 w-32 rounded-sm text-xs">
+            <SelectTrigger
+              size="sm"
+              className="h-8 w-32 min-w-0 rounded-sm text-xs @max-[1040px]:w-full"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[var(--radix-select-trigger-width)]">
               <SelectItem value="All">All status</SelectItem>
               {AllRoutineTaskRecordStatuses.map(recordStatus => (
                 <SelectItem key={recordStatus} value={recordStatus}>
@@ -224,10 +227,13 @@ const RoutineTaskRecordTable = ({
               setPurpose(value as RoutineTaskPurpose | "All")
             }
           >
-            <SelectTrigger size="sm" className="h-8 w-40 rounded-sm text-xs">
+            <SelectTrigger
+              size="sm"
+              className="h-8 w-40 min-w-0 rounded-sm text-xs @max-[1040px]:w-full"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[var(--radix-select-trigger-width)]">
               <SelectItem value="All">All purpose</SelectItem>
               {AllRoutineTaskPurposes.map(taskPurpose => (
                 <SelectItem key={taskPurpose} value={taskPurpose}>
@@ -240,14 +246,14 @@ const RoutineTaskRecordTable = ({
             value={scheduledAfter}
             onValueChange={setScheduledAfter}
             placeholder="Scheduled after"
-            className="h-8 w-40 text-xs"
+            className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
             contentClassName="bg-card"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
             placeholder="Scheduled before"
-            className="h-8 w-40 text-xs"
+            className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
             contentClassName="bg-card"
           />
         </div>
@@ -262,7 +268,7 @@ const RoutineTaskRecordTable = ({
         }}
       >
         <Table className="table-fixed text-xs">
-          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card">
+          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card [&_th]:leading-tight">
             <TableRow className="bg-muted/15">
               <TableHead className="h-9 w-[18%] px-2">Task</TableHead>
               <TableHead className="h-9 w-[14%] px-2">Status</TableHead>

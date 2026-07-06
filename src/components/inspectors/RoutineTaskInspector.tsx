@@ -120,9 +120,13 @@ const RoutineTaskInspector = ({
       })
       .then(response => {
         if (cancelled || !response.data) return;
+        const parentRoutine = stationRoutineManager.getRoutineById(
+          response.data.routineId as UUID
+        );
         const routineTaskNode: RoutineTaskNode = {
           id: response.data.id as UUID,
-          stationId: response.data.stationId as UUID,
+          routineId: response.data.routineId as UUID,
+          stationId: parentRoutine?.stationId ?? ("" as UUID),
           title: response.data.title,
           purpose: response.data.purpose,
           costUnit: response.data.costUnit,

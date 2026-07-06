@@ -6,8 +6,8 @@ import {
 } from "@shared/api/graphql/generated/graphql";
 import { useSearchRoutineTasksLazyQuery } from "@shared/api/graphql/hooks/useSearchRoutineTasks";
 import {
-  useCreateRoutineTaskByStationId,
-  useGetAllMyRoutineTasksByStationIds,
+  useCreateRoutineTaskByRoutineId,
+  useGetAllMyRoutineTasksByRoutineIds,
   usePauseMyRoutineTaskById,
   useResumeMyRoutineTaskById,
   useUpdateMyRoutineTaskById,
@@ -38,9 +38,9 @@ export const useRoutineTaskLogic = ({
   stationsRef,
   forceUpdate,
 }: UseRoutineTaskLogicProps) => {
-  const createRoutineTaskMutator = useCreateRoutineTaskByStationId();
-  const getAllRoutineTasksByStationIdsQuerier =
-    useGetAllMyRoutineTasksByStationIds();
+  const createRoutineTaskMutator = useCreateRoutineTaskByRoutineId();
+  const getAllRoutineTasksByRoutineIdsQuerier =
+    useGetAllMyRoutineTasksByRoutineIds();
   const updateRoutineTaskMutator = useUpdateMyRoutineTaskById();
   const pauseRoutineTaskMutator = usePauseMyRoutineTaskById();
   const resumeRoutineTaskMutator = useResumeMyRoutineTaskById();
@@ -62,32 +62,52 @@ export const useRoutineTaskLogic = ({
     nextFetchPolicy: "network-only",
   });
 
-  const getAllRoutineTasksByStationId = useCallback(
-    async (stationId: UUID): Promise<RoutineTaskNode[]> => {
-      const stationNode = stationsRef.current.get(stationId);
-      if (!stationNode) throw new Error("station does not exist");
+  const getAllRoutineTasksByRoutineIds = useCallback(
+    async (routineIds: UUID[]): Promise<RoutineTaskNode[]> => {
+      const routines = routineIds.flatMap(routineId => {
+        for (const stationNode of stationsRef.current.values()) {
+          const routineNode = stationNode.routines.find(
+            routine => routine.id === routineId
+          );
+          if (routineNode) return [routineNode];
+        }
+        return [];
+      });
+      if (routines.length === 0) return [];
 
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
       );
-      const response = await getAllRoutineTasksByStationIdsQuerier.fetch({
+      const response = await getAllRoutineTasksByRoutineIdsQuerier.fetch({
         header: {
           userAgent: navigator.userAgent,
           authorization: getAuthorization(accessToken),
         },
         param: {
-          stationIds: [stationId],
+          routineIds,
         },
       });
       if (response.success === false) throw response.exception;
 
-      stationNode.routineTasks = response.data.map(routineTask => {
-        const existingRoutineTask = stationNode.routineTasks.find(
-          stationRoutineTask => stationRoutineTask.id === routineTask.id
-        );
+      const routineById = new Map(
+        routines.map(routine => [routine.id, routine])
+      );
+      const routineTaskNodes = response.data.flatMap(routineTask => {
+        const routineNode = routineById.get(routineTask.routineId as UUID);
+        if (!routineNode) return [];
+        const stationNode = stationsRef.current.get(routineNode.stationId);
+        if (!stationNode) return [];
+        const existingRoutineTask =
+          routineNode.routineTasks.find(
+            stationRoutineTask => stationRoutineTask.id === routineTask.id
+          ) ??
+          stationNode.routineTasks.find(
+            stationRoutineTask => stationRoutineTask.id === routineTask.id
+          );
         const routineTaskNode: RoutineTaskNode = {
           id: routineTask.id as UUID,
-          stationId: routineTask.stationId as UUID,
+          routineId: routineTask.routineId as UUID,
+          stationId: routineNode.stationId,
           title: routineTask.title,
           purpose: routineTask.purpose,
           costUnit: routineTask.costUnit,
@@ -106,39 +126,37 @@ export const useRoutineTaskLogic = ({
         };
         if (existingRoutineTask) {
           Object.assign(existingRoutineTask, routineTaskNode);
-          return existingRoutineTask;
+        } else {
+          stationNode.routineTasks.push(routineTaskNode);
         }
-        return routineTaskNode;
-      });
-      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
-        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-      );
-
-      for (const routineNode of stationNode.routines) {
-        routineNode.routineTasks = routineNode.routineTaskIds
-          .map(routineTaskId =>
-            stationNode.routineTasks.find(
-              routineTask => routineTask.id === routineTaskId
-            )
-          )
-          .filter(
-            (routineTask): routineTask is RoutineTaskNode =>
-              routineTask !== undefined
-          );
+        const persistedRoutineTask = existingRoutineTask ?? routineTaskNode;
+        routineNode.routineTaskIds = Array.from(
+          new Set([...routineNode.routineTaskIds, persistedRoutineTask.id])
+        );
+        routineNode.routineTasks = [
+          ...routineNode.routineTasks.filter(
+            routineTask => routineTask.id !== persistedRoutineTask.id
+          ),
+          persistedRoutineTask,
+        ];
         routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
           leftRoutineTask.title.localeCompare(rightRoutineTask.title)
         );
-      }
+        stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+          leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+        );
+        return [persistedRoutineTask];
+      });
 
       forceUpdate();
-      return stationNode.routineTasks;
+      return routineTaskNodes;
     },
-    [forceUpdate, getAllRoutineTasksByStationIdsQuerier, stationsRef]
+    [forceUpdate, getAllRoutineTasksByRoutineIdsQuerier, stationsRef]
   );
 
-  const searchRoutineTasksByStationId = useCallback(
+  const searchRoutineTasksByRoutineIds = useCallback(
     async (
-      stationId: UUID,
+      routineIds: UUID[],
       query: string = "",
       after?: string,
       preserveRoutineLinks: boolean = false
@@ -146,8 +164,21 @@ export const useRoutineTaskLogic = ({
       hasNextPage: boolean;
       endEncodedSearchCursor: string | null;
     }> => {
-      const stationNode = stationsRef.current.get(stationId);
-      if (!stationNode) throw new Error("station does not exist");
+      const routines = routineIds.flatMap(routineId => {
+        for (const stationNode of stationsRef.current.values()) {
+          const routineNode = stationNode.routines.find(
+            routine => routine.id === routineId
+          );
+          if (routineNode) return [routineNode];
+        }
+        return [];
+      });
+      if (routines.length === 0) {
+        return {
+          hasNextPage: false,
+          endEncodedSearchCursor: null,
+        };
+      }
       if (typeof navigator !== "undefined" && navigator.onLine === false) {
         toast.error(
           "You're only available to see routine tasks when you're online."
@@ -164,150 +195,135 @@ export const useRoutineTaskLogic = ({
             query,
             after,
             first: MaxSearchLimit,
-            stationId,
+            routineIds,
             sortBy: SearchRoutineTaskSortBy.Title,
             sortOrder: SearchSortOrder.Asc,
           },
         },
       }).retain();
       const searchEdges = result.data?.searchRoutineTasks.searchEdges ?? [];
-      const searchedRoutineTasks = searchEdges.map(edge => {
-        const node = edge.node as unknown as {
-          id: UUID;
-          stationId: UUID;
-          title: string;
-          purpose: string;
-          costUnit: number;
-          priority: number;
-          status: GraphQLRoutineTaskStatus;
-          attempts: number;
-          maxAttempts: number;
-          period: GraphQLRoutinePeriod | null;
-          nextScheduledAt?: Date | string | number;
-          scheduledAt: Date | string | number;
-          actualStartedAt: Date | string | number | null;
-          actualEndedAt: Date | string | number | null;
-          updatedAt: Date | string | number;
-          createdAt: Date | string | number;
-          routineIds?: UUID[];
-        };
-        const existingRoutineTask = stationNode.routineTasks.find(
-          routineTask => routineTask.id === node.id
-        );
-        const routineTaskNode: RoutineTaskNode = {
-          id: node.id,
-          stationId: node.stationId,
-          title: node.title,
-          purpose: node.purpose.replace(
-            "RoutineTaskPurpose_",
-            ""
-          ) as RoutineTaskPurpose,
-          payload: existingRoutineTask?.payload ?? {},
-          costUnit: node.costUnit,
-          priority: node.priority,
-          status:
-            node.status === GraphQLRoutineTaskStatus.RoutineTaskStatusWaiting
-              ? RoutineTaskStatus.Waiting
-              : node.status ===
-                  GraphQLRoutineTaskStatus.RoutineTaskStatusRunning
-                ? RoutineTaskStatus.Running
-                : node.status ===
-                    GraphQLRoutineTaskStatus.RoutineTaskStatusPause
-                  ? RoutineTaskStatus.Pause
-                  : RoutineTaskStatus.Idle,
-          attempts: node.attempts,
-          maxAttempts: node.maxAttempts,
-          period:
-            node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
-              ? RoutinePeriod.Daily
-              : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
-                ? RoutinePeriod.Weekly
-                : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
-                  ? RoutinePeriod.Monthly
-                  : null,
-          nextScheduledAt: new Date(node.nextScheduledAt ?? node.scheduledAt),
-          scheduledAt: new Date(node.scheduledAt),
-          actualStartedAt:
-            node.actualStartedAt === null
-              ? null
-              : new Date(node.actualStartedAt),
-          actualEndedAt:
-            node.actualEndedAt === null ? null : new Date(node.actualEndedAt),
-          updatedAt: new Date(node.updatedAt),
-          createdAt: new Date(node.createdAt),
-        };
-        if (existingRoutineTask) {
-          Object.assign(existingRoutineTask, routineTaskNode);
-          return {
-            routineTask: existingRoutineTask,
-            linkedRoutineIds: node.routineIds ?? [],
+      const searchedRoutineTasks = searchEdges
+        .map(edge => {
+          const node = edge.node as unknown as {
+            id: UUID;
+            routineId: UUID;
+            title: string;
+            purpose: string;
+            costUnit: number;
+            priority: number;
+            status: GraphQLRoutineTaskStatus;
+            attempts: number;
+            maxAttempts: number;
+            period: GraphQLRoutinePeriod | null;
+            nextScheduledAt?: Date | string | number;
+            scheduledAt: Date | string | number;
+            actualStartedAt: Date | string | number | null;
+            actualEndedAt: Date | string | number | null;
+            updatedAt: Date | string | number;
+            createdAt: Date | string | number;
           };
-        }
-        return {
-          routineTask: routineTaskNode,
-          linkedRoutineIds: node.routineIds ?? [],
-        };
-      });
-      const searchedRoutineTaskNodes = searchedRoutineTasks.map(
-        searchedRoutineTask => searchedRoutineTask.routineTask
-      );
-      stationNode.routineTasks =
-        after === undefined
-          ? [
-              ...searchedRoutineTaskNodes,
-              ...stationNode.routineTasks.filter(
-                routineTask =>
-                  !searchedRoutineTaskNodes.some(
-                    searchedRoutineTask =>
-                      searchedRoutineTask.id === routineTask.id
-                  )
-              ),
-            ]
-          : [
-              ...stationNode.routineTasks.filter(
-                routineTask =>
-                  !searchedRoutineTaskNodes.some(
-                    searchedRoutineTask =>
-                      searchedRoutineTask.id === routineTask.id
-                  )
-              ),
-              ...searchedRoutineTaskNodes,
-            ];
-      stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
-        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-      );
+          const routineNode = routines.find(
+            routine => routine.id === node.routineId
+          );
+          if (!routineNode) return null;
+          const stationNode = stationsRef.current.get(routineNode.stationId);
+          if (!stationNode) return null;
+          const existingRoutineTask =
+            routineNode.routineTasks.find(
+              routineTask => routineTask.id === node.id
+            ) ??
+            stationNode.routineTasks.find(
+              routineTask => routineTask.id === node.id
+            );
+          const routineTaskNode: RoutineTaskNode = {
+            id: node.id,
+            routineId: node.routineId,
+            stationId: routineNode.stationId,
+            title: node.title,
+            purpose: node.purpose.replace(
+              "RoutineTaskPurpose_",
+              ""
+            ) as RoutineTaskPurpose,
+            payload: existingRoutineTask?.payload ?? {},
+            costUnit: node.costUnit,
+            priority: node.priority,
+            status:
+              node.status === GraphQLRoutineTaskStatus.RoutineTaskStatusWaiting
+                ? RoutineTaskStatus.Waiting
+                : node.status ===
+                    GraphQLRoutineTaskStatus.RoutineTaskStatusRunning
+                  ? RoutineTaskStatus.Running
+                  : node.status ===
+                      GraphQLRoutineTaskStatus.RoutineTaskStatusPause
+                    ? RoutineTaskStatus.Pause
+                    : RoutineTaskStatus.Idle,
+            attempts: node.attempts,
+            maxAttempts: node.maxAttempts,
+            period:
+              node.period === GraphQLRoutinePeriod.RoutinePeriodDaily
+                ? RoutinePeriod.Daily
+                : node.period === GraphQLRoutinePeriod.RoutinePeriodWeekly
+                  ? RoutinePeriod.Weekly
+                  : node.period === GraphQLRoutinePeriod.RoutinePeriodMonthly
+                    ? RoutinePeriod.Monthly
+                    : null,
+            nextScheduledAt: new Date(node.nextScheduledAt ?? node.scheduledAt),
+            scheduledAt: new Date(node.scheduledAt),
+            actualStartedAt:
+              node.actualStartedAt === null
+                ? null
+                : new Date(node.actualStartedAt),
+            actualEndedAt:
+              node.actualEndedAt === null ? null : new Date(node.actualEndedAt),
+            updatedAt: new Date(node.updatedAt),
+            createdAt: new Date(node.createdAt),
+          };
+          if (existingRoutineTask) {
+            Object.assign(existingRoutineTask, routineTaskNode);
+            return existingRoutineTask;
+          }
+          return routineTaskNode;
+        })
+        .filter(
+          (routineTask): routineTask is RoutineTaskNode => routineTask !== null
+        );
       const searchedRoutineTaskIds = new Set(
-        searchedRoutineTaskNodes.map(routineTask => routineTask.id)
+        searchedRoutineTasks.map(routineTask => routineTask.id)
       );
       if (!preserveRoutineLinks) {
-        for (const routineNode of stationNode.routines) {
+        for (const routineNode of routines) {
           routineNode.routineTasks = routineNode.routineTasks.filter(
             routineTask => !searchedRoutineTaskIds.has(routineTask.id)
           );
         }
         for (const searchedRoutineTask of searchedRoutineTasks) {
-          for (const linkedRoutineId of searchedRoutineTask.linkedRoutineIds) {
-            const routineNode = stationNode.routines.find(
-              routine => routine.id === linkedRoutineId
-            );
-            if (!routineNode) continue;
-            routineNode.routineTaskIds = Array.from(
-              new Set([
-                ...routineNode.routineTaskIds,
-                searchedRoutineTask.routineTask.id,
-              ])
-            );
-            routineNode.routineTasks = [
-              ...routineNode.routineTasks.filter(
-                routineTask =>
-                  routineTask.id !== searchedRoutineTask.routineTask.id
-              ),
-              searchedRoutineTask.routineTask,
-            ];
-            routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
-              leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-            );
-          }
+          const routineNode = routines.find(
+            routine => routine.id === searchedRoutineTask.routineId
+          );
+          if (!routineNode) continue;
+          const stationNode = stationsRef.current.get(routineNode.stationId);
+          if (!stationNode) continue;
+          stationNode.routineTasks = [
+            ...stationNode.routineTasks.filter(
+              routineTask => routineTask.id !== searchedRoutineTask.id
+            ),
+            searchedRoutineTask,
+          ];
+          stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+            leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+          );
+          routineNode.routineTaskIds = Array.from(
+            new Set([...routineNode.routineTaskIds, searchedRoutineTask.id])
+          );
+          routineNode.routineTasks = [
+            ...routineNode.routineTasks.filter(
+              routineTask => routineTask.id !== searchedRoutineTask.id
+            ),
+            searchedRoutineTask,
+          ];
+          routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+            leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+          );
         }
       }
       forceUpdate();
@@ -329,19 +345,19 @@ export const useRoutineTaskLogic = ({
     if (
       !pageInfo?.hasNextPage ||
       !pageInfo.endEncodedSearchCursor ||
-      !input?.stationId
+      !input?.routineIds
     ) {
       return;
     }
 
-    await searchRoutineTasksByStationId(
-      input.stationId as UUID,
+    await searchRoutineTasksByRoutineIds(
+      input.routineIds as UUID[],
       input.query,
       pageInfo.endEncodedSearchCursor,
       true
     );
   }, [
-    searchRoutineTasksByStationId,
+    searchRoutineTasksByRoutineIds,
     searchRoutineTasksData,
     searchRoutineTasksVariables,
   ]);
@@ -353,25 +369,25 @@ export const useRoutineTaskLogic = ({
     if (
       !pageInfo?.hasNextPage ||
       !pageInfo.endEncodedSearchCursor ||
-      !input?.stationId
+      !input?.routineIds
     ) {
       return;
     }
 
-    await searchRoutineTasksByStationId(
-      input.stationId as UUID,
+    await searchRoutineTasksByRoutineIds(
+      input.routineIds as UUID[],
       input.query,
       pageInfo.endEncodedSearchCursor
     );
   }, [
-    searchRoutineTasksByStationId,
+    searchRoutineTasksByRoutineIds,
     searchRoutineTasksData,
     searchRoutineTasksVariables,
   ]);
 
   const createRoutineTask = useCallback(
     async (
-      stationId: UUID,
+      routineId: UUID,
       title: string,
       purpose: RoutineTaskPurpose,
       nextScheduledAt: Date,
@@ -380,8 +396,21 @@ export const useRoutineTaskLogic = ({
       priority: number = 0,
       maxAttempts: number = 1
     ): Promise<RoutineTaskNode> => {
-      const stationNode = stationsRef.current.get(stationId);
-      if (!stationNode) throw new Error("station does not exist");
+      let stationNode: StationNode | undefined;
+      let routineNode = undefined as
+        | StationNode["routines"][number]
+        | undefined;
+      for (const currentStationNode of stationsRef.current.values()) {
+        routineNode = currentStationNode.routines.find(
+          routine => routine.id === routineId
+        );
+        if (routineNode) {
+          stationNode = currentStationNode;
+          break;
+        }
+      }
+      if (!stationNode || !routineNode)
+        throw new Error("routine does not exist");
 
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
@@ -392,7 +421,7 @@ export const useRoutineTaskLogic = ({
           authorization: getAuthorization(accessToken),
         },
         body: {
-          stationId,
+          routineId,
           title,
           purpose,
           payload,
@@ -406,7 +435,8 @@ export const useRoutineTaskLogic = ({
 
       const routineTaskNode: RoutineTaskNode = {
         id: response.data.id as UUID,
-        stationId,
+        routineId,
+        stationId: routineNode.stationId,
         title,
         purpose,
         costUnit: Math.ceil(
@@ -429,6 +459,18 @@ export const useRoutineTaskLogic = ({
       stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
         leftRoutineTask.title.localeCompare(rightRoutineTask.title)
       );
+      routineNode.routineTaskIds = Array.from(
+        new Set([...routineNode.routineTaskIds, routineTaskNode.id])
+      );
+      routineNode.routineTasks = [
+        ...routineNode.routineTasks.filter(
+          routineTask => routineTask.id !== routineTaskNode.id
+        ),
+        routineTaskNode,
+      ];
+      routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
       forceUpdate();
       return routineTaskNode;
     },
@@ -447,7 +489,7 @@ export const useRoutineTaskLogic = ({
       if (!sourceRoutineTask) throw new Error("routine task does not exist");
 
       return await createRoutineTask(
-        sourceRoutineTask.stationId,
+        sourceRoutineTask.routineId,
         `${sourceRoutineTask.title} Copy`,
         sourceRoutineTask.purpose,
         sourceRoutineTask.nextScheduledAt,
@@ -462,8 +504,21 @@ export const useRoutineTaskLogic = ({
 
   const upsertRoutineTaskNode = useCallback(
     (routineTaskNode: RoutineTaskNode): RoutineTaskNode => {
-      const stationNode = stationsRef.current.get(routineTaskNode.stationId);
-      if (!stationNode) return routineTaskNode;
+      let stationNode: StationNode | undefined;
+      let routineNode = undefined as
+        | StationNode["routines"][number]
+        | undefined;
+      for (const currentStationNode of stationsRef.current.values()) {
+        routineNode = currentStationNode.routines.find(
+          routine => routine.id === routineTaskNode.routineId
+        );
+        if (routineNode) {
+          stationNode = currentStationNode;
+          break;
+        }
+      }
+      if (!stationNode || !routineNode) return routineTaskNode;
+      routineTaskNode.stationId = routineNode.stationId;
 
       const existingRoutineTask = stationNode.routineTasks.find(
         stationRoutineTask => stationRoutineTask.id === routineTaskNode.id
@@ -478,21 +533,18 @@ export const useRoutineTaskLogic = ({
       );
 
       const persistedRoutineTask = existingRoutineTask ?? routineTaskNode;
-      for (const routineNode of stationNode.routines) {
-        if (!routineNode.routineTaskIds.includes(persistedRoutineTask.id)) {
-          continue;
-        }
-
-        routineNode.routineTasks = [
-          ...routineNode.routineTasks.filter(
-            routineTask => routineTask.id !== persistedRoutineTask.id
-          ),
-          persistedRoutineTask,
-        ];
-        routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
-          leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-        );
-      }
+      routineNode.routineTaskIds = Array.from(
+        new Set([...routineNode.routineTaskIds, persistedRoutineTask.id])
+      );
+      routineNode.routineTasks = [
+        ...routineNode.routineTasks.filter(
+          routineTask => routineTask.id !== persistedRoutineTask.id
+        ),
+        persistedRoutineTask,
+      ];
+      routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
+        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
+      );
 
       forceUpdate();
       return persistedRoutineTask;
@@ -556,6 +608,38 @@ export const useRoutineTaskLogic = ({
         }
         if (setNull?.Period) routineTaskNode.period = null;
         routineTaskNode.updatedAt = response.data.updatedAt;
+      }
+      if (values.routineId !== undefined) {
+        const movedRoutineTask = routineTaskNodes.values().next()
+          .value as RoutineTaskNode;
+        let nextStationNode: StationNode | undefined;
+        let nextRoutineNode = undefined as
+          | StationNode["routines"][number]
+          | undefined;
+        for (const stationNode of stationsRef.current.values()) {
+          stationNode.routineTasks = stationNode.routineTasks.filter(
+            routineTask => routineTask.id !== routineTaskId
+          );
+          for (const routineNode of stationNode.routines) {
+            routineNode.routineTaskIds = routineNode.routineTaskIds.filter(
+              id => id !== routineTaskId
+            );
+            routineNode.routineTasks = routineNode.routineTasks.filter(
+              routineTask => routineTask.id !== routineTaskId
+            );
+          }
+          nextRoutineNode ??= stationNode.routines.find(
+            routine => routine.id === values.routineId
+          );
+          if (nextRoutineNode) nextStationNode ??= stationNode;
+        }
+        if (nextStationNode && nextRoutineNode) {
+          movedRoutineTask.routineId = nextRoutineNode.id;
+          movedRoutineTask.stationId = nextRoutineNode.stationId;
+          nextStationNode.routineTasks.push(movedRoutineTask);
+          nextRoutineNode.routineTaskIds.push(movedRoutineTask.id);
+          nextRoutineNode.routineTasks.push(movedRoutineTask);
+        }
       }
       for (const stationNode of stationsRef.current.values()) {
         stationNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
@@ -700,8 +784,8 @@ export const useRoutineTaskLogic = ({
     searchRoutineTasksData,
     isSearchingRoutineTasks,
     fetchMoreRoutineTasks,
-    getAllRoutineTasksByStationId,
-    searchRoutineTasksByStationId,
+    getAllRoutineTasksByRoutineIds,
+    searchRoutineTasksByRoutineIds,
     loadMoreRoutineTaskCandidates,
     loadMoreRoutineTasks,
     createRoutineTask,

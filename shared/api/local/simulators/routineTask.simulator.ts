@@ -3,12 +3,13 @@ import {
   AllAccessControlPermissions,
 } from "@shared/api/interfaces/enums";
 import type {
-  GetAllMyRoutineTasksByStationIdsRequest,
+  GetAllMyRoutineTasksByRoutineIdsRequest,
   GetAllMyRoutineTasksRequest,
   GetMyRoutineTaskByIdRequest,
 } from "@shared/api/interfaces/routineTask.interface";
 import { localDB } from "@shared/api/local/db";
 import {
+  Routine,
   RoutineTask,
   Station,
   User,
@@ -29,7 +30,7 @@ export class RoutineTaskLocalSimulator {
         .where(
           and(
             eq(UsersToStations.userPublicId, userPublicId),
-            eq(UsersToStations.stationId, RoutineTask.stationId),
+            eq(UsersToStations.stationId, Routine.stationId),
             inArray(UsersToStations.permission, permissions)
           )
         )
@@ -49,7 +50,8 @@ export class RoutineTaskLocalSimulator {
     const routineTasks = await localDB
       .select()
       .from(RoutineTask)
-      .innerJoin(Station, eq(Station.id, RoutineTask.stationId))
+      .innerJoin(Routine, eq(Routine.id, RoutineTask.routineId))
+      .innerJoin(Station, eq(Station.id, Routine.stationId))
       .where(
         and(
           eq(RoutineTask.id, request.param.routineTaskId),
@@ -66,8 +68,8 @@ export class RoutineTaskLocalSimulator {
     return routineTasks[0]?.RoutineTaskTable ?? null;
   };
 
-  static simulateGetAllMyRoutineTasksByStationIds = async (
-    request: GetAllMyRoutineTasksByStationIdsRequest
+  static simulateGetAllMyRoutineTasksByRoutineIds = async (
+    request: GetAllMyRoutineTasksByRoutineIdsRequest
   ) => {
     if (request.param.areDeleted === true) return [];
 
@@ -80,7 +82,7 @@ export class RoutineTaskLocalSimulator {
     return await localDB
       .select({
         id: RoutineTask.id,
-        stationId: RoutineTask.stationId,
+        routineId: RoutineTask.routineId,
         title: RoutineTask.title,
         purpose: RoutineTask.purpose,
         costUnit: RoutineTask.costUnit,
@@ -97,10 +99,11 @@ export class RoutineTaskLocalSimulator {
         createdAt: RoutineTask.createdAt,
       })
       .from(RoutineTask)
-      .innerJoin(Station, eq(Station.id, RoutineTask.stationId))
+      .innerJoin(Routine, eq(Routine.id, RoutineTask.routineId))
+      .innerJoin(Station, eq(Station.id, Routine.stationId))
       .where(
         and(
-          inArray(RoutineTask.stationId, request.param.stationIds),
+          inArray(RoutineTask.routineId, request.param.routineIds),
           isNull(Station.deletedAt),
           RoutineTaskLocalSimulator.getPassPermissionCheckSQL(
             localDB,
@@ -130,7 +133,7 @@ export class RoutineTaskLocalSimulator {
     return await localDB
       .select({
         id: RoutineTask.id,
-        stationId: RoutineTask.stationId,
+        routineId: RoutineTask.routineId,
         title: RoutineTask.title,
         purpose: RoutineTask.purpose,
         costUnit: RoutineTask.costUnit,
@@ -148,7 +151,8 @@ export class RoutineTaskLocalSimulator {
         createdAt: RoutineTask.createdAt,
       })
       .from(RoutineTask)
-      .innerJoin(Station, eq(Station.id, RoutineTask.stationId))
+      .innerJoin(Routine, eq(Routine.id, RoutineTask.routineId))
+      .innerJoin(Station, eq(Station.id, Routine.stationId))
       .where(
         and(
           isNull(Station.deletedAt),

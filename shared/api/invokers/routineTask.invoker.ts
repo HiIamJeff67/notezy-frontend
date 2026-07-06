@@ -4,9 +4,9 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  CreateRoutineTaskByStationId,
+  CreateRoutineTaskByRoutineId,
   GetAllMyRoutineTasks,
-  GetAllMyRoutineTasksByStationIds,
+  GetAllMyRoutineTasksByRoutineIds,
   GetMyRoutineTaskById,
   HardDeleteMyRoutineTaskById,
   HardDeleteMyRoutineTasksByIds,
@@ -20,14 +20,14 @@ import {
   VisualizeMyRoutineTaskStatusCount,
 } from "@shared/api/functions/routineTask.serverFn";
 import {
-  CreateRoutineTaskByStationIdRequest,
-  CreateRoutineTaskByStationIdRequestSchema,
-  CreateRoutineTaskByStationIdResponse,
-  CreateRoutineTaskByStationIdResponseSchema,
-  GetAllMyRoutineTasksByStationIdsRequest,
-  GetAllMyRoutineTasksByStationIdsRequestSchema,
-  GetAllMyRoutineTasksByStationIdsResponse,
-  GetAllMyRoutineTasksByStationIdsResponseSchema,
+  CreateRoutineTaskByRoutineIdRequest,
+  CreateRoutineTaskByRoutineIdRequestSchema,
+  CreateRoutineTaskByRoutineIdResponse,
+  CreateRoutineTaskByRoutineIdResponseSchema,
+  GetAllMyRoutineTasksByRoutineIdsRequest,
+  GetAllMyRoutineTasksByRoutineIdsRequestSchema,
+  GetAllMyRoutineTasksByRoutineIdsResponse,
+  GetAllMyRoutineTasksByRoutineIdsResponseSchema,
   GetAllMyRoutineTasksRequest,
   GetAllMyRoutineTasksRequestSchema,
   GetAllMyRoutineTasksResponse,
@@ -162,19 +162,19 @@ export const queryFnGetMyRoutineTaskById = async (
   }
 };
 
-export const queryFnGetAllMyRoutineTasksByStationIds = async (
-  request: GetAllMyRoutineTasksByStationIdsRequest
-): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+export const queryFnGetAllMyRoutineTasksByRoutineIds = async (
+  request: GetAllMyRoutineTasksByRoutineIdsRequest
+): Promise<GetAllMyRoutineTasksByRoutineIdsResponse> => {
   try {
     const validatedRequest =
-      GetAllMyRoutineTasksByStationIdsRequestSchema.parse(request);
-    const response = await GetAllMyRoutineTasksByStationIds({
+      GetAllMyRoutineTasksByRoutineIdsRequestSchema.parse(request);
+    const response = await GetAllMyRoutineTasksByRoutineIds({
       data: validatedRequest,
     });
-    return GetAllMyRoutineTasksByStationIdsResponseSchema.parse(response);
+    return GetAllMyRoutineTasksByRoutineIdsResponseSchema.parse(response);
   } catch (error) {
     console.error(
-      "error happening in queryFnGetAllMyRoutineTasksByStationIds",
+      "error happening in queryFnGetAllMyRoutineTasksByRoutineIds",
       error
     );
     if (error instanceof ZodError) {
@@ -220,19 +220,19 @@ export const queryFnGetAllMyRoutineTasks = async (
   }
 };
 
-export const mutationFnCreateRoutineTaskByStationId = async (
-  request: CreateRoutineTaskByStationIdRequest
-): Promise<CreateRoutineTaskByStationIdResponse> => {
+export const mutationFnCreateRoutineTaskByRoutineId = async (
+  request: CreateRoutineTaskByRoutineIdRequest
+): Promise<CreateRoutineTaskByRoutineIdResponse> => {
   try {
     const validatedRequest =
-      CreateRoutineTaskByStationIdRequestSchema.parse(request);
-    const response = await CreateRoutineTaskByStationId({
+      CreateRoutineTaskByRoutineIdRequestSchema.parse(request);
+    const response = await CreateRoutineTaskByRoutineId({
       data: validatedRequest,
     });
-    return CreateRoutineTaskByStationIdResponseSchema.parse(response);
+    return CreateRoutineTaskByRoutineIdResponseSchema.parse(response);
   } catch (error) {
     console.error(
-      "error happening in mutationFnCreateRoutineTaskByStationId",
+      "error happening in mutationFnCreateRoutineTaskByRoutineId",
       error
     );
     if (error instanceof ZodError) {

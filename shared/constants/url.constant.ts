@@ -206,10 +206,10 @@ export const APIURLPathDictionary = {
     visualizeMyRoutineTaskActualEndedAtCount:
       "routineTask/visualizeMyRoutineTaskActualEndedAtCount",
     getMyRoutineTaskById: "routineTask/getMyRoutineTaskById",
-    getAllMyRoutineTasksByStationIds:
-      "routineTask/getAllMyRoutineTasksByStationIds",
+    getAllMyRoutineTasksByRoutineIds:
+      "routineTask/getAllMyRoutineTasksByRoutineIds",
     getAllMyRoutineTasks: "routineTask/getAllMyRoutineTasks",
-    createRoutineTaskByStationId: "routineTask/createRoutineTaskByStationId",
+    createRoutineTaskByRoutineId: "routineTask/createRoutineTaskByRoutineId",
     updateMyRoutineTaskById: "routineTask/updateMyRoutineTaskById",
     pauseMyRoutineTaskById: "routineTask/pauseMyRoutineTaskById",
     resumeMyRoutineTaskById: "routineTask/resumeMyRoutineTaskById",

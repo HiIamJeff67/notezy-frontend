@@ -10,7 +10,6 @@ import {
   useDeleteMyRoutineById,
   useLinkRoutineItemById,
   useLinkRoutineTagById,
-  useLinkRoutineTaskById,
   useUpdateMyRoutineById,
 } from "@shared/api/hooks/routine.hook";
 import {
@@ -36,7 +35,7 @@ interface UseRoutineLogicProps {
   stationsRef: RefObject<LRUCache<UUID, StationNode>>;
   routineTagsRef: RefObject<LRUCache<UUID, RoutineTagNode>>;
   forceUpdate: () => void;
-  getAllRoutineTasksByStationId: (stationId: UUID) => Promise<unknown>;
+  getAllRoutineTasksByRoutineIds: (routineIds: UUID[]) => Promise<unknown>;
 }
 
 export const useRoutineLogic = ({
@@ -44,13 +43,12 @@ export const useRoutineLogic = ({
   stationsRef,
   routineTagsRef,
   forceUpdate,
-  getAllRoutineTasksByStationId,
+  getAllRoutineTasksByRoutineIds,
 }: UseRoutineLogicProps) => {
   const createRoutineMutator = useCreateRoutineByStationId();
   const deleteRoutineMutator = useDeleteMyRoutineById();
   const updateRoutineMutator = useUpdateMyRoutineById();
   const linkRoutineTagMutator = useLinkRoutineTagById();
-  const linkRoutineTaskMutator = useLinkRoutineTaskById();
   const linkRoutineItemMutator = useLinkRoutineItemById();
 
   const [selectedRoutineId, selectRoutine] = useState<UUID | null>(null);
@@ -346,7 +344,7 @@ export const useRoutineLogic = ({
         routineNode.isOpen = true;
         forceUpdate();
         if (routineNode.routineTaskIds.length > 0) {
-          await getAllRoutineTasksByStationId(stationId);
+          await getAllRoutineTasksByRoutineIds([routineId]);
         }
       }
 
@@ -367,7 +365,7 @@ export const useRoutineLogic = ({
       routineNode.isExpanded = true;
       forceUpdate();
     },
-    [forceUpdate, getAllRoutineTasksByStationId, stationsRef]
+    [forceUpdate, getAllRoutineTasksByRoutineIds, stationsRef]
   );
 
   const createRoutine = useCallback(
@@ -764,75 +762,6 @@ export const useRoutineLogic = ({
     [forceUpdate, linkRoutineTagMutator, routineTagsRef, stationsRef]
   );
 
-  const linkRoutineTask = useCallback(
-    async (routineId: UUID, routineTaskId: UUID, isUnlink = false) => {
-      let routineNode: RoutineNode | undefined;
-      let routineTaskNode: RoutineTaskNode | undefined;
-      for (const stationNode of stationsRef.current.values()) {
-        routineNode ??= stationNode.routines.find(
-          routine => routine.id === routineId
-        );
-        routineTaskNode ??= stationNode.routineTasks.find(
-          routineTask => routineTask.id === routineTaskId
-        );
-      }
-      if (!routineNode) throw new Error("routine does not exist");
-
-      const previousRoutineTaskIds = [...routineNode.routineTaskIds];
-      const previousRoutineTasks = [...routineNode.routineTasks];
-      const previousUpdatedAt = routineNode.updatedAt;
-      routineNode.routineTaskIds = isUnlink
-        ? routineNode.routineTaskIds.filter(id => id !== routineTaskId)
-        : Array.from(new Set([...routineNode.routineTaskIds, routineTaskId]));
-      routineNode.routineTasks = isUnlink
-        ? routineNode.routineTasks.filter(
-            routineTask => routineTask.id !== routineTaskId
-          )
-        : routineTaskNode
-          ? [
-              ...routineNode.routineTasks.filter(
-                routineTask => routineTask.id !== routineTaskId
-              ),
-              routineTaskNode,
-            ]
-          : routineNode.routineTasks;
-      routineNode.routineTasks.sort((leftRoutineTask, rightRoutineTask) =>
-        leftRoutineTask.title.localeCompare(rightRoutineTask.title)
-      );
-      routineNode.updatedAt = new Date();
-      forceUpdate();
-
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      try {
-        const response = await linkRoutineTaskMutator.mutateAsync({
-          header: {
-            userAgent: navigator.userAgent,
-            authorization: getAuthorization(accessToken),
-          },
-          body: {
-            routineId,
-            routineTaskId,
-            isUnlink,
-          },
-        });
-        if (response.success === false) throw response.exception;
-
-        routineNode.updatedAt = response.data.updatedAt;
-        forceUpdate();
-        return response;
-      } catch (error) {
-        routineNode.routineTaskIds = previousRoutineTaskIds;
-        routineNode.routineTasks = previousRoutineTasks;
-        routineNode.updatedAt = previousUpdatedAt;
-        forceUpdate();
-        throw error;
-      }
-    },
-    [forceUpdate, linkRoutineTaskMutator, stationsRef]
-  );
-
   const linkRoutineItem = useCallback(
     async (
       routineId: UUID,
@@ -953,7 +882,6 @@ export const useRoutineLogic = ({
     updateRoutine,
     isUpdatingRoutine: updateRoutineMutator.isPending,
     linkRoutineTag,
-    linkRoutineTask,
     linkRoutineItem,
   };
 };

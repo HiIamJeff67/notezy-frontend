@@ -4,7 +4,7 @@ import {
   RoutineTaskPurpose,
   UserPlan,
 } from "@shared/api/interfaces/enums";
-import { CreateRoutineTaskByStationIdRequestSchema } from "@shared/api/interfaces/routineTask.interface";
+import { CreateRoutineTaskByRoutineIdRequestSchema } from "@shared/api/interfaces/routineTask.interface";
 import { PlanLimitations } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
@@ -45,16 +45,18 @@ const RoutineTaskPayloadEditor = lazy(
 );
 
 interface CreateRoutineTaskDialogProps extends ModalProps {
-  stationId: UUID;
+  routineId: UUID;
   stationName?: string;
+  routineTitle?: string;
   onCreated?: (routineTaskId: UUID) => void | Promise<void>;
 }
 
 const CreateRoutineTaskDialog = ({
   isOpen,
   onClose,
-  stationId,
+  routineId,
   stationName,
+  routineTitle,
   onCreated,
 }: CreateRoutineTaskDialogProps) => {
   const languageManager = useLanguage();
@@ -149,9 +151,9 @@ const CreateRoutineTaskDialog = ({
 
   const validation = useMemo(() => {
     try {
-      return CreateRoutineTaskByStationIdRequestSchema.safeParse({
+      return CreateRoutineTaskByRoutineIdRequestSchema.safeParse({
         body: {
-          stationId,
+          routineId,
           title: title.trim(),
           purpose,
           payload: JSON.parse(payload),
@@ -171,7 +173,7 @@ const CreateRoutineTaskDialog = ({
     period,
     priority,
     purpose,
-    stationId,
+    routineId,
     title,
   ]);
 
@@ -197,7 +199,7 @@ const CreateRoutineTaskDialog = ({
 
     try {
       const routineTaskNode = await stationRoutineManager.createRoutineTask(
-        validation.data.body.stationId as UUID,
+        validation.data.body.routineId as UUID,
         validation.data.body.title,
         validation.data.body.purpose,
         validation.data.body.nextScheduledAt,
@@ -235,8 +237,12 @@ const CreateRoutineTaskDialog = ({
           <DialogTitle>Create routine task</DialogTitle>
           <DialogDescription>
             Configure an executable task
-            {stationName ? ` for ${stationName}` : ""}. Routine tasks require a
-            network connection.
+            {routineTitle
+              ? ` for ${routineTitle}`
+              : stationName
+                ? ` for ${stationName}`
+                : ""}
+            . Routine tasks require a network connection.
           </DialogDescription>
         </DialogHeader>
 

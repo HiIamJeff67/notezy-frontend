@@ -11,9 +11,9 @@ import {
   RoutineTaskStatus as GraphQLRoutineTaskStatus,
 } from "@shared/api/graphql/generated/graphql";
 import type {
-  CreateRoutineTaskByStationIdRequest,
-  GetAllMyRoutineTasksByStationIdsRequest,
-  GetAllMyRoutineTasksByStationIdsResponse,
+  CreateRoutineTaskByRoutineIdRequest,
+  GetAllMyRoutineTasksByRoutineIdsRequest,
+  GetAllMyRoutineTasksByRoutineIdsResponse,
   GetAllMyRoutineTasksRequest,
   GetAllMyRoutineTasksResponse,
   GetMyRoutineTaskByIdRequest,
@@ -35,14 +35,14 @@ import type {
   VisualizeMyRoutineTaskStatusCountResponse,
 } from "@shared/api/interfaces/routineTask.interface";
 import {
-  mutationFnCreateRoutineTaskByStationId,
+  mutationFnCreateRoutineTaskByRoutineId,
   mutationFnHardDeleteMyRoutineTaskById,
   mutationFnHardDeleteMyRoutineTasksByIds,
   mutationFnPauseMyRoutineTaskById,
   mutationFnResumeMyRoutineTaskById,
   mutationFnUpdateMyRoutineTaskById,
   queryFnGetAllMyRoutineTasks,
-  queryFnGetAllMyRoutineTasksByStationIds,
+  queryFnGetAllMyRoutineTasksByRoutineIds,
   queryFnGetMyRoutineTaskById,
   queryFnVisualizeMyRoutineTaskActualEndedAtCount,
   queryFnVisualizeMyRoutineTaskActualStartedAtCount,
@@ -105,8 +105,12 @@ const toGraphQLRoutinePeriod = (period?: string | null) =>
 const routineTaskMatchesSearchInput = (routineTask: any, input: any) => {
   const query = input?.query?.trim().toLowerCase();
   if (query && !routineTask.title.toLowerCase().includes(query)) return false;
-  if (input?.stationId && input.stationId !== routineTask.stationId)
+  if (
+    input?.routineIds?.length > 0 &&
+    !input.routineIds.includes(routineTask.routineId)
+  ) {
     return false;
+  }
   return true;
 };
 
@@ -163,7 +167,7 @@ const patchSearchRoutineTask = (
           const node = {
             ...edge.node,
             id: routineTaskId,
-            stationId: readField("stationId", edge.node),
+            routineId: readField("routineId", edge.node),
             title: readField("title", edge.node),
             ...patch,
           };
@@ -382,17 +386,17 @@ export const useGetMyRoutineTaskById = (
   return { ...query, fetch };
 };
 
-export const useGetAllMyRoutineTasksByStationIds = (
-  hookRequest?: GetAllMyRoutineTasksByStationIdsRequest,
+export const useGetAllMyRoutineTasksByRoutineIds = (
+  hookRequest?: GetAllMyRoutineTasksByRoutineIdsRequest,
   options?: Partial<
-    UseQueryOptions<GetAllMyRoutineTasksByStationIdsResponse, Error>
+    UseQueryOptions<GetAllMyRoutineTasksByRoutineIdsResponse, Error>
   >
 ) => {
   const queryClient = getQueryClient();
 
   const perform = async (
-    request?: GetAllMyRoutineTasksByStationIdsRequest
-  ): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+    request?: GetAllMyRoutineTasksByRoutineIdsRequest
+  ): Promise<GetAllMyRoutineTasksByRoutineIdsResponse> => {
     if (!request) {
       throw new NotezyValidationError(
         ValidationClientException.ReceivedUndefinedRequest()
@@ -404,7 +408,7 @@ export const useGetAllMyRoutineTasksByStationIds = (
         throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
       }
 
-      const response = await queryFnGetAllMyRoutineTasksByStationIds(request);
+      const response = await queryFnGetAllMyRoutineTasksByRoutineIds(request);
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
@@ -415,7 +419,7 @@ export const useGetAllMyRoutineTasksByStationIds = (
         response.refreshableTokens?.newCSRFToken,
         response.embedded.publicId
       );
-      await RoutineTaskLocalSynchronizer.syncGetAllMyRoutineTasksByStationIds(
+      await RoutineTaskLocalSynchronizer.syncGetAllMyRoutineTasksByRoutineIds(
         response
       );
       return response;
@@ -425,7 +429,7 @@ export const useGetAllMyRoutineTasksByStationIds = (
         error instanceof NotezyFetchError
       ) {
         const routineTasks =
-          await RoutineTaskLocalSimulator.simulateGetAllMyRoutineTasksByStationIds(
+          await RoutineTaskLocalSimulator.simulateGetAllMyRoutineTasksByRoutineIds(
             request
           );
         return {
@@ -433,16 +437,16 @@ export const useGetAllMyRoutineTasksByStationIds = (
           data: routineTasks,
           exception: error.unWrap,
           embedded: { publicId: "" },
-        } as GetAllMyRoutineTasksByStationIdsResponse;
+        } as GetAllMyRoutineTasksByRoutineIdsResponse;
       }
 
       throw error;
     }
   };
 
-  const query = useQuery<GetAllMyRoutineTasksByStationIdsResponse, Error>({
-    queryKey: queryKeys.routineTask.manyByStationIds(
-      hookRequest?.param.stationIds as UUID[] | undefined,
+  const query = useQuery<GetAllMyRoutineTasksByRoutineIdsResponse, Error>({
+    queryKey: queryKeys.routineTask.manyByRoutineIds(
+      hookRequest?.param.routineIds as UUID[] | undefined,
       hookRequest?.param.areDeleted ?? false
     ),
     queryFn: async () => perform(hookRequest),
@@ -454,11 +458,11 @@ export const useGetAllMyRoutineTasksByStationIds = (
   });
 
   const fetch = async (
-    callbackRequest: GetAllMyRoutineTasksByStationIdsRequest
-  ): Promise<GetAllMyRoutineTasksByStationIdsResponse> => {
+    callbackRequest: GetAllMyRoutineTasksByRoutineIdsRequest
+  ): Promise<GetAllMyRoutineTasksByRoutineIdsResponse> => {
     return queryClient.fetchQuery({
-      queryKey: queryKeys.routineTask.manyByStationIds(
-        callbackRequest.param.stationIds as UUID[],
+      queryKey: queryKeys.routineTask.manyByRoutineIds(
+        callbackRequest.param.routineIds as UUID[],
         callbackRequest.param.areDeleted ?? false
       ),
       queryFn: async () => perform(callbackRequest),
@@ -550,15 +554,15 @@ export const useGetAllMyRoutineTasks = (
   return { ...query, fetch };
 };
 
-export const useCreateRoutineTaskByStationId = () => {
+export const useCreateRoutineTaskByRoutineId = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();
 
   const mutation = useMutation({
-    mutationFn: mutationFnCreateRoutineTaskByStationId,
+    mutationFn: mutationFnCreateRoutineTaskByRoutineId,
     onSuccess: async (
       response,
-      request: CreateRoutineTaskByStationIdRequest
+      request: CreateRoutineTaskByRoutineIdRequest
     ) => {
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
@@ -574,8 +578,7 @@ export const useCreateRoutineTaskByStationId = () => {
         queryKeys.routineTask.all(),
         queryKeys.routineTask.myAll(),
         queryKeys.routineTask.oneById(response.data.id as UUID),
-        queryKeys.station.oneById(request.body.stationId as UUID),
-        queryKeys.routineTask.manyByStationId(request.body.stationId as UUID),
+        queryKeys.routineTask.manyByRoutineId(request.body.routineId as UUID),
       ];
       await Promise.all(
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
@@ -585,7 +588,7 @@ export const useCreateRoutineTaskByStationId = () => {
       upsertSearchRoutineTask(apolloClient, {
         __typename: "PrivateRoutineTask",
         id: response.data.id,
-        stationId: request.body.stationId,
+        routineId: request.body.routineId,
         title: request.body.title,
         purpose: toGraphQLRoutineTaskPurpose(request.body.purpose),
         costUnit: Math.ceil(
@@ -603,9 +606,7 @@ export const useCreateRoutineTaskByStationId = () => {
         actualEndedAt: null,
         updatedAt: response.data.createdAt,
         createdAt: response.data.createdAt,
-        routineIds: [],
       });
-      apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.gc();
     },
     onError: error => {},
@@ -640,8 +641,8 @@ export const useUpdateMyRoutineTaskById = () => {
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
       patchSearchRoutineTask(apolloClient, request.body.routineTaskId, {
-        ...("stationId" in request.body.values
-          ? { stationId: request.body.values.stationId }
+        ...("routineId" in request.body.values
+          ? { routineId: request.body.values.routineId }
           : {}),
         ...("title" in request.body.values
           ? { title: request.body.values.title }
@@ -776,7 +777,6 @@ export const useHardDeleteMyRoutineTaskById = () => {
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
       removeSearchRoutineTasks(apolloClient, [request.body.routineTaskId]);
-      apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.gc();
     },
     onError: error => {},
@@ -816,7 +816,6 @@ export const useHardDeleteMyRoutineTasksByIds = () => {
         targetKeys.map(queryKey => queryClient.invalidateQueries({ queryKey }))
       );
       removeSearchRoutineTasks(apolloClient, request.body.routineTaskIds);
-      apolloClient.cache.evict({ fieldName: "searchStations" });
       apolloClient.cache.gc();
     },
     onError: error => {},

@@ -1,5 +1,5 @@
 import type {
-  GetAllMyRoutineTasksByStationIdsResponse,
+  GetAllMyRoutineTasksByRoutineIdsResponse,
   GetAllMyRoutineTasksResponse,
   GetMyRoutineTaskByIdResponse,
 } from "@shared/api/interfaces/routineTask.interface";
@@ -19,7 +19,7 @@ export class RoutineTaskLocalSynchronizer {
       .onConflictDoUpdate({
         target: RoutineTask.id,
         set: {
-          stationId: response.data.stationId,
+          routineId: response.data.routineId,
           title: response.data.title,
           purpose: response.data.purpose,
           costUnit: response.data.costUnit,
@@ -39,8 +39,8 @@ export class RoutineTaskLocalSynchronizer {
       });
   };
 
-  static syncGetAllMyRoutineTasksByStationIds = async (
-    response: GetAllMyRoutineTasksByStationIdsResponse
+  static syncGetAllMyRoutineTasksByRoutineIds = async (
+    response: GetAllMyRoutineTasksByRoutineIdsResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     if (response.data.length === 0) return;
@@ -50,7 +50,7 @@ export class RoutineTaskLocalSynchronizer {
       .values(
         response.data.map(routineTask => ({
           id: routineTask.id,
-          stationId: routineTask.stationId,
+          routineId: routineTask.routineId,
           title: routineTask.title,
           purpose: routineTask.purpose,
           costUnit: routineTask.costUnit,
@@ -71,7 +71,7 @@ export class RoutineTaskLocalSynchronizer {
       .onConflictDoUpdate({
         target: RoutineTask.id,
         set: {
-          stationId: sql`excluded.station_id`,
+          routineId: sql`excluded.routine_id`,
           title: sql`excluded.title`,
           purpose: sql`excluded.purpose`,
           costUnit: sql`excluded.cost_unit`,
@@ -102,7 +102,7 @@ export class RoutineTaskLocalSynchronizer {
       .onConflictDoUpdate({
         target: RoutineTask.id,
         set: {
-          stationId: sql`excluded.station_id`,
+          routineId: sql`excluded.routine_id`,
           title: sql`excluded.title`,
           purpose: sql`excluded.purpose`,
           costUnit: sql`excluded.cost_unit`,

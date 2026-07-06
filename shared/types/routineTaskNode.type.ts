@@ -7,6 +7,9 @@ import type { UUID } from "crypto";
 
 export interface RoutineTaskNode {
   id: UUID;
+  routineId: UUID;
+  // Backend no longer returns stationId for routine tasks. Keep this as a
+  // UI-only denormalized field derived from the parent routine.
   stationId: UUID;
   title: string;
   purpose: RoutineTaskPurpose;
@@ -27,9 +30,11 @@ export interface RoutineTaskNode {
 
 export const getDefaultRoutineTaskNode = (
   routineTaskId: UUID,
+  routineId: UUID,
   stationId: UUID
 ): RoutineTaskNode => ({
   id: routineTaskId,
+  routineId,
   stationId,
   title: "Untitled",
   purpose: RoutineTaskPurpose.AppendBlock,
