@@ -1,10 +1,10 @@
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import { Skeleton } from "@/components/ui/skeleton";
-import RoutineOverviewerChartsSkeleton from "./RoutineOverviewerChartsSkeleton";
-import RoutineScopeBarSkeleton from "./RoutineScopeBarSkeleton";
-import RoutineTableSkeleton from "./RoutineTableSkeleton";
-import RoutineTaskRecordTableSkeleton from "./RoutineTaskRecordTableSkeleton";
-import RoutineTaskTableSkeleton from "./RoutineTaskTableSkeleton";
+import RoutineChartsSkeleton from "./RoutineCharts/RoutineChartsSkeleton";
+import RoutineScopeBarSkeleton from "./RoutineScopeBar/RoutineScopeBarSkeleton";
+import RoutineTableSkeleton from "./RoutineTable/RoutineTableSkeleton";
+import RoutineTaskRecordTableSkeleton from "./RoutineTaskRecordTable/RoutineTaskRecordTableSkeleton";
+import RoutineTaskTableSkeleton from "./RoutineTaskTable/RoutineTaskTableSkeleton";
 import TimeRailsSkeleton from "./TimeRails/TimeRailsSkeleton";
 
 const RoutineOverviewerContentSkeleton = ({
@@ -31,7 +31,7 @@ const RoutineOverviewerContentSkeleton = ({
       </div>
       <div className="flex w-full flex-col gap-4 overflow-x-hidden p-4">
         <TimeRailsSkeleton />
-        {showCharts && <RoutineOverviewerChartsSkeleton />}
+        {showCharts && <RoutineChartsSkeleton />}
         <RoutineTableSkeleton />
         <RoutineTaskTableSkeleton />
         <RoutineTaskRecordTableSkeleton />

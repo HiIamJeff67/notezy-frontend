@@ -14,7 +14,7 @@ import {
 import {
   CHART_DEFINITIONS,
   type NewRoutineOverviewChart,
-} from "./chartWidget.type";
+} from "./RoutineCharts";
 
 const categoricalPreviewData: TwoDimensionalData = {
   data: [

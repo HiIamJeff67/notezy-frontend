@@ -20,19 +20,18 @@ import {
   useStationRoutine,
 } from "@/hooks";
 import AddChartDialog from "./RoutineCharts/AddChartDialog";
-import type {
-  NewRoutineOverviewChart,
-  RoutineOverviewChart,
-  RoutineOverviewChartComponentId,
-} from "./RoutineCharts/chartWidget.type";
-import { CHART_DEFINITIONS } from "./RoutineCharts/chartWidget.type";
-import RoutineOverviewerCharts from "./RoutineOverviewerCharts";
+import RoutineCharts, {
+  CHART_DEFINITIONS,
+  type NewRoutineOverviewChart,
+  type RoutineOverviewChart,
+  type RoutineOverviewChartComponentId,
+} from "./RoutineCharts/RoutineCharts";
 import RoutineOverviewerContentSkeleton from "./RoutineOverviewerContentSkeleton";
 
-import RoutineScopeBar from "./RoutineScopeBar";
-import RoutineTable from "./RoutineTable";
-import RoutineTaskRecordTable from "./RoutineTaskRecordTable";
-import RoutineTaskTable from "./RoutineTaskTable";
+import RoutineScopeBar from "./RoutineScopeBar/RoutineScopeBar";
+import RoutineTable from "./RoutineTable/RoutineTable";
+import RoutineTaskRecordTable from "./RoutineTaskRecordTable/RoutineTaskRecordTable";
+import RoutineTaskTable from "./RoutineTaskTable/RoutineTaskTable";
 import TimeRailsSkeleton from "./TimeRails/TimeRailsSkeleton";
 
 const TimeRails = React.lazy(() => import("./TimeRails/TimeRails"));
@@ -471,7 +470,7 @@ const RoutineOverviewerContent = ({
             <TimeRailsSkeleton />
           )}
           {showCharts && (
-            <RoutineOverviewerCharts
+            <RoutineCharts
               charts={charts}
               onChartChange={updateChart}
               onChartRemove={removeChart}

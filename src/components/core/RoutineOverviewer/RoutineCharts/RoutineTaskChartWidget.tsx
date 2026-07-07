@@ -9,7 +9,7 @@ import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
-import type { RoutineTaskChartType } from "./chartWidget.type";
+import type { RoutineTaskChartType } from "./RoutineCharts";
 
 const options = [
   { value: "statusCount", label: "Status counts" },

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-const RoutineOverviewerChartsSkeleton = () => (
+const RoutineChartsSkeleton = () => (
   <section className="w-full min-w-0 rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
     <header className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
       <Skeleton className="h-4 w-16 rounded-sm" />
@@ -20,4 +20,4 @@ const RoutineOverviewerChartsSkeleton = () => (
   </section>
 );
 
-export default RoutineOverviewerChartsSkeleton;
+export default RoutineChartsSkeleton;

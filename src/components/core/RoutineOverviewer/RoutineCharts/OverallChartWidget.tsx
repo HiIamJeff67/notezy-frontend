@@ -3,7 +3,7 @@ import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
-import type { OverallChartType } from "./chartWidget.type";
+import type { OverallChartType } from "./RoutineCharts";
 
 interface OverallChartWidgetProps {
   chartType: OverallChartType;
