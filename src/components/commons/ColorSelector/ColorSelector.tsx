@@ -161,7 +161,7 @@ const ColorSelector = ({
           variant="outline"
           size="icon"
           disabled={disabled}
-          className={cn("size-10 shrink-0 rounded-sm bg-transparent")}
+          className="size-10 shrink-0 rounded-sm"
           aria-label="Select color"
         >
           {value ? (
@@ -180,7 +180,7 @@ const ColorSelector = ({
         align="start"
         sideOffset={6}
         className={cn(
-          "z-[160] flex w-72 flex-col gap-3 rounded-sm border bg-background/35 p-3 shadow-md backdrop-blur-xl",
+          "z-[160] flex w-72 flex-col gap-3 rounded-sm border bg-popover p-3 text-popover-foreground shadow-md outline-none",
           className
         )}
       >
@@ -246,7 +246,7 @@ const ColorSelector = ({
           </Button>
 
           {isCustomColorOpen && (
-            <div className="flex flex-col gap-3 rounded-sm border border-border bg-muted/30 p-3">
+            <div className="flex flex-col gap-3 rounded-sm border border-border bg-background p-3">
               <ColorPicker
                 value={customColor}
                 disabled={disabled}

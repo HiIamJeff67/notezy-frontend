@@ -38,9 +38,9 @@ const FocusTab = () => {
       </Section>
 
       <section className="relative overflow-hidden rounded-md border border-border bg-card p-4">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-emerald-700/60 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/60 to-transparent" />
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <SquareDashedMousePointerIcon className="size-4 text-emerald-700" />
+          <SquareDashedMousePointerIcon className="size-4 text-primary" />
           工作台
         </div>
         <div className="mt-4 grid h-56 grid-cols-[44px_1fr] gap-3">
@@ -49,7 +49,7 @@ const FocusTab = () => {
               preferences.focusRail ? "" : "opacity-35"
             }`}
           >
-            <div className="mx-auto mt-3 size-5 rounded-sm bg-emerald-900/40" />
+            <div className="mx-auto mt-3 size-5 rounded-sm bg-primary/30" />
             <div className="mx-auto mt-3 size-5 rounded-sm bg-muted-foreground/25" />
             <div className="mx-auto mt-3 size-5 rounded-sm bg-muted-foreground/25" />
           </div>
@@ -64,14 +64,14 @@ const FocusTab = () => {
                 preferences.dimInactivePanels ? "[&>div+div]:opacity-45" : ""
               }`}
             >
-              <div className="h-20 rounded-sm border border-emerald-900/50 bg-emerald-950/20" />
+              <div className="h-20 rounded-sm border border-primary/45 bg-primary/10" />
               <div className="h-20 rounded-sm border border-border bg-card/65" />
             </div>
             {preferences.plantAccents && (
               <div className="absolute right-4 bottom-4 flex gap-1">
-                <span className="h-5 w-2 rounded-full bg-emerald-800/70" />
-                <span className="h-7 w-2 rounded-full bg-lime-900/70" />
-                <span className="h-4 w-2 rounded-full bg-emerald-700/70" />
+                <span className="h-5 w-2 rounded-full bg-primary/45" />
+                <span className="h-7 w-2 rounded-full bg-primary/60" />
+                <span className="h-4 w-2 rounded-full bg-primary/35" />
               </div>
             )}
           </div>

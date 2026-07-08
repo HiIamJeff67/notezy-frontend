@@ -185,8 +185,8 @@ const RoutineTaskRecordDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="flex max-h-[82vh] flex-col gap-0 overflow-visible rounded-md bg-muted p-0 sm:max-w-5xl">
-        <DialogHeader className="shrink-0 border-b border-border px-6 py-5 pr-12">
+      <DialogContent className="flex max-h-[82vh] flex-col gap-0 overflow-hidden rounded-md bg-card p-0 sm:max-w-5xl">
+        <DialogHeader className="shrink-0 border-b border-border bg-secondary px-6 py-5 pr-12">
           <DialogTitle>Routine task records</DialogTitle>
           <DialogDescription className="truncate">
             {routineTitle}
@@ -202,7 +202,7 @@ const RoutineTaskRecordDialog = ({
             <SelectTrigger className="h-8 w-32 rounded-sm text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[var(--radix-select-trigger-width)]">
               <SelectItem value="All">All status</SelectItem>
               {AllRoutineTaskRecordStatuses.map(recordStatus => (
                 <SelectItem key={recordStatus} value={recordStatus}>
@@ -220,7 +220,7 @@ const RoutineTaskRecordDialog = ({
             <SelectTrigger className="h-8 w-40 rounded-sm text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[var(--radix-select-trigger-width)]">
               <SelectItem value="All">All purpose</SelectItem>
               {AllRoutineTaskPurposes.map(taskPurpose => (
                 <SelectItem key={taskPurpose} value={taskPurpose}>
@@ -234,18 +234,16 @@ const RoutineTaskRecordDialog = ({
             onValueChange={setScheduledAfter}
             placeholder="Scheduled after"
             className="h-8 w-40 text-xs"
-            contentClassName="z-[220] bg-card"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
             placeholder="Scheduled before"
             className="h-8 w-40 text-xs"
-            contentClassName="z-[220] bg-card"
           />
         </div>
         <div
-          className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4"
+          className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain"
           onScroll={event => {
             if (isSearching || !hasMore) return;
             const { clientHeight, scrollHeight, scrollTop } =
@@ -255,15 +253,19 @@ const RoutineTaskRecordDialog = ({
           }}
         >
           <Table className="table-fixed text-xs">
-            <TableHeader className="select-none">
+            <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
               <TableRow>
-                <TableHead className="w-[20%]">Task</TableHead>
-                <TableHead className="w-[12%]">Status</TableHead>
-                <TableHead className="w-[18%]">Purpose</TableHead>
-                <TableHead className="w-[18%]">Scheduled</TableHead>
-                <TableHead className="w-[18%]">Ended</TableHead>
-                <TableHead className="w-[7%] text-center">Cost</TableHead>
-                <TableHead className="w-[7%] text-center">Attempts</TableHead>
+                <TableHead className="h-9 w-[20%] px-2">Task</TableHead>
+                <TableHead className="h-9 w-[12%] px-2">Status</TableHead>
+                <TableHead className="h-9 w-[18%] px-2">Purpose</TableHead>
+                <TableHead className="h-9 w-[18%] px-2">Scheduled</TableHead>
+                <TableHead className="h-9 w-[18%] px-2">Ended</TableHead>
+                <TableHead className="h-9 w-[7%] px-2">
+                  Cost
+                </TableHead>
+                <TableHead className="h-9 w-[7%] px-2">
+                  Attempts
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -273,23 +275,27 @@ const RoutineTaskRecordDialog = ({
                 );
                 return (
                   <TableRow key={record.id}>
-                    <TableCell>
+                    <TableCell className="px-2 py-2.5">
                       <span className="line-clamp-2">
                         {task?.title ?? record.routineTaskId}
                       </span>
                     </TableCell>
-                    <TableCell>{record.status}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-2 py-2.5">
+                      {record.status}
+                    </TableCell>
+                    <TableCell className="px-2 py-2.5">
                       <span className="line-clamp-2">{record.purpose}</span>
                     </TableCell>
-                    <TableCell>{record.scheduledAt.toLocaleString()}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-2 py-2.5">
+                      {record.scheduledAt.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-2 py-2.5">
                       {record.actualEndedAt?.toLocaleString() ?? "None"}
                     </TableCell>
-                    <TableCell className="text-center tabular-nums">
+                    <TableCell className="px-2 py-2.5 tabular-nums">
                       {record.costUnit}
                     </TableCell>
-                    <TableCell className="text-center tabular-nums">
+                    <TableCell className="px-2 py-2.5 tabular-nums">
                       {record.totalAttempts}
                     </TableCell>
                   </TableRow>

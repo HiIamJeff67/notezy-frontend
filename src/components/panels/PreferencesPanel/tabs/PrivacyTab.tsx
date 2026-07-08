@@ -53,7 +53,7 @@ const PrivacyTab = () => {
 
       <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <EyeOffIcon className="size-4 text-emerald-700" />
+          <EyeOffIcon className="size-4 text-primary" />
           隱私狀態
         </div>
         <div className="mt-4 space-y-3">

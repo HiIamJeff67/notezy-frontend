@@ -101,7 +101,7 @@ const TimePicker = ({
               aria-invalid={isInvalid}
               disabled={disabled}
               className={cn(
-                "h-10 w-full justify-start rounded-sm bg-muted px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
+                "h-10 w-full justify-start rounded-sm px-3 text-left font-normal data-[empty=true]:text-muted-foreground",
                 className
               )}
             >
@@ -147,7 +147,7 @@ const TimePicker = ({
           align="start"
           sideOffset={4}
           className={cn(
-            "z-[160] w-72 rounded-sm border bg-muted p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "z-[160] w-72 rounded-sm border bg-popover p-0 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             contentClassName
           )}
         >
@@ -277,8 +277,8 @@ const TimePicker = ({
                   )}
                 </div>
                 <div className="pointer-events-none absolute inset-x-2 top-14 h-8 border-y border-primary/50 bg-primary/5" />
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-muted to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-muted to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-popover to-transparent" />
               </div>
             </div>
 
@@ -363,8 +363,8 @@ const TimePicker = ({
                   ))}
                 </div>
                 <div className="pointer-events-none absolute inset-x-2 top-14 h-8 border-y border-primary/50 bg-primary/5" />
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-muted to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-muted to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-popover to-transparent" />
               </div>
             </div>
             {hourCycle === "12" && (

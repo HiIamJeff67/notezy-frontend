@@ -79,7 +79,7 @@ const OfflineTab = () => {
 
       <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <HardDriveIcon className="size-4 text-emerald-700" />
+          <HardDriveIcon className="size-4 text-primary" />
           儲存配額
         </div>
         <div className="mt-5">

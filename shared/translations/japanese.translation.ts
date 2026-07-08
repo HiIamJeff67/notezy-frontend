@@ -68,6 +68,11 @@ export const JapaneseTranslationWords: TranslationWords = {
     defaultNeon: "デフォルトネオン",
     defaultOcean: "デフォルトオーシャン",
     defaultStandard: "デフォルトスタンダード",
+    defaultForest: "デフォルトフォレスト",
+    defaultPhoenix: "デフォルトフェニックス",
+    defaultPearl: "デフォルトパール",
+    defaultSakura: "デフォルトサクラ",
+    defaultCitrus: "デフォルトシトラス",
   },
   languages: {
     language: "言語",

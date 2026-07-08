@@ -47,7 +47,7 @@ const DeleteRoutineTagDialog = ({
         if (!open && !stationRoutineManager.isHardDeletingRoutineTag) onClose();
       }}
     >
-      <DialogContent className="rounded-sm bg-muted sm:max-w-md">
+      <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Delete a routine tag</DialogTitle>
           <DialogDescription>

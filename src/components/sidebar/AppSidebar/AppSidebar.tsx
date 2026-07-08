@@ -120,7 +120,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 </SidebarMenuButton>
                 <SidebarTrigger
                   variant={"default"}
-                  className="select-none bg-transparent hover:bg-primary"
+                  className="select-none bg-transparent text-foreground hover:bg-primary"
                 />
               </SidebarMenuItem>
               <SidebarMenuItem className="rounded-sm">

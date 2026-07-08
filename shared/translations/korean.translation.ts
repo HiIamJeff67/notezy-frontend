@@ -68,6 +68,11 @@ export const KoreanTranslationWords: TranslationWords = {
     defaultNeon: "기본 네온",
     defaultOcean: "기본 오션",
     defaultStandard: "기본 스탠다드",
+    defaultForest: "기본 포레스트",
+    defaultPhoenix: "기본 피닉스",
+    defaultPearl: "기본 펄",
+    defaultSakura: "기본 사쿠라",
+    defaultCitrus: "기본 시트러스",
   },
   languages: {
     language: "언어",

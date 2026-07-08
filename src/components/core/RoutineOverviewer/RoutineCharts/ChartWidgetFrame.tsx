@@ -27,7 +27,7 @@ export function ChartWidgetFrame<TValue extends string>({
   children,
 }: ChartWidgetFrameProps<TValue>) {
   return (
-    <article className="min-w-0 rounded-md border border-border/60 bg-background/55 p-4">
+    <article className="flex min-h-[360px] min-w-0 flex-col overflow-hidden rounded-md border border-border/60 bg-secondary p-4">
       <header className="mb-3 flex min-w-0 items-center justify-between gap-3 border-b border-border/50 pb-3">
         <h3 className="truncate text-sm font-medium text-foreground">
           {title}
@@ -64,7 +64,7 @@ export function ChartWidgetFrame<TValue extends string>({
           </Button>
         </div>
       </header>
-      {children}
+      <div className="min-h-0 flex-1">{children}</div>
     </article>
   );
 }

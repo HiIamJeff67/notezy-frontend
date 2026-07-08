@@ -139,7 +139,7 @@ const RoutineTagInspector = ({
     >
       <SheetContent
         overlayClassName="z-[110]"
-        className="z-[110] flex h-full w-full flex-col gap-0 bg-muted p-0 sm:max-w-md"
+        className="z-[110] flex h-full w-full flex-col gap-0 bg-sidebar p-0 sm:max-w-md"
       >
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
@@ -189,7 +189,6 @@ const RoutineTagInspector = ({
                       setValues(current => ({ ...current, color }))
                     }
                     disabled={stationRoutineManager.isUpdatingRoutineTag}
-                    className="bg-muted"
                   />
                 </div>
 
@@ -201,7 +200,6 @@ const RoutineTagInspector = ({
                       setValues(current => ({ ...current, icon }))
                     }
                     disabled={stationRoutineManager.isUpdatingRoutineTag}
-                    className="bg-muted"
                   />
                 </div>
               </div>

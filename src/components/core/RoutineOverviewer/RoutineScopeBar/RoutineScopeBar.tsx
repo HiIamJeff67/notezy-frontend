@@ -76,7 +76,7 @@ const RoutineScopeBar = ({
       className="
         @container
         flex h-full w-full min-w-0 items-center justify-between gap-4
-        border-b border-border/40 bg-background/75 px-3 backdrop-blur-md
+        border-b border-border/40 bg-inset/75 px-3 backdrop-blur-md
       "
     >
       <div className="flex min-w-0 items-center gap-2">
@@ -364,7 +364,7 @@ const RoutineScopeBar = ({
               stationRoutineManager.setTimeRailScale(value);
             }
           }}
-          className="rounded-sm border border-border/60 bg-card/70 p-0.5"
+          className="rounded-sm border border-border/60 bg-secondary p-0.5"
         >
           <ToggleGroupItem
             value="day"
@@ -401,7 +401,7 @@ const StatusPill = forwardRef<HTMLDivElement, StatusPillProps>(
     <div
       ref={ref}
       {...props}
-      className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-background/40 px-2"
+      className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-card px-2"
       aria-label={`${title}: ${presentCount} of ${totalCount} present`}
     >
       {icon}

@@ -112,9 +112,6 @@ const CreateBlockPackPayloadEditorSidebar = ({
         patternBlock => patternBlock.id === availablePatternBlock.id
       )
   );
-  const shouldPickExistingBlock =
-    purpose === RoutineTaskPurpose.UpdateBlock ||
-    purpose === RoutineTaskPurpose.ResetBlock;
 
   const searchBlocks = async (reset: boolean) => {
     if (isSearchingBlocksRef.current) return;
@@ -219,7 +216,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
   }, [blockSearchQuery, isBlockPickerOpen]);
 
   return (
-    <aside className="flex max-h-[72vh] min-h-0 flex-col gap-4 overflow-y-auto border-r bg-muted/60 p-4">
+    <aside className="flex max-h-[72vh] min-h-0 flex-col gap-4 overflow-y-auto border-r bg-sidebar p-4">
       {purpose === "CreateBlockPack" && (
         <>
           <ShelfLocationPicker
@@ -265,8 +262,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
           </div>
         </>
       )}
-      {shouldPickExistingBlock && (
-        <div className="flex flex-col gap-2">
+      {(purpose === RoutineTaskPurpose.UpdateBlock || purpose === RoutineTaskPurpose.ResetBlock)
+        && (<div className="flex flex-col gap-2">
           <Label>Block</Label>
           <PopoverPrimitive.Root
             modal
@@ -348,7 +345,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                         searchedBlocks.map(searchedBlock => (
                           <TableRow
                             key={searchedBlock.id}
-                            className="cursor-pointer hover:bg-muted/60"
+                            className="cursor-pointer hover:bg-accent"
                             onClick={() => {
                               setBlockId(searchedBlock.id);
                               setSelectedBlock({
@@ -649,8 +646,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
       <div
         className={
           isTemplateTableExpanded
-            ? "h-72 min-h-72 shrink-0 overflow-y-auto rounded-t-sm border bg-muted/35"
-            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-muted/35"
+            ? "h-72 min-h-72 shrink-0 overflow-y-auto rounded-t-sm border bg-background"
+            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-background"
         }
       >
         <Table className="table-fixed">
@@ -780,7 +777,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
             <CopyIcon className="size-4" />
           </Button>
         </div>
-        <pre className="min-h-24 whitespace-pre-wrap break-words rounded-sm border bg-background/45 p-3 font-mono text-[11px] text-foreground">
+        <pre className="min-h-24 whitespace-pre-wrap break-words rounded-sm border bg-background p-3 font-mono text-[11px] text-foreground">
           {payloadPreview}
         </pre>
       </div>

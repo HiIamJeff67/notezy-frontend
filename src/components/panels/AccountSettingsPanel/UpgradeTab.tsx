@@ -52,7 +52,7 @@ const planOptions: PlanOption[] = [
       month: "Notezy Monthly Pro Plan",
       year: "Notezy Yearly Pro Plan",
     },
-    tone: "border-emerald-900/55 bg-emerald-950/10",
+    tone: "border-border bg-background/35",
     note: "穩定擴建",
     bestFor: "日常筆記、工作流與中量資料",
     monthlyPrice: 4.99,
@@ -67,7 +67,7 @@ const planOptions: PlanOption[] = [
       month: "Notezy Monthly Premium Plan",
       year: "Notezy Yearly Premium Plan",
     },
-    tone: "border-lime-900/55 bg-lime-950/10",
+    tone: "border-border bg-background/35",
     note: "重載工作台",
     bestFor: "多專案知識庫與進階任務管理",
     monthlyPrice: 9.99,
@@ -82,7 +82,7 @@ const planOptions: PlanOption[] = [
       month: "Notezy Monthly Ultimate Plan",
       year: "Notezy Yearly Ultimate Plan",
     },
-    tone: "border-amber-900/55 bg-amber-950/10",
+    tone: "border-border bg-background/35",
     note: "深層礦脈",
     bestFor: "大型研究、密集同步與長期資料沉積",
     monthlyPrice: 19.99,
@@ -97,7 +97,7 @@ const planOptions: PlanOption[] = [
       month: "Notezy Monthly Enterprise Plan",
       year: "Notezy Yearly Enterprise Plan",
     },
-    tone: "border-stone-500/45 bg-stone-900/20",
+    tone: "border-border bg-background/35",
     note: "企業級鑄造",
     bestFor: "團隊型長期資料庫與高容量操作",
     monthlyPrice: 49.99,
@@ -183,11 +183,11 @@ const UpgradeTab = () => {
       <div className="flex flex-col gap-5">
         <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="relative overflow-hidden rounded-md border border-border bg-background/45 p-5 shadow-inner">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-emerald-700/60 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/60 to-transparent" />
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
-                  <FactoryIcon className="size-4 text-emerald-700" />
+                  <FactoryIcon className="size-4 text-primary" />
                   Account Plan
                 </div>
                 <h3 className="mt-2 text-2xl font-semibold text-foreground">
@@ -197,11 +197,11 @@ const UpgradeTab = () => {
                   {currentOption.bestFor}
                 </p>
               </div>
-              <div className="rounded-sm border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-right">
+              <div className="rounded-sm border border-border bg-primary/10 px-3 py-2 text-right">
                 <div className="text-[11px] uppercase text-muted-foreground">
                   Status
                 </div>
-                <div className="mt-1 text-sm font-semibold text-emerald-500">
+                <div className="mt-1 text-sm font-semibold text-primary">
                   ACTIVE
                 </div>
               </div>
@@ -336,7 +336,7 @@ const UpgradeTab = () => {
                       </div>
                     </div>
                     {active && (
-                      <span className="rounded-sm border border-emerald-900/50 bg-emerald-950/30 px-2 py-1 text-[10px] font-semibold text-emerald-500">
+                      <span className="rounded-sm border border-border bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
                         ACTIVE
                       </span>
                     )}
@@ -360,7 +360,7 @@ const UpgradeTab = () => {
                       key={highlight}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
-                      <CheckIcon className="size-3.5 text-emerald-700" />
+                      <CheckIcon className="size-3.5 text-primary" />
                       <span>{highlight}</span>
                     </div>
                   ))}
@@ -379,7 +379,7 @@ const UpgradeTab = () => {
                   目前方案 / 選取方案
                 </div>
               </div>
-              <LeafIcon className="size-4 text-emerald-700" />
+              <LeafIcon className="size-4 text-primary" />
             </div>
             <div className="divide-y divide-border">
               {limitRows.map(row => (
@@ -422,7 +422,7 @@ const UpgradeTab = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-5 rounded-sm border border-amber-900/45 bg-amber-950/10 p-3 text-xs leading-5 text-muted-foreground">
+            <div className="mt-5 rounded-sm border border-border bg-muted/35 p-3 text-xs leading-5 text-muted-foreground">
               目前僅完成介面與後端資料模型對齊；付款、訂閱建立與方案變更 API
               會在外部付款流程部署後接上。
             </div>

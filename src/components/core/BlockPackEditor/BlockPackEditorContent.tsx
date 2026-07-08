@@ -163,7 +163,7 @@ const BlockPackEditorContent = ({
   return (
     <div className="w-full h-full flex flex-col justify-center items-start bg-cover bg-center bg-no-repeat">
       <BlockPackStateSonner state={state} />
-      <header className="w-full h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-background/15 backdrop-blur-md border-b border-background/10">
+      <header className="w-full h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-canvas/15 backdrop-blur-md border-b border-canvas/10">
         <div className="flex justify-start items-center gap-2">
           {sidebarManager.isMobile && <SidebarTrigger />}
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

@@ -66,7 +66,7 @@ export const SwitchRow = ({
 );
 
 export const StatusPill = ({ children }: { children: ReactNode }) => (
-  <span className="rounded-sm border border-emerald-900/50 bg-emerald-950/20 px-2 py-1 text-[11px] font-semibold text-emerald-500">
+  <span className="rounded-sm border border-border bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary">
     {children}
   </span>
 );

@@ -456,12 +456,14 @@ const CreateBlockPackPayloadEditor = ({
       <DialogContent
         className={
           usesPayloadSidebar
-            ? "z-[180] max-h-[92vh] !w-[min(1600px,97vw)] !max-w-none gap-0 overflow-hidden rounded-sm bg-muted p-0"
-            : "max-h-[90vh] overflow-visible rounded-sm bg-muted sm:max-w-xl"
+            ? "z-[180] max-h-[92vh] !w-[min(1600px,97vw)] !max-w-none gap-0 overflow-hidden rounded-sm bg-card p-0"
+            : "max-h-[90vh] overflow-visible rounded-sm bg-card sm:max-w-xl"
         }
       >
         <DialogHeader
-          className={usesPayloadSidebar ? "border-b px-5 py-4" : ""}
+          className={
+            usesPayloadSidebar ? "border-b bg-secondary px-5 py-4" : ""
+          }
         >
           <DialogTitle>Payload editor</DialogTitle>
           <DialogDescription>
@@ -511,14 +513,14 @@ const CreateBlockPackPayloadEditor = ({
                 }
               />
             ) : (
-              <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-background/30">
+              <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-card">
                 <div className="min-h-0 flex-1 overflow-y-auto p-5">
                   <Label>Payload Preview</Label>
-                  <pre className="mt-2 min-h-64 whitespace-pre-wrap break-words rounded-sm border bg-background/45 p-3 font-mono text-xs">
+                  <pre className="mt-2 min-h-64 whitespace-pre-wrap break-words rounded-sm border bg-background p-3 font-mono text-xs">
                     {payloadPreview}
                   </pre>
                 </div>
-                <DialogFooter className="min-h-10 border-t bg-muted/80 px-4 py-2">
+                <DialogFooter className="min-h-10 border-t bg-secondary px-4 py-2">
                   <span className="mr-auto self-center text-xs text-muted-foreground">
                     Estimated payload cost:{" "}
                     {Math.ceil(new Blob([payloadPreview]).size / 1024)}{" "}

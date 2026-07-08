@@ -250,12 +250,13 @@ const AccountTab = memo(() => {
           />
 
           <div className="flex justify-start gap-4 pt-6 border-t border-border/50">
-            <Button type="submit" className="max-w-2/5">
+            <Button variant="default" type="submit" className="max-w-2/5">
               Save Account
             </Button>
             <Button
+              variant="destructive"
               type="button"
-              className="max-w-2/5 bg-destructive hover:bg-destructive/90"
+              className="max-w-2/5"
               onClick={() => userForm.reset(user)}
             >
               Reset Changes

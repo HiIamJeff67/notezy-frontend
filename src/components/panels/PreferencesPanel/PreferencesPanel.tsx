@@ -30,14 +30,19 @@ interface PreferencesPanelProps {
 }
 
 const sidebarItems = [
-  { id: "appearance", label: "外觀", icon: PaletteIcon },
-  { id: "editor", label: "編輯器", icon: BookOpenIcon },
-  { id: "focus", label: "專注", icon: FocusIcon },
-  { id: "offline", label: "離線資料", icon: HardDriveIcon },
-  { id: "privacy", label: "隱私", icon: ShieldIcon },
-  { id: "notifications", label: "通知", icon: BellIcon },
-  { id: "about", label: "關於", icon: InfoIcon },
-] satisfies { id: PreferencePage; label: string; icon: LucideIcon }[];
+  { id: "appearance", label: "外觀", icon: PaletteIcon, group: "工作區" },
+  { id: "editor", label: "編輯器", icon: BookOpenIcon, group: "工作區" },
+  { id: "focus", label: "專注", icon: FocusIcon, group: "工作區" },
+  { id: "offline", label: "離線資料", icon: HardDriveIcon, group: "系統" },
+  { id: "privacy", label: "隱私", icon: ShieldIcon, group: "系統" },
+  { id: "notifications", label: "通知", icon: BellIcon, group: "系統" },
+  { id: "about", label: "關於", icon: InfoIcon, group: "資訊" },
+] satisfies {
+  id: PreferencePage;
+  label: string;
+  icon: LucideIcon;
+  group: string;
+}[];
 
 const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
   const [currentPage, setCurrentPage] = useState<PreferencePage>("appearance");
@@ -80,7 +85,7 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="min-w-4/5 overflow-hidden border-none p-0 [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60">
+      <DialogContent className="min-w-4/5 overflow-hidden border-none p-0">
         <DialogTitle className="sr-only">偏好設定</DialogTitle>
         <div className="flex h-[520px]">
           <Sidebar
@@ -93,7 +98,7 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground">
-                  <ActiveIcon className="size-5 shrink-0 text-emerald-700" />
+                  <ActiveIcon className="size-5 shrink-0 text-primary" />
                   {activePage.label}
                 </h2>
               </div>

@@ -47,7 +47,7 @@ const CreateShelfItemDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-4/5 bg-muted [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0">
+      <DialogContent className="w-4/5">
         <DialogHeader className="w-full">
           <DialogTitle>{dialogHeader}</DialogTitle>
         </DialogHeader>

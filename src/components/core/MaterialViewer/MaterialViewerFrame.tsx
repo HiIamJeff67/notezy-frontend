@@ -140,7 +140,7 @@ const MaterialViewerFrame = ({
 
   return (
     <div className="w-full h-full min-w-0 min-h-0 overflow-hidden flex flex-col items-stretch bg-cover bg-transparent bg-no-repeat">
-      <header className="w-full min-w-0 h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-background/15 backdrop-blur-md border-b border-background/10 overflow-hidden">
+      <header className="w-full min-w-0 h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-canvas/15 backdrop-blur-md border-b border-canvas/10 overflow-hidden">
         <div className="flex flex-1 min-w-0 justify-start items-center gap-2">
           {sidebarManager.isMobile && <SidebarTrigger />}
           <DropdownMenu

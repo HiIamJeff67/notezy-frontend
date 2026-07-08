@@ -68,6 +68,11 @@ export const EnglishTranslationWords: TranslationWords = {
     defaultNeon: "Default Neon",
     defaultOcean: "Default Ocean",
     defaultStandard: "Default Standard",
+    defaultForest: "Default Forest",
+    defaultPhoenix: "Default Phoenix",
+    defaultPearl: "Default Pearl",
+    defaultSakura: "Default Sakura",
+    defaultCitrus: "Default Citrus",
   },
   languages: {
     language: "Language",

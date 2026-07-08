@@ -264,7 +264,7 @@ const RoutineTaskInspector = ({
     >
       <SheetContent
         overlayClassName="z-[110]"
-        className="z-[110] flex h-full w-full flex-col gap-0 bg-muted p-0 sm:max-w-md"
+        className="z-[110] flex h-full w-full flex-col gap-0 bg-sidebar p-0 sm:max-w-md"
       >
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
@@ -315,7 +315,6 @@ const RoutineTaskInspector = ({
                       purpose: purpose as RoutineTaskPurpose,
                     }))
                   }
-                  contentClassName="bg-muted"
                   valueLabel={values.purpose.replace(
                     /^(Create|Append|Update|Reset)(.+)$/,
                     "$1．$2"
@@ -458,7 +457,6 @@ const RoutineTaskInspector = ({
                         period === "OneShot" ? null : (period as RoutinePeriod),
                     }))
                   }
-                  contentClassName="bg-muted"
                   options={[
                     { value: "OneShot", label: "One-shot" },
                     ...AllRoutinePeriods.map(routinePeriod => ({
@@ -473,7 +471,7 @@ const RoutineTaskInspector = ({
                 <Label htmlFor="routine-task-inspector-payload">Payload</Label>
                 <div
                   id="routine-task-inspector-payload"
-                  className="max-h-64 overflow-y-auto rounded-sm border bg-background/45 p-3"
+                  className="max-h-64 overflow-y-auto rounded-sm border bg-background p-3"
                 >
                   <pre className="whitespace-pre-wrap break-words font-mono text-xs text-muted-foreground">
                     {values.payload}

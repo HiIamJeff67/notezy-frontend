@@ -1,5 +1,7 @@
+import { ThemeComponentShowcase } from "@/pages/root/playground/ThemeComponentShowcase";
+
 const PlaygroundPage = () => {
-  return <div></div>;
+  return <ThemeComponentShowcase />;
 };
 
 export default PlaygroundPage;

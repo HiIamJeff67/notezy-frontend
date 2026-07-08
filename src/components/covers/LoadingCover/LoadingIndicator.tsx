@@ -44,7 +44,7 @@ const LoadingIndicator = () => {
           ))}
         </g>
       </svg>
-      <p className="text-base font-semibold tracking-[0.16em] text-[var(--foreground)]">
+      <p className="text-base font-semibold tracking-[0.16em] text-[var(--loading-logo-front)]">
         LOADING
       </p>
     </div>

@@ -84,7 +84,7 @@ const NotificationsTab = () => {
               value={preferences.quietModeStart}
               onValueChange={value => updatePreference("quietModeStart", value)}
             >
-              <SelectTrigger className="w-24 bg-muted">
+              <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -100,7 +100,7 @@ const NotificationsTab = () => {
               value={preferences.quietModeEnd}
               onValueChange={value => updatePreference("quietModeEnd", value)}
             >
-              <SelectTrigger className="w-24 bg-muted">
+              <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -117,7 +117,7 @@ const NotificationsTab = () => {
 
       <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <MonitorIcon className="size-4 text-emerald-700" />
+          <MonitorIcon className="size-4 text-primary" />
           權限
         </div>
         <div className="mt-4 rounded-sm border border-border bg-muted/35 p-4 text-center">

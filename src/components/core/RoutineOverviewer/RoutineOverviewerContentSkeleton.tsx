@@ -8,15 +8,13 @@ import RoutineTaskTableSkeleton from "./RoutineTaskTable/RoutineTaskTableSkeleto
 import TimeRailsSkeleton from "./TimeRails/TimeRailsSkeleton";
 
 const RoutineOverviewerContentSkeleton = ({
-  showCharts = true,
   headerLeft = 0,
 }: {
-  showCharts?: boolean;
   headerLeft?: number | string;
 }) => (
-  <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-cover bg-center bg-no-repeat">
+  <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-inset bg-cover bg-center bg-no-repeat">
     <header
-      className="fixed top-0 right-0 z-20 h-10 border-background/10 bg-background/75 backdrop-blur-md"
+      className="fixed top-0 right-0 z-20 h-10 border-inset/10 bg-inset/75 backdrop-blur-md"
       style={{ left: headerLeft }}
     >
       <RoutineScopeBarSkeleton />
@@ -31,7 +29,7 @@ const RoutineOverviewerContentSkeleton = ({
       </div>
       <div className="flex w-full flex-col gap-4 overflow-x-hidden p-4">
         <TimeRailsSkeleton />
-        {showCharts && <RoutineChartsSkeleton />}
+        <RoutineChartsSkeleton />
         <RoutineTableSkeleton />
         <RoutineTaskTableSkeleton />
         <RoutineTaskRecordTableSkeleton />

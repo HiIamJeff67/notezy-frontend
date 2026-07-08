@@ -68,12 +68,10 @@ function getChartDefinitionId(chart: NewRoutineOverviewChart) {
 }
 
 type RoutineOverviewerContentProps = {
-  showCharts?: boolean;
   showStationScope?: boolean;
 };
 
 const RoutineOverviewerContent = ({
-  showCharts = true,
   showStationScope = true,
 }: RoutineOverviewerContentProps) => {
   const modalManager = useModal();
@@ -372,20 +370,17 @@ const RoutineOverviewerContent = ({
 
   if (isOpening) {
     return (
-      <RoutineOverviewerContentSkeleton
-        headerLeft={headerLeft}
-        showCharts={showCharts}
-      />
+      <RoutineOverviewerContentSkeleton headerLeft={headerLeft} />
     );
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-cover bg-center bg-no-repeat">
+    <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-inset bg-cover bg-center bg-no-repeat">
       <header
         className="
           fixed top-0 right-0 z-20 h-10
           flex shrink-0 justify-between items-center 
-          gap-2 bg-background/75 backdrop-blur-md border-background/10
+          gap-2 bg-inset/75 backdrop-blur-md border-inset/10
         "
         style={{
           left: headerLeft,
@@ -394,7 +389,6 @@ const RoutineOverviewerContent = ({
       >
         <RoutineScopeBar
           onOpenAddChart={() => setIsAddChartDialogOpen(true)}
-          showAddChart={showCharts}
           showStationStatus={showStationScope}
         />
       </header>
@@ -469,29 +463,25 @@ const RoutineOverviewerContent = ({
           ) : (
             <TimeRailsSkeleton />
           )}
-          {showCharts && (
-            <RoutineCharts
-              charts={charts}
-              onChartChange={updateChart}
-              onChartRemove={removeChart}
-              onOpenAddChart={() => setIsAddChartDialogOpen(true)}
-              queryRange={stationRoutineManager.timeWindow}
-              timeHourUnit={chartTimeHourUnit}
-            />
-          )}
+          <RoutineCharts
+            charts={charts}
+            onChartChange={updateChart}
+            onChartRemove={removeChart}
+            onOpenAddChart={() => setIsAddChartDialogOpen(true)}
+            queryRange={stationRoutineManager.timeWindow}
+            timeHourUnit={chartTimeHourUnit}
+          />
           <RoutineTable />
           <RoutineTaskTable />
           <RoutineTaskRecordTable />
         </div>
       </div>
-      {showCharts && (
-        <AddChartDialog
-          activeChartComponentIds={getChartComponentIds(charts)}
-          onAddChart={addChart}
-          onOpenChange={setIsAddChartDialogOpen}
-          open={isAddChartDialogOpen}
-        />
-      )}
+      <AddChartDialog
+        activeChartComponentIds={getChartComponentIds(charts)}
+        onAddChart={addChart}
+        onOpenChange={setIsAddChartDialogOpen}
+        open={isAddChartDialogOpen}
+      />
     </div>
   );
 };

@@ -68,6 +68,11 @@ export const TraditionalChineseTranslationWords: TranslationWords = {
     defaultNeon: "預設霓虹",
     defaultOcean: "預設海洋",
     defaultStandard: "預設標準",
+    defaultForest: "預設森林",
+    defaultPhoenix: "預設鳳凰",
+    defaultPearl: "預設珍珠",
+    defaultSakura: "預設櫻花",
+    defaultCitrus: "預設柑橘",
   },
   languages: {
     language: "語言",

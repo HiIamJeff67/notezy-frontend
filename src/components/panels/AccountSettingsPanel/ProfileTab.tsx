@@ -197,7 +197,7 @@ const ProfileTab = memo(() => {
                   alt="Avatar"
                   width={80}
                   height={80}
-                  className="w-full h-full object-cover bg-gray-100"
+                  className="w-full h-full object-cover bg-muted"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition">
@@ -388,12 +388,13 @@ const ProfileTab = memo(() => {
             />
 
             <div className="flex justify-start gap-4 pt-6 border-t border-border/50">
-              <Button type="submit" className="max-w-2/5">
+              <Button variant="default" type="submit" className="max-w-2/5">
                 Save Profile
               </Button>
               <Button
+                variant="destructive"
                 type="button"
-                className="max-w-2/5 bg-destructive hover:bg-destructive/90"
+                className="max-w-2/5"
                 onClick={() =>
                   userInfoForm.reset(userManager.userInfo ?? FakeUserInfo)
                 }

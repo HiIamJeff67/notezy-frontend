@@ -67,7 +67,7 @@ const DeleteRoutineTaskDialog = ({
         if (!open && !deleteRoutineTaskMutator.isPending) onClose();
       }}
     >
-      <DialogContent className="rounded-sm bg-muted sm:max-w-md">
+      <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Delete a routine task</DialogTitle>
           <DialogDescription>

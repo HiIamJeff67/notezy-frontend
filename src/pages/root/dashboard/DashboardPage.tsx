@@ -438,7 +438,7 @@ const DashboardPage = () => {
         </ProgressiveBackground>
       )}
       <PlaceableBackground
-        className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto relative !bg-popover mt-[-12px] border border-foreground/30 rounded-t-lg"
+        className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto relative !bg-inset mt-[-12px] border border-foreground/30 rounded-t-lg"
         zIndex={DashboardElementZIndexes.placeableBackground}
         frameSizeSource="horizontal"
         frameSize={frameSize}

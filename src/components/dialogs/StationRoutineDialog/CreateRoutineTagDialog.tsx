@@ -76,7 +76,7 @@ const CreateRoutineTagDialog = ({
         if (!open && !stationRoutineManager.isCreatingRoutineTag) onClose();
       }}
     >
-      <DialogContent className="rounded-sm bg-muted sm:max-w-md [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
+      <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create routine tag</DialogTitle>
           <DialogDescription>

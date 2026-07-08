@@ -354,8 +354,8 @@ const RoutineTaskTable = () => {
   ]);
 
   return (
-    <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
+    <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <ClipboardList className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
@@ -376,7 +376,7 @@ const RoutineTaskTable = () => {
           >
             <SelectTrigger
               size="sm"
-              className="h-8 w-32 min-w-0 rounded-sm bg-background/60 text-xs @max-[1040px]:w-full"
+              className="h-8 w-32 min-w-0 rounded-sm text-xs @max-[1040px]:w-full"
             >
               <SelectValue />
             </SelectTrigger>
@@ -397,7 +397,7 @@ const RoutineTaskTable = () => {
           >
             <SelectTrigger
               size="sm"
-              className="h-8 w-40 min-w-0 rounded-sm bg-background/60 text-xs @max-[1040px]:w-full"
+              className="h-8 w-40 min-w-0 rounded-sm text-xs @max-[1040px]:w-full"
             >
               <SelectValue />
             </SelectTrigger>
@@ -418,7 +418,7 @@ const RoutineTaskTable = () => {
           >
             <SelectTrigger
               size="sm"
-              className="h-8 w-44 min-w-0 rounded-sm bg-background/60 text-xs @max-[1040px]:w-full"
+              className="h-8 w-44 min-w-0 rounded-sm text-xs @max-[1040px]:w-full"
             >
               <SelectValue />
             </SelectTrigger>
@@ -437,14 +437,12 @@ const RoutineTaskTable = () => {
             onValueChange={setScheduledAfter}
             placeholder="Next after"
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
             placeholder="Next before"
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
         </div>
       </div>
@@ -460,15 +458,15 @@ const RoutineTaskTable = () => {
         }}
       >
         <Table className="table-fixed text-xs">
-          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card [&_th]:leading-tight">
-            <TableRow className="bg-muted/15">
+          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
+            <TableRow>
               <TableHead className="h-9 w-[19%] px-2">Task</TableHead>
               <TableHead className="h-9 w-[10%] px-2">Station</TableHead>
               <TableHead className="h-9 w-[9%] px-2">Status</TableHead>
               <TableHead className="h-9 w-[13%] px-2">Purpose</TableHead>
               <TableHead className="h-9 w-[17%] px-2">Routine</TableHead>
               <TableHead className="h-9 w-[15%] px-2">Next</TableHead>
-              <TableHead className="h-9 w-[9%] px-2 text-center">
+              <TableHead className="h-9 w-[9%] px-2">
                 Attempts
               </TableHead>
               <TableHead className="h-9 w-[8%] px-2" />
@@ -530,7 +528,7 @@ const RoutineTaskTable = () => {
                       {routineTask.nextScheduledAt.toLocaleString()}
                     </span>
                   </TableCell>
-                  <TableCell className="px-2 py-2.5 text-center tabular-nums">
+                  <TableCell className="px-2 py-2.5 tabular-nums">
                     {routineTask.attempts} / {routineTask.maxAttempts}
                   </TableCell>
                   <TableCell className="px-2 py-2.5 text-right">

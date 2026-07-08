@@ -186,8 +186,8 @@ const RoutineTaskRecordTable = ({
   });
 
   return (
-    <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
+    <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <HistoryIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
@@ -247,14 +247,12 @@ const RoutineTaskRecordTable = ({
             onValueChange={setScheduledAfter}
             placeholder="Scheduled after"
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
             placeholder="Scheduled before"
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
         </div>
       </div>
@@ -268,14 +266,14 @@ const RoutineTaskRecordTable = ({
         }}
       >
         <Table className="table-fixed text-xs">
-          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card [&_th]:leading-tight">
-            <TableRow className="bg-muted/15">
+          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
+            <TableRow>
               <TableHead className="h-9 w-[18%] px-2">Task</TableHead>
               <TableHead className="h-9 w-[14%] px-2">Status</TableHead>
               <TableHead className="h-9 w-[16%] px-2">Purpose</TableHead>
               <TableHead className="h-9 w-[15%] px-2">Scheduled</TableHead>
               <TableHead className="h-9 w-[15%] px-2">Ended</TableHead>
-              <TableHead className="h-9 w-[10%] px-2 text-center">
+              <TableHead className="h-9 w-[10%] px-2">
                 Cost
               </TableHead>
               <TableHead className="h-9 w-[12%] px-2">Error</TableHead>
@@ -303,7 +301,7 @@ const RoutineTaskRecordTable = ({
                   <TableCell className="px-2 py-2.5">
                     {record.actualEndedAt?.toLocaleString() ?? "None"}
                   </TableCell>
-                  <TableCell className="px-2 py-2.5 text-center tabular-nums">
+                  <TableCell className="px-2 py-2.5 tabular-nums">
                     {record.costUnit}
                   </TableCell>
                   <TableCell className="px-2 py-2.5">

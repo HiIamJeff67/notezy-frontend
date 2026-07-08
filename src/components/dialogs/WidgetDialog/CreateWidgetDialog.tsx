@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
 import { PreviewWidget } from "@/components/widgets/widget";
+import { useEffect } from "react";
 
 interface CreateWidgetDialogProps {
   open: boolean;
@@ -19,6 +20,14 @@ const CreateWidgetDialog = ({
   onOpenChange,
   onCreate,
 }: CreateWidgetDialogProps) => {
+  useEffect(() => {
+    if (open || typeof document === "undefined") return;
+    const timerId = window.setTimeout(() => {
+      document.body.style.pointerEvents = "";
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent

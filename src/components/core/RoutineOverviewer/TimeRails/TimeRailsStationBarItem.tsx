@@ -1,5 +1,6 @@
 import { DNDType } from "@shared/enums";
 import type { StationNode } from "@shared/types/stationNode.type";
+import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
 import { useDrag, useDrop } from "react-dnd";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
@@ -48,15 +49,14 @@ const TimeRailsStationBarItem = ({
         drag(node);
         drop(node);
       }}
-      className="
-        flex w-full min-w-0 cursor-grab items-start gap-2 overflow-hidden border-t border-border/60
-        bg-card px-3 py-3 shadow-[8px_0_18px_-18px_hsl(var(--foreground))]
-        active:cursor-grabbing
-      "
+      className={cn(
+        "flex w-full min-w-0 cursor-grab items-start gap-2 overflow-hidden",
+        "border-t border-border/60 bg-card px-3 py-3 shadow-sm active:cursor-grabbing",
+        isOver && "bg-muted"
+      )}
       style={{
         height: rowHeight,
         opacity: isDragging ? 0.5 : 1,
-        backgroundColor: isOver ? "hsl(var(--muted))" : undefined,
       }}
     >
       {station.icon ? (

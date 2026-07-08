@@ -40,7 +40,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
   onConfirm,
   isSaveDisabled = false,
 }: CreateBlockPackPayloadTemplateEditorProps) => (
-  <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-background/30">
+  <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-card">
     <div
       className={
         purpose === RoutineTaskPurpose.UpdateBlock
@@ -49,7 +49,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
       }
     >
       {purpose === RoutineTaskPurpose.UpdateBlock && (
-        <section className="min-h-0 overflow-y-auto border-b bg-muted/25 py-4 pr-6 pl-16">
+        <section className="min-h-0 overflow-y-auto border-b bg-secondary py-4 pr-6 pl-16">
           <div className="mb-2 text-muted-foreground text-xs">
             Current Block
           </div>
@@ -81,7 +81,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
               <SideMenu {...sideMenuProps}>
                 <AddBlockButton {...sideMenuProps} />
                 <blockNoteShadcnComponents.SideMenu.Button
-                  className="bn-button size-7 min-w-0 p-1.5 text-gray-400"
+                  className="bn-button size-7 min-w-0 p-1.5 text-muted-foreground"
                   label={
                     patternBlockIds.has(sideMenuProps.block.id)
                       ? "Remove from pattern table"
@@ -135,7 +135,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
         </BlockNoteView>
       </section>
     </div>
-    <DialogFooter className="min-h-10 border-t bg-muted/80 px-4 py-2">
+    <DialogFooter className="min-h-10 border-t bg-secondary px-4 py-2">
       <span className="mr-auto self-center text-xs text-muted-foreground">
         Estimated payload cost:{" "}
         {Math.ceil(new Blob([payloadPreview]).size / 1024)} CostUnits

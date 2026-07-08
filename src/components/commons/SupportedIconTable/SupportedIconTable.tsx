@@ -69,7 +69,7 @@ const SupportedIconTable = ({
           variant="outline"
           size="icon"
           disabled={disabled}
-          className="size-10 shrink-0 cursor-pointer rounded-sm bg-transparent text-lg"
+          className="size-10 shrink-0 cursor-pointer rounded-sm text-lg"
           aria-label={value ? "Change icon" : "Select icon"}
         >
           {value ?? <SmilePlusIcon className="text-muted-foreground" />}
@@ -81,7 +81,7 @@ const SupportedIconTable = ({
         align="start"
         sideOffset={6}
         className={cn(
-          "z-[160] flex w-80 flex-col gap-3 rounded-sm border bg-background/35 p-3 text-popover-foreground shadow-md outline-none backdrop-blur-xl",
+          "z-[160] flex w-80 flex-col gap-3 rounded-sm border bg-popover p-3 text-popover-foreground shadow-md outline-none",
           className
         )}
       >

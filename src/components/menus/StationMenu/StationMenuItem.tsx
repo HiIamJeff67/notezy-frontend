@@ -38,6 +38,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import {
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -250,13 +251,13 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
         </ContextMenu>
         {!stationRoutineManager.isStationEditing(station.id) &&
           (station.routineCount > 0 || routineTaskCount > 0) && (
-            <div className="pointer-events-none absolute top-1 right-1 flex h-6 items-center text-xs text-foreground">
+            <SidebarMenuBadge className="gap-0.5">
               {station.routineCount > 0 && (
                 <HoverCard openDelay={250} closeDelay={100}>
                   <HoverCardTrigger asChild>
-                    <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                    <span className="pointer-events-auto flex min-w-4 items-center justify-center px-0.5">
                       {station.routineCount}
-                    </div>
+                    </span>
                   </HoverCardTrigger>
                   <HoverCardContent
                     side="top"
@@ -272,7 +273,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               )}
               {station.routineCount > 0 && routineTaskCount > 0 && (
                 <span
-                  className="font-bold text-muted-foreground"
+                  className="text-current/70"
                   aria-hidden="true"
                 >
                   ·
@@ -281,9 +282,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               {routineTaskCount > 0 && (
                 <HoverCard openDelay={250} closeDelay={100}>
                   <HoverCardTrigger asChild>
-                    <div className="pointer-events-auto flex h-6 min-w-4 items-center justify-center px-0.5 tabular-nums">
+                    <span className="pointer-events-auto flex min-w-4 items-center justify-center px-0.5">
                       {routineTaskCount}
-                    </div>
+                    </span>
                   </HoverCardTrigger>
                   <HoverCardContent
                     side="top"
@@ -297,7 +298,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   </HoverCardContent>
                 </HoverCard>
               )}
-            </div>
+            </SidebarMenuBadge>
           )}
         <CollapsibleContent>
           <SidebarMenuSub>

@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 const RoutineTaskTableSkeleton = () => (
-  <section className="w-full rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-    <header className="flex items-center justify-between gap-3 border-b border-border/80 px-4 py-3">
+  <section className="w-full rounded-md border border-border/60 bg-card">
+    <header className="flex items-center justify-between gap-3 border-b border-border/80 bg-secondary px-4 py-3">
       <div className="flex items-center gap-3">
         <Skeleton className="h-4 w-32 rounded-sm" />
         <Skeleton className="h-5 w-16 rounded-sm" />

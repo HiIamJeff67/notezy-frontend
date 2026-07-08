@@ -78,8 +78,8 @@ const TemplatePatternEditor = ({
       <div
         className={
           isExpanded
-            ? "h-72 min-h-72 shrink-0 overflow-y-auto overflow-x-hidden rounded-t-sm border bg-muted/35"
-            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-muted/35"
+            ? "h-72 min-h-72 shrink-0 overflow-y-auto overflow-x-hidden rounded-t-sm border bg-background"
+            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-background"
         }
       >
         <Table className="table-fixed">

@@ -65,6 +65,11 @@ export const SimpleChineseTranslationWords: TranslationWords = {
     defaultNeon: "默认霓虹",
     defaultOcean: "默认海洋",
     defaultStandard: "默认标准",
+    defaultForest: "默认森林",
+    defaultPhoenix: "默认凤凰",
+    defaultPearl: "默认珍珠",
+    defaultSakura: "默认樱花",
+    defaultCitrus: "默认柑橘",
   },
   languages: {
     language: "语言",

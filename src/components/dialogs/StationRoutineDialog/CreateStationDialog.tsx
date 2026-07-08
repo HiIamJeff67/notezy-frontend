@@ -83,7 +83,7 @@ const CreateStationDialog = ({
         if (!open && !stationRoutineManager.isCreatingStation) onClose();
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-visible rounded-sm bg-muted sm:max-w-xl [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:ring-1 [&_[data-slot=select-trigger]]:focus-visible:ring-inset [&_[data-slot=select-trigger]]:focus-visible:ring-offset-0 [&_button]:focus-visible:ring-inset [&_button]:focus-visible:ring-offset-0 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-inset [&_input]:focus-visible:ring-offset-0 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-inset [&_textarea]:focus-visible:ring-offset-0">
+      <DialogContent className="max-h-[85vh] overflow-visible rounded-sm sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Create station</DialogTitle>
           <DialogDescription>
@@ -137,7 +137,6 @@ const CreateStationDialog = ({
                     value={icon}
                     onValueChange={setIcon}
                     disabled={stationRoutineManager.isCreatingStation}
-                    className="bg-card/45"
                   />
                 </div>
 

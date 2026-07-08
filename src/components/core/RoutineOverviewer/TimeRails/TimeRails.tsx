@@ -1409,10 +1409,10 @@ const TimeRails = () => {
     <section
       className="
         @container flex w-full min-w-0 shrink-0 flex-col
-        rounded-md border border-border/60 bg-card/70 backdrop-blur-sm
+        overflow-hidden rounded-md border border-border/60 bg-card
       "
     >
-      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[680px]:flex-col @max-[680px]:items-start">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[680px]:flex-col @max-[680px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <CalendarClock className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium">TimeRails</span>
@@ -1516,14 +1516,14 @@ const TimeRails = () => {
             No stations match the current scope.
           </div>
         ) : (
-          <div className="flex min-w-0">
+          <div className="flex min-w-0 bg-inset">
             <TimeRailsStationBar
               stations={renderedTimeRailStations}
               onMove={moveStationPosition}
             />
             <div
               ref={scrollContainerRef}
-              className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain"
+              className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain bg-inset"
               onScroll={event => {
                 updateViewportWindow(event.currentTarget);
                 if (pendingScrollAdjustmentRef.current !== null) return;
@@ -1547,7 +1547,7 @@ const TimeRails = () => {
             >
               <div style={{ width: contentWidth }}>
                 <div
-                  className="sticky top-0 z-10 select-none border-b border-border/60 bg-card"
+                  className="sticky top-0 z-10 select-none border-b border-border/60 bg-secondary"
                   style={{ width: contentWidth }}
                 >
                   <div
@@ -1608,7 +1608,7 @@ const TimeRails = () => {
 
                   return (
                     <div
-                      className="relative border-t border-border/60"
+                      className="relative border-t border-border/60 bg-inset"
                       key={timeRailStation.station.id}
                       style={{
                         height: rowHeight,

@@ -45,7 +45,7 @@ const RoutineTrain = ({
             "group absolute flex h-7 min-w-0 items-center gap-1.5 overflow-hidden",
             "rounded-sm border border-input bg-muted px-2 text-left text-xs shadow-sm hover:bg-input/50",
             routine.status === RoutineStatus.Completed &&
-              "text-emerald-700 dark:text-emerald-300",
+              "text-[var(--decoration)]",
             routine.status === RoutineStatus.OverDue && "text-destructive",
             "select-none",
             isResizing && "ring-1 ring-primary/50"

@@ -5,7 +5,7 @@ import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { StationNode } from "@shared/types/stationNode.type";
 import type { UUID } from "crypto";
 import {
-  BookmarkIcon,
+  Bookmark,
   CheckIcon,
   ClipboardList,
   Copy,
@@ -90,6 +90,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
         parentSubShelfName: item.parentSubShelf?.name ?? "Unknown sub shelf",
       };
     }) ?? [];
+
   const handleRenameRoutineOnSubmit = useCallback(
     async () =>
       await loadingManager.startAsyncTransactionLoading(async () => {
@@ -168,7 +169,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                       }}
                     >
                       {routine.isPinned && (
-                        <BookmarkIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                        <Bookmark className="size-3.5 shrink-0 text-muted-foreground" />
                       )}
                       <span className="min-w-0 truncate">{routine.title}</span>
                     </SidebarMenuSubButton>
@@ -454,7 +455,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                     .catch(error => toast.error(languageManager.tError(error)));
                 }}
               >
-                <BookmarkIcon className="mr-2 size-4" />
+                <Bookmark className="mr-2 size-4" />
                 {routine.isPinned ? "Unpin" : "Pin"}
               </ContextMenuItem>
               <ContextMenuItem

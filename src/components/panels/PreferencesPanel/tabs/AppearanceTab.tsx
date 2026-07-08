@@ -29,7 +29,7 @@ const AppearanceTab = () => {
             value={themeManager.currentTheme.id}
             onValueChange={value => void themeManager.switchCurrentTheme(value)}
           >
-            <SelectTrigger className="w-48 bg-muted">
+            <SelectTrigger className="w-48">
               <SelectValue placeholder="選擇主題" />
             </SelectTrigger>
             <SelectContent>
@@ -56,7 +56,7 @@ const AppearanceTab = () => {
               }
             }}
           >
-            <SelectTrigger className="w-48 bg-muted">
+            <SelectTrigger className="w-48">
               <SelectValue placeholder="選擇語言" />
             </SelectTrigger>
             <SelectContent>
@@ -103,7 +103,7 @@ const AppearanceTab = () => {
               updatePreference("panelDock", value as PanelDock)
             }
           >
-            <SelectTrigger className="w-36 bg-muted">
+            <SelectTrigger className="w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -141,7 +141,7 @@ const AppearanceTab = () => {
               <div className="h-2 w-24 rounded-full bg-foreground/75" />
               <div className="mt-2 h-2 w-36 rounded-full bg-muted-foreground/35" />
             </div>
-            <div className="size-9 rounded-sm border border-emerald-900/40 bg-emerald-950/20" />
+            <div className="size-9 rounded-sm border border-border bg-primary/10" />
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
             {[0, 1, 2].map(index => (

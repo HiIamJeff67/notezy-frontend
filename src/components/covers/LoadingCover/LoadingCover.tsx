@@ -26,7 +26,7 @@ const LoadingCover = () => {
 
   return (
     <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-gray bg-opacity-60 backdrop-blur-sm cursor-wait"
+      className="fixed inset-0 z-9999 flex cursor-wait items-center justify-center bg-overlay backdrop-blur-sm"
       style={{ pointerEvents: "auto" }}
     >
       <LoadingIndicator />

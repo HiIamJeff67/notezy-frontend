@@ -63,6 +63,11 @@ export interface TranslationWords {
     defaultNeon: string;
     defaultOcean: string;
     defaultStandard: string;
+    defaultForest: string;
+    defaultPhoenix: string;
+    defaultPearl: string;
+    defaultSakura: string;
+    defaultCitrus: string;
   };
   languages: {
     language: string;

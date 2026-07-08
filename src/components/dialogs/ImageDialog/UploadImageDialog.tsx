@@ -62,7 +62,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-card shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
+      <DialogContent className="max-w-md shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

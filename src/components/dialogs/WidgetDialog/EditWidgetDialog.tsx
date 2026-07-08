@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useEffect } from "react";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import {
   Dialog,
@@ -19,9 +19,17 @@ export const EditWidgetDialog = ({
   onOpenChange,
   children,
 }: EditWidgetDialogProps) => {
+  useEffect(() => {
+    if (open || typeof document === "undefined") return;
+    const timerId = window.setTimeout(() => {
+      document.body.style.pointerEvents = "";
+    }, 100);
+    return () => window.clearTimeout(timerId);
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border border-border bg-muted [&_[data-slot=select-trigger]]:border-border [&_[data-slot=select-trigger]]:bg-card/45 [&_[data-slot=select-trigger]]:hover:bg-card/60 [&_[data-slot=select-trigger]]:focus-visible:bg-card/60 [&_input]:border-border [&_input]:bg-card/45 [&_input]:hover:bg-card/60 [&_input]:focus-visible:bg-card/60 [&_textarea]:border-border [&_textarea]:bg-card/45 [&_textarea]:hover:bg-card/60 [&_textarea]:focus-visible:bg-card/60">
+      <DialogContent>
         {children}
       </DialogContent>
     </Dialog>

@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 const TimeRailsSkeleton = () => (
-  <section className="flex w-full min-w-0 shrink-0 flex-col rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-    <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border/80 px-3 py-2">
+  <section className="flex w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
+    <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2">
       <div className="flex items-center gap-2">
         <Skeleton className="size-4 rounded-sm" />
         <Skeleton className="h-4 w-20 rounded-sm" />
@@ -14,7 +14,7 @@ const TimeRailsSkeleton = () => (
       </div>
     </div>
     <div className="flex min-w-0">
-      <div className="w-40 shrink-0 border-r border-border/60">
+      <div className="w-40 shrink-0 border-r border-border/60 bg-card">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             className="flex h-20 items-center gap-2 border-b border-border/40 px-3"
@@ -28,8 +28,8 @@ const TimeRailsSkeleton = () => (
           </div>
         ))}
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <div className="grid h-10 grid-cols-7 border-b border-border/60">
+      <div className="min-w-0 flex-1 overflow-hidden bg-inset">
+        <div className="grid h-10 grid-cols-7 border-b border-border/60 bg-secondary">
           {Array.from({ length: 7 }).map((_, index) => (
             <div className="border-r border-border/40 px-3 py-3" key={index}>
               <Skeleton className="h-3 w-12 rounded-sm" />

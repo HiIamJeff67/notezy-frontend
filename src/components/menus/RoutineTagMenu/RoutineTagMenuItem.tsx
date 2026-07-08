@@ -55,6 +55,9 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
   const availableRoutines = stationRoutineManager.routines;
+  const visibleRoutineCount = routineTag.isExpanded
+    ? routineTag.routineCount
+    : 0;
 
   const handleRenameRoutineTagOnSubmit = useCallback(
     async () =>
@@ -119,7 +122,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 <ContextMenuTrigger asChild>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
-                      className="w-full rounded-sm"
+                      className="w-full rounded-sm pr-12"
                       onClick={() => {
                         stationRoutineManager.selectRoutineTag(routineTag.id);
                         void stationRoutineManager
@@ -284,8 +287,8 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
 
         {!stationRoutineManager.isRoutineTagEditing(routineTag.id) && (
           <>
-            {routineTag.routineCount > 0 && (
-              <SidebarMenuBadge>{routineTag.routineCount}</SidebarMenuBadge>
+            {visibleRoutineCount > 0 && (
+              <SidebarMenuBadge>{visibleRoutineCount}</SidebarMenuBadge>
             )}
             <CollapsibleContent>
               <SidebarMenuSub>

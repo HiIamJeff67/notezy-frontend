@@ -13,7 +13,7 @@ import {
 } from "@shared/api/interfaces/enums";
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { UUID } from "crypto";
-import { BookmarkIcon, ClipboardClock, SquarePen } from "lucide-react";
+import { Bookmark, ClipboardClock, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
@@ -345,8 +345,8 @@ const RoutineTable = () => {
   }, [endsBefore, routines, showUnscheduled, startsAfter, status]);
 
   return (
-    <section className="@container flex max-h-[640px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 px-3 py-2 @max-[760px]:items-start @max-[760px]:flex-col">
+    <section className="@container flex max-h-[640px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
+      <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[760px]:items-start @max-[760px]:flex-col">
         <div className="flex min-w-0 items-center gap-2">
           <ClipboardClock className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
@@ -365,7 +365,7 @@ const RoutineTable = () => {
           >
             <SelectTrigger
               size="sm"
-              className="h-8 w-32 rounded-sm bg-background/60 text-xs @max-[520px]:w-24"
+              className="h-8 w-32 rounded-sm text-xs @max-[520px]:w-24"
             >
               <SelectValue />
             </SelectTrigger>
@@ -383,14 +383,12 @@ const RoutineTable = () => {
             onValueChange={setStartsAfter}
             placeholder="Starts after"
             className="h-8 w-40 px-3 text-xs @max-[520px]:w-10 @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
           <DatePicker
             value={endsBefore}
             onValueChange={setEndsBefore}
             placeholder="Ends before"
             className="h-8 w-40 px-3 text-xs @max-[520px]:w-10 @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
-            contentClassName="bg-card"
           />
           <label className="flex h-8 items-center gap-2 rounded-sm bg-transparent px-2 text-xs text-muted-foreground">
             <Checkbox
@@ -413,8 +411,8 @@ const RoutineTable = () => {
         }}
       >
         <Table className="table-fixed">
-          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-card">
-            <TableRow className="bg-muted/15">
+          <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary">
+            <TableRow>
               <TableHead className="w-[18%] px-3">Routine</TableHead>
               <TableHead className="w-[14%] px-3">Station</TableHead>
               <TableHead className="w-[12%] px-3">Status</TableHead>
@@ -459,7 +457,7 @@ const RoutineTable = () => {
                     <div className="flex min-w-0 items-center">
                       <div className="flex min-w-0 flex-1 items-start gap-1.5">
                         {routine.isPinned && (
-                          <BookmarkIcon
+                          <Bookmark
                             className="mt-0.5 size-3.5 shrink-0 fill-muted-foreground/20 text-muted-foreground"
                             aria-label="Pinned routine"
                           />
@@ -599,10 +597,10 @@ const RoutineTable = () => {
                                       className={`size-2.5 shrink-0 rounded-full ${
                                         routineTask.status ===
                                         RoutineTaskStatus.Running
-                                          ? "bg-sky-500"
+                                          ? "bg-[var(--decoration)]"
                                           : routineTask.status ===
                                               RoutineTaskStatus.Pause
-                                            ? "bg-amber-500"
+                                            ? "bg-accent-foreground"
                                             : "bg-muted-foreground"
                                       }`}
                                     />

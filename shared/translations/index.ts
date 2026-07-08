@@ -80,6 +80,11 @@ export const tKey: TranslationWords = {
     defaultNeon: "themes.defaultNeon",
     defaultOcean: "themes.defaultOcean",
     defaultStandard: "themes.defaultStandard",
+    defaultForest: "themes.defaultForest",
+    defaultPhoenix: "themes.defaultPhoenix",
+    defaultPearl: "themes.defaultPearl",
+    defaultSakura: "themes.defaultSakura",
+    defaultCitrus: "themes.defaultCitrus",
   },
   languages: {
     language: "languages.language",

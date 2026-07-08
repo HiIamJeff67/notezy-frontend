@@ -31,7 +31,7 @@ const EditorTab = () => {
               updatePreference("startSurface", value as StartSurface)
             }
           >
-            <SelectTrigger className="w-40 bg-muted">
+            <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -51,7 +51,7 @@ const EditorTab = () => {
               updatePreference("editorWidth", value as EditorWidth)
             }
           >
-            <SelectTrigger className="w-40 bg-muted">
+            <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -90,7 +90,7 @@ const EditorTab = () => {
               updatePreference("markdownPaste", value as PasteBehavior)
             }
           >
-            <SelectTrigger className="w-40 bg-muted">
+            <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -131,7 +131,7 @@ const EditorTab = () => {
 
       <section className="rounded-md border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <KeyboardIcon className="size-4 text-emerald-700" />
+          <KeyboardIcon className="size-4 text-primary" />
           編輯樣本
         </div>
         <div className="mt-4 rounded-sm border border-border bg-muted/40 p-4">

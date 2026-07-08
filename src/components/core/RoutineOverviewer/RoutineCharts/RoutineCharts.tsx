@@ -102,8 +102,8 @@ const RoutineCharts = ({
   queryRange,
   timeHourUnit,
 }: RoutineOverviewerChartsProps) => (
-  <section className="w-full min-w-0 rounded-md border border-border/60 bg-card/70 backdrop-blur-sm">
-    <header className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+  <section className="flex w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
+    <header className="flex items-center justify-between gap-3 border-b border-border/60 bg-secondary px-4 py-3">
       <h2 className="text-sm font-medium text-foreground">Charts</h2>
       <span className="text-xs tabular-nums text-muted-foreground">
         {charts.length}
@@ -111,7 +111,7 @@ const RoutineCharts = ({
     </header>
     {charts.length === 0 ? (
       <button
-        className="m-4 flex min-h-40 w-[calc(100%-2rem)] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border/70 bg-background/35 p-6 text-muted-foreground transition hover:border-primary/55 hover:bg-accent/45 hover:text-foreground"
+        className="m-4 flex min-h-52 w-[calc(100%-2rem)] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border/70 bg-secondary p-6 text-muted-foreground transition hover:border-primary/55 hover:bg-primary/5 hover:text-foreground"
         onClick={onOpenAddChart}
         type="button"
       >

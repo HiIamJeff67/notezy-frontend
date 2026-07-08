@@ -43,11 +43,11 @@ const FormPayloadEditor = ({
   <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
     <DialogContent
       className={cn(
-        "z-[180] max-h-[92vh] !w-[min(1120px,96vw)] !max-w-none overflow-hidden rounded-sm bg-muted p-0",
+        "z-[180] max-h-[92vh] !w-[min(1120px,96vw)] !max-w-none overflow-hidden rounded-sm bg-card p-0",
         contentWidthClassName
       )}
     >
-      <DialogHeader className="border-b px-6 py-5">
+      <DialogHeader className="border-b bg-secondary px-6 py-5">
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
@@ -69,7 +69,7 @@ const FormPayloadEditor = ({
               Generated JSON for {purpose}. The backend is still authoritative.
             </p>
           </div>
-          <Card className="min-h-0 flex-1 overflow-hidden rounded-sm bg-card/70 py-0">
+          <Card className="min-h-0 flex-1 overflow-hidden rounded-sm bg-background py-0">
             <CardContent className="h-full overflow-auto p-4">
               <pre className="whitespace-pre-wrap break-words font-mono text-xs">
                 {payloadPreview}
@@ -79,7 +79,7 @@ const FormPayloadEditor = ({
         </div>
       </div>
 
-      <DialogFooter className="border-t px-6 py-4">
+      <DialogFooter className="border-t bg-secondary px-6 py-4">
         <span className="mr-auto self-center text-xs text-muted-foreground">
           Estimated payload cost:{" "}
           {Math.ceil(new Blob([payloadPreview]).size / 1024)} CostUnits

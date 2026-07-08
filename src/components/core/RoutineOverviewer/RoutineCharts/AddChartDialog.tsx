@@ -56,8 +56,8 @@ const AddChartDialog = ({
   activeChartComponentIds,
 }: AddChartDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="flex max-h-[86vh] flex-col gap-0 overflow-hidden rounded-md bg-muted p-0 sm:max-w-5xl">
-      <DialogHeader className="shrink-0 border-b border-border px-6 py-5 pr-12">
+    <DialogContent className="flex max-h-[86vh] flex-col gap-0 overflow-hidden rounded-md bg-card p-0 sm:max-w-5xl">
+      <DialogHeader className="shrink-0 border-b border-border bg-secondary px-6 py-5 pr-12">
         <DialogTitle>Add chart</DialogTitle>
         <DialogDescription>
           Choose a chart to add to the routine overview.
@@ -98,7 +98,8 @@ const AddChartDialog = ({
                     return (
                       <button
                         className={cn(
-                          "group relative z-0 flex min-w-0 cursor-pointer flex-col rounded-md border border-border/70 bg-background p-3 text-left transition-colors hover:z-10 hover:border-primary/45",
+                          "group relative z-0 flex min-w-0 cursor-pointer flex-col rounded-md border border-border/70 bg-secondary p-3 text-left",
+                          "transition-colors hover:z-10 hover:border-primary/45",
                           isActive &&
                             "cursor-not-allowed opacity-55 hover:border-border/70"
                         )}
@@ -114,7 +115,7 @@ const AddChartDialog = ({
                         <p className="truncate text-sm font-medium">
                           {definition.title}
                         </p>
-                        <div className="relative mt-2 min-w-0 overflow-visible rounded-sm border border-border/60 bg-muted/45">
+                        <div className="relative mt-2 min-w-0 overflow-hidden rounded-sm border border-border/60 bg-background">
                           <div className="pointer-events-none min-w-0 p-2">
                             <IntChart
                               ariaLabel={`${definition.title} chart preview`}
@@ -133,7 +134,7 @@ const AddChartDialog = ({
                           </div>
                           <div
                             className={cn(
-                              "absolute inset-0 z-40 flex items-center justify-center rounded-sm bg-background/85 text-sm font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100",
+                              "absolute inset-0 z-40 flex items-center justify-center rounded-sm bg-popover/85 text-sm font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100",
                               isActive && "opacity-100"
                             )}
                           >
