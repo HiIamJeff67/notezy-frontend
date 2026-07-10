@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 interface SectionProps {
@@ -10,6 +11,7 @@ interface SettingRowProps {
   description?: string;
   children: ReactNode;
   hideSeparator?: boolean;
+  unsupportedReason?: string;
 }
 
 interface SwitchRowProps {
@@ -18,6 +20,7 @@ interface SwitchRowProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   hideSeparator?: boolean;
+  unsupportedReason?: string;
 }
 
 export const Section = ({ children }: SectionProps) => (
@@ -29,9 +32,10 @@ export const SettingRow = ({
   description,
   children,
   hideSeparator,
+  unsupportedReason,
 }: SettingRowProps) => (
   <div
-    className={`flex min-h-16 items-center justify-between gap-5 py-3 ${
+    className={`relative flex min-h-[calc(var(--density-control-height)+1.75rem)] items-center justify-between gap-[var(--density-content-gap)] overflow-hidden py-[calc(var(--density-content-padding)*0.75)] ${
       !hideSeparator ? "border-b border-border/50" : ""
     }`}
   >
@@ -44,8 +48,27 @@ export const SettingRow = ({
       )}
     </div>
     <div className="flex shrink-0 items-center justify-end gap-2">
-      {children}
+      {unsupportedReason ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          data-density-static
+          disabled
+          className="h-8 px-3 text-xs"
+        >
+          {unsupportedReason}
+        </Button>
+      ) : (
+        children
+      )}
     </div>
+    {unsupportedReason && (
+      <div
+        className="absolute inset-0 z-10 cursor-not-allowed bg-transparent"
+        aria-label={unsupportedReason}
+      />
+    )}
   </div>
 );
 
@@ -55,13 +78,19 @@ export const SwitchRow = ({
   checked,
   onCheckedChange,
   hideSeparator,
+  unsupportedReason,
 }: SwitchRowProps) => (
   <SettingRow
     title={title}
     description={description}
     hideSeparator={hideSeparator}
+    unsupportedReason={unsupportedReason}
   >
-    <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    <Switch
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      disabled={Boolean(unsupportedReason)}
+    />
   </SettingRow>
 );
 

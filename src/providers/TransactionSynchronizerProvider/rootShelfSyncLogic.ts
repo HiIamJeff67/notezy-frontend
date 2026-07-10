@@ -21,7 +21,7 @@ import {
   EntityState,
   getMergedSequences,
   mergeSet,
-  SyncBuildResult,
+  MergedResult,
   SyncHeader,
   SyncJob,
   SyncProgressReporter,
@@ -44,7 +44,7 @@ interface RootShelfMutators {
   };
 }
 
-interface BuildRootShelfSyncResultOptions extends SyncProgressReporter {
+interface MergeRootShelfTransactionOptions extends SyncProgressReporter {
   transactions: InferSelectModel<typeof Transaction>[];
   header: SyncHeader;
   mutators: RootShelfMutators;
@@ -58,12 +58,12 @@ const mergeRootCreateValues = (
   ...(updateValues.name !== undefined ? { name: updateValues.name } : {}),
 });
 
-export const buildRootShelfSyncResult = ({
+export const mergeRootShelfTransactions = ({
   transactions,
   header,
   mutators,
   onParsed,
-}: BuildRootShelfSyncResultOptions): SyncBuildResult => {
+}: MergeRootShelfTransactionOptions): MergedResult => {
   const createRootShelvesMap = new Map<
     string,
     EntityState<{ id?: string; name: string }>

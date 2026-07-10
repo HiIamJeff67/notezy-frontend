@@ -5,6 +5,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { AppRouterProvider } from "@/providers/AppRouterProvider";
 import { BackgroundImagesProvider } from "@/providers/BackgroundImagesProvider";
+import { ClipboardGuardProvider } from "@/providers/ClipboardGuardProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { LoadingProvider } from "@/providers/LoadingProvider";
 import { LocalPreferencesProvider } from "@/providers/LocalPreferencesProvider";
@@ -24,15 +25,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <LanguageProvider>
               <ThemeProvider>
                 <LocalPreferencesProvider>
-                  <TransactionSynchronizerProvider>
-                    <UserProvider>
-                      <BackgroundImagesProvider>
-                        <DndProvider backend={HTML5Backend}>
-                          {children}
-                        </DndProvider>
-                      </BackgroundImagesProvider>
-                    </UserProvider>
-                  </TransactionSynchronizerProvider>
+                  <ClipboardGuardProvider>
+                    <TransactionSynchronizerProvider>
+                      <UserProvider>
+                        <BackgroundImagesProvider>
+                          <DndProvider backend={HTML5Backend}>
+                            {children}
+                          </DndProvider>
+                        </BackgroundImagesProvider>
+                      </UserProvider>
+                    </TransactionSynchronizerProvider>
+                  </ClipboardGuardProvider>
                 </LocalPreferencesProvider>
               </ThemeProvider>
             </LanguageProvider>

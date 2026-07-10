@@ -25,7 +25,7 @@ import {
   EntityState,
   getMergedSequences,
   mergeSet,
-  SyncBuildResult,
+  MergedResult,
   SyncHeader,
   SyncJob,
   SyncProgressReporter,
@@ -51,18 +51,18 @@ interface SubShelfMutators {
   };
 }
 
-interface BuildSubShelfSyncResultOptions extends SyncProgressReporter {
+interface MergeSubShelfTransactionOptions extends SyncProgressReporter {
   transactions: InferSelectModel<typeof Transaction>[];
   header: SyncHeader;
   mutators: SubShelfMutators;
 }
 
-export const buildSubShelfSyncResult = ({
+export const mergeSubShelfTransactions = ({
   transactions,
   header,
   mutators,
   onParsed,
-}: BuildSubShelfSyncResultOptions): SyncBuildResult => {
+}: MergeSubShelfTransactionOptions): MergedResult => {
   const createSubShelvesMap = new Map<
     string,
     EntityState<{

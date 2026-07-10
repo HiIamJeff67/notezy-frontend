@@ -14,6 +14,10 @@ import { useLocation } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef } from "react";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
+import {
+  getPreferredStartPath,
+  useLocalPreferences,
+} from "@/hooks/localPreferences";
 
 function GoogleRedirectPage() {
   const location = useLocation();
@@ -21,6 +25,7 @@ function GoogleRedirectPage() {
   const router = useAppRouter();
   const loadingManager = useLoading();
   const languageManager = useLanguage();
+  const { preferences } = useLocalPreferences();
   const userManager = useUser();
 
   const registerViaGoogleMutator = useRegisterViaGoogle();
@@ -98,7 +103,7 @@ function GoogleRedirectPage() {
       });
 
       userManager.setUserData(responseOfGettingUserData.data);
-      router.push(WebURLPathDictionary.root.dashboard._);
+      router.push(getPreferredStartPath(preferences));
     } catch (error) {
       console.log(error);
       toast.error(languageManager.tError(error));
@@ -112,6 +117,7 @@ function GoogleRedirectPage() {
   }, [
     location.search,
     router,
+    preferences,
     languageManager,
     registerViaGoogleMutator,
     loginViaGoogleMutator,

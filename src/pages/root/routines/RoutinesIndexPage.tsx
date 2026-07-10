@@ -1,13 +1,9 @@
-import type { UUID } from "crypto";
-import { useEffect } from "react";
-import RoutineViewer from "@/components/core/RoutineOverviewer/RoutineViewer/RoutineViewer";
+import React, { Suspense, useEffect } from "react";
+import RoutineOverviewer from "@/components/core/RoutineOverviewer/RoutineOverviewer";
+import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { useStationRoutine, useUser } from "@/hooks";
 
-interface RoutinesPageProps {
-  stationId: UUID;
-}
-
-const RoutinesPage = ({ stationId }: RoutinesPageProps) => {
+const RoutinesIndexPage = () => {
   const { initializeStationRoutineData } = useStationRoutine();
   const { userData } = useUser();
 
@@ -20,8 +16,10 @@ const RoutinesPage = ({ stationId }: RoutinesPageProps) => {
   }, [initializeStationRoutineData, userData?.publicId]);
 
   return (
-    <RoutineViewer stationId={stationId} />
+    <Suspense fallback={<StrictLoadingCover />}>
+      <RoutineOverviewer />
+    </Suspense>
   );
 };
 
-export default RoutinesPage;
+export default RoutinesIndexPage;

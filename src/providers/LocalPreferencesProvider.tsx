@@ -1,21 +1,20 @@
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
+import { WebURLPathDictionary } from "@shared/constants";
 import React, { createContext, useEffect, useState } from "react";
 
 export type PreferencePage =
   | "appearance"
   | "editor"
-  | "focus"
   | "offline"
   | "privacy"
+  | "browserPermissions"
   | "notifications"
   | "about";
 
 export type Density = "comfortable" | "balanced" | "compact";
-export type PanelDock = "left" | "right" | "floating";
-export type StartSurface = "dashboard" | "lastWorkspace" | "routines";
+export type StartSurface = "dashboard" | "routines";
 export type EditorWidth = "narrow" | "standard" | "wide";
-export type PasteBehavior = "plain" | "rich" | "markdown";
 export type NotificationPermissionState =
   | "default"
   | "granted"
@@ -26,28 +25,20 @@ export type LocalPreferences = {
   density: Density;
   reduceMotion: boolean;
   tactileFeedback: boolean;
-  panelDock: PanelDock;
   startSurface: StartSurface;
   editorWidth: EditorWidth;
   editorFontSize: number;
   lineWrap: boolean;
-  markdownPaste: PasteBehavior;
-  autosaveDrafts: boolean;
   spellcheck: boolean;
   quickInsert: boolean;
-  focusRail: boolean;
-  ambientGrid: boolean;
-  plantAccents: boolean;
-  dimInactivePanels: boolean;
+  blockDragHandle: boolean;
   localVault: boolean;
   offlineQueue: boolean;
   cacheAttachments: boolean;
   cleanupAfterDays: number;
-  restoreLastWorkspace: boolean;
   privatePreviews: boolean;
   clipboardGuard: boolean;
-  localDiagnostics: boolean;
-  crashSnapshot: boolean;
+  clipboardGuardPatterns: string[];
   desktopNotifications: boolean;
   routineNudges: boolean;
   syncNotifications: boolean;
@@ -83,28 +74,20 @@ export const defaultLocalPreferences: LocalPreferences = {
   density: "balanced",
   reduceMotion: false,
   tactileFeedback: true,
-  panelDock: "left",
-  startSurface: "lastWorkspace",
+  startSurface: "dashboard",
   editorWidth: "standard",
   editorFontSize: 15,
   lineWrap: true,
-  markdownPaste: "markdown",
-  autosaveDrafts: true,
   spellcheck: true,
   quickInsert: true,
-  focusRail: true,
-  ambientGrid: true,
-  plantAccents: true,
-  dimInactivePanels: true,
+  blockDragHandle: true,
   localVault: true,
   offlineQueue: true,
   cacheAttachments: false,
   cleanupAfterDays: 30,
-  restoreLastWorkspace: true,
   privatePreviews: false,
-  clipboardGuard: true,
-  localDiagnostics: false,
-  crashSnapshot: true,
+  clipboardGuard: false,
+  clipboardGuardPatterns: [],
   desktopNotifications: false,
   routineNudges: true,
   syncNotifications: true,
@@ -112,6 +95,27 @@ export const defaultLocalPreferences: LocalPreferences = {
   quietModeStart: "22:00",
   quietModeEnd: "08:00",
 };
+
+export const getPreferredStartPath = (preferences: LocalPreferences) => {
+  if (preferences.startSurface === "dashboard") {
+    return WebURLPathDictionary.root.dashboard._;
+  }
+  if (preferences.startSurface === "routines") {
+    return WebURLPathDictionary.root.routines._;
+  }
+  return WebURLPathDictionary.root.dashboard._;
+};
+
+const normalizeLocalPreferences = (
+  preferences: Partial<LocalPreferences>
+): Partial<LocalPreferences> => ({
+  ...preferences,
+  startSurface:
+    preferences.startSurface === "routines" ||
+    preferences.startSurface === "dashboard"
+      ? preferences.startSurface
+      : defaultLocalPreferences.startSurface,
+});
 
 export const LocalPreferencesContext = createContext<
   LocalPreferencesContextValue | undefined
@@ -142,7 +146,7 @@ export const LocalPreferencesProvider = ({
     if (saved && typeof saved === "object" && !Array.isArray(saved)) {
       setPreferences({
         ...defaultLocalPreferences,
-        ...(saved as Partial<LocalPreferences>),
+        ...normalizeLocalPreferences(saved as Partial<LocalPreferences>),
       });
     }
 
@@ -161,6 +165,18 @@ export const LocalPreferencesProvider = ({
       preferences
     );
   }, [isReady, preferences]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    root.dataset.density = preferences.density;
+    root.dataset.reduceMotion = String(preferences.reduceMotion);
+
+    return () => {
+      delete root.dataset.density;
+      delete root.dataset.reduceMotion;
+    };
+  }, [preferences.density, preferences.reduceMotion]);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.storage?.estimate) {

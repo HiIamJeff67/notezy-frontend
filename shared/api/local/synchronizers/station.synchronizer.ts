@@ -31,6 +31,7 @@ import {
   Routine,
   RoutinesToItems,
   RoutinesToTags,
+  RoutinesToTasks,
   Station,
   User,
   UsersToStations,
@@ -516,6 +517,9 @@ export class StationLocalSynchronizer {
         await tx
           .delete(RoutinesToTags)
           .where(inArray(RoutinesToTags.routineId, routineIds));
+        await tx
+          .delete(RoutinesToTasks)
+          .where(inArray(RoutinesToTasks.routineId, routineIds));
         await tx.delete(Routine).where(inArray(Routine.id, routineIds));
       }
       await tx
@@ -546,6 +550,9 @@ export class StationLocalSynchronizer {
         await tx
           .delete(RoutinesToTags)
           .where(inArray(RoutinesToTags.routineId, routineIds));
+        await tx
+          .delete(RoutinesToTasks)
+          .where(inArray(RoutinesToTasks.routineId, routineIds));
         await tx.delete(Routine).where(inArray(Routine.id, routineIds));
       }
       await tx

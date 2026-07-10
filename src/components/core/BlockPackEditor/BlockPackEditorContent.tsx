@@ -40,8 +40,11 @@ import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { ContentType } from "@shared/enums/contentType.enum";
 import toast from "@shared/lib/toast";
+import { cn } from "@shared/util/utils";
 import { ChevronDownIcon } from "lucide-react";
-import { Dispatch, useState, useTransition } from "react";
+import type { CSSProperties, Dispatch } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import {
   BlockPackMeta,
   BlockPackMetaAction,
@@ -58,11 +61,27 @@ const BlockPackEditorContent = ({
   const languageManager = useLanguage();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
+  const { preferences } = useLocalPreferences();
 
   const { editor, state } = useBlockEditor();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isImporting, startImportingTransition] = useTransition();
   const [isExporting, startExportingTransition] = useTransition();
+  const editorWidthClass = {
+    narrow: "max-w-2xl",
+    standard: "max-w-4xl",
+    wide: "max-w-7xl",
+  }[preferences.editorWidth];
+  const shouldShowSideMenu =
+    preferences.quickInsert || preferences.blockDragHandle;
+
+  useEffect(() => {
+    const editorElement = editor.domElement;
+    if (!editorElement) return;
+
+    editorElement.spellcheck = preferences.spellcheck;
+    editorElement.setAttribute("spellcheck", String(preferences.spellcheck));
+  }, [editor, preferences.spellcheck]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -321,22 +340,42 @@ const BlockPackEditorContent = ({
           blockPackMeta.rootId.toString()
         )}
       />
-      <div className="w-full h-full rounded-none p-8 z-0">
-        <BlockNoteView
-          editor={editor}
-          sideMenu={false}
-          className="notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4"
+      <div className="z-0 h-full w-full overflow-auto rounded-none p-8">
+        <div
+          className={cn("mx-auto min-h-full w-full", editorWidthClass)}
+          style={
+            {
+              "--notezy-editor-font-size": `${preferences.editorFontSize}px`,
+            } as CSSProperties
+          }
         >
-          <SideMenuController
-            floatingOptions={{ placement: "left" }}
-            sideMenu={sideMenuProps => (
-              <SideMenu {...sideMenuProps}>
-                <AddBlockButton {...sideMenuProps} />
-                <DragHandleButton {...sideMenuProps} />
-              </SideMenu>
+          <BlockNoteView
+            editor={editor}
+            sideMenu={false}
+            spellCheck={preferences.spellcheck}
+            className={cn(
+              "notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4",
+              !preferences.lineWrap &&
+                "[&_.bn-editor]:overflow-x-auto [&_.bn-inline-content]:whitespace-nowrap"
             )}
-          />
-        </BlockNoteView>
+          >
+            {shouldShowSideMenu && (
+              <SideMenuController
+                floatingOptions={{ placement: "left" }}
+                sideMenu={sideMenuProps => (
+                  <SideMenu {...sideMenuProps}>
+                    {preferences.quickInsert && (
+                      <AddBlockButton {...sideMenuProps} />
+                    )}
+                    {preferences.blockDragHandle && (
+                      <DragHandleButton {...sideMenuProps} />
+                    )}
+                  </SideMenu>
+                )}
+              />
+            )}
+          </BlockNoteView>
+        </div>
       </div>
     </div>
   );

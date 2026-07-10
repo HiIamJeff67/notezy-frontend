@@ -13,7 +13,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
@@ -225,7 +224,6 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
-              <ContextMenuCopyItems id={station.id} name={station.name} />
               <ContextMenuItem
                 onClick={() =>
                   stationRoutineManager.startRenamingStation(station)

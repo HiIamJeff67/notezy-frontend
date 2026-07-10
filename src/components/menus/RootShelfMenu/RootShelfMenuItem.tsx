@@ -6,7 +6,6 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, SquareDotIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import ShelfIcon from "@/components/icons/ShelfIcon";
@@ -216,10 +215,6 @@ const RootShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
-              <ContextMenuCopyItems
-                id={summary.root.id}
-                name={summary.root.name}
-              />
               <ContextMenuItem
                 onClick={() =>
                   shelfItemManager.startRenamingRootShelfNode(summary.root)

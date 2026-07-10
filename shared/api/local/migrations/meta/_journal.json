@@ -5,36 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1781496417303,
-      "tag": "0000_previous_colonel_america",
+      "when": 1783612205072,
+      "tag": "0000_amusing_winter_soldier",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "6",
-      "when": 1781654400000,
-      "tag": "0001_add_routine_tasks",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1782345600000,
-      "tag": "0002_update_routine_task_schedule_meta",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1783036800000,
-      "tag": "0003_drop_duplicate_name_indexes",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1783123200000,
-      "tag": "0004_add_routine_task_next_scheduled_at",
+      "version": "7",
+      "when": 1783641600000,
+      "tag": "0001_add_local_relationship_indexes",
       "breakpoints": true
     }
   ]

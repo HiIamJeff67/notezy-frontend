@@ -4,6 +4,7 @@ import { relations } from "drizzle-orm";
 import {
   foreignKey,
   integer,
+  index,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
@@ -31,6 +32,8 @@ export const SubShelf = sqliteTable(
       .default(new Date()),
   },
   table => [
+    index("sub_shelf_root_shelf_idx").on(table.rootShelfId),
+    index("sub_shelf_prev_idx").on(table.prevSubShelfId),
     foreignKey({
       columns: [table.prevSubShelfId],
       foreignColumns: [table.id],

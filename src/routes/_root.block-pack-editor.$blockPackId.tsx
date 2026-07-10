@@ -18,53 +18,6 @@ import BlockPackEditorNotFoundPage from "@/pages/root/block-pack-editor/BlockPac
 import BlockPackEditorPage from "@/pages/root/block-pack-editor/BlockPackEditorPage";
 import { BlockPackMeta } from "@/reducers/blockPackMeta.reducer";
 
-const ROOT_PARENT_KEY = "ROOT";
-
-const buildBlockTree = (blocks: PrivateBlock[]): PartialBlock[] => {
-  const childrenByParentId = new Map<string, PrivateBlock[]>();
-
-  for (const block of blocks) {
-    const parentKey = block.parentBlockId ?? ROOT_PARENT_KEY;
-    childrenByParentId.set(parentKey, [
-      ...(childrenByParentId.get(parentKey) ?? []),
-      block,
-    ]);
-  }
-
-  const orderSiblings = (siblings: PrivateBlock[]): PrivateBlock[] => {
-    const byId = new Map(siblings.map(block => [block.id, block]));
-    const visited = new Set<string>();
-    const ordered: PrivateBlock[] = [];
-    let current = siblings.find(block => block.prevBlockId === null);
-
-    while (current && !visited.has(current.id)) {
-      ordered.push(current);
-      visited.add(current.id);
-      current = current.nextBlockId ? byId.get(current.nextBlockId) : undefined;
-    }
-
-    for (const block of siblings) {
-      if (!visited.has(block.id)) ordered.push(block);
-    }
-
-    return ordered;
-  };
-
-  const toPartialBlock = (block: PrivateBlock): PartialBlock => ({
-    id: block.id,
-    type: block.type as any,
-    props: block.props as any,
-    content: block.content as any,
-    children: orderSiblings(childrenByParentId.get(block.id) ?? []).map(
-      toPartialBlock
-    ),
-  });
-
-  return orderSiblings(childrenByParentId.get(ROOT_PARENT_KEY) ?? []).map(
-    toPartialBlock
-  );
-};
-
 export const Route = createFileRoute("/_root/block-pack-editor/$blockPackId")({
   ssr: false, // since the blocknote editor view is a client side component
   validateSearch: search => ({
@@ -107,8 +60,12 @@ function BlockPackEditorIndexRoute() {
     from: "/_root/block-pack-editor/$blockPackId",
   });
 
-  const blockPackQuerier = useGetMyBlockPackAndItsParentById();
-  const blocksQuerier = useGetMyBlocksByBlockPackId();
+  const blockPackQuerier = useGetMyBlockPackAndItsParentById(undefined, {
+    staleTime: 0,
+  });
+  const blocksQuerier = useGetMyBlocksByBlockPackId(undefined, {
+    staleTime: 0,
+  });
   const [blockPackMeta, setBlockPackMeta] = useState<BlockPackMeta | null>(
     null
   );
@@ -128,26 +85,15 @@ function BlockPackEditorIndexRoute() {
       );
 
       try {
-        const [blockPackResponse, blocksResponse] = await Promise.all([
-          blockPackQuerier.fetch({
-            header: {
-              userAgent: userAgent,
-              authorization: getAuthorization(accessToken),
-            },
-            param: {
-              blockPackId: loaderData.blockPackId,
-            },
-          }),
-          blocksQuerier.fetch({
-            header: {
-              userAgent: userAgent,
-              authorization: getAuthorization(accessToken),
-            },
-            param: {
-              blockPackId: loaderData.blockPackId,
-            },
-          }),
-        ]);
+        const blockPackResponse = await blockPackQuerier.fetch({
+          header: {
+            userAgent: userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+          param: {
+            blockPackId: loaderData.blockPackId,
+          },
+        });
 
         if (!isActive) return;
 
@@ -155,6 +101,80 @@ function BlockPackEditorIndexRoute() {
           setIsNotFound(true);
           setBlockPackMeta(null);
           return;
+        }
+
+        const blocksResponse = await blocksQuerier
+          .fetch({
+            header: {
+              userAgent: userAgent,
+              authorization: getAuthorization(accessToken),
+            },
+            param: {
+              blockPackId: loaderData.blockPackId,
+            },
+          })
+          .catch(() => null);
+
+        if (!isActive) return;
+
+        const blocks = Array.isArray(blocksResponse?.data)
+          ? blocksResponse.data.filter(block => block.deletedAt === null)
+          : [];
+        const childrenByParentId = new Map<string, PrivateBlock[]>();
+        const orderedChildrenByParentId = new Map<string, PrivateBlock[]>();
+        const partialBlockById = new Map<string, PartialBlock>();
+        const rootBlocks: PartialBlock[] = [];
+
+        for (const block of blocks) {
+          const parentKey = block.parentBlockId ?? "ROOT";
+          childrenByParentId.set(parentKey, [
+            ...(childrenByParentId.get(parentKey) ?? []),
+            block,
+          ]);
+          partialBlockById.set(block.id, {
+            id: block.id,
+            type: block.type as any,
+            props: block.props as any,
+            content: block.content as any,
+            children: [],
+          });
+        }
+
+        for (const [parentKey, siblings] of childrenByParentId.entries()) {
+          const blockById = new Map(siblings.map(block => [block.id, block]));
+          const visitedBlockIds = new Set<string>();
+          const orderedBlocks: PrivateBlock[] = [];
+          let currentBlock = siblings.find(block => block.prevBlockId === null);
+
+          while (currentBlock && !visitedBlockIds.has(currentBlock.id)) {
+            orderedBlocks.push(currentBlock);
+            visitedBlockIds.add(currentBlock.id);
+            currentBlock = currentBlock.nextBlockId
+              ? blockById.get(currentBlock.nextBlockId)
+              : undefined;
+          }
+
+          for (const block of siblings) {
+            if (!visitedBlockIds.has(block.id)) orderedBlocks.push(block);
+          }
+
+          orderedChildrenByParentId.set(parentKey, orderedBlocks);
+        }
+
+        for (const [parentKey, orderedBlocks] of orderedChildrenByParentId) {
+          const children = orderedBlocks
+            .map(block => partialBlockById.get(block.id))
+            .filter((block): block is PartialBlock => Boolean(block));
+
+          if (parentKey === "ROOT") {
+            rootBlocks.push(...children);
+            continue;
+          }
+
+          const parentBlock = partialBlockById.get(parentKey);
+          if (parentBlock) {
+            parentBlock.children = children;
+          }
         }
 
         setBlockPackMeta({
@@ -171,7 +191,7 @@ function BlockPackEditorIndexRoute() {
             : null,
           updatedAt: new Date(blockPackResponse.data.updatedAt),
           createdAt: new Date(blockPackResponse.data.createdAt),
-          blocks: buildBlockTree(blocksResponse.data),
+          blocks: rootBlocks,
         });
       } catch {
         if (!isActive) return;

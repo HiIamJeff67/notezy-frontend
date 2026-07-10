@@ -1471,6 +1471,9 @@ export class RoutineLocalSimulator {
       await tx
         .delete(RoutinesToTags)
         .where(eq(RoutinesToTags.routineId, request.body.routineId));
+      await tx
+        .delete(RoutinesToTasks)
+        .where(eq(RoutinesToTasks.routineId, request.body.routineId));
       await tx.delete(Routine).where(eq(Routine.id, request.body.routineId));
       await tx
         .update(Station)
@@ -1523,6 +1526,9 @@ export class RoutineLocalSimulator {
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.routineId, routineIds));
+      await tx
+        .delete(RoutinesToTasks)
+        .where(inArray(RoutinesToTasks.routineId, routineIds));
       await tx.delete(Routine).where(inArray(Routine.id, routineIds));
 
       const routineCounts = new Map<string, number>();

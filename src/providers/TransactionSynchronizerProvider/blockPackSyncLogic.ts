@@ -1,6 +1,4 @@
 import {
-  MoveMyBlockPacksByParentSubShelfIdsRequest,
-  MoveMyBlockPacksByParentSubShelfIdsRequestSchema,
   CreateBlockPackRequestSchema,
   CreateBlockPacksRequest,
   CreateBlockPacksRequestSchema,
@@ -9,6 +7,8 @@ import {
   DeleteMyBlockPacksByIdsRequestSchema,
   MoveMyBlockPackByIdRequestSchema,
   MoveMyBlockPacksByParentSubShelfIdRequestSchema,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsRequestSchema,
   RestoreMyBlockPackByIdRequestSchema,
   RestoreMyBlockPacksByIdsRequest,
   RestoreMyBlockPacksByIdsRequestSchema,
@@ -24,8 +24,8 @@ import {
   dropEntityPendingOperations,
   EntityState,
   getMergedSequences,
+  MergedResult,
   mergeSet,
-  SyncBuildResult,
   SyncHeader,
   SyncJob,
   SyncProgressReporter,
@@ -51,18 +51,18 @@ interface BlockPackMutators {
   };
 }
 
-interface BuildBlockPackSyncResultOptions extends SyncProgressReporter {
+interface MergeBlockPackTransactionOptions extends SyncProgressReporter {
   transactions: InferSelectModel<typeof Transaction>[];
   header: SyncHeader;
   mutators: BlockPackMutators;
 }
 
-export const buildBlockPackSyncResult = ({
+export const mergeBlockPackTransactions = ({
   transactions,
   header,
   mutators,
   onParsed,
-}: BuildBlockPackSyncResultOptions): SyncBuildResult => {
+}: MergeBlockPackTransactionOptions): MergedResult => {
   const createBlockPacksMap = new Map<
     string,
     {
@@ -185,7 +185,10 @@ export const buildBlockPackSyncResult = ({
 
         const many = CreateBlockPacksRequestSchema.safeParse(request);
         if (many.success) {
-          for (const [index, created] of many.data.body.createdBlockPacks.entries()) {
+          for (const [
+            index,
+            created,
+          ] of many.data.body.createdBlockPacks.entries()) {
             if (!created.id) continue;
             createBlockPacksMap.set(created.id, {
               body: {
@@ -257,7 +260,10 @@ export const buildBlockPackSyncResult = ({
 
         const many = UpdateMyBlockPacksByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const [index, updated] of many.data.body.updatedBlockPacks.entries()) {
+          for (const [
+            index,
+            updated,
+          ] of many.data.body.updatedBlockPacks.entries()) {
             const id = updated.blockPackId;
             const createState = createBlockPacksMap.get(id);
             if (createState) {
@@ -345,7 +351,10 @@ export const buildBlockPackSyncResult = ({
         const manyOneDestination =
           MoveMyBlockPacksByParentSubShelfIdRequestSchema.safeParse(request);
         if (manyOneDestination.success) {
-          for (const [index, id] of manyOneDestination.data.body.blockPackIds.entries()) {
+          for (const [
+            index,
+            id,
+          ] of manyOneDestination.data.body.blockPackIds.entries()) {
             const createState = createBlockPacksMap.get(id);
             if (createState) {
               createState.body.parentSubShelfId =
@@ -362,7 +371,9 @@ export const buildBlockPackSyncResult = ({
               },
               affected: {
                 sourceParentSubShelfId:
-                  manyOneDestination.data.affected.sourceParentSubShelfIds[index] ??
+                  manyOneDestination.data.affected.sourceParentSubShelfIds[
+                    index
+                  ] ??
                   manyOneDestination.data.affected.sourceParentSubShelfIds[0],
                 rootShelfId: manyOneDestination.data.affected.rootShelfId,
               },
@@ -372,9 +383,13 @@ export const buildBlockPackSyncResult = ({
           break;
         }
 
-        const many = MoveMyBlockPacksByParentSubShelfIdsRequestSchema.safeParse(request);
+        const many =
+          MoveMyBlockPacksByParentSubShelfIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const [movedIndex, moved] of many.data.body.movedBlockPacks.entries()) {
+          for (const [
+            movedIndex,
+            moved,
+          ] of many.data.body.movedBlockPacks.entries()) {
             for (const id of moved.blockPackIds) {
               const createState = createBlockPacksMap.get(id);
               if (createState) {
@@ -585,9 +600,7 @@ export const buildBlockPackSyncResult = ({
       },
       affected: {
         rootShelfIds: states.map(state => state.affected.rootShelfId as string),
-        parentSubShelfIds: states.map(
-          state => state.affected.parentSubShelfId
-        ),
+        parentSubShelfIds: states.map(state => state.affected.parentSubShelfId),
       },
     };
     const sequences = getMergedSequences(
@@ -636,9 +649,7 @@ export const buildBlockPackSyncResult = ({
       },
       affected: {
         rootShelfIds: states.map(state => state.affected.rootShelfId),
-        parentSubShelfIds: states.map(
-          state => state.affected.parentSubShelfId
-        ),
+        parentSubShelfIds: states.map(state => state.affected.parentSubShelfId),
       },
     };
     const sequences = getMergedSequences(
@@ -659,9 +670,7 @@ export const buildBlockPackSyncResult = ({
       },
       affected: {
         rootShelfIds: states.map(state => state.affected.rootShelfId),
-        parentSubShelfIds: states.map(
-          state => state.affected.parentSubShelfId
-        ),
+        parentSubShelfIds: states.map(state => state.affected.parentSubShelfId),
       },
     };
     const sequences = getMergedSequences(

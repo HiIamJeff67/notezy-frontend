@@ -1,6 +1,4 @@
 import {
-  MoveMyBlockPacksByParentSubShelfIdsRequest,
-  MoveMyBlockPacksByParentSubShelfIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
   CreateBlockPacksRequest,
@@ -17,6 +15,8 @@ import {
   MoveMyBlockPackByIdResponse,
   MoveMyBlockPacksByParentSubShelfIdRequest,
   MoveMyBlockPacksByParentSubShelfIdResponse,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsResponse,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdResponse,
   RestoreMyBlockPacksByIdsRequest,

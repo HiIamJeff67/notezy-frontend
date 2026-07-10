@@ -270,16 +270,16 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
           <MenubarMenu>
             <MenubarTrigger className="h-full my-1 flex flex-1 flex-row min-w-0 gap-2 bg-transparent hover:bg-transparent">
               <AvatarIcon avatarURL="" size={30} />
-              <div className="w-full flex flex-col text-start">
+              <div className="flex min-w-0 flex-1 flex-col text-start">
                 <TruncatedText
                   className="text-xs font-semibold text-foreground transition-all"
-                  width={`${resizableSidebarManager.width - 160}px`}
+                  width={`${resizableSidebarManager.width - 120}px`}
                 >
                   {userManager.userData?.name || "User Name"}
                 </TruncatedText>
                 <TruncatedText
                   className="text-xs font-light text-foreground transition-all"
-                  width={`${resizableSidebarManager.width - 160}px`}
+                  width={`${resizableSidebarManager.width - 120}px`}
                 >
                   {userManager.userData?.status || "Offline"}
                 </TruncatedText>

@@ -1,12 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { isValidUUID } from "@shared/types/uuidv4.type";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import type { UUID } from "crypto";
-import StationRoutinesPage from "@/pages/root/routines/StationRoutinesPage";
+import RoutinesPage from "@/pages/root/routines/RoutinesPage";
 
 export const Route = createFileRoute("/_root/routines/$stationId")({
+  ssr: false,
+  loader: ({ params }) => {
+    if (!isValidUUID(params.stationId)) {
+      throw notFound();
+    }
+
+    return {
+      stationId: params.stationId as UUID,
+    };
+  },
   component: StationRoutinesRoute,
 });
 
 function StationRoutinesRoute() {
-  const { stationId } = Route.useParams();
-  return <StationRoutinesPage stationId={stationId as UUID} />;
+  const { stationId } = Route.useLoaderData();
+  return <RoutinesPage stationId={stationId} />;
 }

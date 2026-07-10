@@ -1,8 +1,8 @@
-import type {
-  Density,
-  PanelDock,
-} from "@/hooks/localPreferences";
+import type { Density } from "@/hooks/localPreferences";
 import { useLocalPreferences } from "@/hooks/localPreferences";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage, useTheme } from "@/hooks";
 import { Section, SettingRow, StatusPill, SwitchRow } from "../PreferenceRows";
 
@@ -93,26 +95,6 @@ const AppearanceTab = () => {
             ))}
           </div>
         </SettingRow>
-        <SettingRow
-          title="面板停靠"
-          description="設定側邊設定面板預設靠左、靠右，或以浮動方式顯示。"
-        >
-          <Select
-            value={preferences.panelDock}
-            onValueChange={value =>
-              updatePreference("panelDock", value as PanelDock)
-            }
-          >
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="left">左側</SelectItem>
-              <SelectItem value="right">右側</SelectItem>
-              <SelectItem value="floating">浮動</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingRow>
         <SwitchRow
           title="低動態"
           description="減少轉場和動態效果，適合長時間工作或對動畫敏感時使用。"
@@ -126,6 +108,7 @@ const AppearanceTab = () => {
           onCheckedChange={checked =>
             updatePreference("tactileFeedback", checked)
           }
+          unsupportedReason="尚未支援"
           hideSeparator
         />
       </Section>
@@ -135,33 +118,49 @@ const AppearanceTab = () => {
           <div className="text-sm font-semibold">視覺樣本</div>
           <StatusPill>{preferences.density}</StatusPill>
         </div>
-        <div className="mt-4 rounded-sm border border-border bg-muted/40 p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-2 w-24 rounded-full bg-foreground/75" />
-              <div className="mt-2 h-2 w-36 rounded-full bg-muted-foreground/35" />
+
+        <div className="mt-4 space-y-3 rounded-sm border border-border bg-muted/40 p-3">
+          <div className="rounded-sm border border-border bg-card p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="h-2 w-24 rounded-full bg-foreground/75" />
+                <div className="mt-2 h-2 w-36 rounded-full bg-muted-foreground/35" />
+              </div>
+              <Switch defaultChecked aria-label="Preview switch" />
             </div>
-            <div className="size-9 rounded-sm border border-border bg-primary/10" />
+            <div className="mt-3 flex items-center gap-2">
+              <Button size="sm" className="h-7 px-2 text-xs">
+                Primary
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+              >
+                Outline
+              </Button>
+              <Checkbox defaultChecked aria-label="Preview checkbox" />
+            </div>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[0, 1, 2].map(index => (
-              <div
-                key={index}
-                className="h-14 rounded-sm border border-border bg-card/60"
+
+          <div className="rounded-sm border border-border bg-card p-3">
+            <Tabs defaultValue="notes">
+              <TabsList className="h-7 rounded-md">
+                <TabsTrigger value="notes" className="h-6 px-2 text-xs">
+                  Notes
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="h-6 px-2 text-xs">
+                  Tasks
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="mt-3 flex items-center gap-2">
+              <Input
+                readOnly
+                value="Search components"
+                className="h-8 text-xs"
               />
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-sm border border-border bg-muted/35 p-3">
-            <div className="text-muted-foreground">Theme</div>
-            <div className="mt-1 font-semibold">
-              {themeManager.currentTheme.name}
             </div>
-          </div>
-          <div className="rounded-sm border border-border bg-muted/35 p-3">
-            <div className="text-muted-foreground">Dock</div>
-            <div className="mt-1 font-semibold">{preferences.panelDock}</div>
           </div>
         </div>
       </section>

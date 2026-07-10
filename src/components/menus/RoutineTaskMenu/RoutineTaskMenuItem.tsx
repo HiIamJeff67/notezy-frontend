@@ -9,7 +9,6 @@ import {
   SquarePen,
   Trash2,
 } from "lucide-react";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   ContextMenu,
@@ -144,11 +143,6 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           <ContextMenuSeparator />
           <ContextMenuLabel>Edit</ContextMenuLabel>
           <ContextMenuGroup>
-            <ContextMenuCopyItems
-              id={routineTask.id}
-              name={routineTask.title}
-              nameLabel="Title"
-            />
             {routineTask.status === RoutineTaskStatus.Idle ? (
               <ContextMenuItem
                 onClick={() => {

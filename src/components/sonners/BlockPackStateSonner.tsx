@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Marker, MarkerContent } from "@/components/ui/marker";
+import { useLocalPreferences } from "@/hooks/localPreferences";
 import type { BlockEditorState } from "@/providers/BlockEditorProvider";
 
 const toastId = "block-pack-state-sonner";
@@ -56,7 +57,7 @@ const renderSonnerContent = (
   Icon: LucideIcon,
   progress: number
 ) => (
-  <div className="relative min-h-20 w-[356px] overflow-hidden rounded-lg border border-border bg-background px-4 pt-4 pb-5 text-foreground shadow-lg">
+  <div className="relative min-h-20 w-[356px] overflow-hidden rounded-md border border-border bg-background bg-clip-padding px-4 pt-4 pb-5 text-foreground shadow-md">
     <div className="flex items-center gap-3">
       <Icon className="size-5 shrink-0 text-muted-foreground" />
       <span className="font-medium text-sm leading-none">{label}</span>
@@ -64,16 +65,35 @@ const renderSonnerContent = (
     <Marker className="mt-4 text-xs">
       <MarkerContent>{description}</MarkerContent>
     </Marker>
-    <div className="absolute inset-x-0 bottom-0 h-px bg-white/10">
+    <div className="absolute right-0 bottom-0 left-0 h-1 bg-border/60">
       <div
-        className="h-full bg-white/60 transition-[width] duration-300"
+        className="h-full bg-primary transition-[width] duration-300"
         style={{ width: `${progress}%` }}
       />
     </div>
   </div>
 );
 
+const toMinutes = (time: string) => {
+  const [hours = "0", minutes = "0"] = time.split(":");
+  return Number(hours) * 60 + Number(minutes);
+};
+
+const isInQuietMode = (start: string, end: string) => {
+  const now = new Date();
+  const current = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = toMinutes(start);
+  const endMinutes = toMinutes(end);
+
+  if (startMinutes === endMinutes) return true;
+  if (startMinutes < endMinutes) {
+    return current >= startMinutes && current < endMinutes;
+  }
+  return current >= startMinutes || current < endMinutes;
+};
+
 const BlockPackStateSonner = ({ state }: BlockPackStateSonnerProps) => {
+  const { preferences } = useLocalPreferences();
   const hasShownRef = useRef(false);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -81,6 +101,16 @@ const BlockPackStateSonner = ({ state }: BlockPackStateSonnerProps) => {
     if (closeTimeoutRef.current !== null) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
+    }
+
+    if (
+      !preferences.syncNotifications ||
+      (preferences.quietMode &&
+        isInQuietMode(preferences.quietModeStart, preferences.quietModeEnd))
+    ) {
+      toast.dismiss(toastId);
+      hasShownRef.current = false;
+      return;
     }
 
     const activeStateIndex = activeStates.indexOf(state as ActiveState);
@@ -124,7 +154,13 @@ const BlockPackStateSonner = ({ state }: BlockPackStateSonnerProps) => {
       hasShownRef.current = false;
       closeTimeoutRef.current = null;
     }, 1400);
-  }, [state]);
+  }, [
+    preferences.quietMode,
+    preferences.quietModeEnd,
+    preferences.quietModeStart,
+    preferences.syncNotifications,
+    state,
+  ]);
 
   useEffect(
     () => () => {

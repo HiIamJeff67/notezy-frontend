@@ -69,6 +69,12 @@
 
 :root {
   --radius: 0.625rem;
+  --density-control-height: 2.25rem;
+  --density-control-padding-x: 0.75rem;
+  --density-content-gap: 1rem;
+  --density-content-padding: 1rem;
+  --density-menu-item-height: 2rem;
+  --density-table-cell-padding: 1rem;
   --canvas: oklch(0.185 0 0);
   --inset: oklch(0.215 0 0);
   --overlay: oklch(0 0 0 / 50%);
@@ -79,6 +85,106 @@
   --loading-logo-ghost: oklch(1 0 0);
   --loading-logo-front-opacity: 1;
   --loading-logo-ghost-opacity: 0.84;
+}
+
+html[data-density="comfortable"] {
+  --density-control-height: 2.5rem;
+  --density-control-padding-x: 1rem;
+  --density-content-gap: 1.25rem;
+  --density-content-padding: 1.25rem;
+  --density-menu-item-height: 2.25rem;
+  --density-table-cell-padding: 1.25rem;
+}
+
+html[data-density="compact"] {
+  --density-control-height: 2rem;
+  --density-control-padding-x: 0.625rem;
+  --density-content-gap: 0.75rem;
+  --density-content-padding: 0.75rem;
+  --density-menu-item-height: 1.75rem;
+  --density-table-cell-padding: 0.625rem;
+}
+
+html[data-density] [data-slot="button"]:not([data-density-static]),
+html[data-density] [data-slot="input"],
+html[data-density] [data-slot="textarea"],
+html[data-density] [data-slot="select-trigger"],
+html[data-density]
+  [data-slot="menubar-trigger"]:not([data-density-static]),
+html[data-density] [data-slot="sidebar-input"] {
+  min-height: var(--density-control-height);
+}
+
+html[data-density] [data-slot="button"]:not([data-density-static]),
+html[data-density] [data-slot="select-trigger"],
+html[data-density]
+  [data-slot="menubar-trigger"]:not([data-density-static]) {
+  padding-inline: var(--density-control-padding-x);
+}
+
+html[data-density] [data-slot="dropdown-menu-item"],
+html[data-density] [data-slot="dropdown-menu-checkbox-item"],
+html[data-density] [data-slot="dropdown-menu-radio-item"],
+html[data-density] [data-slot="dropdown-menu-sub-trigger"],
+html[data-density] [data-slot="context-menu-item"],
+html[data-density] [data-slot="context-menu-checkbox-item"],
+html[data-density] [data-slot="context-menu-radio-item"],
+html[data-density] [data-slot="context-menu-sub-trigger"],
+html[data-density] [data-slot="command-item"],
+html[data-density] [data-slot="select-item"],
+html[data-density] [data-slot="sidebar-menu-button"],
+html[data-density] [data-slot="sidebar-menu-sub-button"] {
+  min-height: var(--density-menu-item-height);
+}
+
+html[data-density] [data-slot="sidebar-menu-button"],
+html[data-density] [data-slot="sidebar-menu-sub-button"] {
+  height: var(--density-menu-item-height) !important;
+}
+
+html[data-density] [data-slot="table-head"],
+html[data-density] [data-slot="table-cell"] {
+  padding: var(--density-table-cell-padding);
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 1ms !important;
+}
+
+.notezy-block-editor .bn-default-styles,
+.notezy-block-editor .bn-editor {
+  font-size: var(--notezy-editor-font-size, 16px);
+}
+
+html[data-density] .notezy-block-editor .bn-extend-button[data-slot="button"],
+.notezy-block-editor .bn-extend-button[data-slot="button"] {
+  min-height: 0;
+  padding: 0;
+  padding-inline: 0;
+}
+
+html[data-density] .notezy-block-editor .bn-extend-button-add-remove-columns,
+.notezy-block-editor .bn-extend-button-add-remove-columns {
+  height: 100%;
+  width: 14px;
+}
+
+html[data-density] .notezy-block-editor .bn-extend-button-add-remove-rows,
+.notezy-block-editor .bn-extend-button-add-remove-rows {
+  height: 14px;
+  width: 100%;
+}
+
+html[data-density] .notezy-block-editor .bn-table-cell-handle,
+.notezy-block-editor .bn-table-cell-handle {
+  min-height: 0;
+  height: 10px;
+  padding: 0 3px;
 }
 
 /* ============================== Main Themes ============================== */
@@ -344,4 +450,11 @@ input[type="number"] {
   [role="button"]:disabled {
     cursor: default;
   }
+}
+
+/* Keep this after Tailwind/base output so fixed sidebar h-* utilities do not win. */
+html[data-density] [data-sidebar="menu-button"],
+html[data-density] [data-sidebar="menu-sub-button"] {
+  height: var(--density-menu-item-height) !important;
+  min-height: var(--density-menu-item-height) !important;
 }

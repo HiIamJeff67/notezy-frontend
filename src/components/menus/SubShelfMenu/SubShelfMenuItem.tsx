@@ -7,7 +7,6 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
 import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
@@ -262,7 +261,6 @@ const SubShelfMenuItem = ({
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
-              <ContextMenuCopyItems id={current.id} name={current.name} />
               <ContextMenuItem
                 onClick={() =>
                   shelfItemManager.startRenamingSubShelfNode(current)

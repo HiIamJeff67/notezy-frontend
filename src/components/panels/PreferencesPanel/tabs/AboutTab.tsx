@@ -1,16 +1,35 @@
 import { useLocalPreferences } from "@/hooks/localPreferences";
-import { RotateCcwIcon } from "lucide-react";
+import { ClipboardIcon, RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, SettingRow } from "../PreferenceRows";
 
 const AboutTab = () => {
-  const { resetPreferences } = useLocalPreferences();
+  const { clipboardState, copyPreferences, resetPreferences } =
+    useLocalPreferences();
 
   return (
-    <div className="max-w-2xl">
+    <div>
       <Section>
         <SettingRow title="版本" description="目前安裝的 Notezy 前端版本。">
           <span className="text-sm font-semibold">0.1.0</span>
+        </SettingRow>
+        <SettingRow
+          title="偏好匯出"
+          description="把目前本機偏好複製成 JSON，方便你之後手動備份或回報問題。"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={copyPreferences}
+          >
+            <ClipboardIcon className="size-4" />
+            {clipboardState === "copied"
+              ? "已複製"
+              : clipboardState === "failed"
+                ? "失敗"
+                : "複製"}
+          </Button>
         </SettingRow>
         <SettingRow
           title="偏好重置"

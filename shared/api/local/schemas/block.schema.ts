@@ -3,6 +3,7 @@ import { relations, sql } from "drizzle-orm";
 import {
   foreignKey,
   integer,
+  index,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
@@ -27,9 +28,9 @@ export const Block = sqliteTable(
       .notNull()
       .default(sql`'{}'`),
     content: text("content", { mode: "json" })
-      .$type<JSONType[]>()
+      .$type<JSONType>()
       .notNull()
-      .default(sql`'[]'`),
+      .default(sql`'{}'`),
     deletedAt: integer("deleted_at", { mode: "timestamp" }),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
@@ -39,6 +40,8 @@ export const Block = sqliteTable(
       .default(new Date()),
   },
   table => [
+    index("block_block_pack_idx").on(table.blockPackId),
+    index("block_parent_idx").on(table.parentBlockId),
     foreignKey({
       columns: [table.parentBlockId],
       foreignColumns: [table.id],
@@ -83,7 +86,7 @@ export const BlockRelations = relations(Block, ({ one, many }) => ({
   }),
   next: one(Block, {
     fields: [Block.nextBlockId],
-    references: [Block.prevBlockId],
+    references: [Block.id],
     relationName: "block_relation_prev_next",
   }),
 }));

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import RoutinesPage from "@/pages/root/routines/RoutinesPage";
+import RoutinesIndexPage from "@/pages/root/routines/RoutinesIndexPage";
 
 export const Route = createFileRoute("/_root/routines/")({
-  component: RoutinesPage,
+  ssr: false,
+  component: RoutinesIndexPage,
 });

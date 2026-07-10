@@ -3,7 +3,6 @@ import toast from "@shared/lib/toast";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { useCallback } from "react";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   ContextMenu,
@@ -95,7 +94,6 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
         <ContextMenuSeparator />
         <ContextMenuLabel>Edit</ContextMenuLabel>
         <ContextMenuGroup>
-          <ContextMenuCopyItems id={current.id} name={current.name} />
           <ContextMenuItem
             onClick={() => shelfItemManager.startRenamingItemNode(current)}
           >

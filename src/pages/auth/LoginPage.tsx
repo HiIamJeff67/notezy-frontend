@@ -10,11 +10,16 @@ import GridBackground from "@/components/backgrounds/GridBackground/GridBackgrou
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
 import { useAppRouter, useLanguage, useUser } from "@/hooks";
+import {
+  getPreferredStartPath,
+  useLocalPreferences,
+} from "@/hooks/localPreferences";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
 
 const LoginPage = () => {
   const router = useAppRouter();
   const languageManager = useLanguage();
+  const { preferences } = useLocalPreferences();
   const userManager = useUser();
 
   const loginMutator = useLogin();
@@ -50,14 +55,22 @@ const LoginPage = () => {
           setAccount("");
           setPassword("");
           userManager.setUserData(responseOfGettingUserData.data);
-          router.push(WebURLPathDictionary.root.dashboard._);
+          router.push(getPreferredStartPath(preferences));
         } catch (error) {
           setPassword("");
           toast.error(languageManager.tError(error));
         }
       });
     },
-    [account, password, languageManager, userManager, loginMutator, router]
+    [
+      account,
+      password,
+      languageManager,
+      preferences,
+      userManager,
+      loginMutator,
+      router,
+    ]
   );
 
   return (

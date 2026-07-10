@@ -1,13 +1,13 @@
 import { useContext } from "react";
 import { LocalPreferencesContext } from "@/providers/LocalPreferencesProvider";
 
+export { getPreferredStartPath } from "@/providers/LocalPreferencesProvider";
+
 export type {
   Density,
   EditorWidth,
   LocalPreferences,
   NotificationPermissionState,
-  PanelDock,
-  PasteBehavior,
   PreferencePage,
   StartSurface,
   StorageEstimate,

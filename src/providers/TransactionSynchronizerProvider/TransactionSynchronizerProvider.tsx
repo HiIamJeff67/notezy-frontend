@@ -4,9 +4,9 @@ import {
   useUpdateMyBlocksByIds,
 } from "@shared/api/hooks/block.hook";
 import {
-  useMoveMyBlockPacksByParentSubShelfIds,
   useCreateBlockPacks,
   useDeleteMyBlockPacksByIds,
+  useMoveMyBlockPacksByParentSubShelfIds,
   useRestoreMyBlockPacksByIds,
   useUpdateMyBlockPacksByIds,
 } from "@shared/api/hooks/blockPack.hook";
@@ -17,8 +17,6 @@ import {
   useUpdateMyRootShelvesByIds,
 } from "@shared/api/hooks/rootShelf.hook";
 import {
-  useLinkRoutineItemsByIds,
-  useLinkRoutineTagsByIds,
   useCreateRoutineByStationId,
   useCreateRoutinesByStationIds,
   useDeleteMyRoutineById,
@@ -26,7 +24,9 @@ import {
   useHardDeleteMyRoutineById,
   useHardDeleteMyRoutinesByIds,
   useLinkRoutineItemById,
+  useLinkRoutineItemsByIds,
   useLinkRoutineTagById,
+  useLinkRoutineTagsByIds,
   useRestoreMyRoutineById,
   useRestoreMyRoutinesByIds,
   useUpdateMyRoutineById,
@@ -53,15 +53,14 @@ import {
   useUpdateMyStationsByIds,
 } from "@shared/api/hooks/station.hook";
 import {
-  useMoveMySubShelvesByRootShelfIds,
   useCreateSubShelvesByRootShelfIds,
   useDeleteMySubShelvesByIds,
+  useMoveMySubShelvesByRootShelfIds,
   useRestoreMySubShelvesByIds,
   useUpdateMySubShelvesByIds,
 } from "@shared/api/hooks/subShelf.hook";
 import { localDB } from "@shared/api/local/db";
 import { Transaction, User } from "@shared/api/local/schemas";
-import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
@@ -69,20 +68,19 @@ import { getAuthorization } from "@shared/util/getAuthorization";
 import {
   asc,
   eq,
-  InferInsertModel,
   InferSelectModel,
   inArray,
 } from "drizzle-orm";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNetwork } from "@/hooks";
-import { buildBlockPackSyncResult } from "./BlockPackSyncLogic";
-import { buildBlockSyncResult } from "./BlockSyncLogic";
-import { buildRootShelfSyncResult } from "./RootShelfSyncLogic";
-import { buildRoutineRelationSyncResult } from "./RoutineRelationSyncLogic";
-import { buildRoutineSyncResult } from "./RoutineSyncLogic";
-import { buildRoutineTagSyncResult } from "./RoutineTagSyncLogic";
-import { buildStationSyncResult } from "./StationSyncLogic";
-import { buildSubShelfSyncResult } from "./SubShelfSyncLogic";
+import { mergeBlockPackTransactions } from "./BlockPackSyncLogic";
+import { mergeBlockTransactions } from "./BlockSyncLogic";
+import { mergeRootShelfTransactions } from "./RootShelfSyncLogic";
+import { mergeRoutineRelationTransactions } from "./RoutineRelationSyncLogic";
+import { mergeRoutineTransactions } from "./RoutineSyncLogic";
+import { mergeRoutineTagTransactions } from "./RoutineTagSyncLogic";
+import { mergeStationTransactions } from "./StationSyncLogic";
+import { mergeSubShelfTransactions } from "./SubShelfSyncLogic";
 
 /* ============================== General types ============================== */
 
@@ -96,7 +94,7 @@ export type SyncJob = {
   run: () => Promise<unknown>;
 };
 
-export type SyncBuildResult = {
+export type MergedResult = {
   syncJobs: SyncJob[];
   noopSequences: Set<number>;
   parseFailedSequences: Set<number>;
@@ -110,6 +108,8 @@ export type SyncHeader = {
 export type SyncProgressReporter = {
   onParsed?: () => void;
 };
+
+export const MAX_TRANSACTION_RETRY_COUNT = 5;
 
 /* ============================== Helper functions ============================== */
 
@@ -143,18 +143,7 @@ interface TransactionSynchronizerContextType {
     | "synchronizing"
     | "migrating"
     | "synchronized";
-  getTransactions: () => Promise<InferSelectModel<typeof Transaction>[]>;
   getTransactionCount: () => Promise<number>;
-  appendTransactions: (
-    transactions: {
-      entityType: TransactionEntityType;
-      actionType: TransactionActionType;
-      body: JSON;
-      affected: JSON | undefined;
-      retryCount: number;
-      lastError: string | undefined;
-    }[]
-  ) => Promise<void>;
   synchronizeTransactions: () => Promise<void>;
   synchronizationProgress: number;
 }
@@ -239,16 +228,6 @@ export const TransactionSynchronizerProvider = ({
   const isBootstrappingRef = useRef<boolean>(false);
   const isSynchronizingRef = useRef<boolean>(false);
 
-  const getTransactions = useCallback(async (): Promise<
-    InferSelectModel<typeof Transaction>[]
-  > => {
-    if (!localDB.isReady) await localDB.ensureReady();
-    return await localDB
-      .select()
-      .from(Transaction)
-      .orderBy(asc(Transaction.sequence));
-  }, []);
-
   const getTransactionCount = useCallback(async (): Promise<number> => {
     if (!localDB.isReady) await localDB.ensureReady();
     return await localDB.transaction(async tx => {
@@ -265,38 +244,15 @@ export const TransactionSynchronizerProvider = ({
     });
   }, []);
 
-  const appendTransactions = useCallback(
-    async (
-      transactions: Omit<
-        InferInsertModel<typeof Transaction>,
-        "ownerPublicId" | "sequence" | "createdAt"
-      >[]
-    ): Promise<void> => {
-      if (!localDB.isReady) await localDB.ensureReady();
-      await localDB.transaction(async tx => {
-        const loggedInUser = await tx.query.User.findFirst({
-          where: eq(User.isLoggedIn, true),
-        });
-        if (!loggedInUser) return;
-        const insertedTransactions = transactions.map(t => ({
-          ...t,
-          ownerPublicId: loggedInUser.publicId,
-        }));
-        await tx.insert(Transaction).values(insertedTransactions);
-      });
-    },
-    []
-  );
-
-  const persistSyncResult = useCallback(
+  const syncMergedResult = useCallback(
     async (
       transactions: InferSelectModel<typeof Transaction>[],
-      result: SyncBuildResult,
+      mergedResult: MergedResult,
       onJobFinished: () => void
     ) => {
-      if (result.syncJobs.length === 0) {
+      if (mergedResult.syncJobs.length === 0) {
         const noopAndParseFailed = Array.from(
-          new Set([...result.noopSequences, ...result.parseFailedSequences])
+          new Set([...mergedResult.noopSequences, ...mergedResult.parseFailedSequences])
         );
         if (noopAndParseFailed.length > 0) {
           if (!localDB.isReady) await localDB.ensureReady();
@@ -307,27 +263,27 @@ export const TransactionSynchronizerProvider = ({
         return;
       }
 
-      const syncResults = await Promise.allSettled(
-        result.syncJobs.map(job => job.run())
+      const settledSyncJobs = await Promise.allSettled(
+        mergedResult.syncJobs.map(job => job.run())
       );
 
-      const succeededSequences = new Set<number>(result.noopSequences);
-      const failedSequences = new Set<number>(result.parseFailedSequences);
+      const succeededSequences = new Set<number>(mergedResult.noopSequences);
+      const failedSequences = new Set<number>(mergedResult.parseFailedSequences);
 
-      syncResults.forEach((syncResult, index) => {
-        const sequences = result.syncJobs[index].sequences;
+      settledSyncJobs.forEach((settledSyncJob, index) => {
+        const sequences = mergedResult.syncJobs[index].sequences;
         // A job is only considered synchronized when:
         //  1. the promise is fulfilled, and
         //  2. it is not an offline/local fallback response (a fallback response indicate that `success === false`).
         // `fulfilled + success:false` means request handling completed,
         // but server synchronization did not actually succeed yet.
         if (
-          syncResult.status === "fulfilled" &&
+          settledSyncJob.status === "fulfilled" &&
           !(
-            typeof syncResult.value === "object" &&
-            syncResult.value !== null &&
-            "success" in syncResult.value &&
-            syncResult.value.success === false
+            typeof settledSyncJob.value === "object" &&
+            settledSyncJob.value !== null &&
+            "success" in settledSyncJob.value &&
+            settledSyncJob.value.success === false
           )
         ) {
           mergeSet(succeededSequences, sequences);
@@ -349,8 +305,14 @@ export const TransactionSynchronizerProvider = ({
           await localDB
             .update(Transaction)
             .set({
-              retryCount: (current?.retryCount ?? 0) + 1,
-              lastError: "synchronize transaction failed",
+              retryCount: Math.min(
+                (current?.retryCount ?? 0) + 1,
+                MAX_TRANSACTION_RETRY_COUNT
+              ),
+              lastError:
+                (current?.retryCount ?? 0) + 1 >= MAX_TRANSACTION_RETRY_COUNT
+                  ? "maximum retry count reached"
+                  : "synchronize transaction failed",
             })
             .where(eq(Transaction.sequence, sequence));
         }
@@ -387,7 +349,9 @@ export const TransactionSynchronizerProvider = ({
       return { ownerPublicId: loggedInUser.publicId, transactions };
     });
 
-    const transactions = localData.transactions;
+    const transactions = localData.transactions.filter(
+      transaction => transaction.retryCount < MAX_TRANSACTION_RETRY_COUNT
+    );
     if (!localData.ownerPublicId || transactions.length === 0) {
       setSynchronizationProgress(1);
       return;
@@ -443,10 +407,10 @@ export const TransactionSynchronizerProvider = ({
       setSynchronizationProgress((parsedUnits / parseUnits) * 0.5);
     };
 
-    const allResults = [
+    const allMergedResults = [
       {
         transactions: rootShelfTransactions,
-        result: buildRootShelfSyncResult({
+        mergedResult: mergeRootShelfTransactions({
           transactions: rootShelfTransactions,
           header,
           mutators: {
@@ -460,7 +424,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: subShelfTransactions,
-        result: buildSubShelfSyncResult({
+        mergedResult: mergeSubShelfTransactions({
           transactions: subShelfTransactions,
           header,
           mutators: {
@@ -475,7 +439,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: blockPackTransactions,
-        result: buildBlockPackSyncResult({
+        mergedResult: mergeBlockPackTransactions({
           transactions: blockPackTransactions,
           header,
           mutators: {
@@ -490,7 +454,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: blockTransactions,
-        result: buildBlockSyncResult({
+        mergedResult: mergeBlockTransactions({
           transactions: blockTransactions,
           header,
           mutators: {
@@ -503,7 +467,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: stationTransactions,
-        result: buildStationSyncResult({
+        mergedResult: mergeStationTransactions({
           transactions: stationTransactions,
           header,
           mutators: {
@@ -523,7 +487,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: routineTransactions,
-        result: buildRoutineSyncResult({
+        mergedResult: mergeRoutineTransactions({
           transactions: routineTransactions,
           header,
           mutators: {
@@ -543,7 +507,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: routineTagTransactions,
-        result: buildRoutineTagSyncResult({
+        mergedResult: mergeRoutineTagTransactions({
           transactions: routineTagTransactions,
           header,
           mutators: {
@@ -559,7 +523,7 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: routineRelationTransactions,
-        result: buildRoutineRelationSyncResult({
+        mergedResult: mergeRoutineRelationTransactions({
           transactions: routineRelationTransactions,
           header,
           mutators: {
@@ -573,8 +537,8 @@ export const TransactionSynchronizerProvider = ({
       },
     ];
 
-    const totalJobs = allResults.reduce(
-      (count, item) => count + item.result.syncJobs.length,
+    const totalJobs = allMergedResults.reduce(
+      (count, item) => count + item.mergedResult.syncJobs.length,
       0
     );
     let completedJobs = 0;
@@ -585,10 +549,10 @@ export const TransactionSynchronizerProvider = ({
       setSynchronizationProgress(0.5 + (completedJobs / totalJobs) * 0.5);
     };
 
-    for (const item of allResults) {
-      await persistSyncResult(
+    for (const item of allMergedResults) {
+      await syncMergedResult(
         item.transactions,
-        item.result,
+        item.mergedResult,
         handleJobOnFinished
       );
     }
@@ -643,7 +607,7 @@ export const TransactionSynchronizerProvider = ({
     updateRoutineTagsMutator,
     hardDeleteRoutineTagMutator,
     hardDeleteRoutineTagsMutator,
-    persistSyncResult,
+    syncMergedResult,
   ]);
 
   useEffect(() => {
@@ -787,9 +751,7 @@ export const TransactionSynchronizerProvider = ({
       value={{
         status: status,
         synchronizationProgress: synchronizationProgress,
-        getTransactions: getTransactions,
         getTransactionCount: getTransactionCount,
-        appendTransactions: appendTransactions,
         synchronizeTransactions: synchronizeTransactions,
       }}
     >

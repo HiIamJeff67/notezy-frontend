@@ -2,6 +2,7 @@ import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { eq, relations } from "drizzle-orm";
 import {
   integer,
+  index,
   primaryKey,
   sqliteTable,
   text,
@@ -28,6 +29,7 @@ export const UsersToStations = sqliteTable(
       .default(new Date()),
   },
   table => [
+    index("users_to_stations_station_idx").on(table.stationId),
     primaryKey({ columns: [table.userPublicId, table.stationId] }),
     uniqueIndex("users_to_stations_unique_idx_station_owner")
       .on(table.stationId)

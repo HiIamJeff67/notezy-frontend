@@ -4,11 +4,11 @@ import type { LucideIcon } from "lucide-react";
 import {
   BellIcon,
   BookOpenIcon,
-  FocusIcon,
   HardDriveIcon,
   InfoIcon,
   PaletteIcon,
   ShieldIcon,
+  SlidersHorizontalIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -16,9 +16,9 @@ import Sidebar from "./Sidebar";
 import AboutTab from "./tabs/AboutTab";
 import AppearanceTab from "./tabs/AppearanceTab";
 import AppearanceTabSkeleton from "./tabs/AppearanceTabSkeleton";
+import BrowserPermissionsTab from "./tabs/BrowserPermissionsTab";
 import EditorTab from "./tabs/EditorTab";
 import EditorTabSkeleton from "./tabs/EditorTabSkeleton";
-import FocusTab from "./tabs/FocusTab";
 import NotificationsTab from "./tabs/NotificationsTab";
 import OfflineTab from "./tabs/OfflineTab";
 import OfflineTabSkeleton from "./tabs/OfflineTabSkeleton";
@@ -32,9 +32,14 @@ interface PreferencesPanelProps {
 const sidebarItems = [
   { id: "appearance", label: "外觀", icon: PaletteIcon, group: "工作區" },
   { id: "editor", label: "編輯器", icon: BookOpenIcon, group: "工作區" },
-  { id: "focus", label: "專注", icon: FocusIcon, group: "工作區" },
   { id: "offline", label: "離線資料", icon: HardDriveIcon, group: "系統" },
   { id: "privacy", label: "隱私", icon: ShieldIcon, group: "系統" },
+  {
+    id: "browserPermissions",
+    label: "瀏覽器權限",
+    icon: SlidersHorizontalIcon,
+    group: "系統",
+  },
   { id: "notifications", label: "通知", icon: BellIcon, group: "系統" },
   { id: "about", label: "關於", icon: InfoIcon, group: "資訊" },
 ] satisfies {
@@ -65,12 +70,12 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
         return <AppearanceTab />;
       case "editor":
         return <EditorTab />;
-      case "focus":
-        return <FocusTab />;
       case "offline":
         return <OfflineTab />;
       case "privacy":
         return <PrivacyTab />;
+      case "browserPermissions":
+        return <BrowserPermissionsTab />;
       case "notifications":
         return <NotificationsTab />;
       case "about":
@@ -85,9 +90,9 @@ const PreferencesPanel = ({ isOpen, onClose }: PreferencesPanelProps) => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="min-w-4/5 overflow-hidden border-none p-0">
+      <DialogContent className="min-w-4/5 overflow-visible border-none p-0">
         <DialogTitle className="sr-only">偏好設定</DialogTitle>
-        <div className="flex h-[520px]">
+        <div className="flex h-[520px] overflow-hidden rounded-lg">
           <Sidebar
             currentPage={currentPage}
             items={sidebarItems}

@@ -20,7 +20,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
-import ContextMenuCopyItems from "@/components/commons/ContextMenuCopyItems/ContextMenuCopyItems";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import RoutineTaskMenu from "@/components/menus/RoutineTaskMenu/RoutineTaskMenu";
 import RoutineTaskMenuItemSkeleton from "@/components/menus/RoutineTaskMenu/RoutineTaskMenuItemSkeleton";
@@ -443,11 +442,6 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Edit</ContextMenuLabel>
             <ContextMenuGroup>
-              <ContextMenuCopyItems
-                id={routine.id}
-                name={routine.title}
-                nameLabel="Title"
-              />
               <ContextMenuItem
                 onClick={() => {
                   void stationRoutineManager

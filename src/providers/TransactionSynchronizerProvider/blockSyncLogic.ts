@@ -16,7 +16,7 @@ import { InferSelectModel } from "drizzle-orm";
 import {
   EntityState,
   mergeSet,
-  SyncBuildResult,
+  MergedResult,
   SyncHeader,
   SyncJob,
   SyncProgressReporter,
@@ -34,18 +34,18 @@ interface BlockMutators {
   };
 }
 
-interface BuildBlockSyncResultOptions extends SyncProgressReporter {
+interface MergeBlockTransactionOptions extends SyncProgressReporter {
   transactions: InferSelectModel<typeof Transaction>[];
   header: SyncHeader;
   mutators: BlockMutators;
 }
 
-export const buildBlockSyncResult = ({
+export const mergeBlockTransactions = ({
   transactions,
   header,
   mutators,
   onParsed,
-}: BuildBlockSyncResultOptions): SyncBuildResult => {
+}: MergeBlockTransactionOptions): MergedResult => {
   const insertBlocksState: EntityState<
     InsertBlocksRequest["body"]["insertedBlocks"]
   > = {

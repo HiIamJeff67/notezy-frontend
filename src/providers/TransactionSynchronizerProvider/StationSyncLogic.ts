@@ -25,7 +25,7 @@ import { TransactionActionType } from "@shared/api/local/schemas/enums/transacti
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import type { InferSelectModel } from "drizzle-orm";
 import type {
-  SyncBuildResult,
+  MergedResult,
   SyncHeader,
   SyncProgressReporter,
 } from "./TransactionSynchronizerProvider";
@@ -65,18 +65,18 @@ interface StationMutators {
   };
 }
 
-interface BuildStationSyncResultOptions extends SyncProgressReporter {
+interface MergeStationTransactionOptions extends SyncProgressReporter {
   transactions: InferSelectModel<typeof Transaction>[];
   header: SyncHeader;
   mutators: StationMutators;
 }
 
-export const buildStationSyncResult = ({
+export const mergeStationTransactions = ({
   transactions,
   header,
   mutators,
   onParsed,
-}: BuildStationSyncResultOptions): SyncBuildResult => {
+}: MergeStationTransactionOptions): MergedResult => {
   const operations: Array<() => Promise<unknown>> = [];
   const sequences = new Set<number>();
   const parseFailedSequences = new Set<number>();

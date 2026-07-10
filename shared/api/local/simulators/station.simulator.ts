@@ -31,6 +31,7 @@ import {
   Routine,
   RoutinesToItems,
   RoutinesToTags,
+  RoutinesToTasks,
   Station,
   Transaction,
   User,
@@ -712,6 +713,9 @@ export class StationLocalSimulator {
         await tx
           .delete(RoutinesToTags)
           .where(inArray(RoutinesToTags.routineId, routineIds));
+        await tx
+          .delete(RoutinesToTasks)
+          .where(inArray(RoutinesToTasks.routineId, routineIds));
         await tx.delete(Routine).where(inArray(Routine.id, routineIds));
       }
       await tx
@@ -767,6 +771,9 @@ export class StationLocalSimulator {
         await tx
           .delete(RoutinesToTags)
           .where(inArray(RoutinesToTags.routineId, routineIds));
+        await tx
+          .delete(RoutinesToTasks)
+          .where(inArray(RoutinesToTasks.routineId, routineIds));
         await tx.delete(Routine).where(inArray(Routine.id, routineIds));
       }
       await tx

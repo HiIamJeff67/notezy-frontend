@@ -925,6 +925,9 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTags)
         .where(eq(RoutinesToTags.routineId, request.body.routineId));
+      await tx
+        .delete(RoutinesToTasks)
+        .where(eq(RoutinesToTasks.routineId, request.body.routineId));
       await tx.delete(Routine).where(eq(Routine.id, request.body.routineId));
       if (routine !== undefined) {
         await tx
@@ -956,6 +959,9 @@ export class RoutineLocalSynchronizer {
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.routineId, request.body.routineIds));
+      await tx
+        .delete(RoutinesToTasks)
+        .where(inArray(RoutinesToTasks.routineId, request.body.routineIds));
       await tx
         .delete(Routine)
         .where(inArray(Routine.id, request.body.routineIds));

@@ -166,7 +166,7 @@ const DatePicker = ({
             }}
             initialFocus
           />
-          <div className="flex items-center justify-between border-t border-b px-3 py-2">
+          <div className="flex items-center justify-between border-t border-b px-2 py-1.5">
             <span className="text-xs font-medium text-muted-foreground">
               Time
             </span>
@@ -203,7 +203,7 @@ const DatePicker = ({
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
                 Hour
               </span>
-              <div className="relative h-36 overflow-hidden">
+              <div className="relative h-32 overflow-hidden">
                 <div
                   ref={hourWheelRef}
                   onScroll={event => {
@@ -243,7 +243,7 @@ const DatePicker = ({
                       );
                     }, 100);
                   }}
-                  className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain py-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain py-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
                   {Array.from(
                     { length: hourCycle === "12" ? 12 : 24 },
@@ -252,6 +252,7 @@ const DatePicker = ({
                         key={hour}
                         type="button"
                         variant="ghost"
+                        data-density-static
                         disabled={!value}
                         onClick={event => {
                           if (!value) return;
@@ -287,9 +288,9 @@ const DatePicker = ({
                     )
                   )}
                 </div>
-                <div className="pointer-events-none absolute inset-x-2 top-14 h-8 border-y border-primary/50 bg-primary/5" />
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-popover to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-2 top-12 h-8 border-y border-primary/50 bg-primary/5" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-linear-to-b from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-popover to-transparent" />
               </div>
             </div>
 
@@ -302,7 +303,7 @@ const DatePicker = ({
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
                 Minute
               </span>
-              <div className="relative h-36 overflow-hidden">
+              <div className="relative h-32 overflow-hidden">
                 <div
                   ref={minuteWheelRef}
                   onScroll={event => {
@@ -334,13 +335,14 @@ const DatePicker = ({
                       );
                     }, 100);
                   }}
-                  className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain py-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain py-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
                   {Array.from({ length: 60 }, (_, minute) => (
                     <Button
                       key={minute}
                       type="button"
                       variant="ghost"
+                      data-density-static
                       disabled={!value}
                       onClick={event => {
                         if (!value) return;
@@ -369,19 +371,20 @@ const DatePicker = ({
                     </Button>
                   ))}
                 </div>
-                <div className="pointer-events-none absolute inset-x-2 top-14 h-8 border-y border-primary/50 bg-primary/5" />
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-popover to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-2 top-12 h-8 border-y border-primary/50 bg-primary/5" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-linear-to-b from-popover to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-popover to-transparent" />
               </div>
             </div>
             {hourCycle === "12" && (
-              <div className="flex w-16 flex-col">
+              <div className="flex w-14 flex-col">
                 <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
                   Period
                 </span>
                 <div className="flex flex-1 flex-col justify-center gap-1 p-2">
                   <Button
                     type="button"
+                    data-density-static
                     variant={
                       value && value.getHours() < 12 ? "secondary" : "ghost"
                     }
@@ -399,12 +402,13 @@ const DatePicker = ({
                         )
                       );
                     }}
-                    className="h-8 rounded-sm px-2 text-xs"
+                    className="h-7 rounded-sm px-2 text-xs"
                   >
                     AM
                   </Button>
                   <Button
                     type="button"
+                    data-density-static
                     variant={
                       value && value.getHours() >= 12 ? "secondary" : "ghost"
                     }
@@ -422,7 +426,7 @@ const DatePicker = ({
                         )
                       );
                     }}
-                    className="h-8 rounded-sm px-2 text-xs"
+                    className="h-7 rounded-sm px-2 text-xs"
                   >
                     PM
                   </Button>

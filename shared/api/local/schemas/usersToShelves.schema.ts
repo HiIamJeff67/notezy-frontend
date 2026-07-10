@@ -4,6 +4,7 @@ import { User } from "@shared/api/local/schemas/user.schema";
 import { eq, relations } from "drizzle-orm";
 import {
   integer,
+  index,
   primaryKey,
   sqliteTable,
   text,
@@ -28,6 +29,7 @@ export const UsersToShelves = sqliteTable(
       .default(new Date()),
   },
   table => [
+    index("users_to_shelves_root_shelf_idx").on(table.rootShelfId),
     primaryKey({ columns: [table.userPublicId, table.rootShelfId] }),
     uniqueIndex("users_to_shelves_unique_idx_root_shelf_owner")
       .on(table.rootShelfId)

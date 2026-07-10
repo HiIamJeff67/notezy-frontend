@@ -8,7 +8,7 @@ const OfflineTabSkeleton = () => (
         <Skeleton className="h-6 w-20 rounded-sm" />
       </div>
       <div>
-        {[96, 96, 96, 224, 96].map((width, index) => (
+        {[96, 96, 96, 224].map((width, index) => (
           <div
             key={`${width}-${index}`}
             className="flex items-center justify-between border-b border-border/50 py-3 last:border-b-0"

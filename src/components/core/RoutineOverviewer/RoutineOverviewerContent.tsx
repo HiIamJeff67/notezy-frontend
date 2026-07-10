@@ -84,7 +84,6 @@ const RoutineOverviewerContent = ({
     useState<boolean>(false);
   const [isAddChartDialogOpen, setIsAddChartDialogOpen] =
     useState<boolean>(false);
-  const [isOpening, setIsOpening] = useState<boolean>(true);
   const [shouldRenderTimeRails, setShouldRenderTimeRails] =
     useState<boolean>(false);
   const [cropperAspectRatio, setCropperAspectRatio] = useState<number>(16 / 9);
@@ -109,24 +108,6 @@ const RoutineOverviewerContent = ({
     : sidebarManager.open
       ? resizableSidebarManager.width
       : "var(--sidebar-width-icon)";
-
-  useEffect(() => {
-    setIsOpening(false);
-    if (import.meta.env.DEV) {
-      console.info(
-        "[RoutineOverviewer timing]",
-        JSON.stringify({
-          event: "mounted",
-          elapsed:
-            Math.round((performance.now() - debugStartedAtRef.current) * 100) /
-            100,
-          stationRoutineState: stationRoutineManager.state,
-          stations: stationRoutineManager.stations.length,
-          routines: stationRoutineManager.routines.length,
-        })
-      );
-    }
-  }, []);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -367,12 +348,6 @@ const RoutineOverviewerContent = ({
       if (width && height) setCropperAspectRatio(width / height);
     }
   }, [backgroundImagesManager.currentBackgroundImage]);
-
-  if (isOpening) {
-    return (
-      <RoutineOverviewerContentSkeleton headerLeft={headerLeft} />
-    );
-  }
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-start overflow-hidden bg-inset bg-cover bg-center bg-no-repeat">

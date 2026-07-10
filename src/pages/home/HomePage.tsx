@@ -1,3 +1,4 @@
+import { localDB } from "@shared/api/local/db";
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey } from "@shared/translations";
@@ -103,9 +104,12 @@ export const HomePage = () => {
     <GridBlackBackground>
       <Suspense fallback={<StrictLoadingCover />}>
         <div className="fixed top-2 right-2 z-50">
-          <Menubar className="bg-secondary border-border border shadow-lg">
+          <Menubar className="bg-secondary border-border border shadow-lg h-10">
             <MenubarMenu>
-              <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground">
+              <MenubarTrigger
+                data-density-static
+                className="h-full px-3 py-2 flex items-center justify-center hover:bg-accent hover:text-accent-foreground"
+              >
                 <LanguageIcon size={16} className="mr-2" />
                 <span className="text-sm font-medium">
                   {languageManager.t(tKey.languages.language)}
@@ -134,7 +138,10 @@ export const HomePage = () => {
             </MenubarMenu>
 
             <MenubarMenu>
-              <MenubarTrigger className="px-3 py-2 h-full flex items-center justify-center hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground">
+              <MenubarTrigger
+                data-density-static
+                className="h-full px-3 py-2 flex items-center justify-center hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
+              >
                 <ColorPaletteIcon size={16} className="mr-2" />
                 <span className="text-sm font-medium">
                   {languageManager.t(tKey.themes.theme)}
@@ -207,6 +214,9 @@ export const HomePage = () => {
                 <NoteIcon size={18} />
                 {languageManager.t(tKey.homePage.getStarted)}
               </Button>
+              {/* <Button disabled variant="secondary" onClick={localDB.download}>
+                Download Local DB File
+              </Button> */}
             </div>
           </div>
         </div>

@@ -187,6 +187,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
+      data-density-static
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
         modifiers.selected &&
