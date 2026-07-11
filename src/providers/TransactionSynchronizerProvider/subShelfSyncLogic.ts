@@ -23,13 +23,16 @@ import { InferSelectModel } from "drizzle-orm";
 import {
   dropEntityPendingOperations,
   EntityState,
+  getTransactionSequences,
   getMergedSequences,
+  MergedTransactionsResult,
+  MergedTransaction,
   mergeSet,
-  MergedResult,
+  PreparedSyncJobsResult,
   SyncHeader,
   SyncJob,
-  SyncProgressReporter,
 } from "./TransactionSynchronizerProvider";
+import { markTransactionsAsMerged } from "./TransactionSynchronizerProvider";
 
 interface SubShelfMutators {
   createSubShelvesMutator: {
@@ -51,18 +54,17 @@ interface SubShelfMutators {
   };
 }
 
-interface MergeSubShelfTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareSubShelfSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: SubShelfMutators;
 }
 
-export const mergeSubShelfTransactions = ({
+export const prepareSubShelfSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeSubShelfTransactionOptions): MergedResult => {
+}: PrepareSubShelfSyncJobsOptions): PreparedSyncJobsResult => {
   const createSubShelvesMap = new Map<
     string,
     EntityState<{
@@ -128,7 +130,6 @@ export const mergeSubShelfTransactions = ({
   const syncJobs: SyncJob[] = [];
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -138,7 +139,7 @@ export const mergeSubShelfTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.SubShelf) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -148,7 +149,7 @@ export const mergeSubShelfTransactions = ({
         if (one.success) {
           const id = one.data.body.id;
           if (!id) {
-            parseFailedSequences.add(transaction.sequence);
+            mergeSet(parseFailedSequences, getTransactionSequences(transaction));
             break;
           }
           createSubShelvesMap.set(id, {
@@ -158,7 +159,7 @@ export const mergeSubShelfTransactions = ({
               prevSubShelfId: one.data.body.prevSubShelfId,
               name: one.data.body.name,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -175,13 +176,13 @@ export const mergeSubShelfTransactions = ({
                 prevSubShelfId: created.prevSubShelfId,
                 name: created.name,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.UPDATE: {
@@ -193,7 +194,7 @@ export const mergeSubShelfTransactions = ({
             if (one.data.body.values.name !== undefined) {
               createState.body.name = one.data.body.values.name;
             }
-            createState.sequences.add(transaction.sequence);
+            mergeSet(createState.sequences, getTransactionSequences(transaction));
             break;
           }
 
@@ -207,7 +208,7 @@ export const mergeSubShelfTransactions = ({
               ...(existing.body.setNull ?? {}),
               ...(one.data.body.setNull ?? {}),
             };
-            existing.sequences.add(transaction.sequence);
+            mergeSet(existing.sequences, getTransactionSequences(transaction));
           } else {
             updateSubShelvesMap.set(id, {
               body: {
@@ -219,7 +220,7 @@ export const mergeSubShelfTransactions = ({
                 rootShelfId: one.data.affected.rootShelfId,
                 prevSubShelfId: one.data.affected.prevSubShelfId,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
@@ -234,7 +235,7 @@ export const mergeSubShelfTransactions = ({
               if (updated.values.name !== undefined) {
                 createState.body.name = updated.values.name;
               }
-              createState.sequences.add(transaction.sequence);
+              mergeSet(createState.sequences, getTransactionSequences(transaction));
               continue;
             }
 
@@ -255,7 +256,7 @@ export const mergeSubShelfTransactions = ({
                 many.data.affected.prevSubShelfIds[index] ??
                 many.data.affected.prevSubShelfIds[0] ??
                 null;
-              existing.sequences.add(transaction.sequence);
+              mergeSet(existing.sequences, getTransactionSequences(transaction));
             } else {
               updateSubShelvesMap.set(id, {
                 body: {
@@ -272,14 +273,14 @@ export const mergeSubShelfTransactions = ({
                     many.data.affected.prevSubShelfIds[0] ??
                     null,
                 },
-                sequences: new Set([transaction.sequence]),
+                sequences: getTransactionSequences(transaction),
               });
             }
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.MOVE: {
@@ -292,7 +293,7 @@ export const mergeSubShelfTransactions = ({
               oneByOne.data.body.destinationRootShelfId;
             createState.body.prevSubShelfId =
               oneByOne.data.body.destinationSubShelfId;
-            createState.sequences.add(transaction.sequence);
+            mergeSet(createState.sequences, getTransactionSequences(transaction));
             break;
           }
 
@@ -303,7 +304,7 @@ export const mergeSubShelfTransactions = ({
               destinationRootShelfId: oneByOne.data.body.destinationRootShelfId,
               destinationSubShelfId: oneByOne.data.body.destinationSubShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -317,7 +318,7 @@ export const mergeSubShelfTransactions = ({
                 oneToOne.data.body.destinationRootShelfId;
               createState.body.prevSubShelfId =
                 oneToOne.data.body.destinationSubShelfId;
-              createState.sequences.add(transaction.sequence);
+              mergeSet(createState.sequences, getTransactionSequences(transaction));
               continue;
             }
 
@@ -329,7 +330,7 @@ export const mergeSubShelfTransactions = ({
                   oneToOne.data.body.destinationRootShelfId,
                 destinationSubShelfId: oneToOne.data.body.destinationSubShelfId,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
@@ -343,7 +344,7 @@ export const mergeSubShelfTransactions = ({
               if (createState) {
                 createState.body.rootShelfId = moved.destinationRootShelfId;
                 createState.body.prevSubShelfId = moved.destinationSubShelfId;
-                createState.sequences.add(transaction.sequence);
+                mergeSet(createState.sequences, getTransactionSequences(transaction));
                 continue;
               }
 
@@ -354,14 +355,14 @@ export const mergeSubShelfTransactions = ({
                   destinationRootShelfId: moved.destinationRootShelfId,
                   destinationSubShelfId: moved.destinationSubShelfId,
                 },
-                sequences: new Set([transaction.sequence]),
+                sequences: getTransactionSequences(transaction),
               });
             }
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.RESTORE: {
@@ -371,7 +372,7 @@ export const mergeSubShelfTransactions = ({
           const deleted = deleteSubShelvesMap.get(id);
           if (deleted) {
             mergeSet(noopSequences, deleted.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             deleteSubShelvesMap.delete(id);
             break;
           }
@@ -384,7 +385,7 @@ export const mergeSubShelfTransactions = ({
               rootShelfId: one.data.affected.rootShelfId,
               prevSubShelfId: one.data.affected.prevSubShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -395,7 +396,7 @@ export const mergeSubShelfTransactions = ({
             const deleted = deleteSubShelvesMap.get(id);
             if (deleted) {
               mergeSet(noopSequences, deleted.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               deleteSubShelvesMap.delete(id);
               continue;
             }
@@ -413,13 +414,13 @@ export const mergeSubShelfTransactions = ({
                   many.data.affected.prevSubShelfIds[0] ??
                   null,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.DELETE: {
@@ -428,7 +429,7 @@ export const mergeSubShelfTransactions = ({
           const id = one.data.body.subShelfId;
           if (createSubShelvesMap.has(id)) {
             mergeSet(noopSequences, createSubShelvesMap.get(id)!.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             createSubShelvesMap.delete(id);
             updateSubShelvesMap.delete(id);
             moveSubShelvesMap.delete(id);
@@ -450,7 +451,7 @@ export const mergeSubShelfTransactions = ({
               rootShelfId: one.data.affected.rootShelfId,
               prevSubShelfId: one.data.affected.prevSubShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -460,7 +461,7 @@ export const mergeSubShelfTransactions = ({
           for (const [index, id] of many.data.body.subShelfIds.entries()) {
             if (createSubShelvesMap.has(id)) {
               mergeSet(noopSequences, createSubShelvesMap.get(id)!.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               createSubShelvesMap.delete(id);
               updateSubShelvesMap.delete(id);
               moveSubShelvesMap.delete(id);
@@ -487,17 +488,17 @@ export const mergeSubShelfTransactions = ({
                   many.data.affected.prevSubShelfIds[0] ??
                   null,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       default: {
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
     }
@@ -632,5 +633,20 @@ export const mergeSubShelfTransactions = ({
     syncJobs,
     noopSequences,
     parseFailedSequences,
+  };
+};
+
+export const mergeSubShelfTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  transactions.forEach(() => onParsed?.());
+  return {
+    transactions: markTransactionsAsMerged(transactions),
+    noopSequences: new Set<number>(),
+    parseFailedSequences: new Set<number>(),
   };
 };

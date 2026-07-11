@@ -55,6 +55,17 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
+const syncBlockLocalMirror = async (
+  operationName: string,
+  operation: () => Promise<void>
+) => {
+  try {
+    await operation();
+  } catch (error) {
+    console.error(`[BlockLocalSynchronizer] ${operationName} failed`, error);
+  }
+};
+
 export const useGetMyBlockById = (
   hookRequest?: GetMyBlockByIdRequest,
   options?: Partial<UseQueryOptions<GetMyBlockByIdResponse, Error>>
@@ -425,7 +436,9 @@ export const useInsertBlock = () =>
           }
         );
       }
-      await BlockLocalSynchronizer.syncInsertBlock(request, response);
+      await syncBlockLocalMirror("insertBlock", () =>
+        BlockLocalSynchronizer.syncInsertBlock(request, response)
+      );
       void Promise.all(
         [
           ...blockPackIds.map(blockPackId =>
@@ -506,7 +519,9 @@ export const useInsertBlocks = () =>
           }
         );
       }
-      await BlockLocalSynchronizer.syncInsertBlocks(request, response);
+      await syncBlockLocalMirror("insertBlocks", () =>
+        BlockLocalSynchronizer.syncInsertBlocks(request, response)
+      );
       void Promise.all(
         [
           ...blockPackIds.map(blockPackId =>
@@ -556,7 +571,9 @@ export const useUpdateMyBlockById = () =>
       );
       const blockPackIds = (request.affected?.blockPackIds ?? []) as UUID[];
       const queryClient = getQueryClient();
-      await BlockLocalSynchronizer.syncUpdateMyBlockById(request, response);
+      await syncBlockLocalMirror("updateMyBlockById", () =>
+        BlockLocalSynchronizer.syncUpdateMyBlockById(request, response)
+      );
       void Promise.all(
         [
           queryKeys.block.oneById(request.body.blockId as UUID),
@@ -615,7 +632,9 @@ export const useUpdateMyBlocksByIds = () =>
       );
       const blockPackIds = (request.affected?.blockPackIds ?? []) as UUID[];
       const queryClient = getQueryClient();
-      await BlockLocalSynchronizer.syncUpdateMyBlocksByIds(request, response);
+      await syncBlockLocalMirror("updateMyBlocksByIds", () =>
+        BlockLocalSynchronizer.syncUpdateMyBlocksByIds(request, response)
+      );
       void Promise.all(
         [
           ...request.body.updatedBlocks.map(block =>
@@ -683,7 +702,9 @@ export const useDeleteMyBlockById = () =>
           }
         );
       }
-      await BlockLocalSynchronizer.syncDeleteMyBlockById(request, response);
+      await syncBlockLocalMirror("deleteMyBlockById", () =>
+        BlockLocalSynchronizer.syncDeleteMyBlockById(request, response)
+      );
       void Promise.all(
         [
           queryKeys.block.oneById(request.body.blockId as UUID),
@@ -752,7 +773,9 @@ export const useDeleteMyBlocksByIds = () =>
           }
         );
       }
-      await BlockLocalSynchronizer.syncDeleteMyBlocksByIds(request, response);
+      await syncBlockLocalMirror("deleteMyBlocksByIds", () =>
+        BlockLocalSynchronizer.syncDeleteMyBlocksByIds(request, response)
+      );
       void Promise.all(
         [
           ...request.body.blockIds.map(blockId =>

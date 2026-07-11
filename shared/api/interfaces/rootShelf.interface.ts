@@ -132,12 +132,14 @@ export const CreateRootShelvesRequestSchema = NotezyRequestSchema.extend({
     })
     .optional(),
   body: z.object({
-    createdRootShelves: z.array(
-      z.object({
-        id: z.uuidv4().optional(),
-        name: z.string().min(1).max(128),
-      })
-    ),
+    createdRootShelves: z
+      .array(
+        z.object({
+          id: z.uuidv4().optional(),
+          name: z.string().min(1).max(128),
+        })
+      )
+      .min(1),
   }),
 });
 

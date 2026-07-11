@@ -1,6 +1,6 @@
 import {
+  type CreateRootShelfRequest,
   CreateRootShelfRequestSchema,
-  CreateRootShelvesRequest,
   CreateRootShelvesRequestSchema,
   DeleteMyRootShelfByIdRequestSchema,
   DeleteMyRootShelvesByIdsRequest,
@@ -20,16 +20,19 @@ import {
   dropEntityPendingOperations,
   EntityState,
   getMergedSequences,
+  getTransactionSequences,
+  MergedTransaction,
+  MergedTransactionsResult,
+  markTransactionsAsMerged,
   mergeSet,
-  MergedResult,
+  PreparedSyncJobsResult,
   SyncHeader,
   SyncJob,
-  SyncProgressReporter,
 } from "./TransactionSynchronizerProvider";
 
 interface RootShelfMutators {
-  createRootShelvesMutator: {
-    mutateAsync: (request: CreateRootShelvesRequest) => Promise<unknown>;
+  createRootShelfMutator: {
+    mutateAsync: (request: CreateRootShelfRequest) => Promise<unknown>;
   };
   updateRootShelvesMutator: {
     mutateAsync: (request: UpdateMyRootShelvesByIdsRequest) => Promise<unknown>;
@@ -44,8 +47,8 @@ interface RootShelfMutators {
   };
 }
 
-interface MergeRootShelfTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareRootShelfSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: RootShelfMutators;
 }
@@ -58,12 +61,11 @@ const mergeRootCreateValues = (
   ...(updateValues.name !== undefined ? { name: updateValues.name } : {}),
 });
 
-export const mergeRootShelfTransactions = ({
+export const prepareRootShelfSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeRootShelfTransactionOptions): MergedResult => {
+}: PrepareRootShelfSyncJobsOptions): PreparedSyncJobsResult => {
   const createRootShelvesMap = new Map<
     string,
     EntityState<{ id?: string; name: string }>
@@ -99,7 +101,6 @@ export const mergeRootShelfTransactions = ({
   const syncJobs: SyncJob[] = [];
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -109,7 +110,7 @@ export const mergeRootShelfTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.RootShelf) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -119,7 +120,10 @@ export const mergeRootShelfTransactions = ({
         if (one.success) {
           const id = one.data.body.id;
           if (!id) {
-            parseFailedSequences.add(transaction.sequence);
+            mergeSet(
+              parseFailedSequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
           createRootShelvesMap.set(id, {
@@ -127,13 +131,17 @@ export const mergeRootShelfTransactions = ({
               id,
               name: one.data.body.name,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
 
         const many = CreateRootShelvesRequestSchema.safeParse(request);
         if (many.success) {
+          if (many.data.body.createdRootShelves.length === 0) {
+            mergeSet(noopSequences, getTransactionSequences(transaction));
+            break;
+          }
           for (const created of many.data.body.createdRootShelves) {
             if (!created.id) continue;
             createRootShelvesMap.set(created.id, {
@@ -141,13 +149,13 @@ export const mergeRootShelfTransactions = ({
                 id: created.id,
                 name: created.name,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.UPDATE: {
@@ -160,7 +168,10 @@ export const mergeRootShelfTransactions = ({
               existingCreate.body,
               one.data.body.values
             );
-            existingCreate.sequences.add(transaction.sequence);
+            mergeSet(
+              existingCreate.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -174,7 +185,10 @@ export const mergeRootShelfTransactions = ({
               ...(existingUpdate.body.setNull ?? {}),
               ...(one.data.body.setNull ?? {}),
             };
-            existingUpdate.sequences.add(transaction.sequence);
+            mergeSet(
+              existingUpdate.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -184,7 +198,7 @@ export const mergeRootShelfTransactions = ({
               values: one.data.body.values,
               setNull: one.data.body.setNull,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -199,7 +213,10 @@ export const mergeRootShelfTransactions = ({
                 existingCreate.body,
                 updated.values
               );
-              existingCreate.sequences.add(transaction.sequence);
+              mergeSet(
+                existingCreate.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -213,7 +230,10 @@ export const mergeRootShelfTransactions = ({
                 ...(existingUpdate.body.setNull ?? {}),
                 ...(updated.setNull ?? {}),
               };
-              existingUpdate.sequences.add(transaction.sequence);
+              mergeSet(
+                existingUpdate.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -223,13 +243,13 @@ export const mergeRootShelfTransactions = ({
                 values: updated.values,
                 setNull: updated.setNull,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.RESTORE: {
@@ -239,7 +259,7 @@ export const mergeRootShelfTransactions = ({
           const deleted = deleteRootShelvesMap.get(id);
           if (deleted) {
             mergeSet(noopSequences, deleted.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             deleteRootShelvesMap.delete(id);
             break;
           }
@@ -248,7 +268,7 @@ export const mergeRootShelfTransactions = ({
             body: {
               rootShelfId: id,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -259,7 +279,7 @@ export const mergeRootShelfTransactions = ({
             const deleted = deleteRootShelvesMap.get(id);
             if (deleted) {
               mergeSet(noopSequences, deleted.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               deleteRootShelvesMap.delete(id);
               continue;
             }
@@ -268,13 +288,13 @@ export const mergeRootShelfTransactions = ({
               body: {
                 rootShelfId: id,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.DELETE: {
@@ -283,7 +303,7 @@ export const mergeRootShelfTransactions = ({
           const id = one.data.body.rootShelfId;
           if (createRootShelvesMap.has(id)) {
             mergeSet(noopSequences, createRootShelvesMap.get(id)!.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             createRootShelvesMap.delete(id);
             updateRootShelvesMap.delete(id);
             restoreRootShelvesMap.delete(id);
@@ -298,7 +318,10 @@ export const mergeRootShelfTransactions = ({
           );
           const existingDelete = deleteRootShelvesMap.get(id);
           if (existingDelete) {
-            existingDelete.sequences.add(transaction.sequence);
+            mergeSet(
+              existingDelete.sequences,
+              getTransactionSequences(transaction)
+            );
             mergeSet(
               existingDelete.affected.subShelfIds,
               one.data.affected.subShelfIds
@@ -316,7 +339,7 @@ export const mergeRootShelfTransactions = ({
                 subShelfIds: new Set(one.data.affected.subShelfIds),
                 materialIds: new Set(one.data.affected.materialIds),
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
@@ -327,7 +350,7 @@ export const mergeRootShelfTransactions = ({
           for (const id of many.data.body.rootShelfIds) {
             if (createRootShelvesMap.has(id)) {
               mergeSet(noopSequences, createRootShelvesMap.get(id)!.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               createRootShelvesMap.delete(id);
               updateRootShelvesMap.delete(id);
               restoreRootShelvesMap.delete(id);
@@ -342,7 +365,10 @@ export const mergeRootShelfTransactions = ({
             );
             const existingDelete = deleteRootShelvesMap.get(id);
             if (existingDelete) {
-              existingDelete.sequences.add(transaction.sequence);
+              mergeSet(
+                existingDelete.sequences,
+                getTransactionSequences(transaction)
+              );
               mergeSet(
                 existingDelete.affected.subShelfIds,
                 many.data.affected.subShelfIds
@@ -360,39 +386,34 @@ export const mergeRootShelfTransactions = ({
                   subShelfIds: new Set(many.data.affected.subShelfIds),
                   materialIds: new Set(many.data.affected.materialIds),
                 },
-                sequences: new Set([transaction.sequence]),
+                sequences: getTransactionSequences(transaction),
               });
             }
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       default: {
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
     }
   }
 
   if (createRootShelvesMap.size > 0) {
-    const request: CreateRootShelvesRequest = {
-      header,
-      body: {
-        createdRootShelves: Array.from(createRootShelvesMap.values()).map(
-          state => state.body
-        ),
-      },
-    };
-    const sequences = getMergedSequences(
-      ...Array.from(createRootShelvesMap.values()).map(state => state.sequences)
-    );
-    syncJobs.push({
-      sequences,
-      run: () => mutators.createRootShelvesMutator.mutateAsync(request),
-    });
+    for (const state of createRootShelvesMap.values()) {
+      const request: CreateRootShelfRequest = {
+        header,
+        body: state.body,
+      };
+      syncJobs.push({
+        sequences: state.sequences,
+        run: () => mutators.createRootShelfMutator.mutateAsync(request),
+      });
+    }
   }
 
   if (updateRootShelvesMap.size > 0) {
@@ -471,5 +492,20 @@ export const mergeRootShelfTransactions = ({
     syncJobs,
     noopSequences,
     parseFailedSequences,
+  };
+};
+
+export const mergeRootShelfTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  transactions.forEach(() => onParsed?.());
+  return {
+    transactions: markTransactionsAsMerged(transactions),
+    noopSequences: new Set<number>(),
+    parseFailedSequences: new Set<number>(),
   };
 };

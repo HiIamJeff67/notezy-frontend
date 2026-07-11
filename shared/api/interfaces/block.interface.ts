@@ -3,14 +3,8 @@ import {
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
 import { AllBlockTypes } from "@shared/api/interfaces/enums";
+import type { Block } from "@blocknote/core";
 import { z } from "zod";
-
-const HeaderSchema = z
-  .object({
-    userAgent: z.string().min(1).optional(),
-    authorization: z.string().optional(),
-  })
-  .optional();
 
 export type ArborizedEditableBlock = {
   id: string;
@@ -23,20 +17,17 @@ export type ArborizedEditableBlock = {
 export const ArborizedEditableBlockSchema =
   z.custom<ArborizedEditableBlock>();
 
-const NullableNumberArraySchema = z.preprocess(
-  value => value ?? [],
-  z.array(z.number())
-);
-
-const NullableSuccessBlockPackAndBlockIdsSchema = z.preprocess(
-  value => value ?? [],
-  z.array(
-    z.object({
-      blockPackId: z.uuidv4(),
-      blockIds: z.array(z.uuidv4()),
-    })
-  )
-);
+export const toArborizedEditableBlock = (
+  block: Block
+): ArborizedEditableBlock => ({
+  id: block.id,
+  type: block.type,
+  props: block.props ?? {},
+  content: (block.content ?? []) as ArborizedEditableBlock["content"],
+  children: (block.children ?? []).map(child =>
+    toArborizedEditableBlock(child as Block)
+  ),
+});
 
 export const PrivateBlockSchema = z.object({
   id: z.uuidv4(),
@@ -57,7 +48,12 @@ export type PrivateBlock = z.infer<typeof PrivateBlockSchema>;
 /* ============================== GetMyBlockById ============================== */
 
 export const GetMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   param: z.object({
     blockId: z.uuidv4(),
   }),
@@ -79,7 +75,12 @@ export type GetMyBlockByIdResponse = z.infer<
 /* ============================== GetMyBlocksByIds ============================== */
 
 export const GetMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   param: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
@@ -104,7 +105,12 @@ export type GetMyBlocksByIdsResponse = z.infer<
 
 export const GetMyBlocksByBlockPackIdRequestSchema = NotezyRequestSchema.extend(
   {
-    header: HeaderSchema,
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
     param: z.object({
       blockPackId: z.uuidv4(),
     }),
@@ -130,7 +136,12 @@ export type GetMyBlocksByBlockPackIdResponse = z.infer<
 /* ============================== GetAllMyBlocks ============================== */
 
 export const GetAllMyBlocksRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type GetAllMyBlocksRequest = z.infer<typeof GetAllMyBlocksRequestSchema>;
@@ -149,7 +160,12 @@ export type GetAllMyBlocksResponse = z.infer<
 /* ============================== AppendBlock ============================== */
 
 export const InsertBlockRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockPackId: z.uuidv4(),
     parentBlockId: z.uuidv4().nullable().optional(),
@@ -179,7 +195,12 @@ export type InsertBlockResponse = z.infer<typeof InsertBlockResponseSchema>;
 /* ============================== InsertBlocks ============================== */
 
 export const InsertBlocksRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     insertedBlocks: z.array(
       z.object({
@@ -200,9 +221,17 @@ export type InsertBlocksRequest = z.infer<typeof InsertBlocksRequestSchema>;
 export const InsertBlocksResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     isAllSuccess: z.boolean(),
-    failedIndexes: NullableNumberArraySchema,
-    successIndexes: NullableNumberArraySchema,
-    successBlockPackAndBlockIds: NullableSuccessBlockPackAndBlockIdsSchema,
+    failedIndexes: z.preprocess(value => value ?? [], z.array(z.number())),
+    successIndexes: z.preprocess(value => value ?? [], z.array(z.number())),
+    successBlockPackAndBlockIds: z.preprocess(
+      value => value ?? [],
+      z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          blockIds: z.array(z.uuidv4()),
+        })
+      )
+    ),
     createdAt: z.coerce.date(),
   }),
   embedded: z.object({
@@ -215,7 +244,12 @@ export type InsertBlocksResponse = z.infer<typeof InsertBlocksResponseSchema>;
 /* ============================== UpdateMyBlockById ============================== */
 
 export const UpdateMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockId: z.uuidv4(),
     values: z
@@ -260,7 +294,12 @@ export type UpdateMyBlockByIdResponse = z.infer<
 /* ============================== UpdateMyBlocksByIds ============================== */
 
 export const UpdateMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     updatedBlocks: z.array(
       z.object({
@@ -296,9 +335,17 @@ export type UpdateMyBlocksByIdsRequest = z.infer<
 export const UpdateMyBlocksByIdsResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     isAllSuccess: z.boolean(),
-    failedIndexes: NullableNumberArraySchema,
-    successIndexes: NullableNumberArraySchema,
-    successBlockPackAndBlockIds: NullableSuccessBlockPackAndBlockIdsSchema,
+    failedIndexes: z.preprocess(value => value ?? [], z.array(z.number())),
+    successIndexes: z.preprocess(value => value ?? [], z.array(z.number())),
+    successBlockPackAndBlockIds: z.preprocess(
+      value => value ?? [],
+      z.array(
+        z.object({
+          blockPackId: z.uuidv4(),
+          blockIds: z.array(z.uuidv4()),
+        })
+      )
+    ),
     updatedAt: z.coerce.date(),
   }),
   embedded: z.object({
@@ -313,7 +360,12 @@ export type UpdateMyBlocksByIdsResponse = z.infer<
 /* ============================== RestoreMyBlockById ============================== */
 
 export const RestoreMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockId: z.uuidv4(),
   }),
@@ -340,7 +392,12 @@ export type RestoreMyBlockByIdResponse = z.infer<
 /* ============================== RestoreMyBlocksByIds ============================== */
 
 export const RestoreMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),
@@ -367,7 +424,12 @@ export type RestoreMyBlocksByIdsResponse = z.infer<
 /* ============================== DeleteMyBlockById ============================== */
 
 export const DeleteMyBlockByIdRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockId: z.uuidv4(),
   }),
@@ -396,7 +458,12 @@ export type DeleteMyBlockByIdResponse = z.infer<
 /* ============================== DeleteMyBlocksByIds ============================== */
 
 export const DeleteMyBlocksByIdsRequestSchema = NotezyRequestSchema.extend({
-  header: HeaderSchema,
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
   body: z.object({
     blockIds: z.array(z.uuidv4()),
   }),

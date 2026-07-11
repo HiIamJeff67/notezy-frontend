@@ -11,7 +11,7 @@ import {
   useUpdateMyBlockPacksByIds,
 } from "@shared/api/hooks/blockPack.hook";
 import {
-  useCreateRootShelves,
+  useCreateRootShelf,
   useDeleteMyRootShelvesByIds,
   useRestoreMyRootShelvesByIds,
   useUpdateMyRootShelvesByIds,
@@ -61,26 +61,43 @@ import {
 } from "@shared/api/hooks/subShelf.hook";
 import { localDB } from "@shared/api/local/db";
 import { Transaction, User } from "@shared/api/local/schemas";
+import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
-import {
-  asc,
-  eq,
-  InferSelectModel,
-  inArray,
-} from "drizzle-orm";
+import { asc, eq, InferSelectModel, inArray } from "drizzle-orm";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { useNetwork } from "@/hooks";
-import { mergeBlockPackTransactions } from "./BlockPackSyncLogic";
-import { mergeBlockTransactions } from "./BlockSyncLogic";
-import { mergeRootShelfTransactions } from "./RootShelfSyncLogic";
-import { mergeRoutineRelationTransactions } from "./RoutineRelationSyncLogic";
-import { mergeRoutineTransactions } from "./RoutineSyncLogic";
-import { mergeRoutineTagTransactions } from "./RoutineTagSyncLogic";
-import { mergeStationTransactions } from "./StationSyncLogic";
-import { mergeSubShelfTransactions } from "./SubShelfSyncLogic";
+import {
+  mergeBlockPackTransactions,
+  prepareBlockPackSyncJobs,
+} from "./BlockPackSyncLogic";
+import { mergeBlockTransactions, prepareBlockSyncJobs } from "./BlockSyncLogic";
+import {
+  mergeRootShelfTransactions,
+  prepareRootShelfSyncJobs,
+} from "./RootShelfSyncLogic";
+import {
+  mergeRoutineRelationTransactions,
+  prepareRoutineRelationSyncJobs,
+} from "./RoutineRelationSyncLogic";
+import {
+  mergeRoutineTransactions,
+  prepareRoutineSyncJobs,
+} from "./RoutineSyncLogic";
+import {
+  mergeRoutineTagTransactions,
+  prepareRoutineTagSyncJobs,
+} from "./RoutineTagSyncLogic";
+import {
+  mergeStationTransactions,
+  prepareStationSyncJobs,
+} from "./StationSyncLogic";
+import {
+  mergeSubShelfTransactions,
+  prepareSubShelfSyncJobs,
+} from "./SubShelfSyncLogic";
 
 /* ============================== General types ============================== */
 
@@ -94,10 +111,177 @@ export type SyncJob = {
   run: () => Promise<unknown>;
 };
 
-export type MergedResult = {
+export type PreparedSyncJobsResult = {
   syncJobs: SyncJob[];
   noopSequences: Set<number>;
   parseFailedSequences: Set<number>;
+};
+
+export type MergedTransaction = InferSelectModel<typeof Transaction> & {
+  mergedSequences: Set<number>;
+};
+
+export type MergedTransactionsResult = {
+  transactions: MergedTransaction[];
+  noopSequences: Set<number>;
+  parseFailedSequences: Set<number>;
+};
+
+export const getTransactionSequences = (
+  transaction: InferSelectModel<typeof Transaction> | MergedTransaction
+): Set<number> =>
+  "mergedSequences" in transaction
+    ? transaction.mergedSequences
+    : new Set([transaction.sequence]);
+
+export const markTransactionsAsMerged = (
+  transactions: InferSelectModel<typeof Transaction>[]
+): MergedTransaction[] =>
+  transactions.map(transaction => ({
+    ...transaction,
+    mergedSequences: new Set([transaction.sequence]),
+  }));
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const mergeTransactionBodies = (
+  baseBody: unknown,
+  nextBody: unknown,
+  baseAction: TransactionActionType,
+  nextAction: TransactionActionType
+): unknown => {
+  if (!isRecord(baseBody) || !isRecord(nextBody)) return nextBody;
+
+  if (
+    baseAction === TransactionActionType.UPDATE &&
+    nextAction === TransactionActionType.UPDATE
+  ) {
+    return {
+      ...baseBody,
+      ...nextBody,
+      ...(isRecord(baseBody.values) || isRecord(nextBody.values)
+        ? {
+            values: {
+              ...(isRecord(baseBody.values) ? baseBody.values : {}),
+              ...(isRecord(nextBody.values) ? nextBody.values : {}),
+            },
+          }
+        : {}),
+      ...(isRecord(baseBody.setNull) || isRecord(nextBody.setNull)
+        ? {
+            setNull: {
+              ...(isRecord(baseBody.setNull) ? baseBody.setNull : {}),
+              ...(isRecord(nextBody.setNull) ? nextBody.setNull : {}),
+            },
+          }
+        : {}),
+    };
+  }
+
+  if (
+    baseAction === TransactionActionType.CREATE &&
+    nextAction === TransactionActionType.UPDATE
+  ) {
+    const nextValues = isRecord(nextBody.values) ? nextBody.values : {};
+    return {
+      ...baseBody,
+      ...nextValues,
+    };
+  }
+
+  return nextBody;
+};
+
+const isTerminalDeleteAction = (action: TransactionActionType) =>
+  action === TransactionActionType.DELETE ||
+  action === TransactionActionType.HARD_DELETE;
+
+export const mergeSingleEntityTransactions = ({
+  transactions,
+  entityType,
+  idField,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  entityType: TransactionEntityType;
+  idField: string;
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  const states = new Map<string, MergedTransaction>();
+  const passthrough: MergedTransaction[] = [];
+  const noopSequences = new Set<number>();
+
+  for (const transaction of transactions) {
+    onParsed?.();
+    const body = isRecord(transaction.body) ? transaction.body : undefined;
+    const entityId =
+      transaction.actionType === TransactionActionType.CREATE
+        ? (body?.[idField] ?? body?.id)
+        : body?.[idField];
+    const id = typeof entityId === "string" ? entityId : undefined;
+    if (transaction.entityType !== entityType || !id) {
+      passthrough.push({
+        ...transaction,
+        mergedSequences: new Set([transaction.sequence]),
+      });
+      continue;
+    }
+
+    const current: MergedTransaction = {
+      ...transaction,
+      mergedSequences: new Set([transaction.sequence]),
+    };
+    const previous = states.get(id);
+    if (!previous) {
+      states.set(id, current);
+      continue;
+    }
+
+    mergeSet(previous.mergedSequences, [transaction.sequence]);
+
+    if (
+      previous.actionType === TransactionActionType.CREATE &&
+      isTerminalDeleteAction(transaction.actionType)
+    ) {
+      mergeSet(noopSequences, previous.mergedSequences);
+      mergeSet(noopSequences, current.mergedSequences);
+      states.delete(id);
+      continue;
+    }
+
+    if (isTerminalDeleteAction(transaction.actionType)) {
+      states.set(id, {
+        ...current,
+        mergedSequences: previous.mergedSequences,
+      });
+      continue;
+    }
+
+    states.set(id, {
+      ...current,
+      actionType:
+        previous.actionType === TransactionActionType.CREATE &&
+        transaction.actionType === TransactionActionType.UPDATE
+          ? TransactionActionType.CREATE
+          : transaction.actionType,
+      body: mergeTransactionBodies(
+        previous.body,
+        transaction.body,
+        previous.actionType,
+        transaction.actionType
+      ),
+      mergedSequences: previous.mergedSequences,
+    });
+  }
+
+  return {
+    transactions: [...passthrough, ...states.values()].sort(
+      (a, b) => a.sequence - b.sequence
+    ),
+    noopSequences,
+    parseFailedSequences: new Set<number>(),
+  };
 };
 
 export type SyncHeader = {
@@ -168,7 +352,7 @@ export const TransactionSynchronizerProvider = ({
   >("analyzing");
   const { isOnline } = useNetwork();
 
-  const createRootShelvesMutator = useCreateRootShelves();
+  const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelvesMutator = useUpdateMyRootShelvesByIds();
   const restoreRootShelvesMutator = useRestoreMyRootShelvesByIds();
   const deleteRootShelvesMutator = useDeleteMyRootShelvesByIds();
@@ -244,15 +428,18 @@ export const TransactionSynchronizerProvider = ({
     });
   }, []);
 
-  const syncMergedResult = useCallback(
+  const syncPreparedSyncJobs = useCallback(
     async (
       transactions: InferSelectModel<typeof Transaction>[],
-      mergedResult: MergedResult,
+      mergedResult: PreparedSyncJobsResult,
       onJobFinished: () => void
     ) => {
       if (mergedResult.syncJobs.length === 0) {
         const noopAndParseFailed = Array.from(
-          new Set([...mergedResult.noopSequences, ...mergedResult.parseFailedSequences])
+          new Set([
+            ...mergedResult.noopSequences,
+            ...mergedResult.parseFailedSequences,
+          ])
         );
         if (noopAndParseFailed.length > 0) {
           if (!localDB.isReady) await localDB.ensureReady();
@@ -268,7 +455,9 @@ export const TransactionSynchronizerProvider = ({
       );
 
       const succeededSequences = new Set<number>(mergedResult.noopSequences);
-      const failedSequences = new Set<number>(mergedResult.parseFailedSequences);
+      const failedSequences = new Set<number>(
+        mergedResult.parseFailedSequences
+      );
 
       settledSyncJobs.forEach((settledSyncJob, index) => {
         const sequences = mergedResult.syncJobs[index].sequences;
@@ -407,137 +596,201 @@ export const TransactionSynchronizerProvider = ({
       setSynchronizationProgress((parsedUnits / parseUnits) * 0.5);
     };
 
-    const allMergedResults = [
+    const combineMergedTransactionsWithPreparedJobs = (
+      merged: MergedTransactionsResult,
+      prepared: PreparedSyncJobsResult
+    ): PreparedSyncJobsResult => ({
+      ...prepared,
+      noopSequences: getMergedSequences(
+        merged.noopSequences,
+        prepared.noopSequences
+      ),
+      parseFailedSequences: getMergedSequences(
+        merged.parseFailedSequences,
+        prepared.parseFailedSequences
+      ),
+    });
+
+    const mergedRootShelves = mergeRootShelfTransactions({
+      transactions: rootShelfTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedSubShelves = mergeSubShelfTransactions({
+      transactions: subShelfTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedBlockPacks = mergeBlockPackTransactions({
+      transactions: blockPackTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedBlocks = mergeBlockTransactions({
+      transactions: blockTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedStations = mergeStationTransactions({
+      transactions: stationTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedRoutines = mergeRoutineTransactions({
+      transactions: routineTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedRoutineTags = mergeRoutineTagTransactions({
+      transactions: routineTagTransactions,
+      onParsed: handleOnParsed,
+    });
+    const mergedRoutineRelations = mergeRoutineRelationTransactions({
+      transactions: routineRelationTransactions,
+      onParsed: handleOnParsed,
+    });
+
+    const allPreparedResults = [
       {
         transactions: rootShelfTransactions,
-        mergedResult: mergeRootShelfTransactions({
-          transactions: rootShelfTransactions,
-          header,
-          mutators: {
-            createRootShelvesMutator,
-            updateRootShelvesMutator,
-            restoreRootShelvesMutator,
-            deleteRootShelvesMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedRootShelves,
+          prepareRootShelfSyncJobs({
+            transactions: mergedRootShelves.transactions,
+            header,
+            mutators: {
+              createRootShelfMutator,
+              updateRootShelvesMutator,
+              restoreRootShelvesMutator,
+              deleteRootShelvesMutator,
+            },
+          })
+        ),
       },
       {
         transactions: subShelfTransactions,
-        mergedResult: mergeSubShelfTransactions({
-          transactions: subShelfTransactions,
-          header,
-          mutators: {
-            createSubShelvesMutator,
-            updateSubShelvesMutator,
-            moveSubShelvesMutator,
-            restoreSubShelvesMutator,
-            deleteSubShelvesMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedSubShelves,
+          prepareSubShelfSyncJobs({
+            transactions: mergedSubShelves.transactions,
+            header,
+            mutators: {
+              createSubShelvesMutator,
+              updateSubShelvesMutator,
+              moveSubShelvesMutator,
+              restoreSubShelvesMutator,
+              deleteSubShelvesMutator,
+            },
+          })
+        ),
       },
       {
         transactions: blockPackTransactions,
-        mergedResult: mergeBlockPackTransactions({
-          transactions: blockPackTransactions,
-          header,
-          mutators: {
-            createBlockPacksMutator,
-            updateBlockPacksMutator,
-            moveBlockPacksMutator,
-            restoreBlockPacksMutator,
-            deleteBlockPacksMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedBlockPacks,
+          prepareBlockPackSyncJobs({
+            transactions: mergedBlockPacks.transactions,
+            header,
+            mutators: {
+              createBlockPacksMutator,
+              updateBlockPacksMutator,
+              moveBlockPacksMutator,
+              restoreBlockPacksMutator,
+              deleteBlockPacksMutator,
+            },
+          })
+        ),
       },
       {
         transactions: blockTransactions,
-        mergedResult: mergeBlockTransactions({
-          transactions: blockTransactions,
-          header,
-          mutators: {
-            insertBlocksMutator,
-            updateBlocksMutator,
-            deleteBlocksMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedBlocks,
+          prepareBlockSyncJobs({
+            transactions: mergedBlocks.transactions,
+            header,
+            mutators: {
+              insertBlocksMutator,
+              updateBlocksMutator,
+              deleteBlocksMutator,
+            },
+          })
+        ),
       },
       {
         transactions: stationTransactions,
-        mergedResult: mergeStationTransactions({
-          transactions: stationTransactions,
-          header,
-          mutators: {
-            createStationMutator,
-            createStationsMutator,
-            updateStationMutator,
-            updateStationsMutator,
-            restoreStationMutator,
-            restoreStationsMutator,
-            deleteStationMutator,
-            deleteStationsMutator,
-            hardDeleteStationMutator,
-            hardDeleteStationsMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedStations,
+          prepareStationSyncJobs({
+            transactions: mergedStations.transactions,
+            header,
+            mutators: {
+              createStationMutator,
+              createStationsMutator,
+              updateStationMutator,
+              updateStationsMutator,
+              restoreStationMutator,
+              restoreStationsMutator,
+              deleteStationMutator,
+              deleteStationsMutator,
+              hardDeleteStationMutator,
+              hardDeleteStationsMutator,
+            },
+          })
+        ),
       },
       {
         transactions: routineTransactions,
-        mergedResult: mergeRoutineTransactions({
-          transactions: routineTransactions,
-          header,
-          mutators: {
-            createRoutineMutator,
-            createRoutinesMutator,
-            updateRoutineMutator,
-            updateRoutinesMutator,
-            restoreRoutineMutator,
-            restoreRoutinesMutator,
-            deleteRoutineMutator,
-            deleteRoutinesMutator,
-            hardDeleteRoutineMutator,
-            hardDeleteRoutinesMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedRoutines,
+          prepareRoutineSyncJobs({
+            transactions: mergedRoutines.transactions,
+            header,
+            mutators: {
+              createRoutineMutator,
+              createRoutinesMutator,
+              updateRoutineMutator,
+              updateRoutinesMutator,
+              restoreRoutineMutator,
+              restoreRoutinesMutator,
+              deleteRoutineMutator,
+              deleteRoutinesMutator,
+              hardDeleteRoutineMutator,
+              hardDeleteRoutinesMutator,
+            },
+          })
+        ),
       },
       {
         transactions: routineTagTransactions,
-        mergedResult: mergeRoutineTagTransactions({
-          transactions: routineTagTransactions,
-          header,
-          mutators: {
-            createRoutineTagMutator,
-            createRoutineTagsMutator,
-            updateRoutineTagMutator,
-            updateRoutineTagsMutator,
-            hardDeleteRoutineTagMutator,
-            hardDeleteRoutineTagsMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedRoutineTags,
+          prepareRoutineTagSyncJobs({
+            transactions: mergedRoutineTags.transactions,
+            header,
+            mutators: {
+              createRoutineTagMutator,
+              createRoutineTagsMutator,
+              updateRoutineTagMutator,
+              updateRoutineTagsMutator,
+              hardDeleteRoutineTagMutator,
+              hardDeleteRoutineTagsMutator,
+            },
+          })
+        ),
       },
       {
         transactions: routineRelationTransactions,
-        mergedResult: mergeRoutineRelationTransactions({
-          transactions: routineRelationTransactions,
-          header,
-          mutators: {
-            linkRoutineTagMutator,
-            linkRoutineTagsMutator,
-            linkRoutineItemMutator,
-            linkRoutineItemsMutator,
-          },
-          onParsed: handleOnParsed,
-        }),
+        mergedResult: combineMergedTransactionsWithPreparedJobs(
+          mergedRoutineRelations,
+          prepareRoutineRelationSyncJobs({
+            transactions: mergedRoutineRelations.transactions,
+            header,
+            mutators: {
+              linkRoutineTagMutator,
+              linkRoutineTagsMutator,
+              linkRoutineItemMutator,
+              linkRoutineItemsMutator,
+            },
+          })
+        ),
       },
     ];
 
-    const totalJobs = allMergedResults.reduce(
+    const totalJobs = allPreparedResults.reduce(
       (count, item) => count + item.mergedResult.syncJobs.length,
       0
     );
@@ -549,8 +802,8 @@ export const TransactionSynchronizerProvider = ({
       setSynchronizationProgress(0.5 + (completedJobs / totalJobs) * 0.5);
     };
 
-    for (const item of allMergedResults) {
-      await syncMergedResult(
+    for (const item of allPreparedResults) {
+      await syncPreparedSyncJobs(
         item.transactions,
         item.mergedResult,
         handleJobOnFinished
@@ -560,7 +813,7 @@ export const TransactionSynchronizerProvider = ({
     setSynchronizationProgress(1);
   }, [
     isOnline,
-    createRootShelvesMutator,
+    createRootShelfMutator,
     updateRootShelvesMutator,
     restoreRootShelvesMutator,
     deleteRootShelvesMutator,
@@ -607,7 +860,7 @@ export const TransactionSynchronizerProvider = ({
     updateRoutineTagsMutator,
     hardDeleteRoutineTagMutator,
     hardDeleteRoutineTagsMutator,
-    syncMergedResult,
+    syncPreparedSyncJobs,
   ]);
 
   useEffect(() => {
@@ -710,7 +963,13 @@ export const TransactionSynchronizerProvider = ({
     let cancelled = false;
 
     const synchronizeWhenOnline = async () => {
-      if (!isOnline || isSynchronizingRef.current) return;
+      if (
+        !isOnline ||
+        isSynchronizingRef.current ||
+        isBootstrappingRef.current
+      ) {
+        return;
+      }
 
       const pendingCount = await getTransactionCount();
       if (pendingCount === 0) {

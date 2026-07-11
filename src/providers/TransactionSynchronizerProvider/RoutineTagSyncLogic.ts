@@ -17,9 +17,15 @@ import { TransactionActionType } from "@shared/api/local/schemas/enums/transacti
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import type { InferSelectModel } from "drizzle-orm";
 import type {
-  MergedResult,
+  MergedTransaction,
+  MergedTransactionsResult,
+  PreparedSyncJobsResult,
   SyncHeader,
-  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+import {
+  getTransactionSequences,
+  mergeSet,
+  mergeSingleEntityTransactions,
 } from "./TransactionSynchronizerProvider";
 
 interface RoutineTagMutators {
@@ -47,24 +53,22 @@ interface RoutineTagMutators {
   };
 }
 
-interface MergeRoutineTagTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareRoutineTagSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: RoutineTagMutators;
 }
 
-export const mergeRoutineTagTransactions = ({
+export const prepareRoutineTagSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeRoutineTagTransactionOptions): MergedResult => {
+}: PrepareRoutineTagSyncJobsOptions): PreparedSyncJobsResult => {
   const operations: Array<() => Promise<unknown>> = [];
   const sequences = new Set<number>();
   const parseFailedSequences = new Set<number>();
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -74,7 +78,7 @@ export const mergeRoutineTagTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.RoutineTag) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -87,7 +91,7 @@ export const mergeRoutineTagTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -99,7 +103,7 @@ export const mergeRoutineTagTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -113,7 +117,7 @@ export const mergeRoutineTagTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -125,7 +129,7 @@ export const mergeRoutineTagTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -139,7 +143,7 @@ export const mergeRoutineTagTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -151,12 +155,12 @@ export const mergeRoutineTagTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
 
-    parseFailedSequences.add(transaction.sequence);
+    mergeSet(parseFailedSequences, getTransactionSequences(transaction));
   }
 
   const operationSequences = Array.from(sequences);
@@ -185,4 +189,19 @@ export const mergeRoutineTagTransactions = ({
     noopSequences: new Set<number>(),
     parseFailedSequences,
   };
+};
+
+export const mergeRoutineTagTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  return mergeSingleEntityTransactions({
+    transactions,
+    entityType: TransactionEntityType.RoutineTag,
+    idField: "routineTagId",
+    onParsed,
+  });
 };

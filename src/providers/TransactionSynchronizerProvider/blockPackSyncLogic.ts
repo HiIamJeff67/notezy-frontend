@@ -24,11 +24,14 @@ import {
   dropEntityPendingOperations,
   EntityState,
   getMergedSequences,
-  MergedResult,
+  getTransactionSequences,
+  MergedTransaction,
+  MergedTransactionsResult,
+  markTransactionsAsMerged,
   mergeSet,
+  PreparedSyncJobsResult,
   SyncHeader,
   SyncJob,
-  SyncProgressReporter,
 } from "./TransactionSynchronizerProvider";
 
 interface BlockPackMutators {
@@ -51,18 +54,17 @@ interface BlockPackMutators {
   };
 }
 
-interface MergeBlockPackTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareBlockPackSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: BlockPackMutators;
 }
 
-export const mergeBlockPackTransactions = ({
+export const prepareBlockPackSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeBlockPackTransactionOptions): MergedResult => {
+}: PrepareBlockPackSyncJobsOptions): PreparedSyncJobsResult => {
   const createBlockPacksMap = new Map<
     string,
     {
@@ -144,7 +146,6 @@ export const mergeBlockPackTransactions = ({
   const syncJobs: SyncJob[] = [];
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -154,7 +155,7 @@ export const mergeBlockPackTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.BlockPack) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -164,7 +165,10 @@ export const mergeBlockPackTransactions = ({
         if (one.success) {
           const id = one.data.body.id;
           if (!id) {
-            parseFailedSequences.add(transaction.sequence);
+            mergeSet(
+              parseFailedSequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
           createBlockPacksMap.set(id, {
@@ -178,7 +182,7 @@ export const mergeBlockPackTransactions = ({
             affected: {
               rootShelfId: one.data.affected.rootShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -203,13 +207,13 @@ export const mergeBlockPackTransactions = ({
                   many.data.affected.rootShelfIds[index] ??
                   many.data.affected.rootShelfIds[0],
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.UPDATE: {
@@ -226,7 +230,10 @@ export const mergeBlockPackTransactions = ({
             createState.body.headerBackgroundURL =
               one.data.body.values.headerBackgroundURL ??
               createState.body.headerBackgroundURL;
-            createState.sequences.add(transaction.sequence);
+            mergeSet(
+              createState.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -240,7 +247,7 @@ export const mergeBlockPackTransactions = ({
               ...(existing.body.setNull ?? {}),
               ...(one.data.body.setNull ?? {}),
             };
-            existing.sequences.add(transaction.sequence);
+            mergeSet(existing.sequences, getTransactionSequences(transaction));
           } else {
             updateBlockPacksMap.set(id, {
               body: {
@@ -252,7 +259,7 @@ export const mergeBlockPackTransactions = ({
                 parentSubShelfId: one.data.affected.parentSubShelfId,
                 rootShelfId: one.data.affected.rootShelfId,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
@@ -275,7 +282,10 @@ export const mergeBlockPackTransactions = ({
               createState.body.headerBackgroundURL =
                 updated.values.headerBackgroundURL ??
                 createState.body.headerBackgroundURL;
-              createState.sequences.add(transaction.sequence);
+              mergeSet(
+                createState.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -295,7 +305,10 @@ export const mergeBlockPackTransactions = ({
               existing.affected.rootShelfId =
                 many.data.affected.rootShelfIds[index] ??
                 many.data.affected.rootShelfIds[0];
-              existing.sequences.add(transaction.sequence);
+              mergeSet(
+                existing.sequences,
+                getTransactionSequences(transaction)
+              );
             } else {
               updateBlockPacksMap.set(id, {
                 body: {
@@ -311,14 +324,14 @@ export const mergeBlockPackTransactions = ({
                     many.data.affected.rootShelfIds[index] ??
                     many.data.affected.rootShelfIds[0],
                 },
-                sequences: new Set([transaction.sequence]),
+                sequences: getTransactionSequences(transaction),
               });
             }
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.MOVE: {
@@ -329,7 +342,10 @@ export const mergeBlockPackTransactions = ({
           if (createState) {
             createState.body.parentSubShelfId =
               one.data.body.destinationParentSubShelfId;
-            createState.sequences.add(transaction.sequence);
+            mergeSet(
+              createState.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -343,7 +359,7 @@ export const mergeBlockPackTransactions = ({
               sourceParentSubShelfId: one.data.affected.sourceParentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -359,7 +375,10 @@ export const mergeBlockPackTransactions = ({
             if (createState) {
               createState.body.parentSubShelfId =
                 manyOneDestination.data.body.destinationParentSubShelfId;
-              createState.sequences.add(transaction.sequence);
+              mergeSet(
+                createState.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -377,7 +396,7 @@ export const mergeBlockPackTransactions = ({
                   manyOneDestination.data.affected.sourceParentSubShelfIds[0],
                 rootShelfId: manyOneDestination.data.affected.rootShelfId,
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
@@ -395,7 +414,10 @@ export const mergeBlockPackTransactions = ({
               if (createState) {
                 createState.body.parentSubShelfId =
                   moved.destinationParentSubShelfId;
-                createState.sequences.add(transaction.sequence);
+                mergeSet(
+                  createState.sequences,
+                  getTransactionSequences(transaction)
+                );
                 continue;
               }
 
@@ -413,14 +435,14 @@ export const mergeBlockPackTransactions = ({
                     many.data.affected.rootShelfIds[movedIndex] ??
                     many.data.affected.rootShelfIds[0],
                 },
-                sequences: new Set([transaction.sequence]),
+                sequences: getTransactionSequences(transaction),
               });
             }
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.RESTORE: {
@@ -430,7 +452,7 @@ export const mergeBlockPackTransactions = ({
           const deleted = deleteBlockPacksMap.get(id);
           if (deleted) {
             mergeSet(noopSequences, deleted.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             deleteBlockPacksMap.delete(id);
             break;
           }
@@ -443,7 +465,7 @@ export const mergeBlockPackTransactions = ({
               parentSubShelfId: one.data.affected.parentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -454,7 +476,7 @@ export const mergeBlockPackTransactions = ({
             const deleted = deleteBlockPacksMap.get(id);
             if (deleted) {
               mergeSet(noopSequences, deleted.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               deleteBlockPacksMap.delete(id);
               continue;
             }
@@ -471,13 +493,13 @@ export const mergeBlockPackTransactions = ({
                   many.data.affected.rootShelfIds[index] ??
                   many.data.affected.rootShelfIds[0],
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       case TransactionActionType.DELETE: {
@@ -486,7 +508,7 @@ export const mergeBlockPackTransactions = ({
           const id = one.data.body.blockPackId;
           if (createBlockPacksMap.has(id)) {
             mergeSet(noopSequences, createBlockPacksMap.get(id)!.sequences);
-            noopSequences.add(transaction.sequence);
+            mergeSet(noopSequences, getTransactionSequences(transaction));
             createBlockPacksMap.delete(id);
             updateBlockPacksMap.delete(id);
             moveBlockPacksMap.delete(id);
@@ -508,7 +530,7 @@ export const mergeBlockPackTransactions = ({
               parentSubShelfId: one.data.affected.parentSubShelfId,
               rootShelfId: one.data.affected.rootShelfId,
             },
-            sequences: new Set([transaction.sequence]),
+            sequences: getTransactionSequences(transaction),
           });
           break;
         }
@@ -518,7 +540,7 @@ export const mergeBlockPackTransactions = ({
           for (const [index, id] of many.data.body.blockPackIds.entries()) {
             if (createBlockPacksMap.has(id)) {
               mergeSet(noopSequences, createBlockPacksMap.get(id)!.sequences);
-              noopSequences.add(transaction.sequence);
+              mergeSet(noopSequences, getTransactionSequences(transaction));
               createBlockPacksMap.delete(id);
               updateBlockPacksMap.delete(id);
               moveBlockPacksMap.delete(id);
@@ -544,17 +566,17 @@ export const mergeBlockPackTransactions = ({
                   many.data.affected.rootShelfIds[index] ??
                   many.data.affected.rootShelfIds[0],
               },
-              sequences: new Set([transaction.sequence]),
+              sequences: getTransactionSequences(transaction),
             });
           }
           break;
         }
 
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
       default: {
-        parseFailedSequences.add(transaction.sequence);
+        mergeSet(parseFailedSequences, getTransactionSequences(transaction));
         break;
       }
     }
@@ -686,5 +708,20 @@ export const mergeBlockPackTransactions = ({
     syncJobs,
     noopSequences,
     parseFailedSequences,
+  };
+};
+
+export const mergeBlockPackTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  transactions.forEach(() => onParsed?.());
+  return {
+    transactions: markTransactionsAsMerged(transactions),
+    noopSequences: new Set<number>(),
+    parseFailedSequences: new Set<number>(),
   };
 };

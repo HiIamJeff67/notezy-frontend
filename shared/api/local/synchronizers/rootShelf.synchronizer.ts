@@ -161,15 +161,33 @@ export class RootShelfLocalSynchronizer {
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
     await localDB.transaction(async tx => {
-      await tx.insert(RootShelf).values({
-        id: response.data.id,
-        name: request.body.name,
-      });
-      await tx.insert(UsersToShelves).values({
-        userPublicId: response.embedded.publicId,
-        rootShelfId: response.data.id,
-        permission: AccessControlPermission.Owner,
-      });
+      await tx
+        .insert(RootShelf)
+        .values({
+          id: response.data.id,
+          name: request.body.name,
+        })
+        .onConflictDoUpdate({
+          target: RootShelf.id,
+          set: {
+            name: sql`excluded.name`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        });
+      await tx
+        .insert(UsersToShelves)
+        .values({
+          userPublicId: response.embedded.publicId,
+          rootShelfId: response.data.id,
+          permission: AccessControlPermission.Owner,
+        })
+        .onConflictDoUpdate({
+          target: [UsersToShelves.userPublicId, UsersToShelves.rootShelfId],
+          set: {
+            permission: sql`excluded.permission`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        });
     });
   };
 
@@ -193,8 +211,26 @@ export class RootShelfLocalSynchronizer {
       return;
     }
     await localDB.transaction(async tx => {
-      await tx.insert(RootShelf).values(createdRootShelves);
-      await tx.insert(UsersToShelves).values(createdUsersToShelves);
+      await tx
+        .insert(RootShelf)
+        .values(createdRootShelves)
+        .onConflictDoUpdate({
+          target: RootShelf.id,
+          set: {
+            name: sql`excluded.name`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        });
+      await tx
+        .insert(UsersToShelves)
+        .values(createdUsersToShelves)
+        .onConflictDoUpdate({
+          target: [UsersToShelves.userPublicId, UsersToShelves.rootShelfId],
+          set: {
+            permission: sql`excluded.permission`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        });
     });
   };
 

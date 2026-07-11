@@ -25,9 +25,15 @@ import { TransactionActionType } from "@shared/api/local/schemas/enums/transacti
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import type { InferSelectModel } from "drizzle-orm";
 import type {
-  MergedResult,
+  MergedTransaction,
+  MergedTransactionsResult,
+  PreparedSyncJobsResult,
   SyncHeader,
-  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+import {
+  getTransactionSequences,
+  mergeSet,
+  mergeSingleEntityTransactions,
 } from "./TransactionSynchronizerProvider";
 
 interface RoutineMutators {
@@ -67,24 +73,22 @@ interface RoutineMutators {
   };
 }
 
-interface MergeRoutineTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareRoutineSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: RoutineMutators;
 }
 
-export const mergeRoutineTransactions = ({
+export const prepareRoutineSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeRoutineTransactionOptions): MergedResult => {
+}: PrepareRoutineSyncJobsOptions): PreparedSyncJobsResult => {
   const operations: Array<() => Promise<unknown>> = [];
   const sequences = new Set<number>();
   const parseFailedSequences = new Set<number>();
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -94,7 +98,7 @@ export const mergeRoutineTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.Routine) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -107,7 +111,7 @@ export const mergeRoutineTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -119,7 +123,7 @@ export const mergeRoutineTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -133,7 +137,7 @@ export const mergeRoutineTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -145,7 +149,7 @@ export const mergeRoutineTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -159,7 +163,7 @@ export const mergeRoutineTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -171,7 +175,7 @@ export const mergeRoutineTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -185,7 +189,7 @@ export const mergeRoutineTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -197,7 +201,7 @@ export const mergeRoutineTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -211,7 +215,7 @@ export const mergeRoutineTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -223,12 +227,12 @@ export const mergeRoutineTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
 
-    parseFailedSequences.add(transaction.sequence);
+    mergeSet(parseFailedSequences, getTransactionSequences(transaction));
   }
 
   const operationSequences = Array.from(sequences);
@@ -257,4 +261,19 @@ export const mergeRoutineTransactions = ({
     noopSequences: new Set<number>(),
     parseFailedSequences,
   };
+};
+
+export const mergeRoutineTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  return mergeSingleEntityTransactions({
+    transactions,
+    entityType: TransactionEntityType.Routine,
+    idField: "routineId",
+    onParsed,
+  });
 };

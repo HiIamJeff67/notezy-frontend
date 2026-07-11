@@ -25,9 +25,15 @@ import { TransactionActionType } from "@shared/api/local/schemas/enums/transacti
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import type { InferSelectModel } from "drizzle-orm";
 import type {
-  MergedResult,
+  MergedTransaction,
+  MergedTransactionsResult,
+  PreparedSyncJobsResult,
   SyncHeader,
-  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+import {
+  getTransactionSequences,
+  mergeSet,
+  mergeSingleEntityTransactions,
 } from "./TransactionSynchronizerProvider";
 
 interface StationMutators {
@@ -65,24 +71,22 @@ interface StationMutators {
   };
 }
 
-interface MergeStationTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareStationSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: StationMutators;
 }
 
-export const mergeStationTransactions = ({
+export const prepareStationSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeStationTransactionOptions): MergedResult => {
+}: PrepareStationSyncJobsOptions): PreparedSyncJobsResult => {
   const operations: Array<() => Promise<unknown>> = [];
   const sequences = new Set<number>();
   const parseFailedSequences = new Set<number>();
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -92,7 +96,7 @@ export const mergeStationTransactions = ({
     };
 
     if (transaction.entityType !== TransactionEntityType.Station) {
-      parseFailedSequences.add(transaction.sequence);
+      mergeSet(parseFailedSequences, getTransactionSequences(transaction));
       continue;
     }
 
@@ -105,19 +109,23 @@ export const mergeStationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
       const many = CreateStationsRequestSchema.safeParse(request);
       if (many.success) {
+        if (many.data.body.createdStations.length === 0) {
+          mergeSet(parseFailedSequences, getTransactionSequences(transaction));
+          continue;
+        }
         operations.push(() =>
           mutators.createStationsMutator.mutateAsync({
             header,
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -131,7 +139,7 @@ export const mergeStationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -143,7 +151,7 @@ export const mergeStationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -157,7 +165,7 @@ export const mergeStationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -169,7 +177,7 @@ export const mergeStationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -183,7 +191,7 @@ export const mergeStationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -195,7 +203,7 @@ export const mergeStationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -209,7 +217,7 @@ export const mergeStationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -221,12 +229,12 @@ export const mergeStationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
 
-    parseFailedSequences.add(transaction.sequence);
+    mergeSet(parseFailedSequences, getTransactionSequences(transaction));
   }
 
   const operationSequences = Array.from(sequences);
@@ -255,4 +263,19 @@ export const mergeStationTransactions = ({
     noopSequences: new Set<number>(),
     parseFailedSequences,
   };
+};
+
+export const mergeStationTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  return mergeSingleEntityTransactions({
+    transactions,
+    entityType: TransactionEntityType.Station,
+    idField: "stationId",
+    onParsed,
+  });
 };

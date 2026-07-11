@@ -1,21 +1,27 @@
 import {
-  type LinkRoutineItemsByIdsRequest,
-  LinkRoutineItemsByIdsRequestSchema,
-  type LinkRoutineTagsByIdsRequest,
-  LinkRoutineTagsByIdsRequestSchema,
   type LinkRoutineItemByIdRequest,
   LinkRoutineItemByIdRequestSchema,
+  type LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsRequestSchema,
   type LinkRoutineTagByIdRequest,
   LinkRoutineTagByIdRequestSchema,
+  type LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsRequestSchema,
 } from "@shared/api/interfaces/routine.interface";
 import { Transaction } from "@shared/api/local/schemas";
 import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import type { InferSelectModel } from "drizzle-orm";
 import type {
-  MergedResult,
+  MergedTransaction,
+  MergedTransactionsResult,
+  PreparedSyncJobsResult,
   SyncHeader,
-  SyncProgressReporter,
+} from "./TransactionSynchronizerProvider";
+import {
+  getTransactionSequences,
+  markTransactionsAsMerged,
+  mergeSet,
 } from "./TransactionSynchronizerProvider";
 
 interface RoutineRelationMutators {
@@ -29,30 +35,26 @@ interface RoutineRelationMutators {
     mutateAsync: (request: LinkRoutineItemByIdRequest) => Promise<unknown>;
   };
   linkRoutineItemsMutator: {
-    mutateAsync: (
-      request: LinkRoutineItemsByIdsRequest
-    ) => Promise<unknown>;
+    mutateAsync: (request: LinkRoutineItemsByIdsRequest) => Promise<unknown>;
   };
 }
 
-interface MergeRoutineRelationTransactionOptions extends SyncProgressReporter {
-  transactions: InferSelectModel<typeof Transaction>[];
+interface PrepareRoutineRelationSyncJobsOptions {
+  transactions: MergedTransaction[];
   header: SyncHeader;
   mutators: RoutineRelationMutators;
 }
 
-export const mergeRoutineRelationTransactions = ({
+export const prepareRoutineRelationSyncJobs = ({
   transactions,
   header,
   mutators,
-  onParsed,
-}: MergeRoutineRelationTransactionOptions): MergedResult => {
+}: PrepareRoutineRelationSyncJobsOptions): PreparedSyncJobsResult => {
   const operations: Array<() => Promise<unknown>> = [];
   const sequences = new Set<number>();
   const parseFailedSequences = new Set<number>();
 
   for (const transaction of transactions) {
-    onParsed?.();
     const request = {
       body: transaction.body as unknown,
       ...(transaction.affected !== null &&
@@ -68,7 +70,7 @@ export const mergeRoutineRelationTransactions = ({
           ? TransactionActionType.DELETE
           : TransactionActionType.CREATE;
         if (transaction.actionType !== expectedAction) {
-          parseFailedSequences.add(transaction.sequence);
+          mergeSet(parseFailedSequences, getTransactionSequences(transaction));
           continue;
         }
         operations.push(() =>
@@ -77,7 +79,7 @@ export const mergeRoutineRelationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -87,7 +89,7 @@ export const mergeRoutineRelationTransactions = ({
           ? TransactionActionType.DELETE
           : TransactionActionType.CREATE;
         if (transaction.actionType !== expectedAction) {
-          parseFailedSequences.add(transaction.sequence);
+          mergeSet(parseFailedSequences, getTransactionSequences(transaction));
           continue;
         }
         operations.push(() =>
@@ -96,7 +98,7 @@ export const mergeRoutineRelationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
@@ -108,7 +110,7 @@ export const mergeRoutineRelationTransactions = ({
           ? TransactionActionType.DELETE
           : TransactionActionType.CREATE;
         if (transaction.actionType !== expectedAction) {
-          parseFailedSequences.add(transaction.sequence);
+          mergeSet(parseFailedSequences, getTransactionSequences(transaction));
           continue;
         }
         operations.push(() =>
@@ -117,7 +119,7 @@ export const mergeRoutineRelationTransactions = ({
             body: one.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
 
@@ -127,7 +129,7 @@ export const mergeRoutineRelationTransactions = ({
           ? TransactionActionType.DELETE
           : TransactionActionType.CREATE;
         if (transaction.actionType !== expectedAction) {
-          parseFailedSequences.add(transaction.sequence);
+          mergeSet(parseFailedSequences, getTransactionSequences(transaction));
           continue;
         }
         operations.push(() =>
@@ -136,12 +138,12 @@ export const mergeRoutineRelationTransactions = ({
             body: many.data.body,
           })
         );
-        sequences.add(transaction.sequence);
+        mergeSet(sequences, getTransactionSequences(transaction));
         continue;
       }
     }
 
-    parseFailedSequences.add(transaction.sequence);
+    mergeSet(parseFailedSequences, getTransactionSequences(transaction));
   }
 
   const operationSequences = Array.from(sequences);
@@ -169,5 +171,20 @@ export const mergeRoutineRelationTransactions = ({
     })),
     noopSequences: new Set<number>(),
     parseFailedSequences,
+  };
+};
+
+export const mergeRoutineRelationTransactions = ({
+  transactions,
+  onParsed,
+}: {
+  transactions: InferSelectModel<typeof Transaction>[];
+  onParsed?: () => void;
+}): MergedTransactionsResult => {
+  transactions.forEach(() => onParsed?.());
+  return {
+    transactions: markTransactionsAsMerged(transactions),
+    noopSequences: new Set<number>(),
+    parseFailedSequences: new Set<number>(),
   };
 };
