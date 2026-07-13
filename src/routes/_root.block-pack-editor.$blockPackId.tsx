@@ -1,7 +1,4 @@
-import type { PartialBlock } from "@blocknote/core";
-import { useGetMyBlocksByBlockPackId } from "@shared/api/hooks/block.hook";
 import { useGetMyBlockPackAndItsParentById } from "@shared/api/hooks/blockPack.hook";
-import type { PrivateBlock } from "@shared/api/interfaces/block.interface";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { isValidUUID } from "@shared/types/uuidv4.type";
@@ -63,9 +60,6 @@ function BlockPackEditorIndexRoute() {
   const blockPackQuerier = useGetMyBlockPackAndItsParentById(undefined, {
     staleTime: 0,
   });
-  const blocksQuerier = useGetMyBlocksByBlockPackId(undefined, {
-    staleTime: 0,
-  });
   const [blockPackMeta, setBlockPackMeta] = useState<BlockPackMeta | null>(
     null
   );
@@ -103,80 +97,6 @@ function BlockPackEditorIndexRoute() {
           return;
         }
 
-        const blocksResponse = await blocksQuerier
-          .fetch({
-            header: {
-              userAgent: userAgent,
-              authorization: getAuthorization(accessToken),
-            },
-            param: {
-              blockPackId: loaderData.blockPackId,
-            },
-          })
-          .catch(() => null);
-
-        if (!isActive) return;
-
-        const blocks = Array.isArray(blocksResponse?.data)
-          ? blocksResponse.data.filter(block => block.deletedAt === null)
-          : [];
-        const childrenByParentId = new Map<string, PrivateBlock[]>();
-        const orderedChildrenByParentId = new Map<string, PrivateBlock[]>();
-        const partialBlockById = new Map<string, PartialBlock>();
-        const rootBlocks: PartialBlock[] = [];
-
-        for (const block of blocks) {
-          const parentKey = block.parentBlockId ?? "ROOT";
-          childrenByParentId.set(parentKey, [
-            ...(childrenByParentId.get(parentKey) ?? []),
-            block,
-          ]);
-          partialBlockById.set(block.id, {
-            id: block.id,
-            type: block.type as any,
-            props: block.props as any,
-            content: block.content as any,
-            children: [],
-          });
-        }
-
-        for (const [parentKey, siblings] of childrenByParentId.entries()) {
-          const blockById = new Map(siblings.map(block => [block.id, block]));
-          const visitedBlockIds = new Set<string>();
-          const orderedBlocks: PrivateBlock[] = [];
-          let currentBlock = siblings.find(block => block.prevBlockId === null);
-
-          while (currentBlock && !visitedBlockIds.has(currentBlock.id)) {
-            orderedBlocks.push(currentBlock);
-            visitedBlockIds.add(currentBlock.id);
-            currentBlock = currentBlock.nextBlockId
-              ? blockById.get(currentBlock.nextBlockId)
-              : undefined;
-          }
-
-          for (const block of siblings) {
-            if (!visitedBlockIds.has(block.id)) orderedBlocks.push(block);
-          }
-
-          orderedChildrenByParentId.set(parentKey, orderedBlocks);
-        }
-
-        for (const [parentKey, orderedBlocks] of orderedChildrenByParentId) {
-          const children = orderedBlocks
-            .map(block => partialBlockById.get(block.id))
-            .filter((block): block is PartialBlock => Boolean(block));
-
-          if (parentKey === "ROOT") {
-            rootBlocks.push(...children);
-            continue;
-          }
-
-          const parentBlock = partialBlockById.get(parentKey);
-          if (parentBlock) {
-            parentBlock.children = children;
-          }
-        }
-
         setBlockPackMeta({
           id: blockPackResponse.data.id as UUID,
           parentId: loaderData.parentSubShelfId,
@@ -191,7 +111,7 @@ function BlockPackEditorIndexRoute() {
             : null,
           updatedAt: new Date(blockPackResponse.data.updatedAt),
           createdAt: new Date(blockPackResponse.data.createdAt),
-          blocks: rootBlocks,
+          blocks: [],
         });
       } catch {
         if (!isActive) return;

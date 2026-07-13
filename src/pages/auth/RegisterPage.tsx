@@ -1,4 +1,4 @@
-import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import { useRegister } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";

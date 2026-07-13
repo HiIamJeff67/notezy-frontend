@@ -31,7 +31,6 @@ export const Block = sqliteTable(
       .$type<JSONType>()
       .notNull()
       .default(sql`'{}'`),
-    deletedAt: integer("deleted_at", { mode: "timestamp" }),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .default(new Date()),

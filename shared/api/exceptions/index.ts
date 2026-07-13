@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NotezyError } from "../errors";
+import { NotezyError } from "./errors";
 
 /* ============================== Exception Definition ============================== */
 
@@ -162,6 +162,23 @@ export const ExceptionReasonDictionary = {
     localDatabase: {
       localDatabaseUnavailable: "LocalDatabaseUnavailable",
       invalidLoggedInUser: "InvalidLoggedInUser",
+    },
+    realtime: {
+      missingWebSocketURL: "MissingWebSocketURL",
+      invalidJsonFrame: "InvalidJsonFrame",
+      invalidFrameShape: "InvalidFrameShape",
+      unsupportedProtocolVersion: "UnsupportedProtocolVersion",
+      missingFrameType: "MissingFrameType",
+      missingReadyConnectionId: "MissingReadyConnectionId",
+      missingPongRequestId: "MissingPongRequestId",
+      missingErrorFrameFields: "MissingErrorFrameFields",
+      unsupportedFrameType: "UnsupportedFrameType",
+      unexpectedBinaryMessage: "UnexpectedBinaryMessage",
+      unableToParseFrame: "UnableToParseFrame",
+      invalidBinaryFrame: "InvalidBinaryFrame",
+      missingSubscribedConnectorChannelId:
+        "MissingSubscribedConnectorChannelId",
+      missingChannelTicket: "MissingChannelTicket",
     },
   },
   auth: {

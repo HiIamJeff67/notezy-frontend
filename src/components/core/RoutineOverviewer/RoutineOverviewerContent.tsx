@@ -121,25 +121,25 @@ const RoutineOverviewerContent = ({
     debugStateRef.current = stationRoutineManager.state;
   }, [stationRoutineManager.state]);
 
-  useEffect(() => {
-    if (!import.meta.env.DEV) return;
-    console.info(
-      "[RoutineOverviewer timing]",
-      JSON.stringify({
-        event: "data-state",
-        elapsed:
-          Math.round((performance.now() - debugStartedAtRef.current) * 100) /
-          100,
-        stationRoutineState: stationRoutineManager.state,
-        stations: stationRoutineManager.stations.length,
-        routines: stationRoutineManager.routines.length,
-      })
-    );
-  }, [
-    stationRoutineManager.routines.length,
-    stationRoutineManager.state,
-    stationRoutineManager.stations.length,
-  ]);
+  // useEffect(() => {
+  //   if (!import.meta.env.DEV) return;
+  //   console.info(
+  //     "[RoutineOverviewer timing]",
+  //     JSON.stringify({
+  //       event: "data-state",
+  //       elapsed:
+  //         Math.round((performance.now() - debugStartedAtRef.current) * 100) /
+  //         100,
+  //       stationRoutineState: stationRoutineManager.state,
+  //       stations: stationRoutineManager.stations.length,
+  //       routines: stationRoutineManager.routines.length,
+  //     })
+  //   );
+  // }, [
+  //   stationRoutineManager.routines.length,
+  //   stationRoutineManager.state,
+  //   stationRoutineManager.stations.length,
+  // ]);
 
   // useEffect(() => {
   //   if (!import.meta.env.DEV || typeof PerformanceObserver === "undefined") {

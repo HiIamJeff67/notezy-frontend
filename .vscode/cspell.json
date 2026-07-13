@@ -59,7 +59,8 @@
     "unsynchronized",
     "opfs",
     "reloadable",
-    "overviewer"
+    "overviewer",
+    "blockpack"
   ],
   "ignorePaths": [
     "node_modules/**",

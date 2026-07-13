@@ -6,6 +6,7 @@ export * from "./countryCode.enum";
 export * from "./itemType.enum";
 export * from "./language.enum";
 export * from "./materialContentType.enum";
+export * from "./realtimePermission.enum";
 export * from "./routinePeriod.enum";
 export * from "./routineStatus.enum";
 export * from "./routineTaskPurpose.enum";

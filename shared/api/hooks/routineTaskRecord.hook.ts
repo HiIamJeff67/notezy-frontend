@@ -1,6 +1,6 @@
 import type { UUID } from "node:crypto";
-import { NotezyFetchError } from "@shared/api/errors/fetch.error";
-import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";

@@ -1,4 +1,4 @@
-import { BlockNoteEditor } from "@blocknote/core";
+import { NotezyBlockPackEditor } from "@shared/blockpack/core";
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ const CreateBlockPackPayloadEditor = ({
 
   const editor = useMemo(
     () =>
-      BlockNoteEditor.create({
+      NotezyBlockPackEditor.create({
         initialContent: [
           {
             id: crypto.randomUUID(),
@@ -116,7 +116,7 @@ const CreateBlockPackPayloadEditor = ({
   );
   const originalBlockEditor = useMemo(
     () =>
-      BlockNoteEditor.create({
+      NotezyBlockPackEditor.create({
         initialContent: [
           {
             id: crypto.randomUUID(),

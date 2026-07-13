@@ -1,9 +1,4 @@
 import {
-  useDeleteMyBlocksByIds,
-  useInsertBlocks,
-  useUpdateMyBlocksByIds,
-} from "@shared/api/hooks/block.hook";
-import {
   useCreateBlockPacks,
   useDeleteMyBlockPacksByIds,
   useMoveMyBlockPacksByParentSubShelfIds,
@@ -72,12 +67,11 @@ import { useNetwork } from "@/hooks";
 import {
   mergeBlockPackTransactions,
   prepareBlockPackSyncJobs,
-} from "./BlockPackSyncLogic";
-import { mergeBlockTransactions, prepareBlockSyncJobs } from "./BlockSyncLogic";
+} from "./blockPackSyncLogic";
 import {
   mergeRootShelfTransactions,
   prepareRootShelfSyncJobs,
-} from "./RootShelfSyncLogic";
+} from "./rootShelfSyncLogic";
 import {
   mergeRoutineRelationTransactions,
   prepareRoutineRelationSyncJobs,
@@ -97,7 +91,7 @@ import {
 import {
   mergeSubShelfTransactions,
   prepareSubShelfSyncJobs,
-} from "./SubShelfSyncLogic";
+} from "./subShelfSyncLogic";
 
 /* ============================== General types ============================== */
 
@@ -142,37 +136,70 @@ export const markTransactionsAsMerged = (
     mergedSequences: new Set([transaction.sequence]),
   }));
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
 const mergeTransactionBodies = (
   baseBody: unknown,
   nextBody: unknown,
   baseAction: TransactionActionType,
   nextAction: TransactionActionType
 ): unknown => {
-  if (!isRecord(baseBody) || !isRecord(nextBody)) return nextBody;
+  if (
+    typeof baseBody !== "object" ||
+    baseBody === null ||
+    Array.isArray(baseBody) ||
+    typeof nextBody !== "object" ||
+    nextBody === null ||
+    Array.isArray(nextBody)
+  )
+    return nextBody;
+
+  const baseBodyRecord = baseBody as Record<string, unknown>;
+  const nextBodyRecord = nextBody as Record<string, unknown>;
 
   if (
     baseAction === TransactionActionType.UPDATE &&
     nextAction === TransactionActionType.UPDATE
   ) {
+    const baseValues =
+      typeof baseBodyRecord.values === "object" &&
+      baseBodyRecord.values !== null &&
+      !Array.isArray(baseBodyRecord.values)
+        ? (baseBodyRecord.values as Record<string, unknown>)
+        : undefined;
+    const nextValues =
+      typeof nextBodyRecord.values === "object" &&
+      nextBodyRecord.values !== null &&
+      !Array.isArray(nextBodyRecord.values)
+        ? (nextBodyRecord.values as Record<string, unknown>)
+        : undefined;
+    const baseSetNull =
+      typeof baseBodyRecord.setNull === "object" &&
+      baseBodyRecord.setNull !== null &&
+      !Array.isArray(baseBodyRecord.setNull)
+        ? (baseBodyRecord.setNull as Record<string, unknown>)
+        : undefined;
+    const nextSetNull =
+      typeof nextBodyRecord.setNull === "object" &&
+      nextBodyRecord.setNull !== null &&
+      !Array.isArray(nextBodyRecord.setNull)
+        ? (nextBodyRecord.setNull as Record<string, unknown>)
+        : undefined;
+
     return {
-      ...baseBody,
-      ...nextBody,
-      ...(isRecord(baseBody.values) || isRecord(nextBody.values)
+      ...baseBodyRecord,
+      ...nextBodyRecord,
+      ...(baseValues || nextValues
         ? {
             values: {
-              ...(isRecord(baseBody.values) ? baseBody.values : {}),
-              ...(isRecord(nextBody.values) ? nextBody.values : {}),
+              ...(baseValues ?? {}),
+              ...(nextValues ?? {}),
             },
           }
         : {}),
-      ...(isRecord(baseBody.setNull) || isRecord(nextBody.setNull)
+      ...(baseSetNull || nextSetNull
         ? {
             setNull: {
-              ...(isRecord(baseBody.setNull) ? baseBody.setNull : {}),
-              ...(isRecord(nextBody.setNull) ? nextBody.setNull : {}),
+              ...(baseSetNull ?? {}),
+              ...(nextSetNull ?? {}),
             },
           }
         : {}),
@@ -183,9 +210,14 @@ const mergeTransactionBodies = (
     baseAction === TransactionActionType.CREATE &&
     nextAction === TransactionActionType.UPDATE
   ) {
-    const nextValues = isRecord(nextBody.values) ? nextBody.values : {};
+    const nextValues =
+      typeof nextBodyRecord.values === "object" &&
+      nextBodyRecord.values !== null &&
+      !Array.isArray(nextBodyRecord.values)
+        ? (nextBodyRecord.values as Record<string, unknown>)
+        : {};
     return {
-      ...baseBody,
+      ...baseBodyRecord,
       ...nextValues,
     };
   }
@@ -214,7 +246,12 @@ export const mergeSingleEntityTransactions = ({
 
   for (const transaction of transactions) {
     onParsed?.();
-    const body = isRecord(transaction.body) ? transaction.body : undefined;
+    const body =
+      typeof transaction.body === "object" &&
+      transaction.body !== null &&
+      !Array.isArray(transaction.body)
+        ? (transaction.body as Record<string, unknown>)
+        : undefined;
     const entityId =
       transaction.actionType === TransactionActionType.CREATE
         ? (body?.[idField] ?? body?.id)
@@ -401,10 +438,6 @@ export const TransactionSynchronizerProvider = ({
   const moveBlockPacksMutator = useMoveMyBlockPacksByParentSubShelfIds();
   const restoreBlockPacksMutator = useRestoreMyBlockPacksByIds();
   const deleteBlockPacksMutator = useDeleteMyBlockPacksByIds();
-
-  const insertBlocksMutator = useInsertBlocks();
-  const updateBlocksMutator = useUpdateMyBlocksByIds();
-  const deleteBlocksMutator = useDeleteMyBlocksByIds();
 
   const [synchronizationProgress, setSynchronizationProgress] =
     useState<number>(0);
@@ -623,10 +656,6 @@ export const TransactionSynchronizerProvider = ({
       transactions: blockPackTransactions,
       onParsed: handleOnParsed,
     });
-    const mergedBlocks = mergeBlockTransactions({
-      transactions: blockTransactions,
-      onParsed: handleOnParsed,
-    });
     const mergedStations = mergeStationTransactions({
       transactions: stationTransactions,
       onParsed: handleOnParsed,
@@ -697,18 +726,13 @@ export const TransactionSynchronizerProvider = ({
       },
       {
         transactions: blockTransactions,
-        mergedResult: combineMergedTransactionsWithPreparedJobs(
-          mergedBlocks,
-          prepareBlockSyncJobs({
-            transactions: mergedBlocks.transactions,
-            header,
-            mutators: {
-              insertBlocksMutator,
-              updateBlocksMutator,
-              deleteBlocksMutator,
-            },
-          })
-        ),
+        mergedResult: {
+          syncJobs: [],
+          noopSequences: new Set(
+            blockTransactions.map(transaction => transaction.sequence)
+          ),
+          parseFailedSequences: new Set<number>(),
+        },
       },
       {
         transactions: stationTransactions,
@@ -827,9 +851,6 @@ export const TransactionSynchronizerProvider = ({
     moveBlockPacksMutator,
     restoreBlockPacksMutator,
     deleteBlockPacksMutator,
-    insertBlocksMutator,
-    updateBlocksMutator,
-    deleteBlocksMutator,
     createStationMutator,
     createStationsMutator,
     updateStationMutator,

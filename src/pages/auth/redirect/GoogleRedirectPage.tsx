@@ -34,6 +34,50 @@ function GoogleRedirectPage() {
 
   const hasRendered = useRef(false);
 
+  const performGoogleOAuthAction = useCallback(
+    async (
+      action: "register" | "login" | "binding",
+      code: string
+    ): Promise<string | null> => {
+      const userAgent = navigator.userAgent;
+
+      switch (action) {
+        case "register": {
+          const response = await registerViaGoogleMutator.mutateAsync({
+            header: { userAgent },
+            body: { authorizationCode: code },
+          });
+          return response.data.accessToken;
+        }
+        case "login": {
+          const response = await loginViaGoogleMutator.mutateAsync({
+            header: { userAgent },
+            body: { authorizationCode: code },
+          });
+          return response.data.accessToken;
+        }
+        case "binding": {
+          const accessToken = LocalStorageManipulator.getItemByKey(
+            LocalStorageKey.accessToken
+          );
+          await bindGoogleAccountMutator.mutateAsync({
+            header: {
+              userAgent,
+              authorization: getAuthorization(accessToken),
+            },
+            body: { authorizationCode: code },
+          });
+          return accessToken;
+        }
+      }
+    },
+    [
+      bindGoogleAccountMutator,
+      loginViaGoogleMutator,
+      registerViaGoogleMutator,
+    ]
+  );
+
   const handleOAuthOnRedirect = useCallback(async () => {
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get("code");
@@ -62,48 +106,19 @@ function GoogleRedirectPage() {
         }
       }
 
-      let accessToken: string | null = null;
-      const userAgent = navigator.userAgent;
+      userManager.setEnableInitialFetching(false);
+      await performGoogleOAuthAction(action, code).then(async accessToken => {
+        const responseOfGettingUserData = await queryFnGetUserData({
+          header: {
+            userAgent: navigator.userAgent,
+            authorization: getAuthorization(accessToken),
+          },
+        });
 
-      switch (action) {
-        case "register":
-          const responseOfRegistering =
-            await registerViaGoogleMutator.mutateAsync({
-              header: { userAgent },
-              body: { authorizationCode: code },
-            });
-          accessToken = responseOfRegistering.data.accessToken;
-          break;
-        case "login":
-          const responseOfLogin = await loginViaGoogleMutator.mutateAsync({
-            header: { userAgent },
-            body: { authorizationCode: code },
-          });
-          accessToken = responseOfLogin.data.accessToken;
-          break;
-        case "binding":
-          accessToken = LocalStorageManipulator.getItemByKey(
-            LocalStorageKey.accessToken
-          );
-          await bindGoogleAccountMutator.mutateAsync({
-            header: {
-              userAgent,
-              authorization: getAuthorization(accessToken),
-            },
-            body: { authorizationCode: code },
-          });
-          break;
-      }
-
-      const responseOfGettingUserData = await queryFnGetUserData({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
+        userManager.setUserData(responseOfGettingUserData.data);
+        userManager.setEnableInitialFetching(true);
+        router.push(getPreferredStartPath(preferences));
       });
-
-      userManager.setUserData(responseOfGettingUserData.data);
-      router.push(getPreferredStartPath(preferences));
     } catch (error) {
       console.log(error);
       toast.error(languageManager.tError(error));
@@ -119,10 +134,8 @@ function GoogleRedirectPage() {
     router,
     preferences,
     languageManager,
-    registerViaGoogleMutator,
-    loginViaGoogleMutator,
-    bindGoogleAccountMutator,
     userManager,
+    performGoogleOAuthAction,
   ]);
 
   useEffect(() => {

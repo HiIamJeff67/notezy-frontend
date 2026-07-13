@@ -1,5 +1,5 @@
-import { NotezyError } from "@shared/api/errors";
 import { NotezyException } from "@shared/api/exceptions";
+import { NotezyError } from ".";
 
 export class NotezyValidationError extends NotezyError {
   private readonly exception: NotezyException;

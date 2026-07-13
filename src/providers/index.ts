@@ -4,6 +4,7 @@ export * from "./LanguageProvider";
 export * from "./LoadingProvider";
 export * from "./LocalPreferencesProvider";
 export * from "./ModalProvider";
+export * from "./RealtimeProvider";
 export * from "./ResizeSidebarProvider";
 export * from "./ScreenProvider";
 export * from "./ShelfItemProvider/ShelfItemProvider";

@@ -4,6 +4,7 @@ export enum BlockType {
   Quote = "quote",
   BulletListItem = "bulletListItem",
   NumberedListItem = "numberedListItem",
+  CheckListItem = "checkListItem",
   ToggleListItem = "toggleListItem",
   Image = "image",
   Video = "video",
@@ -14,3 +15,6 @@ export enum BlockType {
 }
 
 export const AllBlockTypes: BlockType[] = Object.values(BlockType);
+export const AllBlockTypeStrings = AllBlockTypes.map(
+  blockType => `${blockType}`
+) as `${BlockType}`[];

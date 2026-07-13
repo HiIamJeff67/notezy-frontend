@@ -1,4 +1,4 @@
-import { NotezyFetchError } from "@shared/api/errors/fetch.error";
+import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
 import { ExceptionReasonDictionary } from "@shared/api/exceptions";
 
 export const isNetworkFallbackError = (error: unknown): boolean => {

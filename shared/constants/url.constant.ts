@@ -3,25 +3,48 @@ import {
   APIDevelopmentVersion,
   APIProductionVersion,
   APITestVersion,
+  RealtimeDevelopmentVersion,
+  RealtimeProductionVersion,
+  RealtimeTestVersion,
   WebDevelopmentVersion,
   WebTestVersion,
 } from "./version.constants";
 
 /* ============================== Backend API URL ============================== */
 
-export const APIDevelopmentNamespace = "development";
-export const APIProductionNamespace = "production";
-export const APITestNamespace = "test";
+export const DevelopmentNamespace = "development";
+export const ProductionNamespace = "production";
+export const TestNamespace = "test";
 
 export const APIGroupBase = "api";
 export const APIDevelopmentBaseURL =
-  APIGroupBase + "/" + APIDevelopmentNamespace + "/" + APIDevelopmentVersion;
+  APIGroupBase + "/" + DevelopmentNamespace + "/" + APIDevelopmentVersion;
 export const APIProductionBaseURL =
-  APIGroupBase + "/" + APIProductionNamespace + "/" + APIProductionVersion;
+  APIGroupBase + "/" + ProductionNamespace + "/" + APIProductionVersion;
 export const APITestBaseURL =
-  APIGroupBase + "/" + APITestNamespace + "/" + APITestVersion;
+  APIGroupBase + "/" + TestNamespace + "/" + APITestVersion;
 
 export const CurrentAPIBaseURL = APIDevelopmentBaseURL;
+
+/* ============================== Realtime WebSocket URL ============================== */
+
+export const RealtimeGroupBase = "realtime";
+export const RealtimeDevelopmentBaseURL =
+  RealtimeGroupBase +
+  "/" +
+  DevelopmentNamespace +
+  "/" +
+  RealtimeDevelopmentVersion;
+export const RealtimeProductionBaseURL =
+  RealtimeGroupBase +
+  "/" +
+  ProductionNamespace +
+  "/" +
+  RealtimeProductionVersion;
+export const RealtimeTestBaseURL =
+  RealtimeGroupBase + "/" + TestNamespace + "/" + RealtimeTestVersion;
+
+export const CurrentRealtimeBaseURL = RealtimeDevelopmentBaseURL;
 
 export const APIURLPathDictionary = {
   static: {
@@ -131,16 +154,12 @@ export const APIURLPathDictionary = {
     getMyBlocksByIds: "block/getMyBlocksByIds",
     getMyBlocksByBlockPackId: "block/getMyBlocksByBlockPackId",
     getAllMyBlocks: "block/getAllMyBlocks",
-    appendBlock: "block/appendBlock",
-    appendBlocks: "block/appendBlocks",
-    insertBlock: "block/insertBlock",
-    insertBlocks: "block/insertBlocks",
-    updateMyBlockById: "block/updateMyBlockById",
-    updateMyBlocksByIds: "block/updateMyBlocksByIds",
-    restoreMyBlockById: "block/restoreMyBlockById",
-    restoreMyBlocksByIds: "block/restoreMyBlocksByIds",
-    deleteMyBlockById: "block/deleteMyBlockById",
-    deleteMyBlocksByIds: "block/deleteMyBlocksByIds",
+  },
+  realtime: {
+    createMyRealtimeConnectionTicket:
+      "realtime/createMyRealtimeConnectionTicket",
+    createMyBlockPackChannelTicket:
+      "realtime/createMyBlockPackChannelTicket",
   },
   station: {
     visualizeMyTotalCount: "station/visualizeMyTotalCount",

@@ -1,0 +1,74 @@
+import {
+  NotezyRequestSchema,
+  NotezyResponseSchema,
+} from "@shared/api/interfaces/context.interface";
+import { RealtimePermissionSchema } from "@shared/api/interfaces/enums";
+import { RealtimeProtocolVersion } from "@shared/constants/version.constants";
+import { z } from "zod";
+
+export const CreateMyRealtimeConnectionTicketRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({}).optional(),
+  });
+
+export type CreateMyRealtimeConnectionTicketRequest = z.input<
+  typeof CreateMyRealtimeConnectionTicketRequestSchema
+>;
+
+export const CreateMyRealtimeConnectionTicketResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      realtimeEndpoint: z.string().min(1),
+      realtimeProtocolVersion: z.literal(RealtimeProtocolVersion),
+      connectionTicket: z.string().min(1),
+      expiresAt: z.coerce.date(),
+    }),
+  });
+
+export type CreateMyRealtimeConnectionTicketResponse = z.infer<
+  typeof CreateMyRealtimeConnectionTicketResponseSchema
+>;
+
+export const CreateMyBlockPackChannelTicketRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    body: z.object({
+      blockPackId: z.uuidv4(),
+      permission: RealtimePermissionSchema,
+    }),
+  });
+
+export type CreateMyBlockPackChannelTicketRequest = z.input<
+  typeof CreateMyBlockPackChannelTicketRequestSchema
+>;
+
+export const CreateMyBlockPackChannelTicketResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      channelType: z.literal("BlockPack"),
+      channelId: z.uuidv4(),
+      roomName: z.string().min(1),
+      schemaId: z.literal("notezy.blocknote"),
+      schemaVersion: z.literal(1),
+      permission: RealtimePermissionSchema,
+      channelTicket: z.string().min(1),
+      expiresAt: z.coerce.date(),
+      lastUpdateSequence: z.number().int().nonnegative(),
+      compactedUntilSequence: z.number().int().nonnegative(),
+    }),
+  });
+
+export type CreateMyBlockPackChannelTicketResponse = z.infer<
+  typeof CreateMyBlockPackChannelTicketResponseSchema
+>;

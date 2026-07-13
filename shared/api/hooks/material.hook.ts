@@ -1,5 +1,5 @@
 import type { UUID } from "node:crypto";
-import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { NotezyAPIError } from "@shared/api/exceptions";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import { SaveMyMaterialById } from "@shared/api/functions/material.clientFn";

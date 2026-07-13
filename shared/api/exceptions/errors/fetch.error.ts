@@ -1,7 +1,7 @@
-import { NotezyError } from "@shared/api/errors";
 import { NotezyException } from "@shared/api/exceptions";
+import { NotezyError } from ".";
 
-export class NotezyLocalDatabaseError extends NotezyError {
+export class NotezyFetchError extends NotezyError {
   private readonly exception: NotezyException;
 
   constructor(exception: NotezyException) {

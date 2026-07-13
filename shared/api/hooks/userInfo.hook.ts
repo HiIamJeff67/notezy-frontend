@@ -1,4 +1,4 @@
-import { NotezyValidationError } from "@shared/api/errors/validation.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
   GetMyInfoRequest,

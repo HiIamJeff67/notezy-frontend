@@ -1,4 +1,4 @@
-import { NotezyError } from "@shared/api/errors";
+import { NotezyError } from "@shared/api/exceptions/errors";
 import { AllLanguageData, LanguageKeyMap } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { tKey, translations } from "@shared/translations/index";

@@ -16,7 +16,6 @@ import {
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
-import BlockPackEditorProgress from "./BlockPackEditorProgress";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -42,22 +41,11 @@ import { ContentType } from "@shared/enums/contentType.enum";
 import toast from "@shared/lib/toast";
 import { cn } from "@shared/util/utils";
 import {
-  CheckCircle2,
   ChevronDownIcon,
-  CloudCog,
-  CircleAlert,
-  FileJson,
-  GitMerge,
-  LoaderCircle,
-  PencilLine,
-  Send,
-  Timer,
-  type LucideIcon,
 } from "lucide-react";
 import type { CSSProperties, Dispatch } from "react";
 import { useEffect, useState, useTransition } from "react";
 import { useLocalPreferences } from "@/hooks/localPreferences";
-import type { BlockEditorState } from "@/providers/BlockEditorProvider";
 import {
   BlockPackMeta,
   BlockPackMetaAction,
@@ -67,42 +55,6 @@ interface BlockPackEditorContentProps {
   blockPackMeta: BlockPackMeta;
   dispatchMeta: Dispatch<BlockPackMetaAction>;
 }
-
-const blockEditorStateMeta: Record<
-  BlockEditorState,
-  { label: string; icon: LucideIcon }
-> = {
-  initializing: { label: "Initializing", icon: LoaderCircle },
-  idle: { label: "Saved", icon: CheckCircle2 },
-  event: { label: "Editing", icon: PencilLine },
-  debouncing: { label: "Waiting to sync", icon: Timer },
-  merge: { label: "Merging", icon: GitMerge },
-  toRequest: { label: "Preparing request", icon: FileJson },
-  sendAPI: { label: "Sending", icon: Send },
-  waitResponse: { label: "Waiting for response", icon: CloudCog },
-  syncError: { label: "Sync failed", icon: CircleAlert },
-};
-
-const BlockEditorStatus = ({ state }: { state: BlockEditorState }) => {
-  const meta = blockEditorStateMeta[state];
-  const Icon = meta.icon;
-
-  return (
-    <div className="flex h-9 min-w-0 shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-      <Icon
-        className={cn(
-          "size-3.5 shrink-0",
-          state === "initializing" ||
-            state === "sendAPI" ||
-            state === "waitResponse"
-            ? "animate-pulse"
-            : "",
-        )}
-      />
-      <span className="truncate">{meta.label}</span>
-    </div>
-  );
-};
 
 const BlockPackEditorContent = ({
   blockPackMeta,
@@ -147,7 +99,7 @@ const BlockPackEditorContent = ({
     startImportingTransition(async () => {
       try {
         const file = files[0];
-        let blocks: PartialBlock[] | undefined = undefined;
+        let blocks: PartialBlock<any, any, any>[] | undefined = undefined;
         switch (file.type) {
           case ContentType.Markdown:
           case ContentType.PlainText: // use the same way as markdown to parse the text
@@ -160,7 +112,7 @@ const BlockPackEditorContent = ({
             break;
           case ContentType.JSON:
             const jsonText = await file.text();
-            blocks = JSON.parse(jsonText) as PartialBlock[];
+            blocks = JSON.parse(jsonText) as PartialBlock<any, any, any>[];
             break;
           default:
             throw new Error(`Unexpected content type received`);
@@ -233,112 +185,81 @@ const BlockPackEditorContent = ({
       <header className="w-full h-14 flex shrink-0 justify-between items-center px-4 gap-2 bg-canvas/15 backdrop-blur-md border-b border-canvas/10">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           {sidebarManager.isMobile && <SidebarTrigger />}
-          <div className="inline-flex min-w-0 max-w-full flex-col">
-            <div className="inline-flex min-w-0 max-w-full items-center gap-2">
-              <div className="min-w-0 shrink">
-                <DropdownMenu
-                  open={isDropdownOpen}
-                  onOpenChange={setIsDropdownOpen}
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-9 max-w-full gap-2 border-none px-2 text-2xl font-semibold select-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              >
+                <TruncatedText width="240px">{blockPackMeta.name}</TruncatedText>
+                <ChevronDownIcon
+                  className={`transition ${isDropdownOpen ? "-rotate-180" : ""}`}
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (blockPackMeta.id)
+                    copyToClipboard(blockPackMeta.id.toString());
+                }}
+                className="hover:cursor-pointer"
+              >
+                <span className="font-semibold">Id</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {blockPackMeta.id}
+                </TruncatedText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => copyToClipboard(blockPackMeta.name)}
+                className="hover:cursor-pointer"
+              >
+                <span className="font-semibold">Name</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {blockPackMeta.name}
+                </TruncatedText>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  copyToClipboard(blockPackMeta.blockCount.toString())
+                }
+                className="hover:cursor-pointer"
+              >
+                <span className="font-semibold">Block Count</span>
+                <TruncatedText width="200px" className="text-muted-foreground">
+                  {blockPackMeta.blockCount}
+                </TruncatedText>
+              </DropdownMenuItem>
+              {blockPackMeta.updatedAt && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (blockPackMeta.updatedAt)
+                      copyToClipboard(blockPackMeta.updatedAt.toLocaleString());
+                  }}
+                  className="hover:cursor-pointer"
                 >
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-9 max-w-full gap-2 border-none px-2 text-2xl font-semibold select-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                    >
-                      <TruncatedText width="240px">
-                        {blockPackMeta.name}
-                      </TruncatedText>
-                      <ChevronDownIcon
-                        className={`transition ${
-                          isDropdownOpen ? "-rotate-180" : ""
-                        }`}
-                      />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" side="bottom">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        if (blockPackMeta.id)
-                          copyToClipboard(blockPackMeta.id.toString());
-                      }}
-                      className="hover:cursor-pointer"
-                    >
-                      <span className="font-semibold">Id</span>
-                      <TruncatedText
-                        width="200px"
-                        className="text-muted-foreground"
-                      >
-                        {blockPackMeta.id}
-                      </TruncatedText>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => copyToClipboard(blockPackMeta.name)}
-                      className="hover:cursor-pointer"
-                    >
-                      <span className="font-semibold">Name</span>
-                      <TruncatedText
-                        width="200px"
-                        className="text-muted-foreground"
-                      >
-                        {blockPackMeta.name}
-                      </TruncatedText>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        copyToClipboard(blockPackMeta.blockCount.toString())
-                      }
-                      className="hover:cursor-pointer"
-                    >
-                      <span className="font-semibold">Block Count</span>
-                      <TruncatedText
-                        width="200px"
-                        className="text-muted-foreground"
-                      >
-                        {blockPackMeta.blockCount}
-                      </TruncatedText>
-                    </DropdownMenuItem>
-                    {blockPackMeta.updatedAt && (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          if (blockPackMeta.updatedAt)
-                            copyToClipboard(
-                              blockPackMeta.updatedAt.toLocaleString(),
-                            );
-                        }}
-                        className="hover:cursor-pointer"
-                      >
-                        <span className="font-semibold">Updated At</span>
-                        <span className="text-muted-foreground">
-                          {blockPackMeta.updatedAt.toLocaleString()}
-                        </span>
-                      </DropdownMenuItem>
-                    )}
-                    {blockPackMeta.createdAt && (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          if (blockPackMeta.createdAt)
-                            copyToClipboard(
-                              blockPackMeta.createdAt.toLocaleString(),
-                            );
-                        }}
-                        className="hover:cursor-pointer"
-                      >
-                        <span className="font-semibold">Created At</span>
-                        <span className="text-muted-foreground">
-                          {blockPackMeta.createdAt.toLocaleString()}
-                        </span>
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <BlockEditorStatus state={state} />
-            </div>
-            <BlockPackEditorProgress
-              label={blockEditorStateMeta[state].label}
-              state={state}
-            />
-          </div>
+                  <span className="font-semibold">Updated At</span>
+                  <span className="text-muted-foreground">
+                    {blockPackMeta.updatedAt.toLocaleString()}
+                  </span>
+                </DropdownMenuItem>
+              )}
+              {blockPackMeta.createdAt && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (blockPackMeta.createdAt)
+                      copyToClipboard(blockPackMeta.createdAt.toLocaleString());
+                  }}
+                  className="hover:cursor-pointer"
+                >
+                  <span className="font-semibold">Created At</span>
+                  <span className="text-muted-foreground">
+                    {blockPackMeta.createdAt.toLocaleString()}
+                  </span>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <Menubar className="bg-muted/25">
           <MenubarMenu>
@@ -428,6 +349,7 @@ const BlockPackEditorContent = ({
         >
           <BlockNoteView
             editor={editor}
+            editable={state !== "readOnly" && state !== "syncError"}
             sideMenu={false}
             spellCheck={preferences.spellcheck}
             className={cn(

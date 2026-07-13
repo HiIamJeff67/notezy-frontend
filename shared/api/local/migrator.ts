@@ -146,16 +146,22 @@ export class LocalDBMigrator {
               /^ALTER\s+TABLE\s+.+\s+ADD\s+(COLUMN\s+)?/i.test(
                 statementTrimmed
               );
+            const isAlterTableDropColumnStatement =
+              /^ALTER\s+TABLE\s+.+\s+DROP\s+(COLUMN\s+)?/i.test(
+                statementTrimmed
+              );
             const isAlreadyExistsError = /already exists/i.test(errorMessages);
             const isNoSuchTableError = /no such table/i.test(errorMessages);
             const isDuplicateColumnError = /duplicate column name/i.test(
               errorMessages
             );
+            const isNoSuchColumnError = /no such column/i.test(errorMessages);
 
             if (
               (!isCreateStatement || !isAlreadyExistsError) &&
               (!isDropTableStatement || !isNoSuchTableError) &&
-              (!isAlterTableAddColumnStatement || !isDuplicateColumnError)
+              (!isAlterTableAddColumnStatement || !isDuplicateColumnError) &&
+              (!isAlterTableDropColumnStatement || !isNoSuchColumnError)
             )
               throw error;
           }

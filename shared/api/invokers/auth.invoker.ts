@@ -63,8 +63,8 @@ import {
 } from "@shared/api/interfaces/auth.interface";
 import { tKey } from "@shared/translations";
 import { ZodError } from "zod";
-import { NotezyFetchError } from "../errors/fetch.error";
-import { NotezyValidationError } from "../errors/validation.error";
+import { NotezyFetchError } from "../exceptions/errors/fetch.error";
+import { NotezyValidationError } from "../exceptions/errors/validation.error";
 import { FetchClientExceptions } from "../exceptions/client/fetch.exception";
 import { ValidationClientException } from "../exceptions/client/validation.exception";
 

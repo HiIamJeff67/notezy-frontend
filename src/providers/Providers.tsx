@@ -9,6 +9,7 @@ import { ClipboardGuardProvider } from "@/providers/ClipboardGuardProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { LoadingProvider } from "@/providers/LoadingProvider";
 import { LocalPreferencesProvider } from "@/providers/LocalPreferencesProvider";
+import { RealtimeProvider } from "@/providers/RealtimeProvider";
 import { ScreenProvider } from "@/providers/ScreenProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { TransactionSynchronizerProvider } from "@/providers/TransactionSynchronizerProvider/TransactionSynchronizerProvider";
@@ -28,11 +29,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <ClipboardGuardProvider>
                     <TransactionSynchronizerProvider>
                       <UserProvider>
-                        <BackgroundImagesProvider>
-                          <DndProvider backend={HTML5Backend}>
-                            {children}
-                          </DndProvider>
-                        </BackgroundImagesProvider>
+                        <RealtimeProvider>
+                          <BackgroundImagesProvider>
+                            <DndProvider backend={HTML5Backend}>
+                              {children}
+                            </DndProvider>
+                          </BackgroundImagesProvider>
+                        </RealtimeProvider>
                       </UserProvider>
                     </TransactionSynchronizerProvider>
                   </ClipboardGuardProvider>

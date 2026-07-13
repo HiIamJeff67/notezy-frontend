@@ -132,6 +132,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   // For maintaining the basic user data in the context
   useEffect(() => {
+    if (router.getCurrentPath().includes("/redirect/")) return;
     if (!enableInitialFetching || userData !== null) return;
     if (!accessToken || isAutoFetchingUserDataRef.current) return;
 
@@ -139,7 +140,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     void fetchUserDataRef.current(accessToken).finally(() => {
       isAutoFetchingUserDataRef.current = false;
     });
-  }, [accessToken, enableInitialFetching, isLocalDBReady, userData, isOnline]);
+  }, [
+    accessToken,
+    enableInitialFetching,
+    isLocalDBReady,
+    userData,
+    isOnline,
+    router,
+  ]);
 
   const updateUserData = (fields: Partial<UserData>): boolean => {
     if (!isOnline) return false;

@@ -15,6 +15,13 @@
       "when": 1783641600000,
       "tag": "0001_add_local_relationship_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783936000000,
+      "tag": "0002_drop_block_deleted_at",
+      "breakpoints": true
     }
   ]
 }
