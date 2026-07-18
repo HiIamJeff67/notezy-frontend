@@ -1,23 +1,18 @@
+import { RealtimeBinaryFrameType } from "@shared/api/websocket/types";
 import {
-  applyAwarenessUpdate,
+  NOTEZY_REALTIME_YJS_DOCUMENT_DEBOUNCE_MS,
+  NOTEZY_REALTIME_YJS_LOCAL_AWARENESS_REMOVAL_ORIGIN,
+  NOTEZY_REALTIME_YJS_REMOTE_ORIGIN,
+} from "@shared/blockpack/core/contract";
+import {
   Awareness,
+  applyAwarenessUpdate,
   encodeAwarenessUpdate,
+  removeAwarenessStates,
 } from "y-protocols/awareness";
 import * as Y from "yjs";
-import { RealtimeBinaryFrameType } from "@shared/api/websocket/types";
 
-const remoteRealtimeOrigin = Symbol("notezy-realtime-remote");
-const RealtimeYjsDocumentDebounceMs = 2_500;
-
-type SendRealtimeBinaryFrame = (
-  type: RealtimeBinaryFrameType,
-  payload: Uint8Array
-) => void;
-
-const logRealtimeYjs = (
-  message: string,
-  data?: Record<string, unknown>
-) => {
+const logRealtimeYjs = (message: string, data?: Record<string, unknown>) => {
   if (import.meta.env.DEV) {
     console.info(`[RealtimeYjs] ${message}`, data ?? "");
   }
@@ -26,22 +21,23 @@ const logRealtimeYjs = (
 export class RealtimeYjsProvider {
   readonly awareness: Awareness;
 
-  private send: SendRealtimeBinaryFrame | null = null;
+  private send:
+    | ((type: RealtimeBinaryFrameType, payload: Uint8Array) => void)
+    | null = null;
   private readOnly = false;
   private readonly pendingDocumentUpdates: Uint8Array[] = [];
-  private readonly pendingAwarenessUpdates: Uint8Array[] = [];
   private documentFlushTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private readonly doc: Y.Doc;
   private readonly handleDocUpdate = (update: Uint8Array, origin: unknown) => {
-    if (origin === remoteRealtimeOrigin || this.readOnly) return;
+    if (origin === NOTEZY_REALTIME_YJS_REMOTE_ORIGIN || this.readOnly) return;
     this.sendOrQueue(RealtimeBinaryFrameType.YjsDocument, update);
   };
   private readonly handleAwarenessUpdate = (
     changes: { added: number[]; updated: number[]; removed: number[] },
     origin: unknown
   ) => {
-    if (origin === remoteRealtimeOrigin) return;
+    if (origin === NOTEZY_REALTIME_YJS_REMOTE_ORIGIN) return;
     const changedClients = [
       ...changes.added,
       ...changes.updated,
@@ -61,13 +57,13 @@ export class RealtimeYjsProvider {
     this.awareness.on("update", this.handleAwarenessUpdate);
   }
 
-  connect(send: SendRealtimeBinaryFrame) {
+  connect(send: (type: RealtimeBinaryFrameType, payload: Uint8Array) => void) {
     this.send = send;
     logRealtimeYjs("provider connected", {
       pendingDocumentUpdates: this.pendingDocumentUpdates.length,
-      pendingAwarenessUpdates: this.pendingAwarenessUpdates.length,
     });
     this.flushPendingUpdates();
+    this.announceLocalAwarenessState();
   }
 
   disconnect() {
@@ -76,6 +72,7 @@ export class RealtimeYjsProvider {
     }
     this.clearDocumentFlushTimeout();
     this.send = null;
+    this.clearRemoteAwarenessStates();
   }
 
   flushPendingDocumentUpdatesNow() {
@@ -95,21 +92,25 @@ export class RealtimeYjsProvider {
     logRealtimeYjs("received document update", {
       byteLength: update.byteLength,
     });
-    Y.applyUpdate(this.doc, update, remoteRealtimeOrigin);
+    Y.applyUpdate(this.doc, update, NOTEZY_REALTIME_YJS_REMOTE_ORIGIN);
   }
 
   applyAwarenessUpdate(update: Uint8Array) {
     logRealtimeYjs("received awareness update", {
       byteLength: update.byteLength,
     });
-    applyAwarenessUpdate(this.awareness, update, remoteRealtimeOrigin);
+    applyAwarenessUpdate(
+      this.awareness,
+      update,
+      NOTEZY_REALTIME_YJS_REMOTE_ORIGIN
+    );
   }
 
   destroy() {
     this.flushPendingDocumentUpdatesNow();
+    this.announceLocalAwarenessRemoval();
     this.disconnect();
     this.pendingDocumentUpdates.length = 0;
-    this.pendingAwarenessUpdates.length = 0;
     this.doc.off("update", this.handleDocUpdate);
     this.awareness.off("update", this.handleAwarenessUpdate);
     this.awareness.destroy();
@@ -124,8 +125,7 @@ export class RealtimeYjsProvider {
     }
 
     if (this.send === null) {
-      this.pendingAwarenessUpdates.push(payload);
-      logRealtimeYjs("queued update before channel connect", {
+      logRealtimeYjs("dropped awareness update before channel connect", {
         type,
         byteLength: payload.byteLength,
       });
@@ -158,7 +158,7 @@ export class RealtimeYjsProvider {
     this.documentFlushTimeout = setTimeout(() => {
       this.documentFlushTimeout = null;
       this.flushPendingDocumentUpdates();
-    }, RealtimeYjsDocumentDebounceMs);
+    }, NOTEZY_REALTIME_YJS_DOCUMENT_DEBOUNCE_MS);
   }
 
   private clearDocumentFlushTimeout() {
@@ -194,14 +194,48 @@ export class RealtimeYjsProvider {
     }
 
     this.flushPendingDocumentUpdates();
+  }
 
-    while (this.pendingAwarenessUpdates.length > 0) {
-      const update = this.pendingAwarenessUpdates.shift();
-      if (!update) continue;
-      logRealtimeYjs("flushing queued awareness update", {
-        byteLength: update.byteLength,
-      });
-      send(RealtimeBinaryFrameType.Awareness, update);
-    }
+  private announceLocalAwarenessState() {
+    const send = this.send;
+    const localState = this.awareness.getLocalState();
+    if (send === null || localState === null) return;
+
+    const payload = encodeAwarenessUpdate(this.awareness, [
+      this.awareness.clientID,
+    ]);
+    logRealtimeYjs("announcing local awareness state", {
+      clientId: this.awareness.clientID,
+      byteLength: payload.byteLength,
+    });
+    send(RealtimeBinaryFrameType.Awareness, payload);
+  }
+
+  private announceLocalAwarenessRemoval() {
+    if (this.awareness.getLocalState() === null) return;
+    logRealtimeYjs("announcing local awareness removal", {
+      clientId: this.awareness.clientID,
+    });
+    removeAwarenessStates(
+      this.awareness,
+      [this.awareness.clientID],
+      NOTEZY_REALTIME_YJS_LOCAL_AWARENESS_REMOVAL_ORIGIN
+    );
+  }
+
+  private clearRemoteAwarenessStates() {
+    const remoteClientIds = Array.from(
+      this.awareness.getStates().keys()
+    ).filter(clientId => clientId !== this.awareness.clientID);
+    if (remoteClientIds.length === 0) return;
+
+    logRealtimeYjs("clearing remote awareness states", {
+      clientIds: remoteClientIds,
+    });
+    removeAwarenessStates(
+      this.awareness,
+      remoteClientIds,
+      NOTEZY_REALTIME_YJS_REMOTE_ORIGIN
+    );
   }
 }

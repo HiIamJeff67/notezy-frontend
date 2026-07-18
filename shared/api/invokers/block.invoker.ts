@@ -4,16 +4,11 @@ import { NotezyAPIError } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import {
-  GetAllMyBlocks,
   GetMyBlockById,
   GetMyBlocksByBlockPackId,
   GetMyBlocksByIds,
 } from "@shared/api/functions/block.serverFn";
 import {
-  type GetAllMyBlocksRequest,
-  GetAllMyBlocksRequestSchema,
-  GetAllMyBlocksResponse,
-  GetAllMyBlocksResponseSchema,
   type GetMyBlockByIdRequest,
   GetMyBlockByIdRequestSchema,
   GetMyBlockByIdResponse,
@@ -93,32 +88,6 @@ export const queryFnGetMyBlocksByBlockPackId = async (
     return GetMyBlocksByBlockPackIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in queryFnGetMyBlocksByBlockPackId", error);
-    if (error instanceof ZodError) {
-      throw new NotezyValidationError(
-        ValidationClientException.ZodParsingFailed(error)
-      );
-    } else if (error instanceof NotezyAPIError) {
-      switch (error.unWrap.reason) {
-        default:
-          throw error;
-      }
-    } else if (error instanceof TypeError) {
-      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-    }
-
-    throw error;
-  }
-};
-
-export const queryFnGetAllMyBlocks = async (
-  request: GetAllMyBlocksRequest
-): Promise<GetAllMyBlocksResponse> => {
-  try {
-    const validatedRequest = GetAllMyBlocksRequestSchema.parse(request);
-    const response = await GetAllMyBlocks({ data: validatedRequest });
-    return GetAllMyBlocksResponseSchema.parse(response);
-  } catch (error) {
-    console.error("error happening in queryFnGetAllMyBlocks", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

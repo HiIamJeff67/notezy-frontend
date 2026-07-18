@@ -81,7 +81,6 @@ export const queryKeys = {
   },
   block: {
     all: () => ["block"] as const,
-    myAll: () => ["block", "myAll"] as const,
     oneById: (id?: UUID) => ["block", "oneById", id] as const,
     manyByIds: (ids?: UUID[]) =>
       [

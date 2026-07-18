@@ -1,5 +1,5 @@
 import { SupportedIcon } from "@shared/api/interfaces/enums";
-import { Block, SubShelf } from "@shared/api/local/schemas";
+import { SubShelf } from "@shared/api/local/schemas";
 import { relations } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
@@ -29,10 +29,9 @@ export const BlockPack = sqliteTable(
   table => [index("block_pack_parent_sub_shelf_idx").on(table.parentSubShelfId)]
 );
 
-export const BlockPackRelations = relations(BlockPack, ({ one, many }) => ({
+export const BlockPackRelations = relations(BlockPack, ({ one }) => ({
   parentSubShelf: one(SubShelf, {
     fields: [BlockPack.parentSubShelfId],
     references: [SubShelf.id],
   }),
-  blocks: many(Block),
 }));

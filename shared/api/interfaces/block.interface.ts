@@ -106,27 +106,3 @@ export const GetMyBlocksByBlockPackIdResponseSchema =
 export type GetMyBlocksByBlockPackIdResponse = z.infer<
   typeof GetMyBlocksByBlockPackIdResponseSchema
 >;
-
-/* ============================== GetAllMyBlocks ============================== */
-
-export const GetAllMyBlocksRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
-});
-
-export type GetAllMyBlocksRequest = z.infer<typeof GetAllMyBlocksRequestSchema>;
-
-export const GetAllMyBlocksResponseSchema = NotezyResponseSchema.extend({
-  data: z.array(PrivateBlockSchema),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
-});
-
-export type GetAllMyBlocksResponse = z.infer<
-  typeof GetAllMyBlocksResponseSchema
->;

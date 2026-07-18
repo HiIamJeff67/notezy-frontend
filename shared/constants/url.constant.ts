@@ -153,7 +153,6 @@ export const APIURLPathDictionary = {
     getMyBlockById: "block/getMyBlockById",
     getMyBlocksByIds: "block/getMyBlocksByIds",
     getMyBlocksByBlockPackId: "block/getMyBlocksByBlockPackId",
-    getAllMyBlocks: "block/getAllMyBlocks",
   },
   realtime: {
     createMyRealtimeConnectionTicket:

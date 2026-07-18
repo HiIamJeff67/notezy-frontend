@@ -1,12 +1,7 @@
 import type { UUID } from "node:crypto";
-import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
 import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
-import { NotezyAPIError } from "@shared/api/exceptions";
-import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
 import type {
-  GetAllMyBlocksRequest,
-  GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
   GetMyBlockByIdResponse,
   GetMyBlocksByBlockPackIdRequest,
@@ -16,13 +11,10 @@ import type {
 } from "@shared/api/interfaces/block.interface";
 import { duplicateResponse } from "@shared/api/interfaces/context.interface";
 import {
-  queryFnGetAllMyBlocks,
   queryFnGetMyBlockById,
   queryFnGetMyBlocksByBlockPackId,
   queryFnGetMyBlocksByIds,
 } from "@shared/api/invokers/block.invoker";
-import { BlockLocalSimulator } from "@shared/api/local/simulators/block.simulator";
-import { BlockLocalSynchronizer } from "@shared/api/local/synchronizers/block.synchronizer";
 import { getQueryClient } from "@shared/api/queryClient";
 import { UseQueryDefaultOptions } from "@shared/api/queryHookOptions";
 import { queryKeys } from "@shared/api/queryKeys";
@@ -49,39 +41,18 @@ export const useGetMyBlockById = (
       );
     }
 
-    try {
-      if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-      }
-      const response = await queryFnGetMyBlockById(request);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.publicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.publicId
-      );
-      await BlockLocalSynchronizer.syncGetMyBlockById(response);
-      return response;
-    } catch (error) {
-      if (
-        error instanceof NotezyAPIError ||
-        error instanceof NotezyFetchError
-      ) {
-        const existingBlock =
-          await BlockLocalSimulator.simulateGetMyBlockById(request);
-        return {
-          success: false,
-          data: existingBlock,
-          exception: error.unWrap,
-          embedded: { publicId: "" },
-        } as GetMyBlockByIdResponse;
-      }
-      throw error;
-    }
+    const response = await queryFnGetMyBlockById(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
   };
 
   const query = useQuery<GetMyBlockByIdResponse, Error>({
@@ -125,47 +96,26 @@ export const useGetMyBlocksByIds = (
       );
     }
 
-    try {
-      if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-      }
-      const response = await queryFnGetMyBlocksByIds(request);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.publicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.publicId
-      );
-      await BlockLocalSynchronizer.syncGetMyBlocksByIds(response);
-      if (response.success && response.data) {
-        response.data.forEach(block => {
-          queryClient.setQueriesData(
-            { queryKey: queryKeys.block.oneById(block.id as UUID) },
-            duplicateResponse(response, true, block)
-          );
-        });
-      }
-      return response;
-    } catch (error) {
-      if (
-        error instanceof NotezyAPIError ||
-        error instanceof NotezyFetchError
-      ) {
-        const existingBlocks =
-          await BlockLocalSimulator.simulateGetMyBlocksByIds(request);
-        return {
-          success: false,
-          data: existingBlocks,
-          exception: error.unWrap,
-          embedded: { publicId: "" },
-        } as GetMyBlocksByIdsResponse;
-      }
-      throw error;
+    const response = await queryFnGetMyBlocksByIds(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    if (response.success && response.data) {
+      response.data.forEach(block => {
+        queryClient.setQueriesData(
+          { queryKey: queryKeys.block.oneById(block.id as UUID) },
+          duplicateResponse(response, true, block)
+        );
+      });
     }
+    return response;
   };
 
   const query = useQuery<GetMyBlocksByIdsResponse, Error>({
@@ -209,39 +159,18 @@ export const useGetMyBlocksByBlockPackId = (
       );
     }
 
-    try {
-      if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-      }
-      const response = await queryFnGetMyBlocksByBlockPackId(request);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.publicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.publicId
-      );
-      await BlockLocalSynchronizer.syncGetMyBlocksByBlockPackId(response);
-      return response;
-    } catch (error) {
-      if (
-        error instanceof NotezyAPIError ||
-        error instanceof NotezyFetchError
-      ) {
-        const existingBlocks =
-          await BlockLocalSimulator.simulateGetMyBlocksByBlockPackId(request);
-        return {
-          success: false,
-          data: existingBlocks,
-          exception: error.unWrap,
-          embedded: { publicId: "" },
-        } as GetMyBlocksByBlockPackIdResponse;
-      }
-      throw error;
-    }
+    const response = await queryFnGetMyBlocksByBlockPackId(request);
+    LocalStorageManipulator.ensureItem(
+      LocalStorageKey.accessToken,
+      response.refreshableTokens?.newAccessToken,
+      response.embedded?.publicId
+    );
+    SessionStorageManipulator.ensureItem(
+      SessionStorageKey.csrfToken,
+      response.refreshableTokens?.newCSRFToken,
+      response.embedded?.publicId
+    );
+    return response;
   };
 
   const query = useQuery<GetMyBlocksByBlockPackIdResponse, Error>({
@@ -262,78 +191,6 @@ export const useGetMyBlocksByBlockPackId = (
       queryKey: queryKeys.block.manyByBlockPackId(
         callbackRequest.param.blockPackId as UUID | undefined
       ),
-      queryFn: async () => perform(callbackRequest),
-      staleTime: UseQueryDefaultOptions.staleTime,
-      networkMode: "always",
-      ...options,
-    });
-
-  return { ...query, fetch };
-};
-
-export const useGetAllMyBlocks = (
-  hookRequest?: GetAllMyBlocksRequest,
-  options?: Partial<UseQueryOptions<GetAllMyBlocksResponse, Error>>
-) => {
-  const queryClient = getQueryClient();
-  const perform = async (
-    request?: GetAllMyBlocksRequest
-  ): Promise<GetAllMyBlocksResponse> => {
-    if (!request) {
-      throw new NotezyValidationError(
-        ValidationClientException.ReceivedUndefinedRequest()
-      );
-    }
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
-      }
-      const response = await queryFnGetAllMyBlocks(request);
-      LocalStorageManipulator.ensureItem(
-        LocalStorageKey.accessToken,
-        response.refreshableTokens?.newAccessToken,
-        response.embedded?.publicId
-      );
-      SessionStorageManipulator.ensureItem(
-        SessionStorageKey.csrfToken,
-        response.refreshableTokens?.newCSRFToken,
-        response.embedded?.publicId
-      );
-      await BlockLocalSynchronizer.syncGetAllMyBlocks(response);
-      return response;
-    } catch (error) {
-      if (
-        error instanceof NotezyAPIError ||
-        error instanceof NotezyFetchError
-      ) {
-        const existingBlocks =
-          await BlockLocalSimulator.simulateGetAllMyBlocks(request);
-        return {
-          success: false,
-          data: existingBlocks,
-          exception: error.unWrap,
-          embedded: { publicId: "" },
-        } as GetAllMyBlocksResponse;
-      }
-      throw error;
-    }
-  };
-
-  const query = useQuery<GetAllMyBlocksResponse, Error>({
-    queryKey: queryKeys.block.myAll(),
-    queryFn: async () => perform(hookRequest),
-    staleTime: UseQueryDefaultOptions.staleTime,
-    refetchOnWindowFocus: UseQueryDefaultOptions.refetchOnWindowFocus,
-    refetchOnMount: UseQueryDefaultOptions.refetchOnMount,
-    networkMode: "always",
-    ...options,
-    enabled: hookRequest ? (options?.enabled ?? true) : false,
-  });
-
-  const fetch = async (callbackRequest: GetAllMyBlocksRequest) =>
-    queryClient.fetchQuery({
-      queryKey: queryKeys.block.myAll(),
       queryFn: async () => perform(callbackRequest),
       staleTime: UseQueryDefaultOptions.staleTime,
       networkMode: "always",

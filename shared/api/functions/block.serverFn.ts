@@ -2,8 +2,6 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  GetAllMyBlocksRequest,
-  GetAllMyBlocksResponse,
   GetMyBlockByIdRequest,
   GetMyBlockByIdResponse,
   GetMyBlocksByBlockPackIdRequest,
@@ -155,43 +153,3 @@ export const GetMyBlocksByBlockPackId = createServerFn({
       return formattedResponse;
     }
   );
-
-export const GetAllMyBlocks = createServerFn({ method: "GET" })
-  .inputValidator((data: GetAllMyBlocksRequest) => data)
-  .handler(async ({ data: request }): Promise<GetAllMyBlocksResponse> => {
-    const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getAllMyBlocks}`;
-    const inboundCookie = getRequestHeader("cookie");
-    const userAgent =
-      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": userAgent,
-        ...(request.header?.authorization
-          ? { Authorization: request.header.authorization }
-          : {}),
-        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-      },
-      credentials: "include",
-    });
-
-    if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
-    }
-
-    forwardUpstreamSetCookies(response);
-
-    const formattedResponse = (await response.json()) as GetAllMyBlocksResponse;
-    if (formattedResponse.exception != null) {
-      throw new NotezyAPIError(
-        new NotezyException(formattedResponse.exception)
-      );
-    }
-
-    AccessTokenCookieHandler.ensure(
-      formattedResponse.refreshableTokens?.newAccessToken
-    );
-
-    return formattedResponse;
-  });

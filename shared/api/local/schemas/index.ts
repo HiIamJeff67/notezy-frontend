@@ -1,4 +1,3 @@
-export * from "./block.schema";
 export * from "./blockPack.schema";
 export * from "./item.schema";
 export * from "./rootShelf.schema";

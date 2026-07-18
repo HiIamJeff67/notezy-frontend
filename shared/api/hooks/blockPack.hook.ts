@@ -576,7 +576,6 @@ export const useUpdateMyBlockPackById = () => {
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
-        queryKeys.block.manyByBlockPackId(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -642,7 +641,6 @@ export const useUpdateMyBlockPacksByIds = () => {
       const targetKeys: QueryKey[] = [
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
-          queryKeys.block.manyByBlockPackId(blockPackId),
         ]),
         ...parentSubShelfIds.map(parentSubShelfId =>
           queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId)
@@ -938,7 +936,6 @@ export const useRestoreMyBlockPackById = () => {
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
-        queryKeys.block.manyByBlockPackId(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -1012,7 +1009,6 @@ export const useRestoreMyBlockPacksByIds = () => {
         ]),
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
-          queryKeys.block.manyByBlockPackId(blockPackId),
         ]),
       ];
       Promise.all(
@@ -1076,7 +1072,6 @@ export const useDeleteMyBlockPackById = () => {
         queryKeys.blockPack.oneById(blockPackId),
         queryKeys.blockPack.manyByParentSubShelfId(parentSubShelfId),
         queryKeys.blockPack.manyByRootShelfId(rootShelfId),
-        queryKeys.block.manyByBlockPackId(blockPackId),
       ];
       Promise.all(
         targetKeys.map(targetKey =>
@@ -1150,7 +1145,6 @@ export const useDeleteMyBlockPacksByIds = () => {
         ]),
         ...blockPackIds.flatMap(blockPackId => [
           queryKeys.blockPack.oneById(blockPackId),
-          queryKeys.block.manyByBlockPackId(blockPackId),
         ]),
       ];
       Promise.all(

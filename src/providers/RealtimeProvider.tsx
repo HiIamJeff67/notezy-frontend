@@ -96,6 +96,10 @@ export const RealtimeProvider = ({
       if (!channel) return;
       channel.status = status;
       if (status !== "error") channel.error = null;
+      if (status === "idle" || status === "unsubscribed") {
+        channel.connectorChannelId = null;
+        channel.provider.disconnect();
+      }
       rerender();
     },
     [rerender]
