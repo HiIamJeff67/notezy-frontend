@@ -1,5 +1,11 @@
+import { Button } from "@/components/ui/button";
+import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { useLocalPreferences } from "@/hooks/localPreferences";
-import { HardDriveIcon } from "lucide-react";
+import { useRealtime } from "@/hooks/useRealtime";
+import { LocalYjsDocumentStore } from "@shared/blockpack/core";
+import toast from "@shared/lib/toast";
+import { DatabaseIcon, HardDriveIcon, ImageIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { Section, SettingRow, SwitchRow } from "../PreferenceRows";
 
 const formatStorageSize = (bytes = 0) => {
@@ -15,6 +21,53 @@ const OfflineTab = () => {
     storageUsagePercent,
     updatePreference,
   } = useLocalPreferences();
+  const backgroundImages = useBackgroundImages();
+  const { activeBlockPackChannelCount } = useRealtime();
+  const [backgroundCache, setBackgroundCache] = useState({
+    totalBytes: 0,
+    count: 0,
+  });
+  const [yjsCache, setYjsCache] = useState({ totalSize: 0, count: 0 });
+
+  const refreshCacheUsage = useCallback(async () => {
+    const [backgroundEstimate, yjsEstimate] = await Promise.all([
+      backgroundImages.getCacheEstimate(),
+      LocalYjsDocumentStore.estimate(),
+    ]);
+    setBackgroundCache({
+      totalBytes: backgroundEstimate.totalBytes,
+      count: backgroundEstimate.count,
+    });
+    setYjsCache(yjsEstimate);
+  }, [backgroundImages]);
+
+  useEffect(() => {
+    void refreshCacheUsage();
+  }, [refreshCacheUsage]);
+
+  const clearUnusedBackgroundImages = async () => {
+    await backgroundImages.clearUnused();
+    await refreshCacheUsage();
+    toast.success("Unused background images cleared.");
+  };
+
+  const clearAllBackgroundImages = async () => {
+    if (!window.confirm("Clear all local background images?")) return;
+    await backgroundImages.clearAll();
+    await refreshCacheUsage();
+    toast.success("Background image cache cleared.");
+  };
+
+  const clearLocalYjsDocuments = async () => {
+    if (activeBlockPackChannelCount > 0) {
+      toast.error("Close active BlockPack editors before clearing Yjs cache.");
+      return;
+    }
+    if (!window.confirm("Clear local Yjs document recovery cache?")) return;
+    await LocalYjsDocumentStore.clear();
+    await refreshCacheUsage();
+    toast.success("Local Yjs document cache cleared.");
+  };
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
@@ -51,6 +104,58 @@ const OfflineTab = () => {
             {preferences.cleanupAfterDays}d
           </span>
         </SettingRow>
+        <SettingRow
+          title="Yjs 文件快取"
+          description="用於瀏覽器關閉、離線或重連後恢復 BlockPack 協作文件。"
+        >
+          <div className="flex flex-col items-end gap-2">
+            <span className="text-xs text-muted-foreground">
+              {yjsCache.count} docs · {formatStorageSize(yjsCache.totalSize)}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              disabled={activeBlockPackChannelCount > 0}
+              onClick={clearLocalYjsDocuments}
+            >
+              清除
+            </Button>
+          </div>
+        </SettingRow>
+        <SettingRow
+          title="背景圖片快取"
+          description="本機背景圖片上限為 1 GB；新增圖片前會先檢查瀏覽器剩餘配額。"
+          hideSeparator
+        >
+          <div className="flex flex-col items-end gap-2">
+            <span className="text-xs text-muted-foreground">
+              {backgroundCache.count} images ·{" "}
+              {formatStorageSize(backgroundCache.totalBytes)}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs"
+                onClick={clearUnusedBackgroundImages}
+              >
+                清除未使用
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="h-8 px-3 text-xs"
+                onClick={clearAllBackgroundImages}
+              >
+                全部清除
+              </Button>
+            </div>
+          </div>
+        </SettingRow>
       </Section>
 
       <section className="rounded-md border border-border bg-card p-4">
@@ -79,12 +184,22 @@ const OfflineTab = () => {
         </div>
         <div className="mt-5 grid grid-cols-2 gap-2">
           <div className="rounded-sm border border-border bg-muted/35 p-3 text-xs">
-            <div className="text-muted-foreground">Vault</div>
-            <div className="mt-1 font-semibold">待串接</div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <DatabaseIcon className="size-3.5" />
+              Yjs docs
+            </div>
+            <div className="mt-1 font-semibold">
+              {formatStorageSize(yjsCache.totalSize)}
+            </div>
           </div>
           <div className="rounded-sm border border-border bg-muted/35 p-3 text-xs">
-            <div className="text-muted-foreground">Queue</div>
-            <div className="mt-1 font-semibold">待串接</div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <ImageIcon className="size-3.5" />
+              Images
+            </div>
+            <div className="mt-1 font-semibold">
+              {formatStorageSize(backgroundCache.totalBytes)}
+            </div>
           </div>
         </div>
       </section>

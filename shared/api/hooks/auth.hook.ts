@@ -149,8 +149,8 @@ export const useLogout = () => {
       apolloClient.clearStore();
     },
     onError: (error, request) => {
-      console.log("WTF: ", error);
-      console.log("WTF2: ", request);
+      console.debug("WTF: ", error);
+      console.debug("WTF2: ", request);
     },
   });
 

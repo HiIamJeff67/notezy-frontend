@@ -183,6 +183,15 @@ export const searchRootShelvesLocalAdapter = {
           cursor: edge.encodedSearchCursor,
           id: edge.node.id,
           permission: edge.node.permission,
+          ownerPublicId: edge.node.owner?.publicId,
+          ownerDisplayName: edge.node.owner?.displayName,
+          ownerAvatarURL: edge.node.owner?.info?.avatarURL ?? null,
+          sharers:
+            edge.node.sharers?.map((sharer: any) => ({
+              publicId: sharer.publicId,
+              displayName: sharer.displayName,
+              avatarURL: sharer.info?.avatarURL ?? null,
+            })) ?? [],
           updatedAt: new Date(edge.node.updatedAt ?? 0).getTime(),
         })) ?? [],
     }),

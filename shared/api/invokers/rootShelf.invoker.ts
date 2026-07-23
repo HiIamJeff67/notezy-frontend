@@ -6,6 +6,7 @@ import { ValidationClientException } from "@shared/api/exceptions/client/validat
 import {
   CreateRootShelf,
   CreateRootShelves,
+  DeleteRootShelfPermissions,
   DeleteMyRootShelfById,
   DeleteMyRootShelvesByIds,
   GetMyRootShelfById,
@@ -13,6 +14,7 @@ import {
   RestoreMyRootShelvesByIds,
   UpdateMyRootShelfById,
   UpdateMyRootShelvesByIds,
+  UpsertRootShelfPermission,
 } from "@shared/api/functions/rootShelf.serverFn";
 import {
   type CreateRootShelfRequest,
@@ -23,6 +25,10 @@ import {
   CreateRootShelvesRequestSchema,
   type CreateRootShelvesResponse,
   CreateRootShelvesResponseSchema,
+  type DeleteRootShelfPermissionsRequest,
+  DeleteRootShelfPermissionsRequestSchema,
+  type DeleteRootShelfPermissionsResponse,
+  DeleteRootShelfPermissionsResponseSchema,
   type DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdRequestSchema,
   type DeleteMyRootShelfByIdResponse,
@@ -51,6 +57,10 @@ import {
   UpdateMyRootShelvesByIdsRequestSchema,
   type UpdateMyRootShelvesByIdsResponse,
   UpdateMyRootShelvesByIdsResponseSchema,
+  type UpsertRootShelfPermissionRequest,
+  UpsertRootShelfPermissionRequestSchema,
+  type UpsertRootShelfPermissionResponse,
+  UpsertRootShelfPermissionResponseSchema,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { ZodError } from "zod";
 
@@ -144,6 +154,68 @@ export const mutationFnUpdateMyRootShelfById = async (
     return UpdateMyRootShelfByIdResponseSchema.parse(response);
   } catch (error) {
     console.error("error happening in mutationFnUpdateMyRootShelfById", error);
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnUpsertRootShelfPermission = async (
+  request: UpsertRootShelfPermissionRequest
+): Promise<UpsertRootShelfPermissionResponse> => {
+  try {
+    const validatedRequest =
+      UpsertRootShelfPermissionRequestSchema.parse(request);
+    const response = await UpsertRootShelfPermission({
+      data: validatedRequest,
+    });
+    return UpsertRootShelfPermissionResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnUpsertRootShelfPermission",
+      error
+    );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      switch (error.unWrap.reason) {
+        default:
+          throw error;
+      }
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+    throw error;
+  }
+};
+
+export const mutationFnDeleteRootShelfPermissions = async (
+  request: DeleteRootShelfPermissionsRequest
+): Promise<DeleteRootShelfPermissionsResponse> => {
+  try {
+    const validatedRequest =
+      DeleteRootShelfPermissionsRequestSchema.parse(request);
+    const response = await DeleteRootShelfPermissions({
+      data: validatedRequest,
+    });
+    return DeleteRootShelfPermissionsResponseSchema.parse(response);
+  } catch (error) {
+    console.error(
+      "error happening in mutationFnDeleteRootShelfPermissions",
+      error
+    );
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

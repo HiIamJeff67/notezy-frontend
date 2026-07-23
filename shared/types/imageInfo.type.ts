@@ -9,6 +9,9 @@ export interface ImageContent {
   contentType: string;
   file: File;
   timestamp: Date;
+  byteSize?: number;
+  createdAt?: Date;
+  lastAccessedAt?: Date;
 }
 
 export interface ImageInfo {
@@ -21,6 +24,9 @@ export interface ImageThumbnailContent {
   contentType: string;
   thumbnailURL: string;
   timestamp: Date;
+  byteSize?: number;
+  createdAt?: Date;
+  lastAccessedAt?: Date;
 }
 
 export interface ImageThumbnailInfo {

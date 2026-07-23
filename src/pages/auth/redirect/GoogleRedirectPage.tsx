@@ -120,7 +120,7 @@ function GoogleRedirectPage() {
         router.push(getPreferredStartPath(preferences));
       });
     } catch (error) {
-      console.log(error);
+      console.debug(error);
       toast.error(languageManager.tError(error));
       router.push(
         WebURLPathDictionary.auth.redirect.error(

@@ -2,7 +2,10 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllSupportedIcons } from "@shared/api/interfaces/enums";
+import {
+  AllAccessControlPermissions,
+  AllSupportedIcons,
+} from "@shared/api/interfaces/enums";
 import { z } from "zod";
 
 /* ============================== GetMyBlockPackById ============================== */
@@ -77,6 +80,7 @@ export const GetMyBlockPackAndItsParentByIdResponseSchema =
       updatedAt: z.coerce.date(),
       createdAt: z.coerce.date(),
       rootShelfId: z.uuidv4(),
+      permission: z.enum(AllAccessControlPermissions),
       parentSubShelfId: z.uuidv4(),
       parentSubShelfPrevSubShelfId: z.uuidv4().nullable(),
       parentSubShelfName: z.string(),

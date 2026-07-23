@@ -212,7 +212,6 @@ const ensureReady = async (
     await wrappedAll(`SELECT 1 FROM "RoutineTag" LIMIT 1`);
     await wrappedAll(`SELECT 1 FROM "ItemTable" LIMIT 1`);
     await wrappedAll(`SELECT 1 FROM "UsersToStationsTable" LIMIT 1`);
-    await wrappedAll(`SELECT 1 FROM "UsersToTagsTable" LIMIT 1`);
     await wrappedAll(`SELECT 1 FROM "RoutinesToTags" LIMIT 1`);
     await wrappedAll(`SELECT 1 FROM "RoutinesToItemsTable" LIMIT 1`);
   } catch {

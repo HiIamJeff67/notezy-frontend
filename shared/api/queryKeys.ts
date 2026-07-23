@@ -91,6 +91,11 @@ export const queryKeys = {
     manyByBlockPackId: (blockPackId?: UUID) =>
       ["block", "manyByBlockPackId", blockPackId] as const,
   },
+  realtime: {
+    all: () => ["realtime"] as const,
+    blockPackParticipants: (blockPackId?: UUID) =>
+      ["realtime", "blockPackParticipants", blockPackId] as const,
+  },
   station: {
     all: () => ["station"] as const,
     visualizeMyTotalCount: (permission?: string) =>

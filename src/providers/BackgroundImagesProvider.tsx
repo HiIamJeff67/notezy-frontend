@@ -9,6 +9,15 @@ import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";
 import { createContext, useCallback, useEffect, useState } from "react";
 
+const BackgroundImageCacheMaxBytes = 1024 * 1024 * 1024;
+
+type BackgroundImageCacheEstimate = {
+  imageBytes: number;
+  thumbnailBytes: number;
+  totalBytes: number;
+  count: number;
+};
+
 interface BackgroundImagesContextType {
   thumbnails: ImageThumbnailInfo | null;
   currentBackgroundImage: ImageContent | null;
@@ -17,6 +26,9 @@ interface BackgroundImagesContextType {
   getFullImageURL: (id: UUID) => Promise<{ url: string; revoke: () => void }>;
   upload: (files: File[]) => Promise<UUID[]>;
   remove: (ids: UUID[]) => Promise<void>;
+  getCacheEstimate: () => Promise<BackgroundImageCacheEstimate>;
+  clearUnused: () => Promise<void>;
+  clearAll: () => Promise<void>;
 }
 
 export const BackgroundImagesContext = createContext<
@@ -140,6 +152,85 @@ export const BackgroundImagesProvider = ({
     });
   };
 
+  const getCacheEstimate =
+    useCallback(async (): Promise<BackgroundImageCacheEstimate> => {
+      const [imageInfo, thumbnailsInfo] = await Promise.all([
+        IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImages),
+        IndexedDBManipulator.getItemByKey(
+          IndexedDBKey.backgroundImageThumbnails
+        ),
+      ]);
+      const imageBytes =
+        imageInfo?.contents.reduce(
+          (sum, img) => sum + (img.byteSize ?? img.file?.size ?? 0),
+          0
+        ) ?? 0;
+      const thumbnailBytes =
+        thumbnailsInfo?.contents.reduce(
+          (sum, thumb) =>
+            sum + (thumb.byteSize ?? thumb.thumbnailURL?.length ?? 0),
+          0
+        ) ?? 0;
+      return {
+        imageBytes,
+        thumbnailBytes,
+        totalBytes: imageBytes + thumbnailBytes,
+        count: imageInfo?.contents.length ?? 0,
+      };
+    }, []);
+
+  const assertCanStoreBytes = useCallback(
+    async (addedBytes: number) => {
+      const estimate = await getCacheEstimate();
+      if (estimate.totalBytes + addedBytes > BackgroundImageCacheMaxBytes) {
+        throw new Error("Background image cache limit exceeded.");
+      }
+
+      if (typeof navigator === "undefined" || !navigator.storage?.estimate) {
+        return;
+      }
+
+      const storageEstimate = await navigator.storage.estimate();
+      if (
+        storageEstimate.quota &&
+        storageEstimate.usage &&
+        storageEstimate.usage + addedBytes > storageEstimate.quota
+      ) {
+        throw new Error("Browser storage quota is not enough.");
+      }
+    },
+    [getCacheEstimate]
+  );
+
+  const touchBackgroundImage = useCallback(async (id: UUID) => {
+    const now = new Date();
+    const [imageInfo, thumbnailsInfo] = await Promise.all([
+      IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImages),
+      IndexedDBManipulator.getItemByKey(IndexedDBKey.backgroundImageThumbnails),
+    ]);
+    if (imageInfo) {
+      await IndexedDBManipulator.setItem(IndexedDBKey.backgroundImages, {
+        ...imageInfo,
+        contents: imageInfo.contents.map(img =>
+          img.id === id ? { ...img, lastAccessedAt: now } : img
+        ),
+      });
+    }
+    if (thumbnailsInfo) {
+      const nextThumbnailsInfo = {
+        ...thumbnailsInfo,
+        contents: thumbnailsInfo.contents.map(thumb =>
+          thumb.id === id ? { ...thumb, lastAccessedAt: now } : thumb
+        ),
+      };
+      await IndexedDBManipulator.setItem(
+        IndexedDBKey.backgroundImageThumbnails,
+        nextThumbnailsInfo
+      );
+      setThumbnails(nextThumbnailsInfo);
+    }
+  }, []);
+
   const getFullImageURL = useCallback(
     async (id: UUID): Promise<{ url: string; revoke: () => void }> => {
       const imageInfo = await IndexedDBManipulator.getItemByKey(
@@ -151,6 +242,7 @@ export const BackgroundImagesProvider = ({
       if (!targetImage || !targetImage.file)
         throw new Error("No such image found in indexedDB");
 
+      await touchBackgroundImage(id);
       const url = URL.createObjectURL(targetImage.file);
       return {
         url: url,
@@ -183,36 +275,55 @@ export const BackgroundImagesProvider = ({
 
       const uploadedIds: UUID[] = [];
       let lastUploadedImage: ImageContent | null = null;
+      const pendingImages: ImageContent[] = [];
+      const pendingThumbnails: ImageThumbnailInfo["contents"] = [];
+      let addedBytes = 0;
 
       for (const file of files) {
         const newId = generateUUID();
         const currentTimestamp = new Date();
         uploadedIds.push(newId);
+        const thumbnailStr = await generateThumbnailURL(file);
+        const approximateStringSize = thumbnailStr.length;
 
         const imageContent: ImageContent = {
           id: newId,
           contentType: file.type,
           file: file,
           timestamp: currentTimestamp,
+          byteSize: file.size,
+          createdAt: currentTimestamp,
+          lastAccessedAt: currentTimestamp,
         };
 
         lastUploadedImage = imageContent;
-        newImageInfo.header.totalSize += file.size;
-        newImageInfo.contents.push(imageContent);
-
-        const thumbnailStr = await generateThumbnailURL(file);
-        const approximateStringSize = thumbnailStr.length;
-
-        newThumbnailsInfo.header.totalSize += approximateStringSize;
-        newThumbnailsInfo.contents.push({
+        pendingImages.push(imageContent);
+        pendingThumbnails.push({
           id: newId,
           contentType: file.type,
           thumbnailURL: thumbnailStr,
           timestamp: currentTimestamp,
+          byteSize: approximateStringSize,
+          createdAt: currentTimestamp,
+          lastAccessedAt: currentTimestamp,
         });
+        addedBytes += file.size + approximateStringSize;
       }
 
-      await Promise.all([
+      await assertCanStoreBytes(addedBytes);
+
+      newImageInfo.header.totalSize += pendingImages.reduce(
+        (sum, img) => sum + (img.byteSize ?? img.file.size),
+        0
+      );
+      newImageInfo.contents.push(...pendingImages);
+      newThumbnailsInfo.header.totalSize += pendingThumbnails.reduce(
+        (sum, thumb) => sum + (thumb.byteSize ?? thumb.thumbnailURL.length),
+        0
+      );
+      newThumbnailsInfo.contents.push(...pendingThumbnails);
+
+      const isSaved = await Promise.all([
         IndexedDBManipulator.setItem(
           IndexedDBKey.backgroundImages,
           newImageInfo
@@ -222,6 +333,9 @@ export const BackgroundImagesProvider = ({
           newThumbnailsInfo
         ),
       ]);
+      if (isSaved.some(value => !value)) {
+        throw new Error("Failed to write background image cache.");
+      }
 
       setThumbnails(newThumbnailsInfo);
 
@@ -231,7 +345,7 @@ export const BackgroundImagesProvider = ({
 
       return uploadedIds;
     },
-    [currentBackgroundImage, setCurrentBackgroundImage]
+    [assertCanStoreBytes, currentBackgroundImage, setCurrentBackgroundImage]
   );
 
   const remove = useCallback(
@@ -293,6 +407,27 @@ export const BackgroundImagesProvider = ({
     [currentBackgroundImage, setCurrentBackgroundImage]
   );
 
+  const clearUnused = useCallback(async () => {
+    const imageInfo = await IndexedDBManipulator.getItemByKey(
+      IndexedDBKey.backgroundImages
+    );
+    if (!imageInfo) return;
+    const unusedIds = imageInfo.contents
+      .filter(img => img.id !== currentBackgroundImage?.id)
+      .map(img => img.id);
+    await remove(unusedIds);
+  }, [currentBackgroundImage?.id, remove]);
+
+  const clearAll = useCallback(async () => {
+    await Promise.all([
+      IndexedDBManipulator.removeItem(IndexedDBKey.backgroundImages),
+      IndexedDBManipulator.removeItem(IndexedDBKey.backgroundImageThumbnails),
+      IndexedDBManipulator.removeItem(IndexedDBKey.currentBackgroundImage),
+    ]);
+    setThumbnails(null);
+    _setCurrentBackgroundImage(null);
+  }, []);
+
   return (
     <BackgroundImagesContext.Provider
       value={{
@@ -303,6 +438,9 @@ export const BackgroundImagesProvider = ({
         getFullImageURL: getFullImageURL,
         upload: upload,
         remove: remove,
+        getCacheEstimate,
+        clearUnused,
+        clearAll,
       }}
     >
       {children}

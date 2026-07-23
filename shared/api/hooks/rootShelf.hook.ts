@@ -13,6 +13,8 @@ import type {
   CreateRootShelfResponse,
   CreateRootShelvesRequest,
   CreateRootShelvesResponse,
+  DeleteRootShelfPermissionsRequest,
+  DeleteRootShelfPermissionsResponse,
   DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdResponse,
   DeleteMyRootShelvesByIdsRequest,
@@ -27,16 +29,20 @@ import type {
   UpdateMyRootShelfByIdResponse,
   UpdateMyRootShelvesByIdsRequest,
   UpdateMyRootShelvesByIdsResponse,
+  UpsertRootShelfPermissionRequest,
+  UpsertRootShelfPermissionResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import {
   mutationFnCreateRootShelf,
   mutationFnCreateRootShelves,
+  mutationFnDeleteRootShelfPermissions,
   mutationFnDeleteMyRootShelfById,
   mutationFnDeleteMyRootShelvesByIds,
   mutationFnRestoreMyRootShelfById,
   mutationFnRestoreMyRootShelvesByIds,
   mutationFnUpdateMyRootShelfById,
   mutationFnUpdateMyRootShelvesByIds,
+  mutationFnUpsertRootShelfPermission,
   queryFnGetMyRootShelfById,
 } from "@shared/api/invokers/rootShelf.invoker";
 import { RootShelfLocalSimulator } from "@shared/api/local/simulators/rootShelf.simulator";
@@ -359,6 +365,105 @@ export const useUpdateMyRootShelfById = () => {
 
   return mutation;
 };
+
+export const useUpsertRootShelfPermission = () => {
+  const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
+
+  const perform = async (
+    request: UpsertRootShelfPermissionRequest
+  ): Promise<UpsertRootShelfPermissionResponse> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnUpsertRootShelfPermission(request);
+  };
+
+  const mutation = useMutation({
+    mutationFn: perform,
+    onSuccess: async (response, request) => {
+      if (response.success === false) return;
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.oneById(
+          request.param.rootShelfId as UUID
+        ),
+      });
+      apolloClient.cache.modify({
+        id: apolloClient.cache.identify({
+          __typename: "PrivateRootShelf",
+          id: request.param.rootShelfId,
+        }),
+        fields: {
+          sharerPublicIds(existingSharerPublicIds) {
+            if (!Array.isArray(existingSharerPublicIds)) {
+              return existingSharerPublicIds;
+            }
+
+            if (
+              existingSharerPublicIds.includes(response.data.userPublicId)
+            ) {
+              return existingSharerPublicIds;
+            }
+
+            return [...existingSharerPublicIds, response.data.userPublicId];
+          },
+        },
+      });
+    },
+  });
+
+  return mutation;
+};
+
+export const useDeleteRootShelfPermissions = () => {
+  const queryClient = getQueryClient();
+  const apolloClient = useApolloClient();
+
+  const perform = async (
+    request: DeleteRootShelfPermissionsRequest
+  ): Promise<DeleteRootShelfPermissionsResponse> => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    return await mutationFnDeleteRootShelfPermissions(request);
+  };
+
+  const mutation = useMutation({
+    mutationFn: perform,
+    onSuccess: async (response, request) => {
+      if (response.success === false) return;
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.oneById(
+          request.param.rootShelfId as UUID
+        ),
+      });
+      apolloClient.cache.modify({
+        id: apolloClient.cache.identify({
+          __typename: "PrivateRootShelf",
+          id: request.param.rootShelfId,
+        }),
+        fields: {
+          sharerPublicIds(existingSharerPublicIds) {
+            if (!Array.isArray(existingSharerPublicIds)) {
+              return existingSharerPublicIds;
+            }
+
+            return existingSharerPublicIds.filter(
+              userPublicId => !request.body.userPublicIds.includes(userPublicId)
+            );
+          },
+        },
+      });
+    },
+  });
+
+  return mutation;
+};
+
 export const useUpdateMyRootShelvesByIds = () => {
   const queryClient = getQueryClient();
   const apolloClient = useApolloClient();

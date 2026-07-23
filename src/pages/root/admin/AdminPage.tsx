@@ -9,7 +9,7 @@ const AdminPage = () => {
 
   const logAllExistingUsers = async (): Promise<void> => {
     const existingUsers = await localDB.select().from(User);
-    console.log("existingUsers: ", existingUsers);
+    console.debug("existingUsers: ", existingUsers);
   };
 
   return (

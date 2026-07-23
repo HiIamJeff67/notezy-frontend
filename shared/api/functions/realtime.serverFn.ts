@@ -5,12 +5,15 @@ import type {
   CreateMyBlockPackChannelTicketResponse,
   CreateMyRealtimeConnectionTicketRequest,
   CreateMyRealtimeConnectionTicketResponse,
+  GetBlockPackParticipantsRequest,
+  GetBlockPackParticipantsResponse,
 } from "@shared/api/interfaces/realtime.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
+import type { UUID } from "node:crypto";
 
 export const CreateMyRealtimeConnectionTicket = createServerFn({
   method: "POST",
@@ -88,6 +91,44 @@ export const CreateMyBlockPackChannelTicket = createServerFn({
       forwardUpstreamSetCookies(response);
       const formattedResponse =
         (await response.json()) as CreateMyBlockPackChannelTicketResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+
+      return formattedResponse;
+    }
+  );
+
+export const GetBlockPackParticipants = createServerFn({ method: "GET" })
+  .inputValidator((data: GetBlockPackParticipantsRequest) => data)
+  .handler(
+    async ({ data: request }): Promise<GetBlockPackParticipantsResponse> => {
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.realtime.getBlockPackParticipants(request.param.blockPackId as UUID)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": userAgent,
+            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as GetBlockPackParticipantsResponse;
       if (formattedResponse.exception != null) {
         throw new NotezyAPIError(
           new NotezyException(formattedResponse.exception)

@@ -87,6 +87,10 @@ export const APIURLPathDictionary = {
     searchRecentRootShelves: "rootShelf/searchRecentRootShelves",
     createRootShelf: "rootShelf/createRootShelf",
     createRootShelves: "rootShelf/createRootShelves",
+    upsertRootShelfPermission: (rootShelfId: UUID, userPublicId: UUID) =>
+      `rootShelf/${rootShelfId}/permissions/${userPublicId}`,
+    deleteRootShelfPermissions: (rootShelfId: UUID) =>
+      `rootShelf/${rootShelfId}/permissions`,
     updateMyRootShelfById: "rootShelf/updateMyRootShelfById",
     updateMyRootShelvesByIds: "rootShelf/updateMyRootShelvesByIds",
     restoreMyRootShelfById: "rootShelf/restoreMyRootShelfById",
@@ -159,6 +163,8 @@ export const APIURLPathDictionary = {
       "realtime/createMyRealtimeConnectionTicket",
     createMyBlockPackChannelTicket:
       "realtime/createMyBlockPackChannelTicket",
+    getBlockPackParticipants: (blockPackId: UUID) =>
+      `realtime/blockPacks/${blockPackId}/participants`,
   },
   station: {
     visualizeMyTotalCount: "station/visualizeMyTotalCount",
@@ -293,6 +299,7 @@ export const WebURLPathDictionary = {
       notFound: "material-viewer/not-found",
     },
     blockPackEditor: {
+      index: "block-pack-editor",
       _: (blockPackId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
         `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
     },

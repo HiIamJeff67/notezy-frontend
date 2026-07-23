@@ -3,6 +3,9 @@ import {
   SearchRootShelfSortBy,
   SearchRootShelvesQuery,
   SearchSortOrder,
+  UserPlan,
+  UserRole,
+  UserStatus as GraphQLUserStatus,
 } from "@shared/api/graphql/generated/graphql";
 import {
   AccessControlPermission,
@@ -160,6 +163,32 @@ export class RootShelfLocalSimulator {
       startIndex,
       startIndex + first
     );
+    const pagedRootShelfIds = pagedRootShelves.map(rootShelf => rootShelf.id);
+    const usersToShelves =
+      pagedRootShelfIds.length === 0
+        ? []
+        : await localDB
+            .select({
+              rootShelfId: UsersToShelves.rootShelfId,
+              permission: UsersToShelves.permission,
+              publicId: User.publicId,
+              name: User.name,
+              displayName: User.displayName,
+              status: User.status,
+              createdAt: User.createdAt,
+            })
+            .from(UsersToShelves)
+            .innerJoin(User, eq(User.publicId, UsersToShelves.userPublicId))
+            .where(inArray(UsersToShelves.rootShelfId, pagedRootShelfIds));
+    const usersByRootShelfId = new Map<
+      string,
+      typeof usersToShelves
+    >();
+    for (const userToShelf of usersToShelves) {
+      const users = usersByRootShelfId.get(userToShelf.rootShelfId) ?? [];
+      users.push(userToShelf);
+      usersByRootShelfId.set(userToShelf.rootShelfId, users);
+    }
 
     return {
       __typename: "SearchRootShelfConnection",
@@ -168,21 +197,52 @@ export class RootShelfLocalSimulator {
         encodedSearchCursor: RootShelfLocalSimulator.encodeSearchCursor(
           rootShelf.id
         ),
-        node: {
-          __typename: "PrivateRootShelf",
-          id: rootShelf.id as UUID,
-          name: rootShelf.name,
-          permission: rootShelf.permission,
-          subShelfCount: rootShelf.subShelfCount,
-          itemCount: rootShelf.itemCount,
-          lastAnalyzedAt: rootShelf.lastAnalyzedAt,
-          deletedAt: rootShelf.deletedAt,
-          updatedAt: rootShelf.updatedAt,
-          createdAt: rootShelf.createdAt,
-          ownerId: loggedInUser.publicId as UUID,
-          sharerIds: [],
-          itemIds: [],
-        },
+        node: (() => {
+          const shelfUsers = usersByRootShelfId.get(rootShelf.id) ?? [];
+          const owner =
+            shelfUsers.find(
+              shelfUser =>
+                shelfUser.permission === AccessControlPermission.Owner
+            ) ?? loggedInUser;
+          const toPublicUser = (user: {
+            publicId: string;
+            name: string;
+            displayName: string;
+            status: string;
+            createdAt: Date;
+          }) => ({
+            __typename: "PublicUser" as const,
+            publicId: user.publicId as UUID,
+            name: user.name,
+            displayName: user.displayName,
+            role: UserRole.Normal,
+            plan: UserPlan.Free,
+            status: user.status as GraphQLUserStatus,
+            createdAt: user.createdAt,
+            info: null,
+          });
+
+          return {
+            __typename: "PrivateRootShelf",
+            id: rootShelf.id as UUID,
+            name: rootShelf.name,
+            permission: rootShelf.permission,
+            subShelfCount: rootShelf.subShelfCount,
+            itemCount: rootShelf.itemCount,
+            lastAnalyzedAt: rootShelf.lastAnalyzedAt,
+            deletedAt: rootShelf.deletedAt,
+            updatedAt: rootShelf.updatedAt,
+            createdAt: rootShelf.createdAt,
+            owner: toPublicUser(owner),
+            sharers: shelfUsers
+              .filter(
+                shelfUser =>
+                  shelfUser.permission !== AccessControlPermission.Owner
+              )
+              .map(toPublicUser),
+            itemIds: [],
+          };
+        })(),
       })),
       searchPageInfo: {
         __typename: "SearchPageInfo",

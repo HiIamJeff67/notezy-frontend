@@ -4,6 +4,8 @@ import {
   NOTEZY_REALTIME_YJS_LOCAL_AWARENESS_REMOVAL_ORIGIN,
   NOTEZY_REALTIME_YJS_REMOTE_ORIGIN,
 } from "@shared/blockpack/core/contract";
+import { LocalYjsDocumentStore } from "@shared/blockpack/core/localYjsDocumentStore";
+import type { UUID } from "crypto";
 import {
   Awareness,
   applyAwarenessUpdate,
@@ -14,7 +16,7 @@ import * as Y from "yjs";
 
 const logRealtimeYjs = (message: string, data?: Record<string, unknown>) => {
   if (import.meta.env.DEV) {
-    console.info(`[RealtimeYjs] ${message}`, data ?? "");
+    console.debug(`[RealtimeYjs] ${message}`, data ?? "");
   }
 };
 
@@ -27,10 +29,19 @@ export class RealtimeYjsProvider {
   private readOnly = false;
   private readonly pendingDocumentUpdates: Uint8Array[] = [];
   private documentFlushTimeout: ReturnType<typeof setTimeout> | null = null;
+  private persistencePromise: Promise<void> = Promise.resolve();
 
   private readonly doc: Y.Doc;
+  private readonly blockPackId: UUID;
+  private readonly hydrationPromise: Promise<void>;
   private readonly handleDocUpdate = (update: Uint8Array, origin: unknown) => {
-    if (origin === NOTEZY_REALTIME_YJS_REMOTE_ORIGIN || this.readOnly) return;
+    if (origin === NOTEZY_REALTIME_YJS_REMOTE_ORIGIN) return;
+    if (this.readOnly) {
+      logRealtimeYjs("skipped local document update because channel is read-only", {
+        byteLength: update.byteLength,
+      });
+      return;
+    }
     this.sendOrQueue(RealtimeBinaryFrameType.YjsDocument, update);
   };
   private readonly handleAwarenessUpdate = (
@@ -50,11 +61,13 @@ export class RealtimeYjsProvider {
     );
   };
 
-  constructor(doc: Y.Doc) {
+  constructor(doc: Y.Doc, blockPackId: UUID) {
     this.doc = doc;
+    this.blockPackId = blockPackId;
     this.awareness = new Awareness(doc);
     this.doc.on("update", this.handleDocUpdate);
     this.awareness.on("update", this.handleAwarenessUpdate);
+    this.hydrationPromise = this.hydrateLocalDocument();
   }
 
   connect(send: (type: RealtimeBinaryFrameType, payload: Uint8Array) => void) {
@@ -63,6 +76,7 @@ export class RealtimeYjsProvider {
       pendingDocumentUpdates: this.pendingDocumentUpdates.length,
     });
     this.flushPendingUpdates();
+    void this.hydrationPromise.then(() => this.flushPendingUpdates());
     this.announceLocalAwarenessState();
   }
 
@@ -77,7 +91,7 @@ export class RealtimeYjsProvider {
 
   flushPendingDocumentUpdatesNow() {
     this.clearDocumentFlushTimeout();
-    this.flushPendingDocumentUpdates();
+    return this.flushPendingDocumentUpdates();
   }
 
   setReadOnly(readOnly: boolean) {
@@ -93,6 +107,7 @@ export class RealtimeYjsProvider {
       byteLength: update.byteLength,
     });
     Y.applyUpdate(this.doc, update, NOTEZY_REALTIME_YJS_REMOTE_ORIGIN);
+    void this.persistLocalDocument(false);
   }
 
   applyAwarenessUpdate(update: Uint8Array) {
@@ -141,6 +156,7 @@ export class RealtimeYjsProvider {
 
   private queueDocumentUpdate(payload: Uint8Array) {
     this.pendingDocumentUpdates.push(payload);
+    void this.persistLocalDocument(true);
 
     if (this.send === null) {
       logRealtimeYjs("queued document update before channel connect", {
@@ -167,7 +183,7 @@ export class RealtimeYjsProvider {
     this.documentFlushTimeout = null;
   }
 
-  private flushPendingDocumentUpdates() {
+  private async flushPendingDocumentUpdates() {
     const send = this.send;
     if (
       send === null ||
@@ -178,11 +194,18 @@ export class RealtimeYjsProvider {
 
     const updates = this.pendingDocumentUpdates.splice(0);
     const payload = updates.length === 1 ? updates[0] : Y.mergeUpdates(updates);
+    await this.persistencePromise;
+    if (this.send === null) {
+      this.pendingDocumentUpdates.unshift(...updates);
+      return;
+    }
+    if (this.readOnly) return;
     logRealtimeYjs("sending debounced document update", {
       updateCount: updates.length,
       byteLength: payload.byteLength,
     });
-    send(RealtimeBinaryFrameType.YjsDocument, payload);
+    this.send(RealtimeBinaryFrameType.YjsDocument, payload);
+    void this.persistLocalDocument(this.pendingDocumentUpdates.length > 0);
   }
 
   private flushPendingUpdates() {
@@ -193,7 +216,44 @@ export class RealtimeYjsProvider {
       this.pendingDocumentUpdates.length = 0;
     }
 
-    this.flushPendingDocumentUpdates();
+    void this.flushPendingDocumentUpdates();
+  }
+
+  private async hydrateLocalDocument() {
+    try {
+      const cachedDocument = await LocalYjsDocumentStore.load(this.blockPackId);
+      if (!cachedDocument) return;
+      Y.applyUpdate(
+        this.doc,
+        cachedDocument.update,
+        NOTEZY_REALTIME_YJS_REMOTE_ORIGIN
+      );
+      if (cachedDocument.needsFlush && !this.readOnly) {
+        this.pendingDocumentUpdates.push(cachedDocument.update);
+      }
+      logRealtimeYjs("hydrated local document cache", {
+        byteLength: cachedDocument.update.byteLength,
+        needsFlush: cachedDocument.needsFlush,
+      });
+    } catch (error) {
+      console.error("[RealtimeYjs] failed to hydrate local document cache", error);
+    }
+  }
+
+  private persistLocalDocument(needsFlush: boolean) {
+    this.persistencePromise = this.persistencePromise
+      .catch(() => undefined)
+      .then(() =>
+        LocalYjsDocumentStore.save(
+          this.blockPackId,
+          Y.encodeStateAsUpdate(this.doc),
+          needsFlush
+        )
+      )
+      .catch(error => {
+        console.error("[RealtimeYjs] failed to persist local document cache", error);
+      });
+    return this.persistencePromise;
   }
 
   private announceLocalAwarenessState() {

@@ -1,3 +1,4 @@
+import { useApolloClient } from "@apollo/client/react";
 import {
   type SearchItemInput,
   SearchItemSortBy,
@@ -25,19 +26,27 @@ import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
-import { RefObject, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 interface UseItemLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;
   inputRef: RefObject<HTMLInputElement | null>;
-  setFocusedNode: (
-    node:
+  setFocusedNode: Dispatch<
+    SetStateAction<
       | RootShelfNode
       | SubShelfNode
       | MaterialNode
       | BlockPackNode
       | undefined
-  ) => void;
+    >
+  >;
   forceUpdate: () => void;
 }
 
@@ -47,6 +56,7 @@ export const useItemLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseItemLogicProps) => {
+  const apolloClient = useApolloClient();
   const createMaterialMutator = useCreateMyMaterial();
   const updateMaterialMutator = useUpdateMyMaterialById();
   const deleteMaterialMutator = useDeleteMyMaterialById();
@@ -437,6 +447,62 @@ export const useItemLogic = ({
     updateBlockPackMutator,
   ]);
 
+  const removeBlockPackOptimistically = useCallback(
+    (blockPackId: UUID) => {
+      let didRemove = false;
+      const removeFromSubShelf = (subShelf: SubShelfNode): boolean => {
+        if (subShelf.blockPackNodes[blockPackId]) {
+          delete subShelf.blockPackNodes[blockPackId];
+          return true;
+        }
+
+        for (const child of Object.values(subShelf.children)) {
+          if (removeFromSubShelf(child)) return true;
+        }
+
+        return false;
+      };
+
+      for (const summary of expandedShelvesRef.current.values()) {
+        for (const subShelf of Object.values(summary.root.children)) {
+          if (removeFromSubShelf(subShelf)) {
+            summary.hasChanged = true;
+            summary.root.itemCount = Math.max(0, summary.root.itemCount - 1);
+            summary.analysisStatus = AnalysisStatus.OnlySubShelves;
+            didRemove = true;
+            break;
+          }
+        }
+        if (didRemove) break;
+      }
+
+      setFocusedNode(prev => (prev?.id === blockPackId ? undefined : prev));
+      apolloClient.cache.modify({
+        fields: {
+          searchItems(existing, { readField }) {
+            if (!existing?.searchEdges) return existing;
+            return {
+              ...existing,
+              searchEdges: existing.searchEdges.filter((edge: any) => {
+                const node = readField("node", edge);
+                return readField("id", node as any) !== blockPackId;
+              }),
+            };
+          },
+        },
+      });
+      apolloClient.cache.evict({
+        id: apolloClient.cache.identify({
+          __typename: "PrivateItem",
+          id: blockPackId,
+        }),
+      });
+      apolloClient.cache.gc();
+      if (didRemove) forceUpdate();
+    },
+    [apolloClient, expandedShelvesRef, forceUpdate, setFocusedNode]
+  );
+
   const deleteBlockPack = useCallback(
     async (
       parentSubShelfNode: SubShelfNode,
@@ -469,13 +535,9 @@ export const useItemLogic = ({
         },
       });
 
-      delete parentSubShelfNode.blockPackNodes[blockPackNode.id];
-      shelfTreeSummary.hasChanged = true;
-      // the maxWidth and maxDepth is unknown in this point
-      shelfTreeSummary.analysisStatus = AnalysisStatus.OnlySubShelves;
-      forceUpdate();
+      removeBlockPackOptimistically(blockPackNode.id);
     },
-    [expandedShelvesRef, deleteBlockPackMutator]
+    [deleteBlockPackMutator, expandedShelvesRef, removeBlockPackOptimistically]
   );
 
   // trigger for listen and auto focus the input with ref of inputRef declared in the top
@@ -545,5 +607,6 @@ export const useItemLogic = ({
     createBlockPack: createBlockPack,
     renameEditingBlockPack: renameEditingBlockPack,
     deleteBlockPack: deleteBlockPack,
+    removeBlockPackOptimistically: removeBlockPackOptimistically,
   };
 };

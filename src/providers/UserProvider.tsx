@@ -85,7 +85,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (accessToken: string | null) =>
       await loadingManager.startAsyncTransactionLoading(async () => {
         try {
-          console.log("fetching user automatically...");
+          console.debug("fetching user automatically...");
           if (!isOnline) {
             throw new NotezyAPIError(FetchClientExceptions.NetworkRequired());
           }

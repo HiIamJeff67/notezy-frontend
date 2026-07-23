@@ -49,7 +49,7 @@ const logRealtimeClient = (
   data?: Record<string, unknown>
 ) => {
   if (import.meta.env.DEV) {
-    console.info(`[RealtimeClient] ${message}`, data ?? "");
+    console.debug(`[RealtimeClient] ${message}`, data ?? "");
   }
 };
 
@@ -97,13 +97,23 @@ export class RealtimeClient {
   ) {
     const existing = this.channels.get(blockPackId);
     if (existing) {
+      const previousPermission = existing.permission;
       existing.permission = permission;
       logRealtimeClient("register existing block pack channel", {
         blockPackId,
         permission,
+        previousPermission,
         connectorChannelId: existing.connectorChannelId,
         pendingRequestId: existing.pendingRequestId,
       });
+      if (
+        existing.connectorChannelId !== null &&
+        previousPermission !== permission
+      ) {
+        this.unregisterBlockPackChannel(blockPackId);
+        this.registerBlockPackChannel(blockPackId, permission);
+        return;
+      }
       if (existing.connectorChannelId === null) {
         void this.subscribeBlockPackChannel(existing);
       }
@@ -349,23 +359,30 @@ export class RealtimeClient {
       return;
     }
 
+    const requestId = this.createRequestId("subscribe");
+    channel.pendingRequestId = requestId;
     this.options.onChannelStatus?.(channel.blockPackId, "ticketing");
     try {
       const ticket = await this.options.getBlockPackChannelTicket(
         channel.blockPackId,
         channel.permission
       );
-      if (!this.isSocketOpen() || !this.channels.has(channel.blockPackId))
+      if (
+        !this.isSocketOpen() ||
+        !this.channels.has(channel.blockPackId) ||
+        channel.pendingRequestId !== requestId
+      )
         return;
 
-      const requestId = this.createRequestId("subscribe");
-      channel.pendingRequestId = requestId;
+      const requestedPermission = channel.permission;
+      channel.permission = ticket.permission;
       this.channelByRequestId.set(requestId, channel.blockPackId);
       this.options.onChannelStatus?.(channel.blockPackId, "subscribing");
       logRealtimeClient("send subscribe frame", {
         blockPackId: channel.blockPackId,
         requestId,
-        permission: channel.permission,
+        requestedPermission,
+        grantedPermission: channel.permission,
       });
       this.sendControlFrame(
         "subscribe",
@@ -376,7 +393,10 @@ export class RealtimeClient {
         })
       );
     } catch (error) {
-      channel.pendingRequestId = null;
+      if (channel.pendingRequestId === requestId) {
+        channel.pendingRequestId = null;
+      }
+      this.channelByRequestId.delete(requestId);
       this.options.onChannelStatus?.(channel.blockPackId, "error");
       this.options.onError?.(error);
     }
@@ -428,8 +448,19 @@ export class RealtimeClient {
       frame.code === "resync_required"
     ) {
       const channel = this.channels.get(blockPackId);
-      if (channel && channel.connectorChannelId !== null) {
-        this.channelByConnectorId.delete(channel.connectorChannelId);
+      const connectorChannelId =
+        frame.connectorChannelId ?? channel?.connectorChannelId ?? null;
+      if (connectorChannelId !== null) {
+        if (this.isSocketOpen()) {
+          this.sendControlFrame(
+            "unsubscribe",
+            encodeRealtimeUnsubscribeFrame({
+              requestId: this.createRequestId("unsubscribe"),
+              connectorChannelId,
+            })
+          );
+        }
+        this.channelByConnectorId.delete(connectorChannelId);
       }
       if (channel) {
         if (channel.pendingRequestId) {

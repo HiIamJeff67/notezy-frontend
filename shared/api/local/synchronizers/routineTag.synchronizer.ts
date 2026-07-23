@@ -1,7 +1,4 @@
-import {
-  AccessControlPermission,
-  SupportedIcon,
-} from "@shared/api/interfaces/enums";
+import { SupportedIcon } from "@shared/api/interfaces/enums";
 import type {
   CreateRoutineTagRequest,
   CreateRoutineTagResponse,
@@ -19,51 +16,40 @@ import type {
   UpdateMyRoutineTagsByIdsResponse,
 } from "@shared/api/interfaces/routineTag.interface";
 import { localDB } from "@shared/api/local/db";
-import {
-  RoutinesToTags,
-  RoutineTag,
-  User,
-  UsersToRoutineTags,
-} from "@shared/api/local/schemas";
-import { and, eq, exists, inArray, sql } from "drizzle-orm";
+import { RoutinesToTags, RoutineTag, User } from "@shared/api/local/schemas";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 export class RoutineTagLocalSynchronizer {
-  private static getPassPermissionCheckSQL = (
-    queryBuilder: Pick<typeof localDB, "select">,
-    userPublicId: string,
-    permissions: AccessControlPermission[]
-  ) =>
-    exists(
-      queryBuilder
-        .select({ one: sql`1` })
-        .from(UsersToRoutineTags)
-        .where(
-          and(
-            eq(UsersToRoutineTags.userPublicId, userPublicId),
-            eq(UsersToRoutineTags.tagId, RoutineTag.id),
-            inArray(UsersToRoutineTags.permission, permissions)
-          )
-        )
-    );
-
   static syncGetMyRoutineTagById = async (
     response: GetMyRoutineTagByIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
 
-    await localDB
-      .insert(RoutineTag)
-      .values(response.data)
-      .onConflictDoUpdate({
-        target: RoutineTag.id,
-        set: {
-          name: response.data.name,
-          color: response.data.color,
-          icon: response.data.icon,
-          updatedAt: response.data.updatedAt,
-          createdAt: response.data.createdAt,
-        },
-      });
+    await localDB.transaction(async tx => {
+      const publicId =
+        response.embedded?.publicId ??
+        (
+          await tx.query.User.findFirst({
+            where: eq(User.isLoggedIn, true),
+          })
+        )?.publicId;
+      if (!publicId) return;
+
+      await tx
+        .insert(RoutineTag)
+        .values({ ...response.data, ownerPublicId: publicId })
+        .onConflictDoUpdate({
+          target: RoutineTag.id,
+          set: {
+            ownerPublicId: publicId,
+            name: response.data.name,
+            color: response.data.color,
+            icon: response.data.icon,
+            updatedAt: response.data.updatedAt,
+            createdAt: response.data.createdAt,
+          },
+        });
+    });
   };
 
   static syncGetAllMyRoutineTags = async (
@@ -73,12 +59,22 @@ export class RoutineTagLocalSynchronizer {
     if (response.data.length === 0) return;
 
     await localDB.transaction(async tx => {
+      const publicId =
+        response.embedded?.publicId ??
+        (
+          await tx.query.User.findFirst({
+            where: eq(User.isLoggedIn, true),
+          })
+        )?.publicId;
+      if (!publicId) return;
+
       await tx
         .insert(RoutineTag)
-        .values(response.data)
+        .values(response.data.map(tag => ({ ...tag, ownerPublicId: publicId })))
         .onConflictDoUpdate({
           target: RoutineTag.id,
           set: {
+            ownerPublicId: publicId,
             name: sql`excluded.name`,
             color: sql`excluded.color`,
             icon: sql`excluded.icon`,
@@ -86,19 +82,6 @@ export class RoutineTagLocalSynchronizer {
             createdAt: sql`excluded.created_at`,
           },
         });
-
-      await tx
-        .insert(UsersToRoutineTags)
-        .values(
-          response.data.map(tag => ({
-            userPublicId: response.embedded.publicId,
-            tagId: tag.id,
-            permission: AccessControlPermission.Read,
-            updatedAt: tag.updatedAt,
-            createdAt: tag.createdAt,
-          }))
-        )
-        .onConflictDoNothing();
     });
   };
 
@@ -123,10 +106,16 @@ export class RoutineTagLocalSynchronizer {
 
       await tx
         .insert(RoutineTag)
-        .values(searchedRoutineTags)
+        .values(
+          searchedRoutineTags.map(tag => ({
+            ...tag,
+            ownerPublicId: loggedInUser.publicId,
+          }))
+        )
         .onConflictDoUpdate({
           target: RoutineTag.id,
           set: {
+            ownerPublicId: loggedInUser.publicId,
             name: sql`excluded.name`,
             color: sql`excluded.color`,
             icon: sql`excluded.icon`,
@@ -134,18 +123,6 @@ export class RoutineTagLocalSynchronizer {
             createdAt: sql`excluded.created_at`,
           },
         });
-      await tx
-        .insert(UsersToRoutineTags)
-        .values(
-          searchedRoutineTags.map(tag => ({
-            userPublicId: loggedInUser.publicId,
-            tagId: tag.id,
-            permission: AccessControlPermission.Read,
-            updatedAt: tag.updatedAt,
-            createdAt: tag.createdAt,
-          }))
-        )
-        .onConflictDoNothing();
     });
   };
 
@@ -156,18 +133,21 @@ export class RoutineTagLocalSynchronizer {
     if (!localDB.isReady) await localDB.ensureReady();
 
     await localDB.transaction(async tx => {
+      const publicId =
+        response.embedded?.publicId ??
+        (
+          await tx.query.User.findFirst({
+            where: eq(User.isLoggedIn, true),
+          })
+        )?.publicId;
+      if (!publicId) return;
+
       await tx.insert(RoutineTag).values({
         id: response.data.id,
+        ownerPublicId: publicId,
         name: request.body.name,
         color: request.body.color,
         icon: request.body.icon,
-        createdAt: response.data.createdAt,
-        updatedAt: response.data.createdAt,
-      });
-      await tx.insert(UsersToRoutineTags).values({
-        userPublicId: response.embedded.publicId,
-        tagId: response.data.id,
-        permission: AccessControlPermission.Owner,
         createdAt: response.data.createdAt,
         updatedAt: response.data.createdAt,
       });
@@ -182,21 +162,22 @@ export class RoutineTagLocalSynchronizer {
     if (request.body.createdRoutineTags.length === 0) return;
 
     await localDB.transaction(async tx => {
+      const publicId =
+        response.embedded?.publicId ??
+        (
+          await tx.query.User.findFirst({
+            where: eq(User.isLoggedIn, true),
+          })
+        )?.publicId;
+      if (!publicId) return;
+
       await tx.insert(RoutineTag).values(
         request.body.createdRoutineTags.map((tag, index) => ({
           id: response.data.ids[index],
+          ownerPublicId: publicId,
           name: tag.name,
           color: tag.color,
           icon: tag.icon,
-          createdAt: response.data.createdAt,
-          updatedAt: response.data.createdAt,
-        }))
-      );
-      await tx.insert(UsersToRoutineTags).values(
-        response.data.ids.map(tagId => ({
-          userPublicId: response.embedded.publicId,
-          tagId,
-          permission: AccessControlPermission.Owner,
           createdAt: response.data.createdAt,
           updatedAt: response.data.createdAt,
         }))
@@ -209,6 +190,14 @@ export class RoutineTagLocalSynchronizer {
     response: UpdateMyRoutineTagByIdResponse
   ): Promise<void> => {
     if (!localDB.isReady) await localDB.ensureReady();
+    const publicId =
+      response.embedded?.publicId ??
+      (
+        await localDB.query.User.findFirst({
+          where: eq(User.isLoggedIn, true),
+        })
+      )?.publicId;
+    if (!publicId) return;
 
     await localDB
       .update(RoutineTag)
@@ -228,15 +217,7 @@ export class RoutineTagLocalSynchronizer {
       .where(
         and(
           eq(RoutineTag.id, request.body.routineTagId),
-          RoutineTagLocalSynchronizer.getPassPermissionCheckSQL(
-            localDB,
-            response.embedded.publicId,
-            [
-              AccessControlPermission.Owner,
-              AccessControlPermission.Admin,
-              AccessControlPermission.Write,
-            ]
-          )
+          eq(RoutineTag.ownerPublicId, publicId)
         )
       );
   };
@@ -248,34 +229,29 @@ export class RoutineTagLocalSynchronizer {
     if (!localDB.isReady) await localDB.ensureReady();
 
     await localDB.transaction(async tx => {
+      const publicId =
+        response.embedded?.publicId ??
+        (
+          await tx.query.User.findFirst({
+            where: eq(User.isLoggedIn, true),
+          })
+        )?.publicId;
+      if (!publicId) return;
+
       for (const tag of request.body.updatedRoutineTags) {
         await tx
           .update(RoutineTag)
           .set({
-            ...(tag.values.name !== undefined && {
-              name: tag.values.name,
-            }),
-            ...(tag.values.color !== undefined && {
-              color: tag.values.color,
-            }),
-            ...(tag.values.icon !== undefined && {
-              icon: tag.values.icon,
-            }),
+            ...(tag.values.name !== undefined && { name: tag.values.name }),
+            ...(tag.values.color !== undefined && { color: tag.values.color }),
+            ...(tag.values.icon !== undefined && { icon: tag.values.icon }),
             ...(tag.setNull?.icon && { icon: null }),
             updatedAt: response.data.updatedAt,
           })
           .where(
             and(
               eq(RoutineTag.id, tag.routineTagId),
-              RoutineTagLocalSynchronizer.getPassPermissionCheckSQL(
-                tx,
-                response.embedded.publicId,
-                [
-                  AccessControlPermission.Owner,
-                  AccessControlPermission.Admin,
-                  AccessControlPermission.Write,
-                ]
-              )
+              eq(RoutineTag.ownerPublicId, publicId)
             )
           );
       }
@@ -293,9 +269,6 @@ export class RoutineTagLocalSynchronizer {
         .delete(RoutinesToTags)
         .where(eq(RoutinesToTags.tagId, request.body.routineTagId));
       await tx
-        .delete(UsersToRoutineTags)
-        .where(eq(UsersToRoutineTags.tagId, request.body.routineTagId));
-      await tx
         .delete(RoutineTag)
         .where(eq(RoutineTag.id, request.body.routineTagId));
     });
@@ -312,9 +285,6 @@ export class RoutineTagLocalSynchronizer {
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.tagId, request.body.routineTagIds));
-      await tx
-        .delete(UsersToRoutineTags)
-        .where(inArray(UsersToRoutineTags.tagId, request.body.routineTagIds));
       await tx
         .delete(RoutineTag)
         .where(inArray(RoutineTag.id, request.body.routineTagIds));

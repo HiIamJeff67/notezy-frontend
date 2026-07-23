@@ -72,3 +72,38 @@ export const CreateMyBlockPackChannelTicketResponseSchema =
 export type CreateMyBlockPackChannelTicketResponse = z.infer<
   typeof CreateMyBlockPackChannelTicketResponseSchema
 >;
+
+export const GetBlockPackParticipantsRequestSchema = NotezyRequestSchema.extend(
+  {
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({
+      blockPackId: z.uuidv4(),
+    }),
+  }
+);
+
+export type GetBlockPackParticipantsRequest = z.input<
+  typeof GetBlockPackParticipantsRequestSchema
+>;
+
+export const GetBlockPackParticipantsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.array(
+      z.object({
+        userPublicId: z.uuidv4(),
+        name: z.string(),
+        displayName: z.string(),
+        channelPermission: RealtimePermissionSchema,
+        connectionCount: z.number().int().nonnegative(),
+      })
+    ),
+  });
+
+export type GetBlockPackParticipantsResponse = z.infer<
+  typeof GetBlockPackParticipantsResponseSchema
+>;

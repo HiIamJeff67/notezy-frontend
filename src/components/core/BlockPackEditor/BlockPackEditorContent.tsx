@@ -15,6 +15,7 @@ import {
 } from "@shared/util/convertBlocksToFiles";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
+import BlockPackParticipantsDropdown from "@/components/core/BlockPackEditor/BlockPackParticipantsDropdown";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,9 +41,7 @@ import { BlockNoteView } from "@blocknote/shadcn";
 import { ContentType } from "@shared/enums/contentType.enum";
 import toast from "@shared/lib/toast";
 import { cn } from "@shared/util/utils";
-import {
-  ChevronDownIcon,
-} from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import type { CSSProperties, Dispatch } from "react";
 import { useEffect, useState, useTransition } from "react";
 import { useLocalPreferences } from "@/hooks/localPreferences";
@@ -191,7 +190,9 @@ const BlockPackEditorContent = ({
                 variant="ghost"
                 className="h-9 max-w-full gap-2 border-none px-2 text-2xl font-semibold select-none focus-visible:ring-0 focus-visible:ring-offset-0"
               >
-                <TruncatedText width="240px">{blockPackMeta.name}</TruncatedText>
+                <TruncatedText width="240px">
+                  {blockPackMeta.name}
+                </TruncatedText>
                 <ChevronDownIcon
                   className={`transition ${isDropdownOpen ? "-rotate-180" : ""}`}
                 />
@@ -261,73 +262,100 @@ const BlockPackEditorContent = ({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Menubar className="bg-muted/25">
-          <MenubarMenu>
-            <MenubarTrigger>
-              {isImporting ? <Spinner /> : <span>Import</span>}
-            </MenubarTrigger>
-            <MenubarContent align="end" side="bottom">
-              <DropFileZone
-                disabled={!editor}
-                width="300px"
-                height="200px"
-                onDrop={handleImportFiles}
+        <div className="flex shrink-0 items-center gap-2">
+          <BlockPackParticipantsDropdown
+            blockPackId={blockPackMeta.id}
+            rootShelfId={blockPackMeta.rootId}
+            isEditorReady={state === "ready" || state === "readOnly"}
+          />
+          <Menubar className="h-9 gap-0 bg-muted/25 p-1">
+            <MenubarMenu>
+              <MenubarTrigger
+                data-density-static
+                className="h-7 px-3 py-0 text-sm leading-none"
               >
-                <p className="text-sm text-muted-foreground">
-                  Drop Files or Click Here to Select Uploaded Files (.json)
-                </p>
-              </DropFileZone>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>
-              {isExporting ? <Spinner /> : <span>Export</span>}
-            </MenubarTrigger>
-            <MenubarContent align="end" side="bottom">
-              <MenubarItem
-                onClick={async () => {
-                  const blob = await convertBlocksToMarkdown(editor);
-                  await handleExportFiles(ContentType.Markdown);
-                }}
+                {isImporting ? (
+                  <Spinner />
+                ) : (
+                  <span className="leading-none">Import</span>
+                )}
+              </MenubarTrigger>
+              <MenubarContent align="end" side="bottom">
+                <DropFileZone
+                  disabled={!editor}
+                  width="300px"
+                  height="200px"
+                  onDrop={handleImportFiles}
+                >
+                  <p className="text-sm text-muted-foreground">
+                    Drop Files or Click Here to Select Uploaded Files (.json)
+                  </p>
+                </DropFileZone>
+              </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+              <MenubarTrigger
+                data-density-static
+                className="h-7 px-3 py-0 text-sm leading-none"
               >
-                <span className="font-semibold">Markdown</span>
-                <span className="text-muted-foreground">(.md)</span>
-              </MenubarItem>
-              <MenubarItem
-                onClick={async () => await handleExportFiles(ContentType.HTML)}
-              >
-                <span className="font-semibold">HTML</span>
-                <span className="text-muted-foreground">(.html)</span>
-              </MenubarItem>
-              <MenubarItem
-                onClick={async () =>
-                  await handleExportFiles(ContentType.PlainText)
-                }
-              >
-                <span className="font-semibold">Plain Text</span>
-                <span className="text-muted-foreground">(.txt)</span>
-              </MenubarItem>
-              <MenubarItem
-                onClick={async () => await handleExportFiles(ContentType.JSON)}
-              >
-                <span className="font-semibold">Raw JSON</span>
-                <span className="text-muted-foreground">(.json)</span>
-              </MenubarItem>
-              <MenubarItem
-                onClick={async () => await handleExportFiles(ContentType.PDF)}
-              >
-                <span className="font-semibold">PDF</span>
-                <span className="text-muted-foreground">(.pdf)</span>
-              </MenubarItem>
-              <MenubarItem
-                onClick={async () => await handleExportFiles(ContentType.DOCX)}
-              >
-                <span className="font-semibold">Word</span>
-                <span className="text-muted-foreground">(.docx)</span>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
+                {isExporting ? (
+                  <Spinner />
+                ) : (
+                  <span className="leading-none">Export</span>
+                )}
+              </MenubarTrigger>
+              <MenubarContent align="end" side="bottom">
+                <MenubarItem
+                  onClick={async () => {
+                    const blob = await convertBlocksToMarkdown(editor);
+                    await handleExportFiles(ContentType.Markdown);
+                  }}
+                >
+                  <span className="font-semibold">Markdown</span>
+                  <span className="text-muted-foreground">(.md)</span>
+                </MenubarItem>
+                <MenubarItem
+                  onClick={async () =>
+                    await handleExportFiles(ContentType.HTML)
+                  }
+                >
+                  <span className="font-semibold">HTML</span>
+                  <span className="text-muted-foreground">(.html)</span>
+                </MenubarItem>
+                <MenubarItem
+                  onClick={async () =>
+                    await handleExportFiles(ContentType.PlainText)
+                  }
+                >
+                  <span className="font-semibold">Plain Text</span>
+                  <span className="text-muted-foreground">(.txt)</span>
+                </MenubarItem>
+                <MenubarItem
+                  onClick={async () =>
+                    await handleExportFiles(ContentType.JSON)
+                  }
+                >
+                  <span className="font-semibold">Raw JSON</span>
+                  <span className="text-muted-foreground">(.json)</span>
+                </MenubarItem>
+                <MenubarItem
+                  onClick={async () => await handleExportFiles(ContentType.PDF)}
+                >
+                  <span className="font-semibold">PDF</span>
+                  <span className="text-muted-foreground">(.pdf)</span>
+                </MenubarItem>
+                <MenubarItem
+                  onClick={async () =>
+                    await handleExportFiles(ContentType.DOCX)
+                  }
+                >
+                  <span className="font-semibold">Word</span>
+                  <span className="text-muted-foreground">(.docx)</span>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </Menubar>
+        </div>
       </header>
       <ItemPath
         parentSubShelfId={blockPackMeta.parentId}
@@ -335,7 +363,7 @@ const BlockPackEditorContent = ({
         itemType="BlockPack"
         path={blockPackMeta.path}
         summary={shelfItemManager.expandedShelves.get(
-          blockPackMeta.rootId.toString(),
+          blockPackMeta.rootId.toString()
         )}
       />
       <div className="z-0 h-full w-full overflow-auto rounded-none p-8">
@@ -347,33 +375,39 @@ const BlockPackEditorContent = ({
             } as CSSProperties
           }
         >
-          <BlockNoteView
-            editor={editor}
-            editable={state !== "readOnly" && state !== "syncError"}
-            sideMenu={false}
-            spellCheck={preferences.spellcheck}
-            className={cn(
-              "notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4",
-              !preferences.lineWrap &&
-                "[&_.bn-editor]:overflow-x-auto [&_.bn-inline-content]:whitespace-nowrap",
-            )}
-          >
-            {shouldShowSideMenu && (
-              <SideMenuController
-                floatingOptions={{ placement: "left" }}
-                sideMenu={(sideMenuProps) => (
-                  <SideMenu {...sideMenuProps}>
-                    {preferences.quickInsert && (
-                      <AddBlockButton {...sideMenuProps} />
-                    )}
-                    {preferences.blockDragHandle && (
-                      <DragHandleButton {...sideMenuProps} />
-                    )}
-                  </SideMenu>
-                )}
-              />
-            )}
-          </BlockNoteView>
+          {state === "syncError" ? (
+            <div className="flex min-h-80 items-center justify-center text-sm text-muted-foreground">
+              This BlockPack session is no longer available.
+            </div>
+          ) : (
+            <BlockNoteView
+              editor={editor}
+              editable={state !== "readOnly"}
+              sideMenu={false}
+              spellCheck={preferences.spellcheck}
+              className={cn(
+                "notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4",
+                !preferences.lineWrap &&
+                  "[&_.bn-editor]:overflow-x-auto [&_.bn-inline-content]:whitespace-nowrap"
+              )}
+            >
+              {shouldShowSideMenu && (
+                <SideMenuController
+                  floatingOptions={{ placement: "left" }}
+                  sideMenu={sideMenuProps => (
+                    <SideMenu {...sideMenuProps}>
+                      {preferences.quickInsert && (
+                        <AddBlockButton {...sideMenuProps} />
+                      )}
+                      {preferences.blockDragHandle && (
+                        <DragHandleButton {...sideMenuProps} />
+                      )}
+                    </SideMenu>
+                  )}
+                />
+              )}
+            </BlockNoteView>
+          )}
         </div>
       </div>
     </div>

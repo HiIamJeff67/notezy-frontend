@@ -33,9 +33,7 @@ export const GetMyRoutineTagByIdResponseSchema = NotezyResponseSchema.extend({
     updatedAt: z.coerce.date(),
     createdAt: z.coerce.date(),
   }),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
 });
 
 export type GetMyRoutineTagByIdResponse = z.infer<
@@ -74,9 +72,7 @@ export const GetAllMyRoutineTagsResponseSchema = NotezyResponseSchema.extend({
       createdAt: z.coerce.date(),
     })
   ),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
 });
 
 export type GetAllMyRoutineTagsResponse = z.infer<
@@ -109,9 +105,7 @@ export const CreateRoutineTagResponseSchema = NotezyResponseSchema.extend({
     id: z.uuidv4(),
     createdAt: z.coerce.date(),
   }),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
 });
 
 export type CreateRoutineTagResponse = z.infer<
@@ -148,9 +142,7 @@ export const CreateRoutineTagsResponseSchema = NotezyResponseSchema.extend({
     ids: z.array(z.uuidv4()),
     createdAt: z.coerce.date(),
   }),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
 });
 
 export type CreateRoutineTagsResponse = z.infer<
@@ -188,9 +180,7 @@ export const UpdateMyRoutineTagByIdResponseSchema = NotezyResponseSchema.extend(
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
+    embedded: z.object({ publicId: z.string().optional() }).optional(),
   }
 );
 
@@ -235,9 +225,7 @@ export const UpdateMyRoutineTagsByIdsResponseSchema =
     data: z.object({
       updatedAt: z.coerce.date(),
     }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
+    embedded: z.object({ publicId: z.string().optional() }).optional(),
   });
 
 export type UpdateMyRoutineTagsByIdsResponse = z.infer<
@@ -268,9 +256,7 @@ export const HardDeleteMyRoutineTagByIdResponseSchema =
     data: z.object({
       deletedAt: z.coerce.date(),
     }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
+    embedded: z.object({ publicId: z.string().optional() }).optional(),
   });
 
 export type HardDeleteMyRoutineTagByIdResponse = z.infer<
@@ -301,9 +287,7 @@ export const HardDeleteMyRoutineTagsByIdsResponseSchema =
     data: z.object({
       deletedAt: z.coerce.date(),
     }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
+    embedded: z.object({ publicId: z.string().optional() }).optional(),
   });
 
 export type HardDeleteMyRoutineTagsByIdsResponse = z.infer<

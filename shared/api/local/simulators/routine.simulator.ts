@@ -12,8 +12,6 @@ import {
   RoutineStatus,
 } from "@shared/api/interfaces/enums";
 import type {
-  LinkRoutineItemsByIdsRequest,
-  LinkRoutineTagsByIdsRequest,
   CreateRoutineByStationIdRequest,
   CreateRoutinesByStationIdsRequest,
   DeleteMyRoutineByIdRequest,
@@ -24,7 +22,9 @@ import type {
   HardDeleteMyRoutineByIdRequest,
   HardDeleteMyRoutinesByIdsRequest,
   LinkRoutineItemByIdRequest,
+  LinkRoutineItemsByIdsRequest,
   LinkRoutineTagByIdRequest,
+  LinkRoutineTagsByIdsRequest,
   RestoreMyRoutineByIdRequest,
   RestoreMyRoutinesByIdsRequest,
   UpdateMyRoutineByIdRequest,
@@ -41,7 +41,6 @@ import {
   Station,
   Transaction,
   User,
-  UsersToRoutineTags,
   UsersToShelves,
   UsersToStations,
 } from "@shared/api/local/schemas";
@@ -1011,17 +1010,12 @@ export class RoutineLocalSimulator {
           )
         );
       const tags = await tx
-        .select({ id: UsersToRoutineTags.tagId })
-        .from(UsersToRoutineTags)
+        .select({ id: RoutineTag.id })
+        .from(RoutineTag)
         .where(
           and(
-            eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
-            eq(UsersToRoutineTags.tagId, request.body.routineTagId),
-            inArray(UsersToRoutineTags.permission, [
-              AccessControlPermission.Owner,
-              AccessControlPermission.Admin,
-              AccessControlPermission.Write,
-            ])
+            eq(RoutineTag.ownerPublicId, loggedInUser.publicId),
+            eq(RoutineTag.id, request.body.routineTagId)
           )
         );
       if (routines.length === 0 || tags.length === 0) return;
@@ -1084,17 +1078,12 @@ export class RoutineLocalSimulator {
             )
           );
         const tags = await tx
-          .select({ id: UsersToRoutineTags.tagId })
-          .from(UsersToRoutineTags)
+          .select({ id: RoutineTag.id })
+          .from(RoutineTag)
           .where(
             and(
-              eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
-              eq(UsersToRoutineTags.tagId, relation.routineTagId),
-              inArray(UsersToRoutineTags.permission, [
-                AccessControlPermission.Owner,
-                AccessControlPermission.Admin,
-                AccessControlPermission.Write,
-              ])
+              eq(RoutineTag.ownerPublicId, loggedInUser.publicId),
+              eq(RoutineTag.id, relation.routineTagId)
             )
           );
         if (routines.length === 0 || tags.length === 0) continue;

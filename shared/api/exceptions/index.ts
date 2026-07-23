@@ -82,7 +82,7 @@ export class NotezyException {
         }`
       );
     } else {
-      console.log(
+      console.debug(
         `[${this.code}]${this.reason}: ${this.message}${
           this.origin && `(${this.origin})`
         }`

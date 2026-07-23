@@ -101,6 +101,7 @@ function BlockPackEditorIndexRoute() {
           id: blockPackResponse.data.id as UUID,
           parentId: loaderData.parentSubShelfId,
           rootId: loaderData.rootShelfId,
+          permission: blockPackResponse.data.permission,
           name: blockPackResponse.data.name,
           icon: blockPackResponse.data.icon,
           headerBackgroundURL: blockPackResponse.data.headerBackgroundURL,

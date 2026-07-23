@@ -1,3 +1,4 @@
+import { useApolloClient } from "@apollo/client/react";
 import {
   PrivateRootShelf,
   SearchRootShelfEdge,
@@ -23,19 +24,27 @@ import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
-import { RefObject, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 interface UseRootShelfLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;
   inputRef: RefObject<HTMLInputElement | null>;
-  setFocusedNode: (
-    node:
+  setFocusedNode: Dispatch<
+    SetStateAction<
       | RootShelfNode
       | SubShelfNode
       | MaterialNode
       | BlockPackNode
       | undefined
-  ) => void;
+    >
+  >;
   forceUpdate: () => void;
 }
 
@@ -45,6 +54,7 @@ export const useRootShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseRootShelfLogicProps) => {
+  const apolloClient = useApolloClient();
   const getAllSubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
@@ -340,6 +350,36 @@ export const useRootShelfLogic = ({
     };
   }, [editingRootShelfNode, renameEditingRootShelf]);
 
+  const removeRootShelfOptimistically = useCallback(
+    (rootShelfId: UUID) => {
+      expandedShelvesRef.current.delete(rootShelfId);
+      setFocusedNode(prev => (prev?.id === rootShelfId ? undefined : prev));
+      apolloClient.cache.modify({
+        fields: {
+          searchRootShelves(existing, { readField }) {
+            if (!existing?.searchEdges) return existing;
+            return {
+              ...existing,
+              searchEdges: existing.searchEdges.filter((edge: any) => {
+                const node = readField("node", edge);
+                return readField("id", node as any) !== rootShelfId;
+              }),
+            };
+          },
+        },
+      });
+      apolloClient.cache.evict({
+        id: apolloClient.cache.identify({
+          __typename: "PrivateRootShelf",
+          id: rootShelfId,
+        }),
+      });
+      apolloClient.cache.gc();
+      forceUpdate();
+    },
+    [apolloClient, expandedShelvesRef, forceUpdate, setFocusedNode]
+  );
+
   const deleteRootShelf = useCallback(
     async (rootShelfNode: RootShelfNode): Promise<void> => {
       const shelfTreeSummary = expandedShelvesRef.current.get(rootShelfNode.id);
@@ -371,10 +411,14 @@ export const useRootShelfLogic = ({
           materialIds: materialIds,
         },
       });
-      expandedShelvesRef.current.delete(rootShelfNode.id);
-      forceUpdate();
+      removeRootShelfOptimistically(rootShelfNode.id);
     },
-    [expandedShelvesRef, deleteRootShelfMutator, RootShelfManipulator]
+    [
+      deleteRootShelfMutator,
+      expandedShelvesRef,
+      removeRootShelfOptimistically,
+      RootShelfManipulator,
+    ]
   );
 
   return {
@@ -397,5 +441,6 @@ export const useRootShelfLogic = ({
     cancelRenamingRootShelfNode: cancelRenamingRootShelfNode,
     renameEditingRootShelf: renameEditingRootShelf,
     deleteRootShelf: deleteRootShelf,
+    removeRootShelfOptimistically: removeRootShelfOptimistically,
   };
 };

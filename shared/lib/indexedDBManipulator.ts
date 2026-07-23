@@ -196,7 +196,7 @@ export class IndexedDBManipulator {
       this.setItem(key, value, publicId);
       return true;
     } catch (error) {
-      console.log(`Failed to ensure indexedDB item "${key}":`, error);
+      console.debug(`Failed to ensure indexedDB item "${key}":`, error);
       return false;
     }
   };

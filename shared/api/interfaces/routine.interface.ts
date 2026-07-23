@@ -436,9 +436,7 @@ export const LinkRoutineTagByIdResponseSchema = NotezyResponseSchema.extend({
   data: z.object({
     updatedAt: z.coerce.date(),
   }),
-  embedded: z.object({
-    publicId: z.string(),
-  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
 });
 
 export type LinkRoutineTagByIdResponse = z.infer<
@@ -447,39 +445,34 @@ export type LinkRoutineTagByIdResponse = z.infer<
 
 /* ============================== LinkRoutineTagsByIds ============================== */
 
-export const LinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend(
-  {
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
+export const LinkRoutineTagsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    linkedRoutinesAndTags: z.array(
+      z.object({
+        routineId: z.uuidv4(),
+        routineTagId: z.uuidv4(),
       })
-      .optional(),
-    body: z.object({
-      linkedRoutinesAndTags: z.array(
-        z.object({
-          routineId: z.uuidv4(),
-          routineTagId: z.uuidv4(),
-        })
-      ),
-      isUnlink: z.boolean(),
-    }),
-  }
-);
+    ),
+    isUnlink: z.boolean(),
+  }),
+});
 
 export type LinkRoutineTagsByIdsRequest = z.infer<
   typeof LinkRoutineTagsByIdsRequestSchema
 >;
 
-export const LinkRoutineTagsByIdsResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
+export const LinkRoutineTagsByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({ publicId: z.string().optional() }).optional(),
+});
 
 export type LinkRoutineTagsByIdsResponse = z.infer<
   typeof LinkRoutineTagsByIdsResponseSchema
@@ -520,38 +513,36 @@ export type LinkRoutineTaskByIdResponse = z.infer<
 
 /* ============================== LinkRoutineTasksByIds ============================== */
 
-export const LinkRoutineTasksByIdsRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
+export const LinkRoutineTasksByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    linkedRoutinesAndTasks: z.array(
+      z.object({
+        routineId: z.uuidv4(),
+        routineTaskId: z.uuidv4(),
       })
-      .optional(),
-    body: z.object({
-      linkedRoutinesAndTasks: z.array(
-        z.object({
-          routineId: z.uuidv4(),
-          routineTaskId: z.uuidv4(),
-        })
-      ),
-      isUnlink: z.boolean(),
-    }),
-  });
+    ),
+    isUnlink: z.boolean(),
+  }),
+});
 
 export type LinkRoutineTasksByIdsRequest = z.infer<
   typeof LinkRoutineTasksByIdsRequestSchema
 >;
 
-export const LinkRoutineTasksByIdsResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
+export const LinkRoutineTasksByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
 
 export type LinkRoutineTasksByIdsResponse = z.infer<
   typeof LinkRoutineTasksByIdsResponseSchema
@@ -593,39 +584,37 @@ export type LinkRoutineItemByIdResponse = z.infer<
 
 /* ============================== LinkRoutineItemsByIds ============================== */
 
-export const LinkRoutineItemsByIdsRequestSchema =
-  NotezyRequestSchema.extend({
-    header: z
-      .object({
-        userAgent: z.string().min(1).optional(),
-        authorization: z.string().optional(),
+export const LinkRoutineItemsByIdsRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  body: z.object({
+    linkedRoutinesAndItems: z.array(
+      z.object({
+        routineId: z.uuidv4(),
+        itemId: z.uuidv4(),
+        itemType: z.enum(AllItemTypes),
       })
-      .optional(),
-    body: z.object({
-      linkedRoutinesAndItems: z.array(
-        z.object({
-          routineId: z.uuidv4(),
-          itemId: z.uuidv4(),
-          itemType: z.enum(AllItemTypes),
-        })
-      ),
-      isUnlink: z.boolean(),
-    }),
-  });
+    ),
+    isUnlink: z.boolean(),
+  }),
+});
 
 export type LinkRoutineItemsByIdsRequest = z.infer<
   typeof LinkRoutineItemsByIdsRequestSchema
 >;
 
-export const LinkRoutineItemsByIdsResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.object({
-      updatedAt: z.coerce.date(),
-    }),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
+export const LinkRoutineItemsByIdsResponseSchema = NotezyResponseSchema.extend({
+  data: z.object({
+    updatedAt: z.coerce.date(),
+  }),
+  embedded: z.object({
+    publicId: z.string(),
+  }),
+});
 
 export type LinkRoutineItemsByIdsResponse = z.infer<
   typeof LinkRoutineItemsByIdsResponseSchema

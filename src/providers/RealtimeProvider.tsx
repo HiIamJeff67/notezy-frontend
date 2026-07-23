@@ -8,9 +8,10 @@ import {
 } from "@shared/api/invokers/realtime.invoker";
 import {
   RealtimeBinaryFrameType,
-  RealtimeClient,
   type RealtimeBlockPackChannelStatus,
+  RealtimeClient,
   type RealtimeConnectionState,
+  type RealtimeErrorCode,
 } from "@shared/api/websocket";
 import { RealtimeYjsProvider } from "@shared/blockpack/core";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
@@ -21,7 +22,6 @@ import type { UUID } from "crypto";
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -29,7 +29,10 @@ import {
 } from "react";
 import * as Y from "yjs";
 import type { z } from "zod";
-import { useNetwork, useUser } from "@/hooks";
+import { useNetwork } from "@/hooks/useNetwork";
+import { useUser } from "@/hooks/useUser";
+
+const RealtimeBlockPackChannelReleaseDelayMs = 250;
 
 export type RealtimeBlockPackChannel = {
   blockPackId: UUID;
@@ -39,13 +42,15 @@ export type RealtimeBlockPackChannel = {
   doc: Y.Doc;
   provider: RealtimeYjsProvider;
   error: string | null;
+  lifecycleErrorCode: RealtimeErrorCode | null;
 };
 
 type RealtimeChannelStore = RealtimeBlockPackChannel & {
   retainCount: number;
+  isDisposed: boolean;
 };
 
-type RealtimeContextType = {
+export type RealtimeContextType = {
   rootState: RealtimeConnectionState;
   connectionId: string | null;
   version: number;
@@ -59,6 +64,7 @@ type RealtimeContextType = {
   ) => RealtimeBlockPackChannel;
   releaseBlockPackChannel: (blockPackId: UUID) => void;
   getBlockPackChannel: (blockPackId: UUID) => RealtimeBlockPackChannel | null;
+  activeBlockPackChannelCount: number;
 };
 
 export const RealtimeContext = createContext<RealtimeContextType | undefined>(
@@ -74,11 +80,38 @@ export const RealtimeProvider = ({
   const { isOnline } = useNetwork();
   const clientRef = useRef<RealtimeClient | null>(null);
   const channelsRef = useRef<Map<UUID, RealtimeChannelStore>>(new Map());
+  const releaseTimersRef = useRef<Map<UUID, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
   const [rootState, setRootState] = useState<RealtimeConnectionState>("idle");
   const [connectionId, setConnectionId] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const activeBlockPackChannelCount = Array.from(
+    channelsRef.current.values()
+  ).filter(channel => channel.retainCount > 0 && !channel.isDisposed).length;
 
   const rerender = useCallback(() => setVersion(value => value + 1), []);
+
+  const clearReleaseTimer = useCallback((blockPackId: UUID) => {
+    const releaseTimer = releaseTimersRef.current.get(blockPackId);
+    if (!releaseTimer) return;
+    clearTimeout(releaseTimer);
+    releaseTimersRef.current.delete(blockPackId);
+  }, []);
+
+  const disposeBlockPackChannel = useCallback(
+    (channel: RealtimeChannelStore) => {
+      if (channel.isDisposed) return;
+      clearReleaseTimer(channel.blockPackId);
+      channel.provider.setReadOnly(true);
+      channel.provider.disconnect();
+      channel.provider.destroy();
+      channel.doc.destroy();
+      channel.connectorChannelId = null;
+      channel.isDisposed = true;
+    },
+    [clearReleaseTimer]
+  );
 
   const getRequestHeader = useCallback(() => {
     const accessToken = LocalStorageManipulator.getItemByKey(
@@ -126,6 +159,10 @@ export const RealtimeProvider = ({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      for (const releaseTimer of releaseTimersRef.current.values()) {
+        clearTimeout(releaseTimer);
+      }
+      releaseTimersRef.current.clear();
       window.removeEventListener("pagehide", flushAllBlockPackDocumentUpdates);
       window.removeEventListener(
         "beforeunload",
@@ -162,6 +199,12 @@ export const RealtimeProvider = ({
         return response.data;
       },
       getBlockPackChannelTicket: async (blockPackId, permission) => {
+        if (import.meta.env.DEV) {
+          console.debug("[RealtimeProvider] requesting block pack ticket", {
+            blockPackId,
+            permission,
+          });
+        }
         const response = await mutationFnCreateMyBlockPackChannelTicket({
           header: getRequestHeader(),
           body: {
@@ -169,6 +212,13 @@ export const RealtimeProvider = ({
             permission,
           },
         });
+        if (import.meta.env.DEV) {
+          console.debug("[RealtimeProvider] received block pack ticket", {
+            blockPackId,
+            requestedPermission: permission,
+            grantedPermission: response.data.permission,
+          });
+        }
         return response.data;
       },
       onState: setRootState,
@@ -199,21 +249,28 @@ export const RealtimeProvider = ({
       onChannelError: (blockPackId, frame) => {
         const channel = channelsRef.current.get(blockPackId as UUID);
         if (!channel) return;
+        if (channel.lifecycleErrorCode !== null) return;
 
         channel.error = frame.message;
         channel.connectorChannelId = null;
-        channel.provider.disconnect();
         if (frame.code === "permission_revoked") {
-          channel.permission = RealtimePermission.Read;
-          channel.provider.setReadOnly(true);
-          toast.error("BlockPack permission changed. Editing is now read-only.");
+          channel.lifecycleErrorCode = frame.code;
+          channel.status = "error";
+          disposeBlockPackChannel(channel);
+          toast.error("BlockPack permission changed. Please reopen it.");
         } else if (frame.code === "resource_unavailable") {
-          channel.provider.setReadOnly(true);
+          channel.lifecycleErrorCode = frame.code;
+          channel.status = "error";
+          disposeBlockPackChannel(channel);
           toast.error("This BlockPack is no longer available.");
         } else if (frame.code === "resync_required") {
-          channel.provider.setReadOnly(true);
+          channel.lifecycleErrorCode = frame.code;
+          channel.status = "error";
+          void channel.provider.flushPendingDocumentUpdatesNow();
+          channel.provider.disconnect();
           toast.error("Realtime document needs a resync. Please reopen it.");
         } else {
+          channel.provider.disconnect();
           toast.error(frame.message);
         }
         rerender();
@@ -235,7 +292,14 @@ export const RealtimeProvider = ({
         clientRef.current = null;
       }
     };
-  }, [getRequestHeader, isOnline, rerender, setChannelStatus, userData]);
+  }, [
+    disposeBlockPackChannel,
+    getRequestHeader,
+    isOnline,
+    rerender,
+    setChannelStatus,
+    userData,
+  ]);
 
   const getOrCreateBlockPackChannel = useCallback(
     (
@@ -245,7 +309,7 @@ export const RealtimeProvider = ({
       let channel = channelsRef.current.get(blockPackId);
       if (!channel) {
         const doc = new Y.Doc();
-        const provider = new RealtimeYjsProvider(doc);
+        const provider = new RealtimeYjsProvider(doc, blockPackId);
         provider.setReadOnly(permission === RealtimePermission.Read);
         channel = {
           blockPackId,
@@ -255,10 +319,14 @@ export const RealtimeProvider = ({
           doc,
           provider,
           error: null,
+          lifecycleErrorCode: null,
           retainCount: 0,
+          isDisposed: false,
         };
         channelsRef.current.set(blockPackId, channel);
       }
+
+      if (channel.lifecycleErrorCode !== null) return channel;
 
       channel.permission = permission;
       channel.provider.setReadOnly(permission === RealtimePermission.Read);
@@ -273,28 +341,43 @@ export const RealtimeProvider = ({
       permission: z.infer<typeof RealtimePermissionSchema>
     ) => {
       const channel = getOrCreateBlockPackChannel(blockPackId, permission);
+      clearReleaseTimer(blockPackId);
       channel.retainCount += 1;
-      clientRef.current?.registerBlockPackChannel(blockPackId, permission);
+      if (channel.lifecycleErrorCode === null) {
+        clientRef.current?.registerBlockPackChannel(blockPackId, permission);
+      }
+      rerender();
       return channel;
     },
-    [getOrCreateBlockPackChannel]
+    [clearReleaseTimer, getOrCreateBlockPackChannel, rerender]
   );
 
   const releaseBlockPackChannel = useCallback(
     (blockPackId: UUID) => {
       const channel = channelsRef.current.get(blockPackId);
       if (!channel) return;
-      channel.retainCount -= 1;
+      channel.retainCount = Math.max(0, channel.retainCount - 1);
       if (channel.retainCount > 0) return;
 
-      channel.provider.flushPendingDocumentUpdatesNow();
-      channel.provider.destroy();
-      clientRef.current?.unregisterBlockPackChannel(blockPackId);
-      channel.doc.destroy();
-      channelsRef.current.delete(blockPackId);
+      clearReleaseTimer(blockPackId);
+      const releaseTimer = setTimeout(() => {
+        releaseTimersRef.current.delete(blockPackId);
+        const latestChannel = channelsRef.current.get(blockPackId);
+        if (!latestChannel || latestChannel.retainCount > 0) return;
+
+        if (!latestChannel.isDisposed) {
+          latestChannel.provider.flushPendingDocumentUpdatesNow();
+          latestChannel.provider.destroy();
+          latestChannel.doc.destroy();
+        }
+        clientRef.current?.unregisterBlockPackChannel(blockPackId);
+        channelsRef.current.delete(blockPackId);
+        rerender();
+      }, RealtimeBlockPackChannelReleaseDelayMs);
+      releaseTimersRef.current.set(blockPackId, releaseTimer);
       rerender();
     },
-    [rerender]
+    [clearReleaseTimer, rerender]
   );
 
   const getBlockPackChannel = useCallback((blockPackId: UUID) => {
@@ -306,6 +389,7 @@ export const RealtimeProvider = ({
       rootState,
       connectionId,
       version,
+      activeBlockPackChannelCount,
       getOrCreateBlockPackChannel,
       retainBlockPackChannel,
       releaseBlockPackChannel,
@@ -313,6 +397,7 @@ export const RealtimeProvider = ({
     }),
     [
       connectionId,
+      activeBlockPackChannelCount,
       getBlockPackChannel,
       getOrCreateBlockPackChannel,
       releaseBlockPackChannel,
@@ -327,39 +412,4 @@ export const RealtimeProvider = ({
       {children}
     </RealtimeContext.Provider>
   );
-};
-
-export const useRealtime = () => {
-  const context = useContext(RealtimeContext);
-  if (!context)
-    throw new Error("useRealtime must be used within RealtimeProvider");
-  return context;
-};
-
-export const useBlockPackRealtimeChannel = (
-  blockPackId: UUID,
-  permission: z.infer<typeof RealtimePermissionSchema>
-) => {
-  const {
-    getOrCreateBlockPackChannel,
-    retainBlockPackChannel,
-    releaseBlockPackChannel,
-    getBlockPackChannel,
-  } = useRealtime();
-  const channel = getOrCreateBlockPackChannel(blockPackId, permission);
-
-  useEffect(() => {
-    const retainedBlockPackId = blockPackId;
-    retainBlockPackChannel(blockPackId, permission);
-    return () => {
-      releaseBlockPackChannel(retainedBlockPackId);
-    };
-  }, [
-    blockPackId,
-    permission,
-    releaseBlockPackChannel,
-    retainBlockPackChannel,
-  ]);
-
-  return getBlockPackChannel(blockPackId) ?? channel;
 };

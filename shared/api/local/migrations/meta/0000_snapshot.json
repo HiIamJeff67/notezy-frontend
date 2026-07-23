@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "acab453d-6460-4e7f-821d-cab2695f3453",
+  "id": "5fb8841d-0bd6-442d-bba4-370b948e69db",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "BlockPackTable": {
@@ -64,7 +64,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.666Z\"'"
+          "default": "'\"2026-07-23T11:09:10.517Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -72,7 +72,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.666Z\"'"
+          "default": "'\"2026-07-23T11:09:10.517Z\"'"
         }
       },
       "indexes": {
@@ -147,7 +147,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.916Z\"'"
+          "default": "'\"2026-07-23T11:09:10.619Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -155,7 +155,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.916Z\"'"
+          "default": "'\"2026-07-23T11:09:10.619Z\"'"
         }
       },
       "indexes": {
@@ -246,7 +246,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.682Z\"'"
+          "default": "'\"2026-07-23T11:09:10.521Z\"'"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -261,7 +261,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.682Z\"'"
+          "default": "'\"2026-07-23T11:09:10.521Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -269,7 +269,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.682Z\"'"
+          "default": "'\"2026-07-23T11:09:10.521Z\"'"
         }
       },
       "indexes": {},
@@ -333,7 +333,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.618Z\"'"
         },
         "scheduled_end_at": {
           "name": "scheduled_end_at",
@@ -341,7 +341,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.618Z\"'"
         },
         "period": {
           "name": "period",
@@ -371,7 +371,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.618Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -379,7 +379,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.618Z\"'"
         }
       },
       "indexes": {
@@ -433,7 +433,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.618Z\"'"
         }
       },
       "indexes": {
@@ -507,7 +507,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.908Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {
@@ -581,7 +581,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.906Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {
@@ -642,6 +642,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "owner_public_id": {
+          "name": "owner_public_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -671,7 +678,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -679,11 +686,25 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "RoutineTag_owner_public_id_UserTable_public_id_fk": {
+          "name": "RoutineTag_owner_public_id_UserTable_public_id_fk",
+          "tableFrom": "RoutineTag",
+          "tableTo": "UserTable",
+          "columnsFrom": [
+            "owner_public_id"
+          ],
+          "columnsTo": [
+            "public_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -780,7 +801,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "scheduled_at": {
           "name": "scheduled_at",
@@ -788,7 +809,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "actual_started_at": {
           "name": "actual_started_at",
@@ -810,7 +831,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -818,7 +839,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {
@@ -910,7 +931,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -918,7 +939,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {},
@@ -980,7 +1001,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.916Z\"'"
+          "default": "'\"2026-07-23T11:09:10.619Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -988,7 +1009,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.916Z\"'"
+          "default": "'\"2026-07-23T11:09:10.619Z\"'"
         }
       },
       "indexes": {
@@ -1070,7 +1091,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.921Z\"'"
+          "default": "'\"2026-07-23T11:09:10.620Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -1078,7 +1099,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.921Z\"'"
+          "default": "'\"2026-07-23T11:09:10.620Z\"'"
         }
       },
       "indexes": {},
@@ -1153,7 +1174,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.929Z\"'"
+          "default": "'\"2026-07-23T11:09:10.622Z\"'"
         }
       },
       "indexes": {
@@ -1238,7 +1259,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -1246,7 +1267,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {
@@ -1275,104 +1296,6 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "UsersToTagsTable": {
-      "name": "UsersToTagsTable",
-      "columns": {
-        "user_public_id": {
-          "name": "user_public_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "permission": {
-          "name": "permission",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
-        }
-      },
-      "indexes": {
-        "users_to_routine_tags_tag_idx": {
-          "name": "users_to_routine_tags_tag_idx",
-          "columns": [
-            "tag_id"
-          ],
-          "isUnique": false
-        },
-        "users_to_routine_tags_unique_idx_routine_owner": {
-          "name": "users_to_routine_tags_unique_idx_routine_owner",
-          "columns": [
-            "tag_id"
-          ],
-          "isUnique": true,
-          "where": "\"UsersToTagsTable\".\"permission\" = ?"
-        }
-      },
-      "foreignKeys": {
-        "UsersToTagsTable_user_public_id_UserTable_public_id_fk": {
-          "name": "UsersToTagsTable_user_public_id_UserTable_public_id_fk",
-          "tableFrom": "UsersToTagsTable",
-          "tableTo": "UserTable",
-          "columnsFrom": [
-            "user_public_id"
-          ],
-          "columnsTo": [
-            "public_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "UsersToTagsTable_tag_id_RoutineTag_id_fk": {
-          "name": "UsersToTagsTable_tag_id_RoutineTag_id_fk",
-          "tableFrom": "UsersToTagsTable",
-          "tableTo": "RoutineTag",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "UsersToTagsTable_user_public_id_tag_id_pk": {
-          "columns": [
-            "user_public_id",
-            "tag_id"
-          ],
-          "name": "UsersToTagsTable_user_public_id_tag_id_pk"
-        }
-      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -1406,7 +1329,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.940Z\"'"
+          "default": "'\"2026-07-23T11:09:10.623Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -1414,7 +1337,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.940Z\"'"
+          "default": "'\"2026-07-23T11:09:10.623Z\"'"
         }
       },
       "indexes": {
@@ -1504,7 +1427,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         },
         "created_at": {
           "name": "created_at",
@@ -1512,7 +1435,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-07-13T15:32:33.907Z\"'"
+          "default": "'\"2026-07-23T11:09:10.617Z\"'"
         }
       },
       "indexes": {

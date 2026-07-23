@@ -10,10 +10,6 @@ import {
   UserRole,
   UserStatus,
 } from "@shared/api/graphql/generated/graphql";
-import {
-  AccessControlPermission,
-  AllAccessControlPermissions,
-} from "@shared/api/interfaces/enums";
 import type {
   CreateRoutineTagRequest,
   CreateRoutineTagsRequest,
@@ -31,32 +27,13 @@ import {
   RoutineTag,
   Transaction,
   User,
-  UsersToRoutineTags,
 } from "@shared/api/local/schemas";
 import { TransactionActionType } from "@shared/api/local/schemas/enums/transaction_action_type.enum";
 import { TransactionEntityType } from "@shared/api/local/schemas/enums/transaction_entity_type.enum";
 import { generateUUID } from "@shared/types/uuidv4.type";
-import { and, eq, exists, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 export class RoutineTagLocalSimulator {
-  private static getPassPermissionCheckSQL = (
-    queryBuilder: Pick<typeof localDB, "select">,
-    userPublicId: string,
-    permissions: AccessControlPermission[]
-  ) =>
-    exists(
-      queryBuilder
-        .select({ one: sql`1` })
-        .from(UsersToRoutineTags)
-        .where(
-          and(
-            eq(UsersToRoutineTags.userPublicId, userPublicId),
-            eq(UsersToRoutineTags.tagId, RoutineTag.id),
-            inArray(UsersToRoutineTags.permission, permissions)
-          )
-        )
-    );
-
   static simulateSearchRoutineTags = async (
     input: SearchRoutineTagInput
   ): Promise<SearchRoutineTagsQuery["searchRoutineTags"]> => {
@@ -92,14 +69,7 @@ export class RoutineTagLocalSimulator {
         createdAt: RoutineTag.createdAt,
       })
       .from(RoutineTag)
-      .innerJoin(
-        UsersToRoutineTags,
-        and(
-          eq(UsersToRoutineTags.tagId, RoutineTag.id),
-          eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
-          inArray(UsersToRoutineTags.permission, AllAccessControlPermissions)
-        )
-      );
+      .where(eq(RoutineTag.ownerPublicId, loggedInUser.publicId));
 
     const normalizedQuery = input.query.trim().toLowerCase();
     const tags = accessibleTags.filter(tag => {
@@ -239,15 +209,12 @@ export class RoutineTagLocalSimulator {
         createdAt: RoutineTag.createdAt,
       })
       .from(RoutineTag)
-      .innerJoin(
-        UsersToRoutineTags,
+      .where(
         and(
-          eq(UsersToRoutineTags.tagId, RoutineTag.id),
-          eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
-          inArray(UsersToRoutineTags.permission, AllAccessControlPermissions)
+          eq(RoutineTag.id, request.param.routineTagId),
+          eq(RoutineTag.ownerPublicId, loggedInUser.publicId)
         )
       )
-      .where(eq(RoutineTag.id, request.param.routineTagId))
       .limit(1);
 
     if (request.param.isDeleted === true) return null;
@@ -276,14 +243,7 @@ export class RoutineTagLocalSimulator {
         createdAt: RoutineTag.createdAt,
       })
       .from(RoutineTag)
-      .innerJoin(
-        UsersToRoutineTags,
-        and(
-          eq(UsersToRoutineTags.tagId, RoutineTag.id),
-          eq(UsersToRoutineTags.userPublicId, loggedInUser.publicId),
-          inArray(UsersToRoutineTags.permission, AllAccessControlPermissions)
-        )
-      );
+      .where(eq(RoutineTag.ownerPublicId, loggedInUser.publicId));
   };
 
   static simulateCreateRoutineTag = async (
@@ -302,16 +262,10 @@ export class RoutineTagLocalSimulator {
       request.body.id = id;
       await tx.insert(RoutineTag).values({
         id,
+        ownerPublicId: loggedInUser.publicId,
         name: request.body.name,
         color: request.body.color,
         icon: request.body.icon,
-        createdAt,
-        updatedAt: createdAt,
-      });
-      await tx.insert(UsersToRoutineTags).values({
-        userPublicId: loggedInUser.publicId,
-        tagId: id,
-        permission: AccessControlPermission.Owner,
         createdAt,
         updatedAt: createdAt,
       });
@@ -342,6 +296,7 @@ export class RoutineTagLocalSimulator {
         tag.id = id;
         return {
           id,
+          ownerPublicId: loggedInUser.publicId,
           name: tag.name,
           color: tag.color,
           icon: tag.icon,
@@ -351,15 +306,6 @@ export class RoutineTagLocalSimulator {
       });
       if (tags.length > 0) {
         await tx.insert(RoutineTag).values(tags);
-        await tx.insert(UsersToRoutineTags).values(
-          tags.map(tag => ({
-            userPublicId: loggedInUser.publicId,
-            tagId: tag.id,
-            permission: AccessControlPermission.Owner,
-            createdAt,
-            updatedAt: createdAt,
-          }))
-        );
       }
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,
@@ -400,15 +346,7 @@ export class RoutineTagLocalSimulator {
         .where(
           and(
             eq(RoutineTag.id, request.body.routineTagId),
-            RoutineTagLocalSimulator.getPassPermissionCheckSQL(
-              tx,
-              loggedInUser.publicId,
-              [
-                AccessControlPermission.Owner,
-                AccessControlPermission.Admin,
-                AccessControlPermission.Write,
-              ]
-            )
+            eq(RoutineTag.ownerPublicId, loggedInUser.publicId)
           )
         );
       await tx.insert(Transaction).values({
@@ -452,15 +390,7 @@ export class RoutineTagLocalSimulator {
           .where(
             and(
               eq(RoutineTag.id, tag.routineTagId),
-              RoutineTagLocalSimulator.getPassPermissionCheckSQL(
-                tx,
-                loggedInUser.publicId,
-                [
-                  AccessControlPermission.Owner,
-                  AccessControlPermission.Admin,
-                  AccessControlPermission.Write,
-                ]
-              )
+              eq(RoutineTag.ownerPublicId, loggedInUser.publicId)
             )
           );
       }
@@ -491,11 +421,7 @@ export class RoutineTagLocalSimulator {
         .where(
           and(
             eq(RoutineTag.id, request.body.routineTagId),
-            RoutineTagLocalSimulator.getPassPermissionCheckSQL(
-              tx,
-              loggedInUser.publicId,
-              [AccessControlPermission.Owner, AccessControlPermission.Admin]
-            )
+            eq(RoutineTag.ownerPublicId, loggedInUser.publicId)
           )
         );
       if (tags.length === 0) return;
@@ -503,9 +429,6 @@ export class RoutineTagLocalSimulator {
       await tx
         .delete(RoutinesToTags)
         .where(eq(RoutinesToTags.tagId, request.body.routineTagId));
-      await tx
-        .delete(UsersToRoutineTags)
-        .where(eq(UsersToRoutineTags.tagId, request.body.routineTagId));
       await tx
         .delete(RoutineTag)
         .where(eq(RoutineTag.id, request.body.routineTagId));
@@ -536,11 +459,7 @@ export class RoutineTagLocalSimulator {
         .where(
           and(
             inArray(RoutineTag.id, request.body.routineTagIds),
-            RoutineTagLocalSimulator.getPassPermissionCheckSQL(
-              tx,
-              loggedInUser.publicId,
-              [AccessControlPermission.Owner, AccessControlPermission.Admin]
-            )
+            eq(RoutineTag.ownerPublicId, loggedInUser.publicId)
           )
         );
       const routineTagIds = tags.map(tag => tag.id);
@@ -549,9 +468,6 @@ export class RoutineTagLocalSimulator {
       await tx
         .delete(RoutinesToTags)
         .where(inArray(RoutinesToTags.tagId, routineTagIds));
-      await tx
-        .delete(UsersToRoutineTags)
-        .where(inArray(UsersToRoutineTags.tagId, routineTagIds));
       await tx.delete(RoutineTag).where(inArray(RoutineTag.id, routineTagIds));
       await tx.insert(Transaction).values({
         ownerPublicId: loggedInUser.publicId,

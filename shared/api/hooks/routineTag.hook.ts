@@ -1,13 +1,13 @@
 import type { UUID } from "node:crypto";
 import { useApolloClient } from "@apollo/client/react";
-import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
-import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import type {
   CreateRoutineTagRequest,
   CreateRoutineTagsRequest,
@@ -151,12 +151,12 @@ export const useGetAllMyRoutineTags = (
       LocalStorageManipulator.ensureItem(
         LocalStorageKey.accessToken,
         response.refreshableTokens?.newAccessToken,
-        response.embedded.publicId
+        response.embedded?.publicId
       );
       SessionStorageManipulator.ensureItem(
         SessionStorageKey.csrfToken,
         response.refreshableTokens?.newCSRFToken,
-        response.embedded.publicId
+        response.embedded?.publicId
       );
       await RoutineTagLocalSynchronizer.syncGetAllMyRoutineTags(response);
       return response;

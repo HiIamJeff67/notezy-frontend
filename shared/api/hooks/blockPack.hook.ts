@@ -7,6 +7,7 @@ import {
 } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import type {
   MoveMyBlockPacksByParentSubShelfIdsRequest,
   MoveMyBlockPacksByParentSubShelfIdsResponse,
@@ -204,10 +205,18 @@ export const useGetMyBlockPackAndItsParentById = (
           );
         return {
           success: false,
-          data: existingBlockPackAndItsParent,
+          data: existingBlockPackAndItsParent
+            ? {
+                ...existingBlockPackAndItsParent,
+                permission:
+                  "permission" in existingBlockPackAndItsParent
+                    ? existingBlockPackAndItsParent.permission
+                    : AccessControlPermission.Read,
+              }
+            : existingBlockPackAndItsParent,
           exception: error.unWrap,
           embedded: { publicId: "" },
-        } as GetMyBlockPackAndItsParentByIdResponse;
+        } as unknown as GetMyBlockPackAndItsParentByIdResponse;
       }
 
       throw error;

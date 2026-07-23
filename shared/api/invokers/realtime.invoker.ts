@@ -6,6 +6,7 @@ import { ValidationClientException } from "@shared/api/exceptions/client/validat
 import {
   CreateMyBlockPackChannelTicket,
   CreateMyRealtimeConnectionTicket,
+  GetBlockPackParticipants,
 } from "@shared/api/functions/realtime.serverFn";
 import {
   type CreateMyBlockPackChannelTicketRequest,
@@ -16,6 +17,10 @@ import {
   CreateMyRealtimeConnectionTicketRequestSchema,
   type CreateMyRealtimeConnectionTicketResponse,
   CreateMyRealtimeConnectionTicketResponseSchema,
+  type GetBlockPackParticipantsRequest,
+  GetBlockPackParticipantsRequestSchema,
+  type GetBlockPackParticipantsResponse,
+  GetBlockPackParticipantsResponseSchema,
 } from "@shared/api/interfaces/realtime.interface";
 import { ZodError } from "zod";
 
@@ -63,6 +68,32 @@ export const mutationFnCreateMyBlockPackChannelTicket = async (
       "error happening in mutationFnCreateMyBlockPackChannelTicket",
       error
     );
+    if (error instanceof ZodError) {
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    } else if (error instanceof NotezyAPIError) {
+      throw error;
+    } else if (error instanceof TypeError) {
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    }
+
+    throw error;
+  }
+};
+
+export const queryFnGetBlockPackParticipants = async (
+  request: GetBlockPackParticipantsRequest
+): Promise<GetBlockPackParticipantsResponse> => {
+  try {
+    const validatedRequest =
+      GetBlockPackParticipantsRequestSchema.parse(request);
+    const response = await GetBlockPackParticipants({
+      data: validatedRequest,
+    });
+    return GetBlockPackParticipantsResponseSchema.parse(response);
+  } catch (error) {
+    console.error("error happening in queryFnGetBlockPackParticipants", error);
     if (error instanceof ZodError) {
       throw new NotezyValidationError(
         ValidationClientException.ZodParsingFailed(error)

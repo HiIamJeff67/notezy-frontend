@@ -6,6 +6,8 @@ import {
   CreateRootShelfResponse,
   CreateRootShelvesRequest,
   CreateRootShelvesResponse,
+  DeleteRootShelfPermissionsRequest,
+  DeleteRootShelfPermissionsResponse,
   DeleteMyRootShelfByIdRequest,
   DeleteMyRootShelfByIdResponse,
   DeleteMyRootShelvesByIdsRequest,
@@ -22,12 +24,15 @@ import {
   UpdateMyRootShelfByIdResponse,
   UpdateMyRootShelvesByIdsRequest,
   UpdateMyRootShelvesByIdsResponse,
+  UpsertRootShelfPermissionRequest,
+  UpsertRootShelfPermissionResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
+import type { UUID } from "node:crypto";
 
 export const GetMyRootShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyRootShelfByIdRequest) => data)
@@ -204,6 +209,114 @@ export const CreateRootShelves = createServerFn({ method: "POST" })
 
     return formattedResponse;
   });
+
+export const UpsertRootShelfPermission = createServerFn({ method: "POST" })
+  .inputValidator((data: UpsertRootShelfPermissionRequest) => data)
+  .handler(
+    async ({
+      data: request,
+    }): Promise<UpsertRootShelfPermissionResponse> => {
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.upsertRootShelfPermission(
+          request.param.rootShelfId as UUID,
+          request.param.userPublicId as UUID
+        )}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": userAgent,
+            ...(request.header?.authorization
+              ? { Authorization: request.header.authorization }
+              : {}),
+            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+          },
+          body: JSON.stringify(request.body),
+          credentials: "include",
+        }
+      );
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as UpsertRootShelfPermissionResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
+
+export const DeleteRootShelfPermissions = createServerFn({ method: "POST" })
+  .inputValidator((data: DeleteRootShelfPermissionsRequest) => data)
+  .handler(
+    async ({
+      data: request,
+    }): Promise<DeleteRootShelfPermissionsResponse> => {
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteRootShelfPermissions(
+          request.param.rootShelfId as UUID
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": userAgent,
+            ...(request.header?.authorization
+              ? { Authorization: request.header.authorization }
+              : {}),
+            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+          },
+          body: JSON.stringify(request.body),
+          credentials: "include",
+        }
+      );
+
+      forwardUpstreamSetCookies(response);
+      if (response.status === 204) {
+        return {
+          success: true,
+          data: null,
+          exception: null,
+        };
+      }
+
+      if (!isJsonResponse(response)) {
+        throw new Error(tKey.error.encounterUnknownError);
+      }
+
+      const formattedResponse =
+        (await response.json()) as DeleteRootShelfPermissionsResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
 
 export const UpdateMyRootShelfById = createServerFn({ method: "POST" })
   .inputValidator((data: UpdateMyRootShelfByIdRequest) => data)

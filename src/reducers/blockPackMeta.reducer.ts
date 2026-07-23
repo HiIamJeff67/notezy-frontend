@@ -1,5 +1,8 @@
 import type { PartialBlock } from "@blocknote/core";
-import { SupportedIcon } from "@shared/api/interfaces/enums/supportedIcon.enum";
+import {
+  AccessControlPermission,
+  SupportedIcon,
+} from "@shared/api/interfaces/enums";
 import { generateUUID } from "@shared/types/uuidv4.type";
 import type { UUID } from "crypto";
 
@@ -7,6 +10,7 @@ export interface BlockPackMeta {
   id: UUID;
   parentId: UUID;
   rootId: UUID;
+  permission: AccessControlPermission;
   name: string;
   icon: SupportedIcon | null;
   headerBackgroundURL: string | null;
@@ -26,6 +30,7 @@ export const getDefaultBlockPackMeta = (
   id: blockPackId,
   parentId: parentSubShelfId,
   rootId: rootShelfId,
+  permission: AccessControlPermission.Owner,
   name: "Untitled",
   icon: null,
   headerBackgroundURL: null,

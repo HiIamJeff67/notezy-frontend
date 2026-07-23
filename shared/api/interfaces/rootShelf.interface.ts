@@ -2,7 +2,10 @@ import {
   NotezyRequestSchema,
   NotezyResponseSchema,
 } from "@shared/api/interfaces/context.interface";
-import { AllAccessControlPermissions } from "@shared/api/interfaces/enums/accessControlPermission.enum";
+import {
+  AccessControlPermission,
+  AllAccessControlPermissions,
+} from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import z from "zod";
 
 /* ============================== GetMyRootShelfById ============================== */
@@ -160,6 +163,82 @@ export const CreateRootShelvesResponseSchema = NotezyResponseSchema.extend({
 
 export type CreateRootShelvesResponse = z.infer<
   typeof CreateRootShelvesResponseSchema
+>;
+
+/* ============================== UpsertRootShelfPermission ============================== */
+
+export const UpsertRootShelfPermissionRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({
+      rootShelfId: z.uuidv4(),
+      userPublicId: z.uuidv4(),
+    }),
+    body: z.object({
+      permission: z.enum([
+        AccessControlPermission.Admin,
+        AccessControlPermission.Write,
+        AccessControlPermission.Read,
+      ]),
+    }),
+  });
+
+export type UpsertRootShelfPermissionRequest = z.infer<
+  typeof UpsertRootShelfPermissionRequestSchema
+>;
+
+export const UpsertRootShelfPermissionResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      userPublicId: z.uuidv4(),
+      permission: z.enum([
+        AccessControlPermission.Admin,
+        AccessControlPermission.Write,
+        AccessControlPermission.Read,
+      ]),
+      updatedAt: z.coerce.date(),
+      createdAt: z.coerce.date(),
+    }),
+  });
+
+export type UpsertRootShelfPermissionResponse = z.infer<
+  typeof UpsertRootShelfPermissionResponseSchema
+>;
+
+/* ============================== DeleteRootShelfPermissions ============================== */
+
+export const DeleteRootShelfPermissionsRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({
+      rootShelfId: z.uuidv4(),
+    }),
+    body: z.object({
+      userPublicIds: z.array(z.uuidv4()).min(1).max(1024),
+    }),
+  });
+
+export type DeleteRootShelfPermissionsRequest = z.infer<
+  typeof DeleteRootShelfPermissionsRequestSchema
+>;
+
+export const DeleteRootShelfPermissionsResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.null(),
+  });
+
+export type DeleteRootShelfPermissionsResponse = z.infer<
+  typeof DeleteRootShelfPermissionsResponseSchema
 >;
 
 /* ============================== UpdateMyRootShelfById ============================== */

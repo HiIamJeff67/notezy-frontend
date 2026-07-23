@@ -8,7 +8,14 @@ import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import type { UUID } from "crypto";
-import { createContext, RefObject, useCallback, useRef, useState } from "react";
+import {
+  createContext,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useItemLogic } from "./ItemLogic";
 import { useRootShelfLogic } from "./RootShelfLogic";
 import { useSubShelfLogic } from "./SubShelfLogic";
@@ -48,9 +55,9 @@ export const ShelfItemProvider = ({
     )
   );
 
-  const forceUpdate = () => {
+  const forceUpdate = useCallback(() => {
     setUpdateTrigger(prev => (prev + 1) % MaxTriggerValue);
-  };
+  }, []);
 
   const isFocused = useCallback(
     (id: UUID): boolean => {
@@ -79,6 +86,40 @@ export const ShelfItemProvider = ({
     setFocusedNode,
     forceUpdate,
   });
+
+  useEffect(() => {
+    const handleRealtimeUnavailable = (event: Event) => {
+      const detail = (event as CustomEvent).detail as
+        | {
+            rootShelfId?: UUID;
+            blockPackId?: UUID;
+            reason?: string;
+          }
+        | undefined;
+      if (!detail) return;
+
+      if (detail.reason === "permission_revoked" && detail.rootShelfId) {
+        rootShelfLogic.removeRootShelfOptimistically(detail.rootShelfId);
+        return;
+      }
+      if (detail.reason === "resource_unavailable" && detail.blockPackId) {
+        itemLogic.removeBlockPackOptimistically(detail.blockPackId);
+      }
+    };
+
+    window.addEventListener(
+      "notezy:block-pack-room-unavailable",
+      handleRealtimeUnavailable
+    );
+    return () =>
+      window.removeEventListener(
+        "notezy:block-pack-room-unavailable",
+        handleRealtimeUnavailable
+      );
+  }, [
+    itemLogic.removeBlockPackOptimistically,
+    rootShelfLogic.removeRootShelfOptimistically,
+  ]);
 
   const contextValue: ShelfItemContextType = {
     inputRef: inputRef,
