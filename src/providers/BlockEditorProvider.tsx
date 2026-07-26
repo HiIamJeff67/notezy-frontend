@@ -9,16 +9,17 @@ import {
 } from "@shared/blockpack/core";
 import { WebURLPathDictionary } from "@shared/constants";
 import { randomColor } from "@shared/util/random";
-import { createContext, useEffect, useMemo } from "react";
+import { createContext, useCallback, useEffect, useMemo } from "react";
 import type * as Y from "yjs";
 import { useAppRouterActions } from "@/hooks/useAppRouter";
-import { useBlockPackRealtimeChannel } from "@/hooks/useRealtime";
+import { useBlockPackRealtimeChannel, useRealtime } from "@/hooks/useRealtime";
 import { useUser } from "@/hooks/useUser";
 import { BlockPackMeta } from "@/reducers/blockPackMeta.reducer";
 
 interface BlockEditorContextType {
   editor: BlockNoteEditor<any, any, any>;
   state: BlockEditorState;
+  resync: () => Promise<void>;
 }
 
 export const BlockEditorContext = createContext<
@@ -51,6 +52,15 @@ export const BlockEditorProvider = ({
   const channel = useBlockPackRealtimeChannel(
     blockPackMeta.id,
     requestedRealtimePermission
+  );
+  const { resyncBlockPackChannel } = useRealtime();
+  const resync = useCallback(
+    async () =>
+      await resyncBlockPackChannel(
+        blockPackMeta.id,
+        requestedRealtimePermission
+      ),
+    [blockPackMeta.id, requestedRealtimePermission, resyncBlockPackChannel]
   );
 
   const editor = useMemo(
@@ -108,6 +118,8 @@ export const BlockEditorProvider = ({
 
   useEffect(() => {
     if (channel.lifecycleErrorCode === null) return;
+    if (channel.lifecycleErrorCode === "resync_required") return;
+
     window.dispatchEvent(
       new CustomEvent("notezy:block-pack-room-unavailable", {
         detail: {
@@ -126,7 +138,7 @@ export const BlockEditorProvider = ({
   ]);
 
   return (
-    <BlockEditorContext.Provider value={{ editor, state }}>
+    <BlockEditorContext.Provider value={{ editor, state, resync }}>
       {children}
     </BlockEditorContext.Provider>
   );

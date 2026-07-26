@@ -156,11 +156,6 @@ html[data-reduce-motion="true"] *::after {
   transition-duration: 1ms !important;
 }
 
-.notezy-block-editor .bn-default-styles,
-.notezy-block-editor .bn-editor {
-  font-size: var(--notezy-editor-font-size, 16px);
-}
-
 html[data-density] .notezy-block-editor .bn-extend-button[data-slot="button"],
 .notezy-block-editor .bn-extend-button[data-slot="button"] {
   min-height: 0;

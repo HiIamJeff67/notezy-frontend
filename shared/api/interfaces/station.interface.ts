@@ -182,6 +182,56 @@ export type CreateStationsResponse = z.infer<
   typeof CreateStationsResponseSchema
 >;
 
+/* ============================== Ownership and membership ============================== */
+
+export const TransferMyStationOwnershipRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({ stationId: z.uuidv4() }),
+    body: z.object({ targetUserPublicId: z.uuidv4() }),
+  });
+export type TransferMyStationOwnershipRequest = z.infer<
+  typeof TransferMyStationOwnershipRequestSchema
+>;
+export const TransferMyStationOwnershipResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      stationId: z.uuidv4(),
+      previousOwnerUserPublicId: z.uuidv4(),
+      newOwnerUserPublicId: z.uuidv4(),
+      updatedAt: z.coerce.date(),
+    }),
+  });
+export type TransferMyStationOwnershipResponse = z.infer<
+  typeof TransferMyStationOwnershipResponseSchema
+>;
+
+export const LeaveMyStationRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  param: z.object({ stationId: z.uuidv4() }),
+  body: z
+    .object({ targetUserPublicId: z.uuidv4().optional() })
+    .optional()
+    .default({}),
+});
+export type LeaveMyStationRequest = z.infer<typeof LeaveMyStationRequestSchema>;
+export const LeaveMyStationResponseSchema = NotezyResponseSchema.extend({
+  data: z.null(),
+});
+export type LeaveMyStationResponse = z.infer<
+  typeof LeaveMyStationResponseSchema
+>;
+
 /* ============================== UpdateMyStationById ============================== */
 
 export const UpdateMyStationByIdRequestSchema = NotezyRequestSchema.extend({

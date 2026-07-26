@@ -3,13 +3,17 @@ import { ClipboardIcon, RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, SettingRow } from "../PreferenceRows";
 
-const AboutTab = () => {
+interface AboutTabProps {
+  layout?: "panel" | "article";
+}
+
+const AboutTab = ({ layout = "panel" }: AboutTabProps) => {
   const { clipboardState, copyPreferences, resetPreferences } =
     useLocalPreferences();
 
   return (
     <div>
-      <Section>
+      <Section article={layout === "article"}>
         <SettingRow title="版本" description="目前安裝的 Notezy 前端版本。">
           <span className="text-sm font-semibold">0.1.0</span>
         </SettingRow>

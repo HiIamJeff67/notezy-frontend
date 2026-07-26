@@ -1,5 +1,5 @@
-import { NotezyBlockPackEditor } from "@shared/blockpack/core";
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
+import { NotezyBlockPackEditor } from "@shared/blockpack/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -265,10 +265,16 @@ const CreateBlockPackPayloadEditor = ({
     setPatternBlocks(nextPatternBlocks);
     setPayloadPreview(JSON.stringify(parsedInitialPayload, null, 2));
 
-    const blocks =
+    const templateBlocks =
       purpose === RoutineTaskPurpose.CreateBlockPack &&
       Array.isArray(parsedInitialPayload.template?.blocks)
         ? parsedInitialPayload.template.blocks
+        : [];
+    const loadedBlocks =
+      purpose === RoutineTaskPurpose.CreateBlockPack
+        ? templateBlocks.map(
+            rawBlock => rawBlock?.arborizedEditableBlock ?? rawBlock
+          )
         : (purpose === RoutineTaskPurpose.AppendBlock ||
               purpose === RoutineTaskPurpose.UpdateBlock) &&
             parsedInitialPayload.arborizedEditableBlock
@@ -280,6 +286,16 @@ const CreateBlockPackPayloadEditor = ({
                 content: [],
               },
             ];
+    const blocks = loadedBlocks.filter(
+      block => typeof block?.id === "string" && block.id.trim().length > 0
+    );
+    if (blocks.length === 0) {
+      blocks.push({
+        id: crypto.randomUUID(),
+        type: "paragraph",
+        content: [],
+      });
+    }
     editor.replaceBlocks(
       editor.document.map(block => block.id),
       blocks
@@ -372,13 +388,21 @@ const CreateBlockPackPayloadEditor = ({
     };
 
     if (purpose === RoutineTaskPurpose.CreateBlockPack) {
+      const templateBlocks = normalizedBlocks.map(
+        (block: any, index: number) => ({
+          clientId: block.id,
+          prevClientId: index === 0 ? null : normalizedBlocks[index - 1].id,
+          arborizedEditableBlock: block,
+        })
+      );
+
       return {
         targetSubShelfId,
         template: {
           name: templateName.trim() || "Routine block pack",
           icon: null,
           headerBackgroundURL: null,
-          blocks: normalizedBlocks,
+          blocks: templateBlocks,
         },
         ...(Object.keys(templatePattern).length > 0 && {
           pattern: templatePattern,

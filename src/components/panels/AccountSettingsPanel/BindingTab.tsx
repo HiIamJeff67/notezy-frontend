@@ -33,6 +33,7 @@ import {
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 
 interface BindTabProps {
+  layout?: "panel" | "page";
   sendAuthCodeTimeCounter: number;
   setSendAuthCodeTimeCounter: (newSendAuthCodeTimeCounter: number) => void;
   isSendAuthCodePending: boolean;
@@ -45,6 +46,7 @@ interface BindTabProps {
 }
 
 const BindingTab = ({
+  layout,
   sendAuthCodeTimeCounter,
   setSendAuthCodeTimeCounter,
   isSendAuthCodePending,
@@ -158,6 +160,7 @@ const BindingTab = ({
 
   return (
     <SettingMenu
+      layout={layout}
       dialogs={[
         <Dialog
           open={bindBackupEmailDialogOpen}

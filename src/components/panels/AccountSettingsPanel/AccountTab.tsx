@@ -29,7 +29,11 @@ import {
 import { useLanguage, useLoading } from "@/hooks";
 import { useUser } from "@/hooks/useUser";
 
-const AccountTab = memo(() => {
+interface AccountTabProps {
+  layout?: "panel" | "page";
+}
+
+const AccountTab = memo(({ layout = "panel" }: AccountTabProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userManager = useUser();
@@ -108,14 +112,18 @@ const AccountTab = memo(() => {
   return (
     <Form {...userForm}>
       <form
-        className="w-full h-full overflow-hidden flex flex-col"
+        className={`w-full flex flex-col ${
+          layout === "panel" ? "h-full overflow-hidden" : ""
+        }`}
         method="POST"
         onSubmit={userForm.handleSubmit(handleSaveUserOnSubmit)}
       >
         <div
-          className="
-          flex flex-col px-8 pt-12 pb-8 bg-muted gap-6 min-h-full
-          overflow-y-scroll ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
+          className={`flex flex-col gap-6 ${
+            layout === "panel"
+              ? "min-h-full overflow-y-scroll bg-muted px-8 pt-12 pb-8 ![scrollbar-color:var(--muted-foreground)_var(--secondary)]"
+              : ""
+          }`}
         >
           <FormField
             control={userForm.control}
@@ -249,7 +257,11 @@ const AccountTab = memo(() => {
             )}
           />
 
-          <div className="flex justify-start gap-4 pt-6 border-t border-border/50">
+          <div
+            className={`flex justify-start gap-4 pt-6 ${
+              layout === "panel" ? "border-t border-border/50" : ""
+            }`}
+          >
             <Button variant="default" type="submit" className="max-w-2/5">
               Save Account
             </Button>

@@ -4,7 +4,17 @@ import { SubShelfManipulator } from "@shared/lib/subShelfManipulator";
 import toast from "@shared/lib/toast";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileText,
+  FolderPlus,
+  Package,
+  PackagePlus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
@@ -244,17 +254,23 @@ const SubShelfMenuItem = ({
             <ContextMenuLabel>Add</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuSub>
-                <ContextMenuSubTrigger>Items</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger>
+                  <PackagePlus className="mr-2 size-4" />
+                  Items
+                </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   <ContextMenuItem onClick={handleCreateMaterial}>
+                    <FileText className="mr-2 size-4" />
                     Material
                   </ContextMenuItem>
                   <ContextMenuItem onClick={handleCreateBlockPack}>
+                    <Package className="mr-2 size-4" />
                     Block Pack
                   </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
               <ContextMenuItem onClick={handleCreateSubShelf}>
+                <FolderPlus className="mr-2 size-4" />
                 Sub Shelf
               </ContextMenuItem>
             </ContextMenuGroup>
@@ -266,6 +282,7 @@ const SubShelfMenuItem = ({
                   shelfItemManager.startRenamingSubShelfNode(current)
                 }
               >
+                <Pencil className="mr-2 size-4" />
                 Rename
               </ContextMenuItem>
               <ContextMenuItem
@@ -290,6 +307,7 @@ const SubShelfMenuItem = ({
                   })
                 }
               >
+                <Trash2 className="mr-2 size-4" />
                 Delete
               </ContextMenuItem>
             </ContextMenuGroup>

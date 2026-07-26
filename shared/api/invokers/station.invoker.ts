@@ -17,6 +17,8 @@ import {
   UpdateMyStationById,
   UpdateMyStationsByIds,
   VisualizeMyTotalCount,
+  LeaveMyStation,
+  TransferMyStationOwnership,
 } from "@shared/api/functions/station.serverFn";
 import {
   CreateStationRequest,
@@ -71,6 +73,14 @@ import {
   VisualizeMyTotalCountRequestSchema,
   type VisualizeMyTotalCountResponse,
   VisualizeMyTotalCountResponseSchema,
+  type LeaveMyStationRequest,
+  LeaveMyStationRequestSchema,
+  type LeaveMyStationResponse,
+  LeaveMyStationResponseSchema,
+  type TransferMyStationOwnershipRequest,
+  TransferMyStationOwnershipRequestSchema,
+  type TransferMyStationOwnershipResponse,
+  TransferMyStationOwnershipResponseSchema,
 } from "@shared/api/interfaces/station.interface";
 import { ZodError } from "zod";
 import { invokeVisualizeQuery } from "./visualize.invoker";
@@ -136,6 +146,44 @@ export const queryFnGetAllMyStations = async (
     } else if (error instanceof TypeError) {
       throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     }
+    throw error;
+  }
+};
+
+export const mutationFnTransferMyStationOwnership = async (
+  request: TransferMyStationOwnershipRequest
+): Promise<TransferMyStationOwnershipResponse> => {
+  try {
+    const response = await TransferMyStationOwnership({
+      data: TransferMyStationOwnershipRequestSchema.parse(request),
+    });
+    return TransferMyStationOwnershipResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError)
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    if (error instanceof TypeError)
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
+    throw error;
+  }
+};
+
+export const mutationFnLeaveMyStation = async (
+  request: LeaveMyStationRequest
+): Promise<LeaveMyStationResponse> => {
+  try {
+    const response = await LeaveMyStation({
+      data: LeaveMyStationRequestSchema.parse(request),
+    });
+    return LeaveMyStationResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof ZodError)
+      throw new NotezyValidationError(
+        ValidationClientException.ZodParsingFailed(error)
+      );
+    if (error instanceof TypeError)
+      throw new NotezyFetchError(FetchClientExceptions.MissingNetwork());
     throw error;
   }
 };

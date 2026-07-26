@@ -20,6 +20,8 @@ export const queryKeys = {
     all: () => ["rootShelf"] as const,
     oneById: (rootShelfId: UUID | undefined, isDeleted: boolean = false) =>
       ["rootShelf", "oneById", rootShelfId, isDeleted] as const,
+    permission: (rootShelfId?: UUID) =>
+      ["rootShelf", "permission", rootShelfId] as const,
   },
   subShelf: {
     all: () => ["subShelf"] as const,
@@ -104,6 +106,8 @@ export const queryKeys = {
       ["station", "myAll", areDeleted] as const,
     oneById: (routineId?: UUID, isDeleted: boolean = false) =>
       ["station", "oneById", routineId, isDeleted] as const,
+    permission: (stationId?: UUID) =>
+      ["station", "permission", stationId] as const,
   },
   routine: {
     all: () => ["routine"] as const,

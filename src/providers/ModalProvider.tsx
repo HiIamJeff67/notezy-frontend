@@ -71,6 +71,7 @@ export type ModalPropsMap = {
     dialogDescription: React.ReactNode;
     disableInput?: boolean;
     inputPlaceholder?: string;
+    submitLabel?: string;
     onCreate: (value: string) => void | Promise<void>;
     onCancel: () => void;
   };

@@ -25,7 +25,7 @@ const RoutineTaskRecordDialogSkeleton = ({
   onClose,
 }: RoutineTaskRecordDialogSkeletonProps) => (
   <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-    <DialogContent className="flex max-h-[82vh] flex-col gap-0 overflow-hidden rounded-md bg-card p-0 sm:max-w-5xl">
+    <DialogContent className="flex max-h-[82vh] w-[min(94vw,48rem)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-md bg-card p-0 sm:max-w-[min(88vw,48rem)]">
       <DialogHeader className="shrink-0 border-b border-border bg-secondary px-6 py-5 pr-12">
         <DialogTitle>Routine task records</DialogTitle>
         <DialogDescription>

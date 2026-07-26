@@ -1,4 +1,5 @@
 import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
+import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import type { UUID } from "crypto";
 
 type ShelfType = "RootShelf" | "SubShelf";
@@ -37,6 +38,7 @@ export interface RootShelfNode {
   lastAnalyzedAt: Date;
   updatedAt: Date;
   createdAt: Date;
+  permission: AccessControlPermission;
 
   isExpanded: boolean;
   children: Record<UUID, SubShelfNode>;

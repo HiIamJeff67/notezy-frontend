@@ -2,6 +2,7 @@ import { WebURLPathDictionary } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import { MaterialNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useCallback } from "react";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
@@ -88,6 +89,7 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
         <ContextMenuLabel>View</ContextMenuLabel>
         <ContextMenuGroup>
           <ContextMenuItem onClick={handleMaterialOnClick}>
+            <ExternalLink className="mr-2 size-4" />
             Open
           </ContextMenuItem>
         </ContextMenuGroup>
@@ -97,6 +99,7 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
           <ContextMenuItem
             onClick={() => shelfItemManager.startRenamingItemNode(current)}
           >
+            <Pencil className="mr-2 size-4" />
             Rename
           </ContextMenuItem>
           <ContextMenuItem
@@ -108,6 +111,7 @@ const MaterialMenuItem = ({ parent, current }: MaterialMenuItemProps) => {
               }
             }}
           >
+            <Trash2 className="mr-2 size-4" />
             Delete
           </ContextMenuItem>
         </ContextMenuGroup>

@@ -64,6 +64,10 @@ export type RealtimeContextType = {
   ) => RealtimeBlockPackChannel;
   releaseBlockPackChannel: (blockPackId: UUID) => void;
   getBlockPackChannel: (blockPackId: UUID) => RealtimeBlockPackChannel | null;
+  resyncBlockPackChannel: (
+    blockPackId: UUID,
+    permission: z.infer<typeof RealtimePermissionSchema>
+  ) => Promise<void>;
   activeBlockPackChannelCount: number;
 };
 
@@ -266,9 +270,9 @@ export const RealtimeProvider = ({
         } else if (frame.code === "resync_required") {
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";
-          void channel.provider.flushPendingDocumentUpdatesNow();
+          channel.provider.setReadOnly(true);
           channel.provider.disconnect();
-          toast.error("Realtime document needs a resync. Please reopen it.");
+          toast.error("Realtime document needs a resync.");
         } else {
           channel.provider.disconnect();
           toast.error(frame.message);
@@ -301,6 +305,31 @@ export const RealtimeProvider = ({
     userData,
   ]);
 
+  const createBlockPackChannel = useCallback(
+    (
+      blockPackId: UUID,
+      permission: z.infer<typeof RealtimePermissionSchema>,
+      retainCount = 0
+    ): RealtimeChannelStore => {
+      const doc = new Y.Doc();
+      const provider = new RealtimeYjsProvider(doc, blockPackId);
+      provider.setReadOnly(permission === RealtimePermission.Read);
+      return {
+        blockPackId,
+        permission,
+        status: "idle",
+        connectorChannelId: null,
+        doc,
+        provider,
+        error: null,
+        lifecycleErrorCode: null,
+        retainCount,
+        isDisposed: false,
+      };
+    },
+    []
+  );
+
   const getOrCreateBlockPackChannel = useCallback(
     (
       blockPackId: UUID,
@@ -308,21 +337,7 @@ export const RealtimeProvider = ({
     ) => {
       let channel = channelsRef.current.get(blockPackId);
       if (!channel) {
-        const doc = new Y.Doc();
-        const provider = new RealtimeYjsProvider(doc, blockPackId);
-        provider.setReadOnly(permission === RealtimePermission.Read);
-        channel = {
-          blockPackId,
-          permission,
-          status: "idle",
-          connectorChannelId: null,
-          doc,
-          provider,
-          error: null,
-          lifecycleErrorCode: null,
-          retainCount: 0,
-          isDisposed: false,
-        };
+        channel = createBlockPackChannel(blockPackId, permission);
         channelsRef.current.set(blockPackId, channel);
       }
 
@@ -332,7 +347,7 @@ export const RealtimeProvider = ({
       channel.provider.setReadOnly(permission === RealtimePermission.Read);
       return channel;
     },
-    []
+    [createBlockPackChannel]
   );
 
   const retainBlockPackChannel = useCallback(
@@ -384,6 +399,37 @@ export const RealtimeProvider = ({
     return channelsRef.current.get(blockPackId) ?? null;
   }, []);
 
+  const resyncBlockPackChannel = useCallback(
+    async (
+      blockPackId: UUID,
+      permission: z.infer<typeof RealtimePermissionSchema>
+    ) => {
+      const client = clientRef.current;
+      if (!client) throw new Error("Realtime connection is unavailable.");
+
+      clearReleaseTimer(blockPackId);
+      const previousChannel = channelsRef.current.get(blockPackId);
+      client.unregisterBlockPackChannel(blockPackId);
+
+      if (previousChannel && !previousChannel.isDisposed) {
+        await previousChannel.provider.clearLocalDocument();
+        previousChannel.provider.destroy();
+        previousChannel.doc.destroy();
+        previousChannel.isDisposed = true;
+      }
+
+      const nextChannel = createBlockPackChannel(
+        blockPackId,
+        permission,
+        previousChannel?.retainCount ?? 0
+      );
+      channelsRef.current.set(blockPackId, nextChannel);
+      client.registerBlockPackChannel(blockPackId, permission);
+      rerender();
+    },
+    [clearReleaseTimer, createBlockPackChannel, rerender]
+  );
+
   const value = useMemo<RealtimeContextType>(
     () => ({
       rootState,
@@ -394,6 +440,7 @@ export const RealtimeProvider = ({
       retainBlockPackChannel,
       releaseBlockPackChannel,
       getBlockPackChannel,
+      resyncBlockPackChannel,
     }),
     [
       connectionId,
@@ -401,6 +448,7 @@ export const RealtimeProvider = ({
       getBlockPackChannel,
       getOrCreateBlockPackChannel,
       releaseBlockPackChannel,
+      resyncBlockPackChannel,
       retainBlockPackChannel,
       rootState,
       version,

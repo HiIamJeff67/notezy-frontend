@@ -17,6 +17,7 @@ interface CreateShelfItemDialogProps extends ModalProps {
   dialogDescription: React.ReactNode;
   disableInput?: boolean;
   inputPlaceholder?: string;
+  submitLabel?: string;
   onCreate: (value: string) => void | Promise<void>;
   onCancel: () => void;
 }
@@ -28,6 +29,7 @@ const CreateShelfItemDialog = ({
   dialogDescription,
   disableInput = false,
   inputPlaceholder,
+  submitLabel = "Create",
   onCreate,
   onCancel,
 }: CreateShelfItemDialogProps) => {
@@ -81,7 +83,7 @@ const CreateShelfItemDialog = ({
             onClick={createShelfItem}
           >
             {isCreating && <Spinner />}
-            Create
+            {submitLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

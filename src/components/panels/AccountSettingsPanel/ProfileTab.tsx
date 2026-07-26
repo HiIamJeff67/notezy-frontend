@@ -46,7 +46,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage, useLoading } from "@/hooks";
 import { useUser } from "@/hooks/useUser";
 
-const ProfileTab = memo(() => {
+interface ProfileTabProps {
+  layout?: "panel" | "page";
+}
+
+type ProfileImageField = "avatarURL" | "coverBackgroundURL";
+
+const ProfileTab = memo(({ layout = "panel" }: ProfileTabProps) => {
   const loadingManager = useLoading();
   const languageManager = useLanguage();
   const userManager = useUser();
@@ -54,6 +60,9 @@ const ProfileTab = memo(() => {
   const updateUserInfoMutator = useUpdateMyInfo();
 
   const [birthDateDialogOpen, setBirthDateDialogOpen] = useState(false);
+  const [editingImageField, setEditingImageField] =
+    useState<ProfileImageField | null>(null);
+  const [editingImageURL, setEditingImageURL] = useState("");
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -175,22 +184,32 @@ const ProfileTab = memo(() => {
       <form
         method="POST"
         onSubmit={userInfoForm.handleSubmit(handleSaveUserInfoOnSubmit)}
-        className="w-full h-full overflow-hidden flex flex-col"
+        className={`w-full flex flex-col ${
+          layout === "panel" ? "h-full overflow-hidden" : ""
+        }`}
       >
         <div
-          className="
-          flex flex-col bg-muted gap-6 w-full h-full
-          overflow-y-scroll [scrollbar-color:var(--muted-foreground)_var(--secondary)]!"
+          className={`flex w-full flex-col gap-6 ${
+            layout === "panel"
+              ? "h-full overflow-y-scroll bg-muted [scrollbar-color:var(--muted-foreground)_var(--secondary)]!"
+              : ""
+          }`}
         >
           <div className="relative w-full group" style={backgroundStyle}>
             <ModifyImageHover
-              onClick={() => {}}
+              onClick={() => {
+                setEditingImageField("coverBackgroundURL");
+                setEditingImageURL(coverBackgroundURL ?? "");
+              }}
               hoverText="點擊以變更背景圖片"
             />
             <div className="absolute right-8 bottom-[-64px] z-10 group/avatar">
               <div
                 className="w-32 h-32 rounded-full border-4 border-border shadow-lg bg-background flex items-center justify-center overflow-hidden relative cursor-pointer"
-                onClick={() => {}}
+                onClick={() => {
+                  setEditingImageField("avatarURL");
+                  setEditingImageURL(avatarURL ?? "");
+                }}
               >
                 <Image
                   src={avatarSrc}
@@ -210,7 +229,83 @@ const ProfileTab = memo(() => {
             <div style={{ height: 120 }} />
           </div>
 
-          <div className="px-8 pt-12 pb-8 bg-muted flex flex-col gap-6 h-full">
+          <Dialog
+            open={editingImageField !== null}
+            onOpenChange={open => {
+              if (!open) setEditingImageField(null);
+            }}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingImageField === "avatarURL"
+                    ? "變更大頭貼"
+                    : "變更背景圖片"}
+                </DialogTitle>
+                <DialogDescription>
+                  貼上公開圖片網址，完成後再儲存個人資料以套用變更。
+                </DialogDescription>
+              </DialogHeader>
+              <Input
+                type="url"
+                value={editingImageURL}
+                onChange={event => setEditingImageURL(event.target.value)}
+                placeholder="https://example.com/image.png"
+              />
+              <div className="flex justify-between gap-2">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => {
+                    if (editingImageField) {
+                      userInfoForm.setValue(editingImageField, null, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }
+                    setEditingImageField(null);
+                  }}
+                >
+                  移除圖片
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const imageURL = editingImageURL.trim();
+
+                    if (imageURL) {
+                      try {
+                        new URL(imageURL);
+                      } catch {
+                        toast.error("請輸入有效的圖片網址");
+                        return;
+                      }
+                    }
+
+                    if (editingImageField) {
+                      userInfoForm.setValue(
+                        editingImageField,
+                        imageURL || null,
+                        {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        }
+                      );
+                    }
+                    setEditingImageField(null);
+                  }}
+                >
+                  套用
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <div
+            className={`flex flex-col gap-6 ${
+              layout === "panel" ? "h-full bg-muted px-8 pt-12 pb-8" : ""
+            }`}
+          >
             <FormField
               control={userInfoForm.control}
               name="header"
@@ -387,7 +482,11 @@ const ProfileTab = memo(() => {
               )}
             />
 
-            <div className="flex justify-start gap-4 pt-6 border-t border-border/50">
+            <div
+              className={`flex justify-start gap-4 pt-6 ${
+                layout === "panel" ? "border-t border-border/50" : ""
+              }`}
+            >
               <Button variant="default" type="submit" className="max-w-2/5">
                 Save Profile
               </Button>

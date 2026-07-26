@@ -112,7 +112,11 @@ const RegexPatternRow = ({
   );
 };
 
-const PrivacyTab = () => {
+interface PrivacyTabProps {
+  layout?: "panel" | "article";
+}
+
+const PrivacyTab = ({ layout = "panel" }: PrivacyTabProps) => {
   const { preferences, updatePreference } = useLocalPreferences();
   const [patternInput, setPatternInput] = useState("");
   const [patternError, setPatternError] = useState("");
@@ -120,9 +124,12 @@ const PrivacyTab = () => {
     generateDynamicDNDType("ClipboardGuardRegex")
   );
 
-  const updatePatterns = useCallback((patterns: string[]) => {
-    updatePreference("clipboardGuardPatterns", patterns);
-  }, [updatePreference]);
+  const updatePatterns = useCallback(
+    (patterns: string[]) => {
+      updatePreference("clipboardGuardPatterns", patterns);
+    },
+    [updatePreference]
+  );
 
   const addPattern = () => {
     const nextPattern = patternInput.trim();
@@ -168,7 +175,7 @@ const PrivacyTab = () => {
 
   return (
     <div>
-      <Section>
+      <Section article={layout === "article"}>
         <SettingRow
           title="起始畫面"
           description="決定開啟 Notezy 時直接進入哪個工作區。"

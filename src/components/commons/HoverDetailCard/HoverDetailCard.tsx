@@ -49,7 +49,7 @@ const HoverDetailCard = ({
         {rows.map((row, index) => (
           <div
             key={index}
-            className="grid h-7 min-w-0 grid-cols-[92px_minmax(0,1fr)] items-center gap-3 border-border/50 border-b last:border-b-0"
+            className="grid h-7 min-w-0 grid-cols-[92px_minmax(0,1fr)] items-center gap-3"
           >
             <span className="truncate text-muted-foreground">{row.field}</span>
             <span className="min-w-0 truncate text-right tabular-nums [&>*]:min-w-0 [&>*]:truncate">

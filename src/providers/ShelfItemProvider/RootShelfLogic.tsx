@@ -9,11 +9,14 @@ import { useSearchRootShelvesLazyQuery } from "@shared/api/graphql/hooks/useSear
 import {
   useCreateRootShelf,
   useDeleteMyRootShelfById,
+  useLeaveMyRootShelf,
+  useTransferMyRootShelfOwnership,
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
 import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
+import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
@@ -38,11 +41,7 @@ interface UseRootShelfLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
   setFocusedNode: Dispatch<
     SetStateAction<
-      | RootShelfNode
-      | SubShelfNode
-      | MaterialNode
-      | BlockPackNode
-      | undefined
+      RootShelfNode | SubShelfNode | MaterialNode | BlockPackNode | undefined
     >
   >;
   forceUpdate: () => void;
@@ -59,6 +58,8 @@ export const useRootShelfLogic = ({
   const createRootShelfMutator = useCreateRootShelf();
   const updateRootShelfMutator = useUpdateMyRootShelfById();
   const deleteRootShelfMutator = useDeleteMyRootShelfById();
+  const leaveRootShelfMutator = useLeaveMyRootShelf();
+  const transferRootShelfOwnershipMutator = useTransferMyRootShelfOwnership();
 
   const [searchInput, setSearchInput] = useState<{
     query: string;
@@ -97,6 +98,7 @@ export const useRootShelfLogic = ({
               lastAnalyzedAt: edge.node.lastAnalyzedAt,
               updatedAt: edge.node.updatedAt,
               createdAt: edge.node.createdAt,
+              permission: edge.node.permission as AccessControlPermission,
               isExpanded: false,
               children: {},
               isOpen: false,
@@ -220,6 +222,7 @@ export const useRootShelfLogic = ({
           lastAnalyzedAt: responseOfCreatingRootShelf.data.lastAnalyzedAt,
           updatedAt: responseOfCreatingRootShelf.data.createdAt,
           createdAt: responseOfCreatingRootShelf.data.createdAt,
+          permission: AccessControlPermission.Owner,
           isExpanded: true,
           children: {},
           isOpen: false,
@@ -421,6 +424,67 @@ export const useRootShelfLogic = ({
     ]
   );
 
+  const getRootShelfPermission = useCallback(
+    (rootShelfId: UUID) =>
+      expandedShelvesRef.current.get(rootShelfId)?.root.permission,
+    [expandedShelvesRef]
+  );
+
+  const canDeleteRootShelf = useCallback(
+    (rootShelfId: UUID) => {
+      const permission = getRootShelfPermission(rootShelfId);
+      return (
+        permission === AccessControlPermission.Owner ||
+        permission === AccessControlPermission.Admin
+      );
+    },
+    [getRootShelfPermission]
+  );
+
+  const canTransferRootShelfOwnership = useCallback(
+    (rootShelfId: UUID) =>
+      getRootShelfPermission(rootShelfId) === AccessControlPermission.Owner,
+    [getRootShelfPermission]
+  );
+
+  const transferRootShelfOwnership = useCallback(
+    async (rootShelfId: UUID, targetUserPublicId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      await transferRootShelfOwnershipMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: { rootShelfId },
+        body: { targetUserPublicId },
+      });
+      const summary = expandedShelvesRef.current.get(rootShelfId);
+      if (summary) summary.root.permission = AccessControlPermission.Admin;
+      forceUpdate();
+    },
+    [expandedShelvesRef, forceUpdate, transferRootShelfOwnershipMutator]
+  );
+
+  const leaveRootShelf = useCallback(
+    async (rootShelfId: UUID, targetUserPublicId?: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      await leaveRootShelfMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: { rootShelfId },
+        body: targetUserPublicId ? { targetUserPublicId } : {},
+      });
+      removeRootShelfOptimistically(rootShelfId);
+    },
+    [leaveRootShelfMutator, removeRootShelfOptimistically]
+  );
+
   return {
     rootShelfEdges:
       (data?.searchRootShelves?.searchEdges as SearchRootShelfEdge[]) || [],
@@ -442,5 +506,10 @@ export const useRootShelfLogic = ({
     renameEditingRootShelf: renameEditingRootShelf,
     deleteRootShelf: deleteRootShelf,
     removeRootShelfOptimistically: removeRootShelfOptimistically,
+    getRootShelfPermission,
+    canDeleteRootShelf,
+    canTransferRootShelfOwnership,
+    transferRootShelfOwnership,
+    leaveRootShelf,
   };
 };

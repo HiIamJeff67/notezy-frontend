@@ -1,14 +1,20 @@
-import type { ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
+import {
+  ArticleSubParagraph,
+  ArticleSubParagraphContent,
+  ArticleSubParagraphHeader,
+} from "@/components/commons/Article/Article";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 interface SectionProps {
   children: ReactNode;
+  article?: boolean;
 }
 
 interface SettingRowProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
   hideSeparator?: boolean;
   unsupportedReason?: string;
@@ -23,8 +29,14 @@ interface SwitchRowProps {
   unsupportedReason?: string;
 }
 
-export const Section = ({ children }: SectionProps) => (
-  <section className="min-w-0">{children}</section>
+const PreferenceArticleContext = createContext(false);
+
+export const Section = ({ children, article = false }: SectionProps) => (
+  <PreferenceArticleContext.Provider value={article}>
+    <section className={article ? "min-w-0 space-y-8" : "min-w-0"}>
+      {children}
+    </section>
+  </PreferenceArticleContext.Provider>
 );
 
 export const SettingRow = ({
@@ -34,19 +46,25 @@ export const SettingRow = ({
   hideSeparator,
   unsupportedReason,
 }: SettingRowProps) => (
-  <div
-    className={`relative flex min-h-[calc(var(--density-control-height)+1.75rem)] items-center justify-between gap-[var(--density-content-gap)] overflow-hidden py-[calc(var(--density-content-padding)*0.75)] ${
-      !hideSeparator ? "border-b border-border/50" : ""
-    }`}
+  <SettingRowContent
+    title={title}
+    description={description}
+    hideSeparator={hideSeparator}
+    unsupportedReason={unsupportedReason}
   >
-    <div className="min-w-0 flex-1">
-      <div className="text-sm font-medium">{title}</div>
-      {description && (
-        <div className="mt-1 text-sm leading-5 text-muted-foreground">
-          {description}
-        </div>
-      )}
-    </div>
+    {children}
+  </SettingRowContent>
+);
+
+const SettingRowContent = ({
+  title,
+  description,
+  children,
+  hideSeparator,
+  unsupportedReason,
+}: SettingRowProps) => {
+  const article = useContext(PreferenceArticleContext);
+  const controls = (
     <div className="flex shrink-0 items-center justify-end gap-2">
       {unsupportedReason ? (
         <Button
@@ -63,14 +81,58 @@ export const SettingRow = ({
         children
       )}
     </div>
-    {unsupportedReason && (
-      <div
-        className="absolute inset-0 z-10 cursor-not-allowed bg-transparent"
-        aria-label={unsupportedReason}
-      />
-    )}
-  </div>
-);
+  );
+
+  if (article) {
+    return (
+      <ArticleSubParagraph id={`preference-${title}`}>
+        <ArticleSubParagraphHeader className="text-base font-medium text-foreground/65">
+          {title}
+        </ArticleSubParagraphHeader>
+        <ArticleSubParagraphContent className="mt-2 space-y-0">
+          <div className="relative flex min-h-[calc(var(--density-control-height)+1.75rem)] items-center justify-between gap-[var(--density-content-gap)]">
+            {description && (
+              <p className="min-w-0 flex-1 text-sm leading-5 text-muted-foreground">
+                {description}
+              </p>
+            )}
+            {controls}
+            {unsupportedReason && (
+              <div
+                className="absolute inset-0 z-10 cursor-not-allowed bg-transparent"
+                aria-label={unsupportedReason}
+              />
+            )}
+          </div>
+        </ArticleSubParagraphContent>
+      </ArticleSubParagraph>
+    );
+  }
+
+  return (
+    <div
+      className={`relative flex min-h-[calc(var(--density-control-height)+1.75rem)] items-center justify-between gap-[var(--density-content-gap)] overflow-hidden py-[calc(var(--density-content-padding)*0.75)] ${
+        !hideSeparator ? "border-b border-border/50" : ""
+      }`}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium">{title}</div>
+        {description && (
+          <div className="mt-1 text-sm leading-5 text-muted-foreground">
+            {description}
+          </div>
+        )}
+      </div>
+      {controls}
+      {unsupportedReason && (
+        <div
+          className="absolute inset-0 z-10 cursor-not-allowed bg-transparent"
+          aria-label={unsupportedReason}
+        />
+      )}
+    </div>
+  );
+};
 
 export const SwitchRow = ({
   title,

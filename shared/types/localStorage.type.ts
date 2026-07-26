@@ -12,7 +12,10 @@ export enum LocalStorageKey {
   timeRailsStationIndexes = "time_rails_station_indexes",
   routineOverviewCharts = "routine_overview_charts",
   localPreferences = "local_preferences",
+  settingsDisplayMode = "settings_display_mode",
 }
+
+export type SettingsDisplayMode = "page" | "sheet";
 
 export interface LocalStorageItem {
   [LocalStorageKey.theme]: ThemeData | null;
@@ -25,4 +28,5 @@ export interface LocalStorageItem {
   [LocalStorageKey.timeRailsStationIndexes]: string[] | null;
   [LocalStorageKey.routineOverviewCharts]: string[] | null;
   [LocalStorageKey.localPreferences]: unknown | null;
+  [LocalStorageKey.settingsDisplayMode]: SettingsDisplayMode | null;
 }

@@ -25,6 +25,10 @@ import type {
   UpdateMyStationsByIdsRequest,
   VisualizeMyTotalCountRequest,
   VisualizeMyTotalCountResponse,
+  LeaveMyStationRequest,
+  LeaveMyStationResponse,
+  TransferMyStationOwnershipRequest,
+  TransferMyStationOwnershipResponse,
 } from "@shared/api/interfaces/station.interface";
 import {
   mutationFnCreateStation,
@@ -37,6 +41,8 @@ import {
   mutationFnRestoreMyStationsByIds,
   mutationFnUpdateMyStationById,
   mutationFnUpdateMyStationsByIds,
+  mutationFnLeaveMyStation,
+  mutationFnTransferMyStationOwnership,
   queryFnGetAllMyStations,
   queryFnGetMyStationById,
   queryFnVisualizeMyTotalCount,
@@ -769,4 +775,39 @@ export const useHardDeleteMyStationsByIds = () => {
   });
 
   return mutation;
+};
+
+export const useTransferMyStationOwnership = () => {
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: (
+      request: TransferMyStationOwnershipRequest
+    ): Promise<TransferMyStationOwnershipResponse> =>
+      mutationFnTransferMyStationOwnership(request),
+    onSuccess: async (_response, request) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.station.permission(request.param.stationId as UUID),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.station.oneById(request.param.stationId as UUID),
+      });
+    },
+  });
+};
+
+export const useLeaveMyStation = () => {
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: (
+      request: LeaveMyStationRequest
+    ): Promise<LeaveMyStationResponse> => mutationFnLeaveMyStation(request),
+    onSuccess: async (_response, request) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.station.permission(request.param.stationId as UUID),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.station.oneById(request.param.stationId as UUID),
+      });
+    },
+  });
 };

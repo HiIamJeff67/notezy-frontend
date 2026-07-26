@@ -7,12 +7,15 @@ import {
   ChevronRightIcon,
   ClipboardClock,
   ClipboardList,
+  Crown,
   ExternalLink,
   Pencil,
+  LogOut,
   SquarePen,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
+import type { UUID } from "crypto";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import TrainStationIcon from "@/components/icons/TrainStationIcon";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
@@ -234,6 +237,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
+                disabled={!stationRoutineManager.canDeleteStation(station.id)}
                 onClick={() =>
                   modalManager.open("DeleteStationDialog", {
                     stationId: station.id,
@@ -243,6 +247,69 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               >
                 <Trash2 className="mr-2 size-4" />
                 Delete
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  const isOwner =
+                    stationRoutineManager.canTransferStationOwnership(
+                      station.id
+                    );
+                  if (!isOwner) {
+                    void loadingManager.startAsyncTransactionLoading(async () =>
+                      stationRoutineManager
+                        .leaveStation(station.id)
+                        .catch(error =>
+                          toast.error(languageManager.tError(error))
+                        )
+                    );
+                    return;
+                  }
+                  modalManager.open("CreateShelfItemDialog", {
+                    dialogHeader: "Leave station",
+                    dialogDescription:
+                      "Owners must choose an existing member to receive ownership before leaving.",
+                    inputPlaceholder: "Member public UUID",
+                    submitLabel: "Leave",
+                    onCreate: async value =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () =>
+                          stationRoutineManager.leaveStation(
+                            station.id,
+                            value.trim() as UUID
+                          )
+                      ),
+                    onCancel: modalManager.close,
+                  });
+                }}
+              >
+                <LogOut className="mr-2 size-4" />
+                Leave
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={
+                  !stationRoutineManager.canTransferStationOwnership(station.id)
+                }
+                onClick={() =>
+                  modalManager.open("CreateShelfItemDialog", {
+                    dialogHeader: "Transfer station ownership",
+                    dialogDescription:
+                      "Enter the public UUID of an existing station member.",
+                    inputPlaceholder: "Member public UUID",
+                    submitLabel: "Transfer",
+                    onCreate: async value =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () =>
+                          stationRoutineManager.transferStationOwnership(
+                            station.id,
+                            value.trim() as UUID
+                          )
+                      ),
+                    onCancel: modalManager.close,
+                  })
+                }
+              >
+                <Crown className="mr-2 size-4" />
+                Transfer ownership
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>
@@ -270,10 +337,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 </HoverCard>
               )}
               {station.routineCount > 0 && routineTaskCount > 0 && (
-                <span
-                  className="text-current/70"
-                  aria-hidden="true"
-                >
+                <span className="text-current/70" aria-hidden="true">
                   ·
                 </span>
               )}

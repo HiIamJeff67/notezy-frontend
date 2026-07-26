@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 
 interface AccountModificationTabProps {
+  layout?: "panel" | "page";
   sendAuthCodeTimeCounter: number;
   setSendAuthCodeTimeCounter: (newSendAuthCodeTimeCounter: number) => void;
   isSendAuthCodePending: boolean;
@@ -40,6 +41,7 @@ interface AccountModificationTabProps {
 }
 
 const AccountModificationTab = ({
+  layout,
   sendAuthCodeTimeCounter,
   setSendAuthCodeTimeCounter,
   isSendAuthCodePending,
@@ -233,6 +235,7 @@ const AccountModificationTab = ({
 
   return (
     <SettingMenu
+      layout={layout}
       dialogs={[
         <Dialog open={resetMeDialogOpen} onOpenChange={setResetMeDialogOpen}>
           <DialogContent>

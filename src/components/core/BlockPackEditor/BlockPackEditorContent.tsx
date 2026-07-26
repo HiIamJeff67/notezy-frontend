@@ -1,10 +1,5 @@
 import { PartialBlock } from "@blocknote/core";
-import {
-  AddBlockButton,
-  DragHandleButton,
-  SideMenu,
-  SideMenuController,
-} from "@blocknote/react";
+import { SideMenuController } from "@blocknote/react";
 import {
   convertBlocksToDOCX,
   convertBlocksToHTML,
@@ -16,6 +11,7 @@ import {
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import BlockPackParticipantsDropdown from "@/components/core/BlockPackEditor/BlockPackParticipantsDropdown";
+import BlockSideMenu from "@/components/core/BlockPackEditor/BlockSideMenu";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,8 +59,9 @@ const BlockPackEditorContent = ({
   const shelfItemManager = useShelfItem();
   const { preferences } = useLocalPreferences();
 
-  const { editor, state } = useBlockEditor();
+  const { editor, state, resync } = useBlockEditor();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [isResyncing, setIsResyncing] = useState(false);
   const [isImporting, startImportingTransition] = useTransition();
   const [isExporting, startExportingTransition] = useTransition();
   const editorWidthClass = {
@@ -177,6 +174,25 @@ const BlockPackEditorContent = ({
         toast.error(languageManager.tError(error));
       }
     });
+  };
+
+  const handleResync = async () => {
+    if (
+      !window.confirm(
+        "Resync this document? Unsynced local changes will be discarded."
+      )
+    )
+      return;
+
+    setIsResyncing(true);
+    try {
+      await resync();
+      toast.success("Reconnecting to the latest document...");
+    } catch (error) {
+      toast.error(languageManager.tError(error));
+    } finally {
+      setIsResyncing(false);
+    }
   };
 
   return (
@@ -366,9 +382,13 @@ const BlockPackEditorContent = ({
           blockPackMeta.rootId.toString()
         )}
       />
-      <div className="z-0 h-full w-full overflow-auto rounded-none p-8">
+      <div className="z-0 h-full w-full overflow-auto rounded-none p-4">
         <div
-          className={cn("mx-auto min-h-full w-full", editorWidthClass)}
+          className={cn(
+            "mx-auto min-h-full w-full",
+            editorWidthClass,
+            preferences.editorWidth === "wide" && "px-10"
+          )}
           style={
             {
               "--notezy-editor-font-size": `${preferences.editorFontSize}px`,
@@ -376,8 +396,12 @@ const BlockPackEditorContent = ({
           }
         >
           {state === "syncError" ? (
-            <div className="flex min-h-80 items-center justify-center text-sm text-muted-foreground">
-              This BlockPack session is no longer available.
+            <div className="flex min-h-80 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+              <p>Realtime document needs a resync.</p>
+              <Button disabled={isResyncing} onClick={handleResync}>
+                {isResyncing && <Spinner />}
+                {isResyncing ? "Resyncing..." : "Resync document"}
+              </Button>
             </div>
           ) : (
             <BlockNoteView
@@ -386,23 +410,20 @@ const BlockPackEditorContent = ({
               sideMenu={false}
               spellCheck={preferences.spellcheck}
               className={cn(
-                "notezy-block-editor caret-muted-foreground z-10 [&_.bn-side-menu]:-translate-x-2 [&_.bn-side-menu]:items-center [&_.bn-side-menu]:gap-1 [&_.bn-side-menu_.bn-button]:size-7 [&_.bn-side-menu_.bn-button]:min-w-0 [&_.bn-side-menu_.bn-button]:p-1.5 [&_.bn-side-menu_.bn-button_svg]:size-4",
+                "notezy-block-editor caret-muted-foreground z-10 [&_.bn-default-styles]:!text-[length:var(--notezy-editor-font-size)] [&_.bn-editor]:!px-4 [&_.bn-editor]:!text-[length:var(--notezy-editor-font-size)] [&_.bn-block-content]:py-[3px]",
                 !preferences.lineWrap &&
                   "[&_.bn-editor]:overflow-x-auto [&_.bn-inline-content]:whitespace-nowrap"
               )}
             >
               {shouldShowSideMenu && (
                 <SideMenuController
-                  floatingOptions={{ placement: "left" }}
+                  floatingOptions={{ placement: "left-start" }}
                   sideMenu={sideMenuProps => (
-                    <SideMenu {...sideMenuProps}>
-                      {preferences.quickInsert && (
-                        <AddBlockButton {...sideMenuProps} />
-                      )}
-                      {preferences.blockDragHandle && (
-                        <DragHandleButton {...sideMenuProps} />
-                      )}
-                    </SideMenu>
+                    <BlockSideMenu
+                      {...sideMenuProps}
+                      showDragHandle={preferences.blockDragHandle}
+                      showQuickInsert={preferences.quickInsert}
+                    />
                   )}
                 />
               )}

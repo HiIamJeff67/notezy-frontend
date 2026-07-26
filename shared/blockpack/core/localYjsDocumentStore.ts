@@ -18,7 +18,9 @@ export class LocalYjsDocumentStore {
     const cache = await IndexedDBManipulator.getItemByKey(
       IndexedDBKey.blockPackYjsDocuments
     );
-    return cache?.contents.find(item => item.blockPackId === blockPackId) ?? null;
+    return (
+      cache?.contents.find(item => item.blockPackId === blockPackId) ?? null
+    );
   }
 
   static async save(
@@ -51,7 +53,8 @@ export class LocalYjsDocumentStore {
       IndexedDBKey.blockPackYjsDocuments,
       nextCache
     );
-    if (!isSaved) throw new Error("Failed to persist local Yjs document cache.");
+    if (!isSaved)
+      throw new Error("Failed to persist local Yjs document cache.");
   }
 
   static async estimate(): Promise<{ totalSize: number; count: number }> {
@@ -68,6 +71,38 @@ export class LocalYjsDocumentStore {
     const isRemoved = await IndexedDBManipulator.removeItem(
       IndexedDBKey.blockPackYjsDocuments
     );
-    if (!isRemoved) throw new Error("Failed to clear local Yjs document cache.");
+    if (!isRemoved)
+      throw new Error("Failed to clear local Yjs document cache.");
+  }
+
+  static async remove(blockPackId: UUID): Promise<void> {
+    const cache = await IndexedDBManipulator.getItemByKey(
+      IndexedDBKey.blockPackYjsDocuments
+    );
+    if (!cache) return;
+
+    const contents = cache.contents.filter(
+      item => item.blockPackId !== blockPackId
+    );
+    if (contents.length === 0) {
+      const isRemoved = await IndexedDBManipulator.removeItem(
+        IndexedDBKey.blockPackYjsDocuments
+      );
+      if (!isRemoved) {
+        throw new Error("Failed to remove local Yjs document cache.");
+      }
+      return;
+    }
+
+    const isSaved = await IndexedDBManipulator.setItem(
+      IndexedDBKey.blockPackYjsDocuments,
+      {
+        header: {
+          totalSize: contents.reduce((sum, item) => sum + item.byteSize, 0),
+        },
+        contents,
+      }
+    );
+    if (!isSaved) throw new Error("Failed to remove local Yjs document cache.");
   }
 }

@@ -26,6 +26,10 @@ import {
   UpdateMyRootShelvesByIdsResponse,
   UpsertRootShelfPermissionRequest,
   UpsertRootShelfPermissionResponse,
+  LeaveMyRootShelfRequest,
+  LeaveMyRootShelfResponse,
+  TransferMyRootShelfOwnershipRequest,
+  TransferMyRootShelfOwnershipResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
 import { tKey } from "@shared/translations";
@@ -213,9 +217,7 @@ export const CreateRootShelves = createServerFn({ method: "POST" })
 export const UpsertRootShelfPermission = createServerFn({ method: "POST" })
   .inputValidator((data: UpsertRootShelfPermissionRequest) => data)
   .handler(
-    async ({
-      data: request,
-    }): Promise<UpsertRootShelfPermissionResponse> => {
+    async ({ data: request }): Promise<UpsertRootShelfPermissionResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -263,9 +265,7 @@ export const UpsertRootShelfPermission = createServerFn({ method: "POST" })
 export const DeleteRootShelfPermissions = createServerFn({ method: "POST" })
   .inputValidator((data: DeleteRootShelfPermissionsRequest) => data)
   .handler(
-    async ({
-      data: request,
-    }): Promise<DeleteRootShelfPermissionsResponse> => {
+    async ({ data: request }): Promise<DeleteRootShelfPermissionsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -316,6 +316,79 @@ export const DeleteRootShelfPermissions = createServerFn({ method: "POST" })
 
       return formattedResponse;
     }
+  );
+
+const fetchRootShelfMembership = async <T>(
+  request: {
+    header?: { userAgent?: string; authorization?: string };
+    body?: unknown;
+  },
+  path: string,
+  method: "POST" | "DELETE"
+): Promise<T> => {
+  const inboundCookie = getRequestHeader("cookie");
+  const response = await fetch(
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${path}`,
+    {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent":
+          request.header?.userAgent ??
+          getRequestHeader("User-Agent") ??
+          "unknown",
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      ...(method === "POST" || request.body !== undefined
+        ? { body: JSON.stringify(request.body ?? {}) }
+        : {}),
+      credentials: "include",
+    }
+  );
+  forwardUpstreamSetCookies(response);
+  if (response.status === 204)
+    return { success: true, data: null, exception: null } as T;
+  if (!isJsonResponse(response))
+    throw new Error(tKey.error.encounterUnknownError);
+  const formattedResponse = (await response.json()) as T & {
+    exception?: unknown;
+    refreshableTokens?: { newAccessToken?: string };
+  };
+  if (formattedResponse.exception != null)
+    throw new NotezyAPIError(
+      new NotezyException(formattedResponse.exception as any)
+    );
+  AccessTokenCookieHandler.ensure(
+    formattedResponse.refreshableTokens?.newAccessToken
+  );
+  return formattedResponse;
+};
+
+export const TransferMyRootShelfOwnership = createServerFn({ method: "POST" })
+  .inputValidator((data: TransferMyRootShelfOwnershipRequest) => data)
+  .handler(
+    ({ data: request }): Promise<TransferMyRootShelfOwnershipResponse> =>
+      fetchRootShelfMembership(
+        request,
+        APIURLPathDictionary.rootShelf.transferOwnership(
+          request.param.rootShelfId as UUID
+        ),
+        "POST"
+      )
+  );
+
+export const LeaveMyRootShelf = createServerFn({ method: "POST" })
+  .inputValidator((data: LeaveMyRootShelfRequest) => data)
+  .handler(
+    ({ data: request }): Promise<LeaveMyRootShelfResponse> =>
+      fetchRootShelfMembership(
+        request,
+        APIURLPathDictionary.rootShelf.leave(request.param.rootShelfId as UUID),
+        "DELETE"
+      )
   );
 
 export const UpdateMyRootShelfById = createServerFn({ method: "POST" })

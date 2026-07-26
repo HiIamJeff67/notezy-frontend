@@ -27,6 +27,8 @@ import { Route as RootRoutinesIndexRouteImport } from './routes/_root.routines.i
 import { Route as RootMaterialViewerIndexRouteImport } from './routes/_root.material-viewer.index'
 import { Route as RootDashboardIndexRouteImport } from './routes/_root.dashboard.index'
 import { Route as RootBlockPackEditorIndexRouteImport } from './routes/_root.block-pack-editor.index'
+import { Route as RootSettingPreferencesRouteImport } from './routes/_root.setting.preferences'
+import { Route as RootSettingAccountRouteImport } from './routes/_root.setting.account'
 import { Route as RootRoutinesStationIdRouteImport } from './routes/_root.routines.$stationId'
 import { Route as RootMaterialViewerMaterialIdRouteImport } from './routes/_root.material-viewer.$materialId'
 import { Route as RootBlockPackEditorBlockPackIdRouteImport } from './routes/_root.block-pack-editor.$blockPackId'
@@ -123,6 +125,16 @@ const RootBlockPackEditorIndexRoute =
     path: '/',
     getParentRoute: () => RootBlockPackEditorRoute,
   } as any)
+const RootSettingPreferencesRoute = RootSettingPreferencesRouteImport.update({
+  id: '/setting/preferences',
+  path: '/setting/preferences',
+  getParentRoute: () => RootRoute,
+} as any)
+const RootSettingAccountRoute = RootSettingAccountRouteImport.update({
+  id: '/setting/account',
+  path: '/setting/account',
+  getParentRoute: () => RootRoute,
+} as any)
 const RootRoutinesStationIdRoute = RootRoutinesStationIdRouteImport.update({
   id: '/$stationId',
   path: '/$stationId',
@@ -175,6 +187,8 @@ export interface FileRoutesByFullPath {
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
   '/routines/$stationId': typeof RootRoutinesStationIdRoute
+  '/setting/account': typeof RootSettingAccountRoute
+  '/setting/preferences': typeof RootSettingPreferencesRoute
   '/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/dashboard/': typeof RootDashboardIndexRoute
   '/material-viewer/': typeof RootMaterialViewerIndexRoute
@@ -195,6 +209,8 @@ export interface FileRoutesByTo {
   '/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
   '/routines/$stationId': typeof RootRoutinesStationIdRoute
+  '/setting/account': typeof RootSettingAccountRoute
+  '/setting/preferences': typeof RootSettingPreferencesRoute
   '/block-pack-editor': typeof RootBlockPackEditorIndexRoute
   '/dashboard': typeof RootDashboardIndexRoute
   '/material-viewer': typeof RootMaterialViewerIndexRoute
@@ -222,6 +238,8 @@ export interface FileRoutesById {
   '/_root/block-pack-editor/$blockPackId': typeof RootBlockPackEditorBlockPackIdRoute
   '/_root/material-viewer/$materialId': typeof RootMaterialViewerMaterialIdRoute
   '/_root/routines/$stationId': typeof RootRoutinesStationIdRoute
+  '/_root/setting/account': typeof RootSettingAccountRoute
+  '/_root/setting/preferences': typeof RootSettingPreferencesRoute
   '/_root/block-pack-editor/': typeof RootBlockPackEditorIndexRoute
   '/_root/dashboard/': typeof RootDashboardIndexRoute
   '/_root/material-viewer/': typeof RootMaterialViewerIndexRoute
@@ -248,6 +266,8 @@ export interface FileRouteTypes {
     | '/block-pack-editor/$blockPackId'
     | '/material-viewer/$materialId'
     | '/routines/$stationId'
+    | '/setting/account'
+    | '/setting/preferences'
     | '/block-pack-editor/'
     | '/dashboard/'
     | '/material-viewer/'
@@ -268,6 +288,8 @@ export interface FileRouteTypes {
     | '/block-pack-editor/$blockPackId'
     | '/material-viewer/$materialId'
     | '/routines/$stationId'
+    | '/setting/account'
+    | '/setting/preferences'
     | '/block-pack-editor'
     | '/dashboard'
     | '/material-viewer'
@@ -294,6 +316,8 @@ export interface FileRouteTypes {
     | '/_root/block-pack-editor/$blockPackId'
     | '/_root/material-viewer/$materialId'
     | '/_root/routines/$stationId'
+    | '/_root/setting/account'
+    | '/_root/setting/preferences'
     | '/_root/block-pack-editor/'
     | '/_root/dashboard/'
     | '/_root/material-viewer/'
@@ -434,6 +458,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RootBlockPackEditorIndexRouteImport
       parentRoute: typeof RootBlockPackEditorRoute
     }
+    '/_root/setting/preferences': {
+      id: '/_root/setting/preferences'
+      path: '/setting/preferences'
+      fullPath: '/setting/preferences'
+      preLoaderRoute: typeof RootSettingPreferencesRouteImport
+      parentRoute: typeof RootRoute
+    }
+    '/_root/setting/account': {
+      id: '/_root/setting/account'
+      path: '/setting/account'
+      fullPath: '/setting/account'
+      preLoaderRoute: typeof RootSettingAccountRouteImport
+      parentRoute: typeof RootRoute
+    }
     '/_root/routines/$stationId': {
       id: '/_root/routines/$stationId'
       path: '/$stationId'
@@ -560,6 +598,8 @@ interface RootRouteChildren {
   RootPlaygroundRoute: typeof RootPlaygroundRoute
   RootPrivacyPolicyRoute: typeof RootPrivacyPolicyRoute
   RootRoutinesRoute: typeof RootRoutinesRouteWithChildren
+  RootSettingAccountRoute: typeof RootSettingAccountRoute
+  RootSettingPreferencesRoute: typeof RootSettingPreferencesRoute
 }
 
 const RootRouteChildren: RootRouteChildren = {
@@ -571,6 +611,8 @@ const RootRouteChildren: RootRouteChildren = {
   RootPlaygroundRoute: RootPlaygroundRoute,
   RootPrivacyPolicyRoute: RootPrivacyPolicyRoute,
   RootRoutinesRoute: RootRoutinesRouteWithChildren,
+  RootSettingAccountRoute: RootSettingAccountRoute,
+  RootSettingPreferencesRoute: RootSettingPreferencesRoute,
 }
 
 const RootRouteWithChildren = RootRoute._addFileChildren(RootRouteChildren)

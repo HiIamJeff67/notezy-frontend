@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
 
 interface SecurityTabProps {
+  layout?: "panel" | "page";
   sendAuthCodeTimeCounter: number;
   setSendAuthCodeTimeCounter: (newSendAuthCodeTimeCounter: number) => void;
   isSendAuthCodePending: boolean;
@@ -31,6 +32,7 @@ interface SecurityTabProps {
 }
 
 const SecurityTab = ({
+  layout,
   sendAuthCodeTimeCounter,
   setSendAuthCodeTimeCounter,
   isSendAuthCodePending,
@@ -85,6 +87,7 @@ const SecurityTab = ({
 
   return (
     <SettingMenu
+      layout={layout}
       dialogs={[
         <Dialog
           open={validateEmailDialogOpen}

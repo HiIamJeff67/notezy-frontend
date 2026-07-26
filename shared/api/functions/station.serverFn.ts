@@ -30,6 +30,10 @@ import {
   UpdateMyStationByIdResponse,
   UpdateMyStationsByIdsRequest,
   UpdateMyStationsByIdsResponse,
+  LeaveMyStationRequest,
+  LeaveMyStationResponse,
+  TransferMyStationOwnershipRequest,
+  TransferMyStationOwnershipResponse,
 } from "@shared/api/interfaces/station.interface";
 import {
   APIURLPathDictionary,
@@ -48,6 +52,79 @@ export const VisualizeMyTotalCount = createServerFn({ method: "GET" })
       fetchVisualizeResponse(
         request,
         APIURLPathDictionary.station.visualizeMyTotalCount
+      )
+  );
+
+const fetchStationMembership = async <T>(
+  request: {
+    header?: { userAgent?: string; authorization?: string };
+    body?: unknown;
+  },
+  path: string,
+  method: "POST" | "DELETE"
+): Promise<T> => {
+  const inboundCookie = getRequestHeader("cookie");
+  const response = await fetch(
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${path}`,
+    {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent":
+          request.header?.userAgent ??
+          getRequestHeader("User-Agent") ??
+          "unknown",
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      body: JSON.stringify(request.body ?? {}),
+      credentials: "include",
+    }
+  );
+  forwardUpstreamSetCookies(response);
+  if (response.status === 204)
+    return { success: true, data: null, exception: null } as T;
+  if (!isJsonResponse(response))
+    throw new Error(tKey.error.encounterUnknownError);
+  const formattedResponse = (await response.json()) as T & {
+    exception?: unknown;
+    refreshableTokens?: { newAccessToken?: string };
+  };
+  if (formattedResponse.exception != null)
+    throw new NotezyAPIError(
+      new NotezyException(formattedResponse.exception as any)
+    );
+  AccessTokenCookieHandler.ensure(
+    formattedResponse.refreshableTokens?.newAccessToken
+  );
+  return formattedResponse;
+};
+
+export const TransferMyStationOwnership = createServerFn({ method: "POST" })
+  .inputValidator((data: TransferMyStationOwnershipRequest) => data)
+  .handler(
+    ({ data: request }): Promise<TransferMyStationOwnershipResponse> =>
+      fetchStationMembership(
+        request,
+        APIURLPathDictionary.station.transferOwnership(
+          request.param.stationId as import("node:crypto").UUID
+        ),
+        "POST"
+      )
+  );
+
+export const LeaveMyStation = createServerFn({ method: "POST" })
+  .inputValidator((data: LeaveMyStationRequest) => data)
+  .handler(
+    ({ data: request }): Promise<LeaveMyStationResponse> =>
+      fetchStationMembership(
+        request,
+        APIURLPathDictionary.station.leave(
+          request.param.stationId as import("node:crypto").UUID
+        ),
+        "DELETE"
       )
   );
 

@@ -12,12 +12,16 @@ const dateToTimeString = (date: Date) =>
     date.getMinutes()
   ).padStart(2, "0")}`;
 
-const NotificationsTab = () => {
+interface NotificationsTabProps {
+  layout?: "panel" | "article";
+}
+
+const NotificationsTab = ({ layout = "panel" }: NotificationsTabProps) => {
   const { preferences, updatePreference } = useLocalPreferences();
 
   return (
     <div>
-      <Section>
+      <Section article={layout === "article"}>
         <SwitchRow
           title="桌面通知"
           description="允許 Notezy 使用瀏覽器桌面通知提醒你本機事件與工作狀態。"

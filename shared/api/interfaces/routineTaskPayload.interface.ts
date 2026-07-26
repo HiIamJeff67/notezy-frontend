@@ -115,6 +115,31 @@ export const RoutineTaskPayloadSchema = z
       );
     }
     if (
+      purpose === RoutineTaskPurpose.CreateBlockPack &&
+      Array.isArray(payload.template?.blocks)
+    ) {
+      payload.template.blocks.forEach((block, index) => {
+        if (
+          typeof block?.clientId !== "string" ||
+          block.clientId.trim() === ""
+        ) {
+          addPayloadIssue(
+            ["template", "blocks", index, "clientId"],
+            "Template block needs a client ID."
+          );
+        }
+        if (
+          typeof block?.arborizedEditableBlock !== "object" ||
+          block.arborizedEditableBlock === null
+        ) {
+          addPayloadIssue(
+            ["template", "blocks", index, "arborizedEditableBlock"],
+            "Template block needs editable block content."
+          );
+        }
+      });
+    }
+    if (
       purpose === RoutineTaskPurpose.UpdateBlockPack &&
       (!uuidSchema.safeParse(payload.blockPackId).success ||
         !Array.isArray(payload.updatedBlocks) ||

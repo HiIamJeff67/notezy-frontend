@@ -141,7 +141,11 @@ const formatLimit = (value: number, unit?: "bytes") =>
 const getPlanRank = (plan: UserPlan) =>
   planOptions.findIndex(option => option.plan === plan);
 
-const UpgradeTab = () => {
+interface UpgradeTabProps {
+  layout?: "panel" | "page";
+}
+
+const UpgradeTab = ({ layout = "panel" }: UpgradeTabProps) => {
   const userManager = useUser();
   const currentPlan = userManager.userData?.plan ?? UserPlan.Free;
   const [selectedPlan, setSelectedPlan] = useState<UserPlan>(currentPlan);
@@ -179,9 +183,15 @@ const UpgradeTab = () => {
       : selectedOption.billingName.month;
 
   return (
-    <div className="h-full overflow-y-auto bg-muted px-8 pt-10 pb-8 [scrollbar-color:var(--muted-foreground)_var(--secondary)]!">
-      <div className="flex flex-col gap-5">
-        <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+    <div
+      className={
+        layout === "panel"
+          ? "h-full overflow-y-auto bg-muted px-8 pt-10 pb-8 [scrollbar-color:var(--muted-foreground)_var(--secondary)]!"
+          : ""
+      }
+    >
+      <div className="flex w-full flex-col gap-5">
+        <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-4">
           <div className="relative overflow-hidden rounded-md border border-border bg-background/45 p-5 shadow-inner">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/60 to-transparent" />
             <div className="flex items-start justify-between gap-4">
@@ -207,7 +217,7 @@ const UpgradeTab = () => {
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-2">
               {[
                 {
                   icon: DatabaseIcon,
@@ -303,7 +313,7 @@ const UpgradeTab = () => {
           </div>
         </section>
 
-        <section className="grid gap-3 xl:grid-cols-5">
+        <section className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-3">
           {planOptions.map(option => {
             const selected = selectedPlan === option.plan;
             const active = currentPlan === option.plan;
@@ -370,7 +380,7 @@ const UpgradeTab = () => {
           })}
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1fr_300px]">
+        <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18.75rem),1fr))] gap-4">
           <div className="rounded-md border border-border bg-background/45">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>

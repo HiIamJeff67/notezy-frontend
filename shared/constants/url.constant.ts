@@ -91,6 +91,9 @@ export const APIURLPathDictionary = {
       `rootShelf/${rootShelfId}/permissions/${userPublicId}`,
     deleteRootShelfPermissions: (rootShelfId: UUID) =>
       `rootShelf/${rootShelfId}/permissions`,
+    transferOwnership: (rootShelfId: UUID) =>
+      `rootShelf/${rootShelfId}/ownership-transfer`,
+    leave: (rootShelfId: UUID) => `rootShelf/${rootShelfId}/leave`,
     updateMyRootShelfById: "rootShelf/updateMyRootShelfById",
     updateMyRootShelvesByIds: "rootShelf/updateMyRootShelvesByIds",
     restoreMyRootShelfById: "rootShelf/restoreMyRootShelfById",
@@ -161,8 +164,7 @@ export const APIURLPathDictionary = {
   realtime: {
     createMyRealtimeConnectionTicket:
       "realtime/createMyRealtimeConnectionTicket",
-    createMyBlockPackChannelTicket:
-      "realtime/createMyBlockPackChannelTicket",
+    createMyBlockPackChannelTicket: "realtime/createMyBlockPackChannelTicket",
     getBlockPackParticipants: (blockPackId: UUID) =>
       `realtime/blockPacks/${blockPackId}/participants`,
   },
@@ -180,6 +182,9 @@ export const APIURLPathDictionary = {
     deleteMyStationsByIds: "station/deleteMyStationsByIds",
     hardDeleteMyStationById: "station/hardDeleteMyStationById",
     hardDeleteMyStationsByIds: "station/hardDeleteMyStationsByIds",
+    transferOwnership: (stationId: UUID) =>
+      `station/${stationId}/ownership-transfer`,
+    leave: (stationId: UUID) => `station/${stationId}/leave`,
   },
   routine: {
     visualizeMyRoutineStatusCount: "routine/visualizeMyRoutineStatusCount",
@@ -312,6 +317,10 @@ export const WebURLPathDictionary = {
     routines: {
       _: "routines",
       byStationId: (stationId: UUID) => `routines/${stationId}`,
+    },
+    setting: {
+      account: "setting/account",
+      preferences: "setting/preferences",
     },
   },
 };

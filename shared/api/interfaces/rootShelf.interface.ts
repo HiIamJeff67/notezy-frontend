@@ -241,6 +241,58 @@ export type DeleteRootShelfPermissionsResponse = z.infer<
   typeof DeleteRootShelfPermissionsResponseSchema
 >;
 
+/* ============================== Ownership and membership ============================== */
+
+export const TransferMyRootShelfOwnershipRequestSchema =
+  NotezyRequestSchema.extend({
+    header: z
+      .object({
+        userAgent: z.string().min(1).optional(),
+        authorization: z.string().optional(),
+      })
+      .optional(),
+    param: z.object({ rootShelfId: z.uuidv4() }),
+    body: z.object({ targetUserPublicId: z.uuidv4() }),
+  });
+export type TransferMyRootShelfOwnershipRequest = z.infer<
+  typeof TransferMyRootShelfOwnershipRequestSchema
+>;
+export const TransferMyRootShelfOwnershipResponseSchema =
+  NotezyResponseSchema.extend({
+    data: z.object({
+      rootShelfId: z.uuidv4(),
+      previousOwnerUserPublicId: z.uuidv4(),
+      newOwnerUserPublicId: z.uuidv4(),
+      updatedAt: z.coerce.date(),
+    }),
+  });
+export type TransferMyRootShelfOwnershipResponse = z.infer<
+  typeof TransferMyRootShelfOwnershipResponseSchema
+>;
+
+export const LeaveMyRootShelfRequestSchema = NotezyRequestSchema.extend({
+  header: z
+    .object({
+      userAgent: z.string().min(1).optional(),
+      authorization: z.string().optional(),
+    })
+    .optional(),
+  param: z.object({ rootShelfId: z.uuidv4() }),
+  body: z
+    .object({ targetUserPublicId: z.uuidv4().optional() })
+    .optional()
+    .default({}),
+});
+export type LeaveMyRootShelfRequest = z.infer<
+  typeof LeaveMyRootShelfRequestSchema
+>;
+export const LeaveMyRootShelfResponseSchema = NotezyResponseSchema.extend({
+  data: z.null(),
+});
+export type LeaveMyRootShelfResponse = z.infer<
+  typeof LeaveMyRootShelfResponseSchema
+>;
+
 /* ============================== UpdateMyRootShelfById ============================== */
 
 export const UpdateMyRootShelfByIdRequestSchema = NotezyRequestSchema.extend({

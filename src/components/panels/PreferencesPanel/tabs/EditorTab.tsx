@@ -11,12 +11,16 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Section, SettingRow, SwitchRow } from "../PreferenceRows";
 
-const EditorTab = () => {
+interface EditorTabProps {
+  layout?: "panel" | "article";
+}
+
+const EditorTab = ({ layout = "panel" }: EditorTabProps) => {
   const { preferences, updatePreference } = useLocalPreferences();
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
-      <Section>
+      <Section article={layout === "article"}>
         <SettingRow
           title="頁面寬度"
           description="調整編輯區預設寬度，讓閱讀、書寫或整理大量內容更順手。"
@@ -37,11 +41,10 @@ const EditorTab = () => {
             </SelectContent>
           </Select>
         </SettingRow>
-        <div className="border-b border-border/50 py-[calc(var(--density-content-padding)*0.75)]">
-          <div className="text-sm font-medium">文字尺寸</div>
-          <div className="mt-1 text-sm leading-5 text-muted-foreground">
-            設定編輯器中的基準字級，只影響本機顯示偏好。
-          </div>
+        <SettingRow
+          title="文字尺寸"
+          description="設定編輯器中的基準字級，只影響本機顯示偏好。"
+        >
           <div className="mt-3 flex items-center gap-3">
             <Slider
               value={[preferences.editorFontSize]}
@@ -56,7 +59,7 @@ const EditorTab = () => {
               {preferences.editorFontSize}px
             </span>
           </div>
-        </div>
+        </SettingRow>
         <SwitchRow
           title="自動換行"
           description="讓長句自動折行，不需要水平捲動即可閱讀完整段落。"

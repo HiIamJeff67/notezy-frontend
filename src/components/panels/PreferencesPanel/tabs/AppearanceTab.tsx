@@ -15,14 +15,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage, useTheme } from "@/hooks";
 import { Section, SettingRow, StatusPill, SwitchRow } from "../PreferenceRows";
 
-const AppearanceTab = () => {
+interface AppearanceTabProps {
+  layout?: "panel" | "article";
+}
+
+const AppearanceTab = ({ layout = "panel" }: AppearanceTabProps) => {
   const { preferences, updatePreference } = useLocalPreferences();
   const languageManager = useLanguage();
   const themeManager = useTheme();
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_280px]">
-      <Section>
+      <Section article={layout === "article"}>
         <SettingRow
           title="主題"
           description="調整整個產品的色彩與明暗層次，會立即套用在目前裝置。"
@@ -132,11 +136,7 @@ const AppearanceTab = () => {
               <Button size="sm" className="h-7 px-2 text-xs">
                 Primary
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-              >
+              <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
                 Outline
               </Button>
               <Checkbox defaultChecked aria-label="Preview checkbox" />

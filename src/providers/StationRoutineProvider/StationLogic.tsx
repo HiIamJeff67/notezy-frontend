@@ -7,6 +7,8 @@ import { useSearchStationsLazyQuery } from "@shared/api/graphql/hooks/useSearchS
 import {
   useCreateStation,
   useDeleteMyStationById,
+  useLeaveMyStation,
+  useTransferMyStationOwnership,
   useUpdateMyStationById,
 } from "@shared/api/hooks/station.hook";
 import {
@@ -48,6 +50,8 @@ export const useStationLogic = ({
   const createStationMutator = useCreateStation();
   const deleteStationMutator = useDeleteMyStationById();
   const updateStationMutator = useUpdateMyStationById();
+  const leaveStationMutator = useLeaveMyStation();
+  const transferStationOwnershipMutator = useTransferMyStationOwnership();
 
   const [selectedStationId, selectStation] = useState<UUID | null>(null);
   const [editingStationNode, setEditingStationNode] =
@@ -206,22 +210,8 @@ export const useStationLogic = ({
     [forceUpdate, stationsRef, updateStationMutator]
   );
 
-  const deleteStation = useCallback(
-    async (stationId: UUID) => {
-      const accessToken = LocalStorageManipulator.getItemByKey(
-        LocalStorageKey.accessToken
-      );
-      const response = await deleteStationMutator.mutateAsync({
-        header: {
-          userAgent: navigator.userAgent,
-          authorization: getAuthorization(accessToken),
-        },
-        body: {
-          stationId,
-        },
-      });
-      if (response.success === false) throw response.exception;
-
+  const removeStationOptimistically = useCallback(
+    (stationId: UUID) => {
       const stationNode = stationsRef.current.get(stationId);
       if (stationNode) {
         const deletedRoutineIds = new Set(
@@ -248,10 +238,8 @@ export const useStationLogic = ({
         selectRoutine(null);
       }
       forceUpdate();
-      return response;
     },
     [
-      deleteStationMutator,
       forceUpdate,
       routineTagsRef,
       selectRoutine,
@@ -259,6 +247,81 @@ export const useStationLogic = ({
       selectedStationId,
       stationsRef,
     ]
+  );
+
+  const deleteStation = useCallback(
+    async (stationId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      const response = await deleteStationMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        body: { stationId },
+      });
+      if (response.success === false) throw response.exception;
+      removeStationOptimistically(stationId);
+      return response;
+    },
+    [deleteStationMutator, removeStationOptimistically]
+  );
+
+  const canDeleteStation = useCallback(
+    (stationId: UUID) => {
+      const permission = stationsRef.current.get(stationId)?.permission;
+      return (
+        permission === AccessControlPermission.Owner ||
+        permission === AccessControlPermission.Admin
+      );
+    },
+    [stationsRef]
+  );
+
+  const canTransferStationOwnership = useCallback(
+    (stationId: UUID) =>
+      stationsRef.current.get(stationId)?.permission ===
+      AccessControlPermission.Owner,
+    [stationsRef]
+  );
+
+  const transferStationOwnership = useCallback(
+    async (stationId: UUID, targetUserPublicId: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      await transferStationOwnershipMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: { stationId },
+        body: { targetUserPublicId },
+      });
+      const station = stationsRef.current.get(stationId);
+      if (station) station.permission = AccessControlPermission.Admin;
+      forceUpdate();
+    },
+    [forceUpdate, stationsRef, transferStationOwnershipMutator]
+  );
+
+  const leaveStation = useCallback(
+    async (stationId: UUID, targetUserPublicId?: UUID) => {
+      const accessToken = LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.accessToken
+      );
+      await leaveStationMutator.mutateAsync({
+        header: {
+          userAgent: navigator.userAgent,
+          authorization: getAuthorization(accessToken),
+        },
+        param: { stationId },
+        body: targetUserPublicId ? { targetUserPublicId } : {},
+      });
+      removeStationOptimistically(stationId);
+    },
+    [leaveStationMutator, removeStationOptimistically]
   );
 
   const isStationEditing = useCallback(
@@ -485,6 +548,11 @@ export const useStationLogic = ({
     updateStation,
     isUpdatingStation: updateStationMutator.isPending,
     deleteStation,
+    canDeleteStation,
+    canTransferStationOwnership,
+    transferStationOwnership,
+    leaveStation,
+    removeStationOptimistically,
     isDeletingStation: deleteStationMutator.isPending,
   };
 };

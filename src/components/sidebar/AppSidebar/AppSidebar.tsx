@@ -1,16 +1,22 @@
 import { WebURLPathDictionary } from "@shared/constants";
+import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { tKey } from "@shared/translations";
+import { LocalStorageKey } from "@shared/types/localStorage.type";
 import {
   BellIcon,
   ChevronDown,
   ChevronRight,
   ClipboardClock,
   LayoutDashboardIcon,
+  LogOutIcon,
   MessageSquareIcon,
   PlusIcon,
+  Repeat2Icon,
   SettingsIcon,
+  SlidersHorizontalIcon,
   TagIcon,
+  UserRoundIcon,
 } from "lucide-react";
 import { useEffect } from "react";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
@@ -29,7 +35,9 @@ import {
 import {
   Menubar,
   MenubarContent,
+  MenubarGroup,
   MenubarItem,
+  MenubarLabel,
   MenubarMenu,
   MenubarSeparator,
   MenubarTrigger,
@@ -55,11 +63,13 @@ import {
   useAppRouterActions,
   useLanguage,
   useResizeSidebar,
+  useSettingsDisplay,
   useShelfItem,
   useStationRoutine,
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useUser } from "@/hooks/useUser";
+import { type SettingsPage } from "@/providers/SettingsDisplayProvider";
 
 interface AppSidebarProps {
   disabled?: boolean;
@@ -76,6 +86,24 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
   const shelfItemManager = useShelfItem();
+  const settingsDisplay = useSettingsDisplay();
+
+  const openSettings = (page: SettingsPage) => {
+    if (
+      LocalStorageManipulator.getItemByKey(
+        LocalStorageKey.settingsDisplayMode
+      ) === "sheet"
+    ) {
+      settingsDisplay.openSheet(page);
+      return;
+    }
+
+    router.push(
+      page === "account"
+        ? WebURLPathDictionary.root.setting.account
+        : WebURLPathDictionary.root.setting.preferences
+    );
+  };
 
   useEffect(() => {
     if (!userManager.userData) return;
@@ -288,44 +316,64 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
           </MenubarMenu>
           {sidebarManager.open && (
             <MenubarMenu>
-              <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
+              <MenubarTrigger
+                className="px-2 py-2 flex items-center justify-center"
+                aria-label="Settings"
+                title="Settings"
+              >
                 <SettingsIcon size={20} />
               </MenubarTrigger>
               <MenubarContent className="w-64 bg-popover border-border">
-                <MenubarItem
-                  className="cursor-pointer"
-                  onSelect={() => modalManager.open("AccountSettingsPanel")}
-                >
-                  <span>
-                    {languageManager.t(tKey.settings.accountSettings)}
-                  </span>
-                </MenubarItem>
-                <MenubarItem
-                  className="cursor-pointer"
-                  onSelect={() => modalManager.open("PreferencesPanel")}
-                >
-                  <span>{languageManager.t(tKey.settings.preferences)}</span>
-                </MenubarItem>
+                <MenubarGroup>
+                  <MenubarLabel className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
+                    Settings
+                  </MenubarLabel>
+                  <MenubarItem
+                    className="cursor-pointer"
+                    onSelect={() => openSettings("account")}
+                  >
+                    <UserRoundIcon />
+                    <span>Account</span>
+                  </MenubarItem>
+                  <MenubarItem
+                    className="cursor-pointer"
+                    onSelect={() => openSettings("preferences")}
+                  >
+                    <SlidersHorizontalIcon />
+                    <span>Preferences</span>
+                  </MenubarItem>
+                </MenubarGroup>
                 <MenubarSeparator />
-                <MenubarItem className="cursor-pointer">
-                  <span>{languageManager.t(tKey.auth.switchAccount)}</span>
-                </MenubarItem>
-                <MenubarItem
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                  onSelect={async () => {
-                    router.push(WebURLPathDictionary.home);
-                    await userManager.logout();
-                    toast.success("Logout successfully, see you next time ~");
-                  }}
-                >
-                  <span>{languageManager.t(tKey.auth.logout)}</span>
-                </MenubarItem>
+                <MenubarGroup>
+                  <MenubarLabel className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
+                    Account
+                  </MenubarLabel>
+                  <MenubarItem className="cursor-pointer">
+                    <Repeat2Icon />
+                    <span>{languageManager.t(tKey.auth.switchAccount)}</span>
+                  </MenubarItem>
+                  <MenubarItem
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                    onSelect={async () => {
+                      router.push(WebURLPathDictionary.home);
+                      await userManager.logout();
+                      toast.success("Logout successfully, see you next time ~");
+                    }}
+                  >
+                    <LogOutIcon />
+                    <span>{languageManager.t(tKey.auth.logout)}</span>
+                  </MenubarItem>
+                </MenubarGroup>
               </MenubarContent>
             </MenubarMenu>
           )}
           {sidebarManager.open && (
             <MenubarMenu>
-              <MenubarTrigger className="px-2 py-2 flex items-center justify-center">
+              <MenubarTrigger
+                className="px-2 py-2 flex items-center justify-center"
+                aria-label="Notifications"
+                title="Notifications"
+              >
                 <BellIcon size={20} />
               </MenubarTrigger>
             </MenubarMenu>

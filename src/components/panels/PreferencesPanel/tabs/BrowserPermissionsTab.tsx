@@ -1,7 +1,7 @@
 import { RefreshCwIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Section } from "../PreferenceRows";
+import { Section, SettingRow } from "../PreferenceRows";
 
 type PermissionDisplayState =
   | PermissionState
@@ -105,7 +105,13 @@ const queryPermission = async (
   }
 };
 
-const BrowserPermissionsTab = () => {
+interface BrowserPermissionsTabProps {
+  layout?: "panel" | "article";
+}
+
+const BrowserPermissionsTab = ({
+  layout = "panel",
+}: BrowserPermissionsTabProps) => {
   const [states, setStates] = useState<
     Record<PermissionName, PermissionDisplayState>
   >(
@@ -170,7 +176,7 @@ const BrowserPermissionsTab = () => {
 
   return (
     <div>
-      <Section>
+      <Section article={layout === "article"}>
         <div className="border-b border-border/50 pb-4">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -191,56 +197,54 @@ const BrowserPermissionsTab = () => {
           </div>
         </div>
 
-        <div>
+        <div className={layout === "article" ? "space-y-8" : ""}>
           {permissionItems.map((item, index) => (
-            <div
+            <SettingRow
               key={item.name}
-              className={`flex min-h-[calc(var(--density-control-height)+1.75rem)] items-center justify-between gap-[var(--density-content-gap)] py-[calc(var(--density-content-padding)*0.75)] ${
-                index !== permissionItems.length - 1
-                  ? "border-b border-border/50"
-                  : ""
-              }`}
-            >
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">{item.label}</div>
-                <div className="mt-1 text-sm leading-5 text-muted-foreground">
+              title={item.label}
+              description={
+                <>
                   {item.description}
-                </div>
-                {actionMessages[item.name] && (
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {actionMessages[item.name]}
-                  </div>
+                  {actionMessages[item.name] && (
+                    <span className="mt-1 block text-xs">
+                      {actionMessages[item.name]}
+                    </span>
+                  )}
+                </>
+              }
+              hideSeparator={index === permissionItems.length - 1}
+            >
+              <>
+                <span className="rounded-sm border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                  {stateLabel[states[item.name] ?? "checking"]}
+                </span>
+                {states[item.name] === "granted" ? (
+                  <Button type="button" variant="outline" size="sm" disabled>
+                    於瀏覽器取消
+                  </Button>
+                ) : states[item.name] === "prompt" && item.request ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={pendingPermission === item.name}
+                    onClick={() => void requestPermission(item)}
+                  >
+                    {pendingPermission === item.name
+                      ? "請求中"
+                      : (item.requestLabel ?? "要求授權")}
+                  </Button>
+                ) : states[item.name] === "denied" ? (
+                  <Button type="button" variant="outline" size="sm" disabled>
+                    已封鎖
+                  </Button>
+                ) : (
+                  <Button type="button" variant="outline" size="sm" disabled>
+                    瀏覽器控制
+                  </Button>
                 )}
-              </div>
-              <span className="rounded-sm border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                {stateLabel[states[item.name] ?? "checking"]}
-              </span>
-              {states[item.name] === "granted" ? (
-                <Button type="button" variant="outline" size="sm" disabled>
-                  於瀏覽器取消
-                </Button>
-              ) : states[item.name] === "prompt" && item.request ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={pendingPermission === item.name}
-                  onClick={() => void requestPermission(item)}
-                >
-                  {pendingPermission === item.name
-                    ? "請求中"
-                    : (item.requestLabel ?? "要求授權")}
-                </Button>
-              ) : states[item.name] === "denied" ? (
-                <Button type="button" variant="outline" size="sm" disabled>
-                  已封鎖
-                </Button>
-              ) : (
-                <Button type="button" variant="outline" size="sm" disabled>
-                  瀏覽器控制
-                </Button>
-              )}
-            </div>
+              </>
+            </SettingRow>
           ))}
         </div>
       </Section>

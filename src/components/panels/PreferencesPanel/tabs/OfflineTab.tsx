@@ -14,7 +14,11 @@ const formatStorageSize = (bytes = 0) => {
   return `${Math.round(mb)} MB`;
 };
 
-const OfflineTab = () => {
+interface OfflineTabProps {
+  layout?: "panel" | "article";
+}
+
+const OfflineTab = ({ layout = "panel" }: OfflineTabProps) => {
   const {
     preferences,
     storageEstimate,
@@ -71,7 +75,7 @@ const OfflineTab = () => {
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
-      <Section>
+      <Section article={layout === "article"}>
         <SwitchRow
           title="本機資料庫"
           description="準備用來控制 Notezy 是否在瀏覽器本機保存工作資料。"
@@ -174,12 +178,8 @@ const OfflineTab = () => {
             />
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              已使用 {formatStorageSize(storageEstimate?.usage)}
-            </span>
-            <span>
-              估算上限 {formatStorageSize(storageEstimate?.quota)}
-            </span>
+            <span>已使用 {formatStorageSize(storageEstimate?.usage)}</span>
+            <span>估算上限 {formatStorageSize(storageEstimate?.quota)}</span>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-2">

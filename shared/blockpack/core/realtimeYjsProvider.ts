@@ -37,9 +37,12 @@ export class RealtimeYjsProvider {
   private readonly handleDocUpdate = (update: Uint8Array, origin: unknown) => {
     if (origin === NOTEZY_REALTIME_YJS_REMOTE_ORIGIN) return;
     if (this.readOnly) {
-      logRealtimeYjs("skipped local document update because channel is read-only", {
-        byteLength: update.byteLength,
-      });
+      logRealtimeYjs(
+        "skipped local document update because channel is read-only",
+        {
+          byteLength: update.byteLength,
+        }
+      );
       return;
     }
     this.sendOrQueue(RealtimeBinaryFrameType.YjsDocument, update);
@@ -92,6 +95,12 @@ export class RealtimeYjsProvider {
   flushPendingDocumentUpdatesNow() {
     this.clearDocumentFlushTimeout();
     return this.flushPendingDocumentUpdates();
+  }
+
+  async clearLocalDocument() {
+    this.setReadOnly(true);
+    await this.persistencePromise;
+    await LocalYjsDocumentStore.remove(this.blockPackId);
   }
 
   setReadOnly(readOnly: boolean) {
@@ -236,7 +245,10 @@ export class RealtimeYjsProvider {
         needsFlush: cachedDocument.needsFlush,
       });
     } catch (error) {
-      console.error("[RealtimeYjs] failed to hydrate local document cache", error);
+      console.error(
+        "[RealtimeYjs] failed to hydrate local document cache",
+        error
+      );
     }
   }
 
@@ -251,7 +263,10 @@ export class RealtimeYjsProvider {
         )
       )
       .catch(error => {
-        console.error("[RealtimeYjs] failed to persist local document cache", error);
+        console.error(
+          "[RealtimeYjs] failed to persist local document cache",
+          error
+        );
       });
     return this.persistencePromise;
   }

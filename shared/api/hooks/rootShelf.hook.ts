@@ -31,6 +31,10 @@ import type {
   UpdateMyRootShelvesByIdsResponse,
   UpsertRootShelfPermissionRequest,
   UpsertRootShelfPermissionResponse,
+  LeaveMyRootShelfRequest,
+  LeaveMyRootShelfResponse,
+  TransferMyRootShelfOwnershipRequest,
+  TransferMyRootShelfOwnershipResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
 import {
   mutationFnCreateRootShelf,
@@ -43,6 +47,8 @@ import {
   mutationFnUpdateMyRootShelfById,
   mutationFnUpdateMyRootShelvesByIds,
   mutationFnUpsertRootShelfPermission,
+  mutationFnLeaveMyRootShelf,
+  mutationFnTransferMyRootShelfOwnership,
   queryFnGetMyRootShelfById,
 } from "@shared/api/invokers/rootShelf.invoker";
 import { RootShelfLocalSimulator } from "@shared/api/local/simulators/rootShelf.simulator";
@@ -401,9 +407,7 @@ export const useUpsertRootShelfPermission = () => {
               return existingSharerPublicIds;
             }
 
-            if (
-              existingSharerPublicIds.includes(response.data.userPublicId)
-            ) {
+            if (existingSharerPublicIds.includes(response.data.userPublicId)) {
               return existingSharerPublicIds;
             }
 
@@ -873,4 +877,47 @@ export const useDeleteMyRootShelvesByIds = () => {
   });
 
   return mutation;
+};
+
+export const useTransferMyRootShelfOwnership = () => {
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: (
+      request: TransferMyRootShelfOwnershipRequest
+    ): Promise<TransferMyRootShelfOwnershipResponse> =>
+      mutationFnTransferMyRootShelfOwnership(request),
+    onSuccess: async (_response, request) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.permission(
+          request.param.rootShelfId as UUID
+        ),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.oneById(
+          request.param.rootShelfId as UUID
+        ),
+      });
+    },
+  });
+};
+
+export const useLeaveMyRootShelf = () => {
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: (
+      request: LeaveMyRootShelfRequest
+    ): Promise<LeaveMyRootShelfResponse> => mutationFnLeaveMyRootShelf(request),
+    onSuccess: async (_response, request) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.permission(
+          request.param.rootShelfId as UUID
+        ),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.rootShelf.oneById(
+          request.param.rootShelfId as UUID
+        ),
+      });
+    },
+  });
 };

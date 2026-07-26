@@ -3,7 +3,16 @@ import { DNDType } from "@shared/enums";
 import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
-import { CheckIcon, SquareDotIcon } from "lucide-react";
+import {
+  CheckIcon,
+  Crown,
+  FolderPlus,
+  LogOut,
+  Pencil,
+  SquareDotIcon,
+  Trash2,
+} from "lucide-react";
+import type { UUID } from "crypto";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
@@ -209,6 +218,7 @@ const RootShelfMenuItem = ({
                   )
                 }
               >
+                <FolderPlus className="mr-2 size-4" />
                 Sub Shelf
               </ContextMenuItem>
             </ContextMenuGroup>
@@ -220,10 +230,12 @@ const RootShelfMenuItem = ({
                   shelfItemManager.startRenamingRootShelfNode(summary.root)
                 }
               >
+                <Pencil className="mr-2 size-4" />
                 Rename
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
+                disabled={!shelfItemManager.canDeleteRootShelf(summary.root.id)}
                 onClick={() =>
                   modalManager.open("DeleteShelfItemDialog", {
                     dialogHeader: "Delete a root shelf",
@@ -244,7 +256,73 @@ const RootShelfMenuItem = ({
                   })
                 }
               >
+                <Trash2 className="mr-2 size-4" />
                 Delete
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  const isOwner =
+                    shelfItemManager.canTransferRootShelfOwnership(
+                      summary.root.id
+                    );
+                  if (!isOwner) {
+                    void loadingManager.startAsyncTransactionLoading(async () =>
+                      shelfItemManager
+                        .leaveRootShelf(summary.root.id)
+                        .catch(error =>
+                          toast.error(languageManager.tError(error))
+                        )
+                    );
+                    return;
+                  }
+                  modalManager.open("CreateShelfItemDialog", {
+                    dialogHeader: "Leave root shelf",
+                    dialogDescription:
+                      "Owners must choose an existing member to receive ownership before leaving.",
+                    inputPlaceholder: "Member public UUID",
+                    submitLabel: "Leave",
+                    onCreate: async value =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () =>
+                          shelfItemManager.leaveRootShelf(
+                            summary.root.id,
+                            value.trim() as UUID
+                          )
+                      ),
+                    onCancel: modalManager.close,
+                  });
+                }}
+              >
+                <LogOut className="mr-2 size-4" />
+                Leave
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={
+                  !shelfItemManager.canTransferRootShelfOwnership(
+                    summary.root.id
+                  )
+                }
+                onClick={() =>
+                  modalManager.open("CreateShelfItemDialog", {
+                    dialogHeader: "Transfer root shelf ownership",
+                    dialogDescription:
+                      "Enter the public UUID of an existing root-shelf member.",
+                    inputPlaceholder: "Member public UUID",
+                    submitLabel: "Transfer",
+                    onCreate: async value =>
+                      await loadingManager.startAsyncTransactionLoading(
+                        async () =>
+                          shelfItemManager.transferRootShelfOwnership(
+                            summary.root.id,
+                            value.trim() as UUID
+                          )
+                      ),
+                    onCancel: modalManager.close,
+                  })
+                }
+              >
+                <Crown className="mr-2 size-4" />
+                Transfer ownership
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>
