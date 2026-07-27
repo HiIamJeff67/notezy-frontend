@@ -468,7 +468,6 @@ export const useItemLogic = ({
           if (removeFromSubShelf(subShelf)) {
             summary.hasChanged = true;
             summary.root.itemCount = Math.max(0, summary.root.itemCount - 1);
-            summary.analysisStatus = AnalysisStatus.OnlySubShelves;
             didRemove = true;
             break;
           }

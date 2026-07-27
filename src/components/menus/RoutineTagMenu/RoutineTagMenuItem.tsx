@@ -5,13 +5,13 @@ import {
   ChevronDown,
   ChevronRight,
   Copy,
-  Link2,
   Pencil,
   SquarePen,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
+import { RoutineIcon } from "@/components/icons/WorkspaceEntityIcons";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
 import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuItemSkeleton";
 import {
@@ -225,7 +225,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 }}
               >
                 <ContextMenuSubTrigger>
-                  <Link2 className="mr-2 size-4" />
+                  <RoutineIcon className="mr-2 size-4" />
                   Routines
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
@@ -248,6 +248,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                               );
                           }}
                         >
+                          <RoutineIcon className="mr-2 size-4" />
                           {routine.title}
                         </ContextMenuItem>
                       );

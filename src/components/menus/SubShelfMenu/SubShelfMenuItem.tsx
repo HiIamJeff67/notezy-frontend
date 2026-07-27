@@ -8,9 +8,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  FileText,
   FolderPlus,
-  Package,
   PackagePlus,
   Pencil,
   Trash2,
@@ -18,6 +16,10 @@ import {
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
+import {
+  BlockPackIcon,
+  MaterialIcon,
+} from "@/components/icons/WorkspaceEntityIcons";
 import BlockPackMenu from "@/components/menus/BlockPackMenu/BlockPackMenu";
 import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
 import MaterialMenu from "@/components/menus/MaterialMenu/MaterialMenu";
@@ -260,11 +262,11 @@ const SubShelfMenuItem = ({
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   <ContextMenuItem onClick={handleCreateMaterial}>
-                    <FileText className="mr-2 size-4" />
+                    <MaterialIcon className="mr-2 size-4" />
                     Material
                   </ContextMenuItem>
                   <ContextMenuItem onClick={handleCreateBlockPack}>
-                    <Package className="mr-2 size-4" />
+                    <BlockPackIcon className="mr-2 size-4" />
                     Block Pack
                   </ContextMenuItem>
                 </ContextMenuSubContent>

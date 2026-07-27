@@ -5,9 +5,10 @@ import { tKey } from "@shared/translations";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import {
   BellIcon,
+  BookOpenIcon,
   ChevronDown,
   ChevronRight,
-  ClipboardClock,
+  FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
   MessageSquareIcon,
@@ -16,13 +17,17 @@ import {
   SettingsIcon,
   SlidersHorizontalIcon,
   TagIcon,
+  Trash2Icon,
   UserRoundIcon,
 } from "lucide-react";
 import { useEffect } from "react";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import ShelfCaseIcon from "@/components/icons/ShelfCaseIcon";
-import TrainStationIcon from "@/components/icons/TrainStationIcon";
+import {
+  RoutineIcon,
+  StationIcon,
+} from "@/components/icons/WorkspaceEntityIcons";
 import RootShelfMenu from "@/components/menus/RootShelfMenu/RootShelfMenu";
 import RoutineTagMenu from "@/components/menus/RoutineTagMenu/RoutineTagMenu";
 import StationMenu from "@/components/menus/StationMenu/StationMenu";
@@ -160,7 +165,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                     router.push(WebURLPathDictionary.root.routines._)
                   }
                 >
-                  <ClipboardClock />
+                  <RoutineIcon />
                   {sidebarManager.open && (
                     <span className="truncate">Routines</span>
                   )}
@@ -236,7 +241,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
           <Collapsible defaultOpen className="group/collapsible">
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="gap-2 [&[data-state=closed]:hover_.group-label-chevron-right]:block [&[data-state=open]:hover_.group-label-chevron-down]:block">
-                <TrainStationIcon size={16} />
+                <StationIcon size={16} />
                 <span>Stations</span>
                 <ChevronRight className="group-label-chevron-right hidden size-3" />
                 <ChevronDown className="group-label-chevron-down hidden size-3" />
@@ -292,6 +297,53 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
           </Collapsible>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarGroup className="mx-2 mb-0 w-auto rounded-t-md border border-b-0 border-sidebar-border bg-sidebar-accent/20 px-1 py-1">
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem className="rounded-sm">
+              <SidebarMenuButton
+                className={`w-full flex ${
+                  sidebarManager.open ? "justify-start" : "justify-center"
+                } items-center select-none hover:bg-primary`}
+                onClick={() =>
+                  router.push(WebURLPathDictionary.root.document)
+                }
+              >
+                <FileTextIcon />
+                {sidebarManager.open && (
+                  <span className="truncate">Document</span>
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem className="rounded-sm">
+              <SidebarMenuButton
+                className={`w-full flex ${
+                  sidebarManager.open ? "justify-start" : "justify-center"
+                } items-center select-none hover:bg-primary`}
+                onClick={() =>
+                  router.push(WebURLPathDictionary.root.introduction)
+                }
+              >
+                <BookOpenIcon />
+                {sidebarManager.open && (
+                  <span className="truncate">Introduction</span>
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem className="rounded-sm">
+              <SidebarMenuButton
+                className={`w-full flex ${
+                  sidebarManager.open ? "justify-start" : "justify-center"
+                } items-center select-none hover:bg-primary`}
+                onClick={() => router.push(WebURLPathDictionary.root.trash)}
+              >
+                <Trash2Icon />
+                {sidebarManager.open && <span className="truncate">Trash</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
       <SidebarSeparator className="w-full m-0 p-0" />
       <SidebarFooter className="w-full p-0 m-0">
         <Menubar className="w-full h-full flex flex-row justify-start items-center rounded-none bg-transparent border-none">

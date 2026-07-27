@@ -13,9 +13,10 @@ import {
 } from "@shared/api/interfaces/enums";
 import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { UUID } from "crypto";
-import { Bookmark, ClipboardClock, SquarePen } from "lucide-react";
+import { Bookmark, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import { RoutineIcon } from "@/components/icons/WorkspaceEntityIcons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -348,7 +349,7 @@ const RoutineTable = () => {
     <section className="@container flex max-h-[640px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
       <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[760px]:items-start @max-[760px]:flex-col">
         <div className="flex min-w-0 items-center gap-2">
-          <ClipboardClock className="size-4 text-muted-foreground" />
+          <RoutineIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
             Routine Table
           </span>

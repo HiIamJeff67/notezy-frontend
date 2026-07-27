@@ -5,7 +5,6 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClipboardClock,
   ClipboardList,
   Crown,
   ExternalLink,
@@ -17,7 +16,10 @@ import {
 import { useCallback } from "react";
 import type { UUID } from "crypto";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
-import TrainStationIcon from "@/components/icons/TrainStationIcon";
+import {
+  RoutineIcon,
+  StationIcon,
+} from "@/components/icons/WorkspaceEntityIcons";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
 import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuItemSkeleton";
 import {
@@ -147,7 +149,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                           {station.icon}
                         </span>
                       ) : (
-                        <TrainStationIcon size={16} />
+                        <StationIcon size={16} />
                       )}
                       <span className="min-w-0 truncate">{station.name}</span>
                     </SidebarMenuButton>
@@ -220,7 +222,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   }, 0);
                 }}
               >
-                <ClipboardClock className="mr-2 size-4" />
+                <RoutineIcon className="mr-2 size-4" />
                 Routine
               </ContextMenuItem>
             </ContextMenuGroup>
@@ -329,7 +331,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                     align="center"
                     className="flex w-auto items-center gap-2 rounded-sm px-3 py-2"
                   >
-                    <ClipboardClock className="size-4 text-muted-foreground" />
+                    <RoutineIcon className="size-4 text-muted-foreground" />
                     <span className="text-xs">
                       {station.routineCount} total routines
                     </span>

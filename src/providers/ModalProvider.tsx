@@ -50,13 +50,6 @@ const RoutineTaskRecordDialog = lazy(
   () =>
     import("@/components/dialogs/StationRoutineDialog/RoutineTaskRecordDialog")
 );
-const AccountSettingsPanel = lazy(
-  () => import("@/components/panels/AccountSettingsPanel/AccountSettingsPanel")
-);
-const PreferencesPanel = lazy(
-  () => import("@/components/panels/PreferencesPanel/PreferencesPanel")
-);
-
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,8 +57,6 @@ export interface ModalProps {
 
 export type ModalPropsMap = {
   // make sure don't place the default modal props here, ex. isOpen, onClose
-  AccountSettingsPanel: undefined;
-  PreferencesPanel: undefined;
   CreateShelfItemDialog: {
     dialogHeader: React.ReactNode;
     dialogDescription: React.ReactNode;
@@ -203,24 +194,6 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     const modalKey = `${modal.type}-${index}`;
 
     switch (modal.type) {
-      case "AccountSettingsPanel":
-        return (
-          <AccountSettingsPanel
-            isOpen={true}
-            key={modalKey}
-            onClose={close}
-            {...props}
-          />
-        );
-      case "PreferencesPanel":
-        return (
-          <PreferencesPanel
-            isOpen={true}
-            key={modalKey}
-            onClose={close}
-            {...props}
-          />
-        );
       case "CreateShelfItemDialog":
         return (
           <CreateShelfItemDialog

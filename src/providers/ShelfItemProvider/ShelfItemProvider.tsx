@@ -98,8 +98,8 @@ export const ShelfItemProvider = ({
         | undefined;
       if (!detail) return;
 
-      if (detail.reason === "permission_revoked" && detail.rootShelfId) {
-        rootShelfLogic.removeRootShelfOptimistically(detail.rootShelfId);
+      if (detail.reason === "permission_revoked" && detail.blockPackId) {
+        itemLogic.removeBlockPackOptimistically(detail.blockPackId);
         return;
       }
       if (detail.reason === "resource_unavailable" && detail.blockPackId) {
@@ -118,7 +118,6 @@ export const ShelfItemProvider = ({
       );
   }, [
     itemLogic.removeBlockPackOptimistically,
-    rootShelfLogic.removeRootShelfOptimistically,
   ]);
 
   const contextValue: ShelfItemContextType = {

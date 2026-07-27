@@ -23,6 +23,7 @@ export interface PatternBlock {
   id: string;
   type: string;
   label: string;
+  props: Record<string, unknown>;
 }
 
 export interface SelectedBlockPayloadTarget {
@@ -148,6 +149,7 @@ const CreateBlockPackPayloadEditor = ({
       patternBlocksFromEditor.push({
         id: block.id,
         type: block.type,
+        props: block.props ?? {},
         label: Array.isArray(block.content)
           ? block.content
               .map((content: any) => {
@@ -173,6 +175,17 @@ const CreateBlockPackPayloadEditor = ({
 
     return patternBlocksFromEditor;
   }, [editor, editorVersion]);
+  const livePatternBlocks = useMemo(
+    () =>
+      patternBlocks.map(
+        patternBlock =>
+          availablePatternBlocks.find(
+            availablePatternBlock =>
+              availablePatternBlock.id === patternBlock.id
+          ) ?? patternBlock
+      ),
+    [availablePatternBlocks, patternBlocks]
+  );
 
   const addPatternBlock = (nextPatternBlock: PatternBlock) => {
     setPatternBlocks(previousPatternBlocks => {
@@ -252,6 +265,7 @@ const CreateBlockPackPayloadEditor = ({
         nextPatternBlocks.push({
           id: block.id ?? crypto.randomUUID(),
           type: block.type ?? "block",
+          props: block.props ?? {},
           label: Array.isArray(block.content)
             ? block.content
                 .map((content: any) => content.text ?? "")
@@ -510,7 +524,7 @@ const CreateBlockPackPayloadEditor = ({
               blockId={blockId}
               setBlockId={setBlockId}
               setSelectedBlock={setSelectedBlock}
-              patternBlocks={patternBlocks}
+              patternBlocks={livePatternBlocks}
               availablePatternBlocks={availablePatternBlocks}
               setPatternBlocks={setPatternBlocks}
               onAddPatternBlock={addPatternBlock}

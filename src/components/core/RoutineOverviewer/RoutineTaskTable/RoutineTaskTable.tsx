@@ -13,9 +13,10 @@ import {
 } from "@shared/api/interfaces/enums";
 import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import type { UUID } from "crypto";
-import { ClipboardList, SquarePen } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
+import { RoutineTaskIcon } from "@/components/icons/WorkspaceEntityIcons";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -357,7 +358,7 @@ const RoutineTaskTable = () => {
     <section className="@container flex max-h-[480px] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-border/60 bg-card">
       <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[1040px]:flex-col @max-[1040px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
-          <ClipboardList className="size-4 text-muted-foreground" />
+          <RoutineTaskIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
             Routine Task Table
           </span>

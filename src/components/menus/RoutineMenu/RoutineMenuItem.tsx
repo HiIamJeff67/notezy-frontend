@@ -9,18 +9,21 @@ import {
   CheckIcon,
   ClipboardList,
   Copy,
-  FileText,
   HistoryIcon,
   LoaderCircle,
-  Package,
   PackagePlus,
   Pencil,
   SquarePen,
-  Tags,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
+import {
+  BlockPackIcon,
+  MaterialIcon,
+  RoutineIcon,
+  RoutineTagIcon,
+} from "@/components/icons/WorkspaceEntityIcons";
 import RoutineTaskMenu from "@/components/menus/RoutineTaskMenu/RoutineTaskMenu";
 import RoutineTaskMenuItemSkeleton from "@/components/menus/RoutineTaskMenu/RoutineTaskMenuItemSkeleton";
 import {
@@ -170,6 +173,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                       {routine.isPinned && (
                         <Bookmark className="size-3.5 shrink-0 text-muted-foreground" />
                       )}
+                      <RoutineIcon className="size-3.5 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 truncate">{routine.title}</span>
                     </SidebarMenuSubButton>
                   </CollapsibleTrigger>
@@ -287,7 +291,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }}
               >
                 <ContextMenuSubTrigger>
-                  <Tags className="mr-2 size-4" />
+                  <RoutineTagIcon className="mr-2 size-4" />
                   Tags
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent
@@ -322,6 +326,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                       return (
                         <ContextMenuCheckboxItem
                           key={routineTag.id}
+                          className="pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
                           checked={isLinked}
                           onSelect={event => event.preventDefault()}
                           onCheckedChange={() => {
@@ -336,6 +341,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                               );
                           }}
                         >
+                          <RoutineTagIcon className="mr-2 size-4" />
                           {routineTag.name}
                         </ContextMenuCheckboxItem>
                       );
@@ -400,6 +406,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                         return (
                           <ContextMenuCheckboxItem
                             key={`${item.type}-${item.id}`}
+                            className="pl-2 pr-8 [&>span:first-child]:left-auto [&>span:first-child]:right-2"
                             checked={isLinked}
                             onSelect={event => event.preventDefault()}
                             onCheckedChange={() => {
@@ -423,9 +430,9 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                             }}
                           >
                             {item.type === ItemType.BlockPack ? (
-                              <Package className="mr-2 size-4" />
+                              <BlockPackIcon className="mr-2 size-4" />
                             ) : (
-                              <FileText className="mr-2 size-4" />
+                              <MaterialIcon className="mr-2 size-4" />
                             )}
                             <span className="min-w-0 truncate">
                               {item.rootShelfName} / {item.parentSubShelfName} /{" "}

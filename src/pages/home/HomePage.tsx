@@ -195,7 +195,7 @@ export const HomePage = () => {
                 variant="secondary"
                 className="cursor-pointer font-bold hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
                 onClick={() => {
-                  router.push(WebURLPathDictionary.root.documents._);
+                  router.push(WebURLPathDictionary.root.document);
                 }}
               >
                 <BookTextIcon size={18} />

@@ -17,7 +17,7 @@ import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
-import ShelfIcon from "@/components/icons/ShelfIcon";
+import { RootShelfIcon } from "@/components/icons/WorkspaceEntityIcons";
 import RootShelfMenuItemSkeleton from "@/components/menus/RootShelfMenu/RootShelfMenuItemSkeleton";
 import SubShelfMenu from "@/components/menus/SubShelfMenu/SubShelfMenu";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
@@ -170,7 +170,7 @@ const RootShelfMenuItem = ({
                       {summary.root.isOpen ? (
                         <EmptyShelfIcon size={16} />
                       ) : (
-                        <ShelfIcon size={16} />
+                        <RootShelfIcon size={16} />
                       )}
                       <span>{summary.root.name}</span>
                     </SidebarMenuButton>

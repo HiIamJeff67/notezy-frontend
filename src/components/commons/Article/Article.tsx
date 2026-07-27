@@ -37,10 +37,10 @@ const Article = ({ className, ...props }: HTMLAttributes<HTMLElement>) => {
         className={cn(
           "flex h-full min-h-0 w-full flex-col gap-8 overflow-y-auto lg:flex-row",
           preferences.density === "compact"
-            ? "lg:gap-5"
+            ? "lg:gap-4"
             : preferences.density === "comfortable"
-              ? "lg:gap-20"
-              : "lg:gap-10",
+              ? "lg:gap-8"
+              : "lg:gap-6",
           className
         )}
         {...props}
@@ -52,15 +52,24 @@ const Article = ({ className, ...props }: HTMLAttributes<HTMLElement>) => {
 const ArticleContent = ({
   className,
   ...props
-}: HTMLAttributes<HTMLElement>) => (
-  <main
-    className={cn(
-      "min-w-0 max-w-6xl flex-1 py-2 pr-4 sm:pr-6 lg:py-5 lg:pr-8",
-      className
-    )}
-    {...props}
-  />
-);
+}: HTMLAttributes<HTMLElement>) => {
+  const { preferences } = useLocalPreferences();
+
+  return (
+    <main
+      className={cn(
+        "min-w-0 max-w-6xl flex-1 py-2 pr-4 sm:pr-6 lg:py-5",
+        preferences.density === "compact"
+          ? "lg:pr-4"
+          : preferences.density === "comfortable"
+            ? "lg:pr-8"
+            : "lg:pr-6",
+        className
+      )}
+      {...props}
+    />
+  );
+};
 
 const ArticleParagraph = ({
   className,
@@ -309,7 +318,7 @@ const ArticleNavigationSidebar = ({
   return (
     <aside
       className={cn(
-        "shrink-0 lg:sticky lg:top-1/2 lg:h-fit lg:w-24 lg:-translate-y-1/2",
+        "hidden shrink-0 lg:sticky lg:block lg:top-1/2 lg:h-fit lg:w-24 lg:-translate-y-1/2",
         className
       )}
     >

@@ -9,14 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IntroductionRouteImport } from './routes/introduction'
+import { Route as DocumentRouteImport } from './routes/document'
 import { Route as RootRouteImport } from './routes/_root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RootTrashRouteImport } from './routes/_root.trash'
 import { Route as RootRoutinesRouteImport } from './routes/_root.routines'
 import { Route as RootPrivacyPolicyRouteImport } from './routes/_root.privacy-policy'
 import { Route as RootPlaygroundRouteImport } from './routes/_root.playground'
 import { Route as RootMaterialViewerRouteImport } from './routes/_root.material-viewer'
-import { Route as RootIntroductionRouteImport } from './routes/_root.introduction'
 import { Route as RootDashboardRouteImport } from './routes/_root.dashboard'
 import { Route as RootBlockPackEditorRouteImport } from './routes/_root.block-pack-editor'
 import { Route as RootAdminRouteImport } from './routes/_root.admin'
@@ -36,6 +38,16 @@ import { Route as AuthRedirectXRouteImport } from './routes/_auth.redirect.x'
 import { Route as AuthRedirectGoogleRouteImport } from './routes/_auth.redirect.google'
 import { Route as AuthRedirectErrorRouteImport } from './routes/_auth.redirect.error'
 
+const IntroductionRoute = IntroductionRouteImport.update({
+  id: '/introduction',
+  path: '/introduction',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentRoute = DocumentRouteImport.update({
+  id: '/document',
+  path: '/document',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RootRoute = RootRouteImport.update({
   id: '/_root',
   getParentRoute: () => rootRouteImport,
@@ -48,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RootTrashRoute = RootTrashRouteImport.update({
+  id: '/trash',
+  path: '/trash',
+  getParentRoute: () => RootRoute,
 } as any)
 const RootRoutinesRoute = RootRoutinesRouteImport.update({
   id: '/routines',
@@ -67,11 +84,6 @@ const RootPlaygroundRoute = RootPlaygroundRouteImport.update({
 const RootMaterialViewerRoute = RootMaterialViewerRouteImport.update({
   id: '/material-viewer',
   path: '/material-viewer',
-  getParentRoute: () => RootRoute,
-} as any)
-const RootIntroductionRoute = RootIntroductionRouteImport.update({
-  id: '/introduction',
-  path: '/introduction',
   getParentRoute: () => RootRoute,
 } as any)
 const RootDashboardRoute = RootDashboardRouteImport.update({
@@ -170,17 +182,19 @@ const AuthRedirectErrorRoute = AuthRedirectErrorRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/document': typeof DocumentRoute
+  '/introduction': typeof IntroductionRoute
   '/forgetPassword': typeof AuthForgetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/admin': typeof RootAdminRoute
   '/block-pack-editor': typeof RootBlockPackEditorRouteWithChildren
   '/dashboard': typeof RootDashboardRouteWithChildren
-  '/introduction': typeof RootIntroductionRoute
   '/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/playground': typeof RootPlaygroundRoute
   '/privacy-policy': typeof RootPrivacyPolicyRoute
   '/routines': typeof RootRoutinesRouteWithChildren
+  '/trash': typeof RootTrashRoute
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
@@ -196,13 +210,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/document': typeof DocumentRoute
+  '/introduction': typeof IntroductionRoute
   '/forgetPassword': typeof AuthForgetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/admin': typeof RootAdminRoute
-  '/introduction': typeof RootIntroductionRoute
   '/playground': typeof RootPlaygroundRoute
   '/privacy-policy': typeof RootPrivacyPolicyRoute
+  '/trash': typeof RootTrashRoute
   '/redirect/error': typeof AuthRedirectErrorRoute
   '/redirect/google': typeof AuthRedirectGoogleRoute
   '/redirect/x': typeof AuthRedirectXRoute
@@ -221,17 +237,19 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
   '/_root': typeof RootRouteWithChildren
+  '/document': typeof DocumentRoute
+  '/introduction': typeof IntroductionRoute
   '/_auth/forgetPassword': typeof AuthForgetPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_root/admin': typeof RootAdminRoute
   '/_root/block-pack-editor': typeof RootBlockPackEditorRouteWithChildren
   '/_root/dashboard': typeof RootDashboardRouteWithChildren
-  '/_root/introduction': typeof RootIntroductionRoute
   '/_root/material-viewer': typeof RootMaterialViewerRouteWithChildren
   '/_root/playground': typeof RootPlaygroundRoute
   '/_root/privacy-policy': typeof RootPrivacyPolicyRoute
   '/_root/routines': typeof RootRoutinesRouteWithChildren
+  '/_root/trash': typeof RootTrashRoute
   '/_auth/redirect/error': typeof AuthRedirectErrorRoute
   '/_auth/redirect/google': typeof AuthRedirectGoogleRoute
   '/_auth/redirect/x': typeof AuthRedirectXRoute
@@ -249,17 +267,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/document'
+    | '/introduction'
     | '/forgetPassword'
     | '/login'
     | '/register'
     | '/admin'
     | '/block-pack-editor'
     | '/dashboard'
-    | '/introduction'
     | '/material-viewer'
     | '/playground'
     | '/privacy-policy'
     | '/routines'
+    | '/trash'
     | '/redirect/error'
     | '/redirect/google'
     | '/redirect/x'
@@ -275,13 +295,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/document'
+    | '/introduction'
     | '/forgetPassword'
     | '/login'
     | '/register'
     | '/admin'
-    | '/introduction'
     | '/playground'
     | '/privacy-policy'
+    | '/trash'
     | '/redirect/error'
     | '/redirect/google'
     | '/redirect/x'
@@ -299,17 +321,19 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/_root'
+    | '/document'
+    | '/introduction'
     | '/_auth/forgetPassword'
     | '/_auth/login'
     | '/_auth/register'
     | '/_root/admin'
     | '/_root/block-pack-editor'
     | '/_root/dashboard'
-    | '/_root/introduction'
     | '/_root/material-viewer'
     | '/_root/playground'
     | '/_root/privacy-policy'
     | '/_root/routines'
+    | '/_root/trash'
     | '/_auth/redirect/error'
     | '/_auth/redirect/google'
     | '/_auth/redirect/x'
@@ -328,10 +352,26 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   RootRoute: typeof RootRouteWithChildren
+  DocumentRoute: typeof DocumentRoute
+  IntroductionRoute: typeof IntroductionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/introduction': {
+      id: '/introduction'
+      path: '/introduction'
+      fullPath: '/introduction'
+      preLoaderRoute: typeof IntroductionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/document': {
+      id: '/document'
+      path: '/document'
+      fullPath: '/document'
+      preLoaderRoute: typeof DocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_root': {
       id: '/_root'
       path: ''
@@ -352,6 +392,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_root/trash': {
+      id: '/_root/trash'
+      path: '/trash'
+      fullPath: '/trash'
+      preLoaderRoute: typeof RootTrashRouteImport
+      parentRoute: typeof RootRoute
     }
     '/_root/routines': {
       id: '/_root/routines'
@@ -379,13 +426,6 @@ declare module '@tanstack/react-router' {
       path: '/material-viewer'
       fullPath: '/material-viewer'
       preLoaderRoute: typeof RootMaterialViewerRouteImport
-      parentRoute: typeof RootRoute
-    }
-    '/_root/introduction': {
-      id: '/_root/introduction'
-      path: '/introduction'
-      fullPath: '/introduction'
-      preLoaderRoute: typeof RootIntroductionRouteImport
       parentRoute: typeof RootRoute
     }
     '/_root/dashboard': {
@@ -593,11 +633,11 @@ interface RootRouteChildren {
   RootAdminRoute: typeof RootAdminRoute
   RootBlockPackEditorRoute: typeof RootBlockPackEditorRouteWithChildren
   RootDashboardRoute: typeof RootDashboardRouteWithChildren
-  RootIntroductionRoute: typeof RootIntroductionRoute
   RootMaterialViewerRoute: typeof RootMaterialViewerRouteWithChildren
   RootPlaygroundRoute: typeof RootPlaygroundRoute
   RootPrivacyPolicyRoute: typeof RootPrivacyPolicyRoute
   RootRoutinesRoute: typeof RootRoutinesRouteWithChildren
+  RootTrashRoute: typeof RootTrashRoute
   RootSettingAccountRoute: typeof RootSettingAccountRoute
   RootSettingPreferencesRoute: typeof RootSettingPreferencesRoute
 }
@@ -606,11 +646,11 @@ const RootRouteChildren: RootRouteChildren = {
   RootAdminRoute: RootAdminRoute,
   RootBlockPackEditorRoute: RootBlockPackEditorRouteWithChildren,
   RootDashboardRoute: RootDashboardRouteWithChildren,
-  RootIntroductionRoute: RootIntroductionRoute,
   RootMaterialViewerRoute: RootMaterialViewerRouteWithChildren,
   RootPlaygroundRoute: RootPlaygroundRoute,
   RootPrivacyPolicyRoute: RootPrivacyPolicyRoute,
   RootRoutinesRoute: RootRoutinesRouteWithChildren,
+  RootTrashRoute: RootTrashRoute,
   RootSettingAccountRoute: RootSettingAccountRoute,
   RootSettingPreferencesRoute: RootSettingPreferencesRoute,
 }
@@ -621,6 +661,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   RootRoute: RootRouteWithChildren,
+  DocumentRoute: DocumentRoute,
+  IntroductionRoute: IntroductionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

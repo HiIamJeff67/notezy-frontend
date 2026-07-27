@@ -104,6 +104,7 @@ const CreateBlockPackPayloadTemplateEditor = ({
                     onAddPatternBlock({
                       id: sideMenuProps.block.id,
                       type: sideMenuProps.block.type,
+                      props: sideMenuProps.block.props ?? {},
                       label: Array.isArray(sideMenuProps.block.content)
                         ? sideMenuProps.block.content
                             .map((content: any) => {

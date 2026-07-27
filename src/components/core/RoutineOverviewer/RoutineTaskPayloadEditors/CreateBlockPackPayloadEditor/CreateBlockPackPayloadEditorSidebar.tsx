@@ -85,7 +85,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
   });
   const [isPatternBlockPickerOpen, setIsPatternBlockPickerOpen] =
     useState(false);
-  const [isTemplateTableExpanded, setIsTemplateTableExpanded] = useState(true);
+  const [isTemplateTableExpanded, setIsTemplateTableExpanded] = useState(false);
   const [selectedAvailablePatternIds, setSelectedAvailablePatternIds] =
     useState<Set<string>>(new Set());
   const [isBlockPickerOpen, setIsBlockPickerOpen] = useState(false);
@@ -262,8 +262,9 @@ const CreateBlockPackPayloadEditorSidebar = ({
           </div>
         </>
       )}
-      {(purpose === RoutineTaskPurpose.UpdateBlock || purpose === RoutineTaskPurpose.ResetBlock)
-        && (<div className="flex flex-col gap-2">
+      {(purpose === RoutineTaskPurpose.UpdateBlock ||
+        purpose === RoutineTaskPurpose.ResetBlock) && (
+        <div className="flex flex-col gap-2">
           <Label>Block</Label>
           <PopoverPrimitive.Root
             modal
@@ -446,144 +447,141 @@ const CreateBlockPackPayloadEditorSidebar = ({
                     Choose blocks to mark as templates.
                   </div>
                 </div>
-                <div className="min-h-0 flex-1 p-2">
-                  <div className="h-full overflow-y-auto rounded-sm border px-2 py-1">
-                    <Table className="table-fixed">
-                      <TableHeader>
+                <div className="min-h-0 flex-1 overflow-y-auto p-2">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="h-8 w-8 p-1.5"></TableHead>
+                        <TableHead className="h-8 w-24 p-1.5">ID</TableHead>
+                        <TableHead className="h-8 w-24 p-1.5">Type</TableHead>
+                        <TableHead className="h-8 p-1.5">Content</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {availableUnselectedPatternBlocks.length === 0 ? (
                         <TableRow>
-                          <TableHead className="h-8 w-8 p-1.5"></TableHead>
-                          <TableHead className="h-8 w-24 p-1.5">ID</TableHead>
-                          <TableHead className="h-8 w-24 p-1.5">Type</TableHead>
-                          <TableHead className="h-8 p-1.5">Content</TableHead>
+                          <TableCell
+                            colSpan={4}
+                            className="p-5 text-center text-xs text-muted-foreground"
+                          >
+                            No available blocks
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {availableUnselectedPatternBlocks.length === 0 ? (
-                          <TableRow>
-                            <TableCell
-                              colSpan={4}
-                              className="p-5 text-center text-xs text-muted-foreground"
+                      ) : (
+                        availableUnselectedPatternBlocks.map(
+                          availablePatternBlock => (
+                            <TableRow
+                              key={availablePatternBlock.id}
+                              className="transition-none hover:bg-transparent"
                             >
-                              No available blocks
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          availableUnselectedPatternBlocks.map(
-                            availablePatternBlock => (
-                              <TableRow
-                                key={availablePatternBlock.id}
-                                className="transition-none hover:bg-transparent"
-                              >
-                                <TableCell className="p-1.5">
-                                  <Checkbox
-                                    checked={selectedAvailablePatternIds.has(
-                                      availablePatternBlock.id
-                                    )}
-                                    onCheckedChange={checked => {
-                                      setSelectedAvailablePatternIds(
-                                        previousSelectedAvailablePatternIds => {
-                                          const nextSelectedAvailablePatternIds =
-                                            new Set(
-                                              previousSelectedAvailablePatternIds
-                                            );
-                                          if (checked) {
-                                            nextSelectedAvailablePatternIds.add(
-                                              availablePatternBlock.id
-                                            );
-                                          } else {
-                                            nextSelectedAvailablePatternIds.delete(
-                                              availablePatternBlock.id
-                                            );
-                                          }
-                                          return nextSelectedAvailablePatternIds;
+                              <TableCell className="p-1.5">
+                                <Checkbox
+                                  checked={selectedAvailablePatternIds.has(
+                                    availablePatternBlock.id
+                                  )}
+                                  onCheckedChange={checked => {
+                                    setSelectedAvailablePatternIds(
+                                      previousSelectedAvailablePatternIds => {
+                                        const nextSelectedAvailablePatternIds =
+                                          new Set(
+                                            previousSelectedAvailablePatternIds
+                                          );
+                                        if (checked) {
+                                          nextSelectedAvailablePatternIds.add(
+                                            availablePatternBlock.id
+                                          );
+                                        } else {
+                                          nextSelectedAvailablePatternIds.delete(
+                                            availablePatternBlock.id
+                                          );
                                         }
-                                      );
-                                    }}
-                                    onClick={event => event.stopPropagation()}
-                                  />
-                                </TableCell>
-                                <TableCell
-                                  className="w-24 cursor-pointer overflow-hidden whitespace-nowrap p-1.5 font-mono text-[11px] hover:text-foreground"
-                                  title={availablePatternBlock.id}
-                                  onClick={() => {
-                                    void navigator.clipboard
-                                      .writeText(availablePatternBlock.id)
-                                      .then(() =>
-                                        toast.success("Block id copied")
-                                      )
-                                      .catch(() =>
-                                        toast.error("Unable to copy block id")
-                                      );
+                                        return nextSelectedAvailablePatternIds;
+                                      }
+                                    );
                                   }}
-                                >
-                                  {availablePatternBlock.id.length > 8
-                                    ? availablePatternBlock.id.slice(0, 8)
-                                    : availablePatternBlock.id}
-                                </TableCell>
-                                <TableCell
-                                  className="w-24 cursor-pointer truncate p-1.5 text-xs hover:text-foreground"
-                                  onClick={() => {
-                                    void navigator.clipboard
-                                      .writeText(
-                                        JSON.stringify(
-                                          availablePatternBlock,
-                                          null,
-                                          2
-                                        )
+                                  onClick={event => event.stopPropagation()}
+                                />
+                              </TableCell>
+                              <TableCell
+                                className="w-24 cursor-pointer overflow-hidden whitespace-nowrap p-1.5 font-mono text-[11px] hover:text-foreground"
+                                title={availablePatternBlock.id}
+                                onClick={() => {
+                                  void navigator.clipboard
+                                    .writeText(availablePatternBlock.id)
+                                    .then(() =>
+                                      toast.success("Block id copied")
+                                    )
+                                    .catch(() =>
+                                      toast.error("Unable to copy block id")
+                                    );
+                                }}
+                              >
+                                {availablePatternBlock.id.length > 8
+                                  ? availablePatternBlock.id.slice(0, 8)
+                                  : availablePatternBlock.id}
+                              </TableCell>
+                              <TableCell
+                                className="w-24 cursor-pointer truncate p-1.5 text-xs hover:text-foreground"
+                                onClick={() => {
+                                  void navigator.clipboard
+                                    .writeText(
+                                      JSON.stringify(
+                                        availablePatternBlock,
+                                        null,
+                                        2
                                       )
-                                      .then(() => toast.success("Block copied"))
-                                      .catch(() =>
-                                        toast.error("Unable to copy block")
-                                      );
-                                  }}
-                                >
-                                  {availablePatternBlock.type
-                                    .replace(/^BlockType_/, "")
-                                    .replace(/^[A-Z]/, character =>
-                                      character.toLowerCase()
-                                    )}
-                                </TableCell>
-                                <TableCell
-                                  className="cursor-pointer truncate p-1.5 text-xs hover:text-foreground"
-                                  title={availablePatternBlock.label}
-                                  onClick={() => {
-                                    void navigator.clipboard
-                                      .writeText(
-                                        JSON.stringify(
-                                          availablePatternBlock,
-                                          null,
-                                          2
-                                        )
+                                    )
+                                    .then(() => toast.success("Block copied"))
+                                    .catch(() =>
+                                      toast.error("Unable to copy block")
+                                    );
+                                }}
+                              >
+                                {availablePatternBlock.type
+                                  .replace(/^BlockType_/, "")
+                                  .replace(/^[A-Z]/, character =>
+                                    character.toLowerCase()
+                                  )}
+                              </TableCell>
+                              <TableCell
+                                className="cursor-pointer truncate p-1.5 text-xs hover:text-foreground"
+                                title={availablePatternBlock.label}
+                                onClick={() => {
+                                  void navigator.clipboard
+                                    .writeText(
+                                      JSON.stringify(
+                                        availablePatternBlock,
+                                        null,
+                                        2
                                       )
-                                      .then(() => toast.success("Block copied"))
-                                      .catch(() =>
-                                        toast.error("Unable to copy block")
-                                      );
-                                  }}
-                                >
-                                  {availablePatternBlock.label ? (
-                                    <HoverCard openDelay={250}>
-                                      <HoverCardTrigger asChild>
-                                        <span className="block truncate">
-                                          {availablePatternBlock.label.length >
-                                          40
-                                            ? `${availablePatternBlock.label.slice(0, 40)}...`
-                                            : availablePatternBlock.label}
-                                        </span>
-                                      </HoverCardTrigger>
-                                      <HoverCardContent className="z-[230] max-h-64 w-80 overflow-y-auto rounded-sm text-xs">
-                                        {availablePatternBlock.label}
-                                      </HoverCardContent>
-                                    </HoverCard>
-                                  ) : null}
-                                </TableCell>
-                              </TableRow>
-                            )
+                                    )
+                                    .then(() => toast.success("Block copied"))
+                                    .catch(() =>
+                                      toast.error("Unable to copy block")
+                                    );
+                                }}
+                              >
+                                {availablePatternBlock.label ? (
+                                  <HoverCard openDelay={250}>
+                                    <HoverCardTrigger asChild>
+                                      <span className="block truncate">
+                                        {availablePatternBlock.label.length > 40
+                                          ? `${availablePatternBlock.label.slice(0, 40)}...`
+                                          : availablePatternBlock.label}
+                                      </span>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="z-[230] max-h-64 w-80 overflow-y-auto rounded-sm text-xs">
+                                      {availablePatternBlock.label}
+                                    </HoverCardContent>
+                                  </HoverCard>
+                                ) : null}
+                              </TableCell>
+                            </TableRow>
                           )
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        )
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
                 <div className="flex shrink-0 justify-end gap-2 border-t px-3 py-2">
                   <Button
@@ -643,116 +641,139 @@ const CreateBlockPackPayloadEditorSidebar = ({
       </div>
 
       <Separator />
-      <div
-        className={
-          isTemplateTableExpanded
-            ? "h-72 min-h-72 shrink-0 overflow-y-auto rounded-t-sm border bg-background"
-            : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-background"
-        }
-      >
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow className="transition-none hover:bg-transparent">
-              <TableHead className="h-8 w-8 p-1.5"></TableHead>
-              <TableHead className="h-8 w-16 p-1.5">ID</TableHead>
-              <TableHead className="h-8 w-20 p-1.5">Type</TableHead>
-              <TableHead className="h-8 w-28 p-1.5">Content</TableHead>
-              <TableHead className="h-8 w-auto p-1.5">Template</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {patternBlocks.length === 0 ? (
+      <div className="flex flex-col">
+        <div
+          className={
+            isTemplateTableExpanded
+              ? "h-72 min-h-72 shrink-0 overflow-y-auto rounded-t-sm border bg-background"
+              : "h-24 min-h-24 shrink-0 overflow-hidden rounded-t-sm border bg-background"
+          }
+        >
+          <Table className="table-fixed">
+            <TableHeader>
               <TableRow className="transition-none hover:bg-transparent">
-                <TableCell
-                  colSpan={5}
-                  className="h-56 px-2 py-6 text-center text-xs text-muted-foreground"
-                >
-                  No template blocks
-                </TableCell>
+                <TableHead className="h-8 w-8 p-1.5"></TableHead>
+                <TableHead className="h-8 w-16 p-1.5">ID</TableHead>
+                <TableHead className="h-8 w-20 p-1.5">Type</TableHead>
+                <TableHead className="h-8 p-1.5">Content</TableHead>
+                <TableHead className="h-8 w-36 p-1.5">Props</TableHead>
               </TableRow>
-            ) : (
-              patternBlocks.map(patternBlock => (
-                <TableRow
-                  key={patternBlock.id}
-                  className="transition-none hover:bg-transparent"
-                >
-                  <TableCell className="p-1.5">
-                    <Checkbox
-                      checked={selectedPatternIds.has(patternBlock.id)}
-                      onCheckedChange={checked => {
-                        setSelectedPatternIds(previousSelectedIds => {
-                          const nextSelectedIds = new Set(previousSelectedIds);
-                          if (checked) {
-                            nextSelectedIds.add(patternBlock.id);
-                          } else {
-                            nextSelectedIds.delete(patternBlock.id);
-                          }
-                          return nextSelectedIds;
-                        });
-                      }}
-                    />
-                  </TableCell>
+            </TableHeader>
+            <TableBody>
+              {patternBlocks.length === 0 ? (
+                <TableRow className="transition-none hover:bg-transparent">
                   <TableCell
-                    className="w-16 cursor-pointer overflow-hidden whitespace-nowrap p-1.5 font-mono text-[11px] hover:text-foreground"
-                    title={patternBlock.id}
-                    onClick={() => {
-                      void navigator.clipboard
-                        .writeText(patternBlock.id)
-                        .then(() => toast.success("Template block id copied"))
-                        .catch(() =>
-                          toast.error("Unable to copy template block id")
-                        );
-                    }}
+                    colSpan={5}
+                    className="h-56 px-2 py-6 text-center text-xs text-muted-foreground"
                   >
-                    {patternBlock.id.length > 8
-                      ? patternBlock.id.slice(0, 8)
-                      : patternBlock.id}
-                  </TableCell>
-                  <TableCell
-                    className="w-20 truncate p-1.5 text-xs"
-                    title={patternBlock.type}
-                  >
-                    {patternBlock.type
-                      .replace(/^BlockType_/, "")
-                      .replace(/^[A-Z]/, character => character.toLowerCase())}
-                  </TableCell>
-                  <TableCell
-                    className="w-28 truncate p-1.5 text-xs"
-                    title={patternBlock.label}
-                  >
-                    {patternBlock.label ? (
-                      <HoverCard openDelay={250}>
-                        <HoverCardTrigger asChild>
-                          <span className="block truncate">
-                            {patternBlock.label.length > 24
-                              ? `${patternBlock.label.slice(0, 24)}...`
-                              : patternBlock.label}
-                          </span>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="z-[230] max-h-64 w-80 overflow-y-auto rounded-sm text-xs">
-                          {patternBlock.label}
-                        </HoverCardContent>
-                      </HoverCard>
-                    ) : null}
-                  </TableCell>
-                  <TableCell className="min-w-0 truncate p-1.5 text-xs text-muted-foreground">
-                    props.template
+                    No template blocks
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                patternBlocks.map(patternBlock => {
+                  const templateProps = JSON.stringify({
+                    ...patternBlock.props,
+                    template: true,
+                  });
+                  return (
+                    <TableRow
+                      key={patternBlock.id}
+                      className="transition-none hover:bg-transparent"
+                    >
+                      <TableCell className="p-1.5">
+                        <Checkbox
+                          checked={selectedPatternIds.has(patternBlock.id)}
+                          onCheckedChange={checked => {
+                            setSelectedPatternIds(previousSelectedIds => {
+                              const nextSelectedIds = new Set(
+                                previousSelectedIds
+                              );
+                              if (checked) {
+                                nextSelectedIds.add(patternBlock.id);
+                              } else {
+                                nextSelectedIds.delete(patternBlock.id);
+                              }
+                              return nextSelectedIds;
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        className="w-16 cursor-pointer overflow-hidden whitespace-nowrap p-1.5 font-mono text-[11px] hover:text-foreground"
+                        title={patternBlock.id}
+                        onClick={() => {
+                          void navigator.clipboard
+                            .writeText(patternBlock.id)
+                            .then(() =>
+                              toast.success("Template block id copied")
+                            )
+                            .catch(() =>
+                              toast.error("Unable to copy template block id")
+                            );
+                        }}
+                      >
+                        {patternBlock.id.length > 8
+                          ? patternBlock.id.slice(0, 8)
+                          : patternBlock.id}
+                      </TableCell>
+                      <TableCell
+                        className="w-20 truncate p-1.5 text-xs"
+                        title={patternBlock.type}
+                      >
+                        {patternBlock.type
+                          .replace(/^BlockType_/, "")
+                          .replace(/^[A-Z]/, character =>
+                            character.toLowerCase()
+                          )}
+                      </TableCell>
+                      <TableCell
+                        className="min-w-0 truncate p-1.5 text-xs"
+                        title={patternBlock.label}
+                      >
+                        {patternBlock.label ? (
+                          <HoverCard openDelay={250}>
+                            <HoverCardTrigger asChild>
+                              <span className="block truncate">
+                                {patternBlock.label.length > 56
+                                  ? `${patternBlock.label.slice(0, 56)}...`
+                                  : patternBlock.label}
+                              </span>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="z-[230] max-h-64 w-80 overflow-y-auto rounded-sm text-xs">
+                              {patternBlock.label}
+                            </HoverCardContent>
+                          </HoverCard>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="w-36 truncate p-1.5 font-mono text-[11px] text-muted-foreground">
+                        <HoverCard openDelay={250}>
+                          <HoverCardTrigger asChild>
+                            <span className="block truncate">
+                              {templateProps}
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="z-[230] max-h-64 w-96 overflow-y-auto whitespace-pre-wrap rounded-sm font-mono text-[11px]">
+                            {templateProps}
+                          </HoverCardContent>
+                        </HoverCard>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="-mt-px h-8 min-h-8 w-full shrink-0 rounded-t-none rounded-b-sm py-0"
+          onClick={() => setIsTemplateTableExpanded(current => !current)}
+        >
+          {isTemplateTableExpanded ? "Close" : "Expand"}
+        </Button>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="-mt-px h-8 min-h-8 w-full shrink-0 rounded-t-none rounded-b-sm py-0"
-        onClick={() => setIsTemplateTableExpanded(current => !current)}
-      >
-        {isTemplateTableExpanded ? "Close" : "Expand"}
-      </Button>
       <Separator />
 
       <div className="flex shrink-0 flex-col gap-2">

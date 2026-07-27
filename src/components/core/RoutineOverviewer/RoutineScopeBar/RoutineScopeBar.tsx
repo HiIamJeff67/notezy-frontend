@@ -1,7 +1,5 @@
 import {
   ChartNoAxesCombined,
-  ClipboardClock,
-  ClipboardList,
   Tags,
 } from "lucide-react";
 import {
@@ -11,7 +9,11 @@ import {
   useEffect,
   useState,
 } from "react";
-import TrainStationIcon from "@/components/icons/TrainStationIcon";
+import {
+  RoutineIcon,
+  RoutineTaskIcon,
+  StationIcon,
+} from "@/components/icons/WorkspaceEntityIcons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -92,7 +94,7 @@ const RoutineScopeBar = ({
             >
               <HoverCardTrigger asChild>
                 <StatusPill
-                  icon={<TrainStationIcon size={14} />}
+                  icon={<StationIcon size={14} />}
                   presentCount={stationRoutineManager.visibleStations.length}
                   totalCount={stationRoutineManager.statusSummary.totalStations}
                   title="Stations"
@@ -127,7 +129,7 @@ const RoutineScopeBar = ({
                       {station.icon ? (
                         <span className="shrink-0 text-sm">{station.icon}</span>
                       ) : (
-                        <TrainStationIcon size={14} />
+                        <StationIcon size={14} />
                       )}
                       <span className="min-w-0 flex-1 truncate text-sm">
                         {station.name}
@@ -186,7 +188,7 @@ const RoutineScopeBar = ({
             </HoverCard>
           )}
           <StatusPill
-            icon={<ClipboardClock className="size-3.5" />}
+            icon={<RoutineIcon className="size-3.5" />}
             presentCount={stationRoutineManager.visibleRoutines.length}
             totalCount={stationRoutineManager.statusSummary.totalRoutines}
             title="Routines"
@@ -329,7 +331,7 @@ const RoutineScopeBar = ({
             </HoverCardContent>
           </HoverCard>
           <StatusPill
-            icon={<ClipboardList className="size-3.5" />}
+            icon={<RoutineTaskIcon className="size-3.5" />}
             presentCount={stationRoutineManager.visibleRoutineTasks.length}
             totalCount={stationRoutineManager.statusSummary.totalRoutineTasks}
             title="Routine tasks"

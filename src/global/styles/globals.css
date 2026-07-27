@@ -105,7 +105,8 @@ html[data-density="compact"] {
   --density-table-cell-padding: 0.625rem;
 }
 
-html[data-density] [data-slot="button"]:not([data-density-static]),
+html[data-density]
+  [data-slot="button"]:not([data-density-static]):not([data-size="icon"]),
 html[data-density] [data-slot="input"],
 html[data-density] [data-slot="textarea"],
 html[data-density] [data-slot="select-trigger"],
@@ -115,7 +116,8 @@ html[data-density] [data-slot="sidebar-input"] {
   min-height: var(--density-control-height);
 }
 
-html[data-density] [data-slot="button"]:not([data-density-static]),
+html[data-density]
+  [data-slot="button"]:not([data-density-static]):not([data-size="icon"]),
 html[data-density] [data-slot="select-trigger"],
 html[data-density]
   [data-slot="menubar-trigger"]:not([data-density-static]) {

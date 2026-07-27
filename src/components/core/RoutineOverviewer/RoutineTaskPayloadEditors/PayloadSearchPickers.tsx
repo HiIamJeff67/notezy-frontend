@@ -52,31 +52,6 @@ interface SearchPickerProps {
   }) => Promise<LoadSearchOptionsResult>;
 }
 
-const shortId = (id: string): string => (id.length > 8 ? id.slice(0, 8) : id);
-
-const toUUID = (id: string): UUID => id as UUID;
-
-const formatDateTime = (value: unknown): string => {
-  if (value === null || value === undefined) return "None";
-
-  const date = new Date(value as string | number | Date);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString();
-};
-
-const formatDetailValue = (
-  value: SearchOptionDetail["value"]
-): string | null => {
-  if (value === undefined) return null;
-  if (value === null || value === "") return "None";
-  return String(value);
-};
-
-const getPopoverPortalContainer = (element: HTMLElement | null) =>
-  (element?.closest(
-    '[data-slot="dialog-content"], [data-slot="sheet-content"]'
-  ) ?? null) as HTMLElement | null;
-
 const SearchOptionButton = ({
   option,
   isSelected,
@@ -124,7 +99,12 @@ const SearchOptionButton = ({
         ) : (
           <dl className="grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs">
             {option.details?.map(detail => {
-              const value = formatDetailValue(detail.value);
+              const value =
+                detail.value === undefined
+                  ? null
+                  : detail.value === null || detail.value === ""
+                    ? "None"
+                    : String(detail.value);
               if (value === null) return null;
               return (
                 <div key={detail.label} className="contents">
@@ -165,11 +145,18 @@ const SearchPicker = ({
     null
   );
   const isLoadingRef = useRef(false);
+  const lastRequestKeyRef = useRef<string | null>(null);
 
   const load = useCallback(
     async (reset: boolean) => {
       if (isLoadingRef.current) return;
       if (!reset && (!hasMore || !cursor)) return;
+
+      const requestKey = `${reset ? "reset" : "page"}:${query.trim()}:${
+        reset ? "" : cursor
+      }`;
+      if (lastRequestKeyRef.current === requestKey) return;
+      lastRequestKeyRef.current = requestKey;
 
       isLoadingRef.current = true;
       setIsLoading(true);
@@ -205,7 +192,7 @@ const SearchPicker = ({
       void load(true);
     }, 220);
     return () => window.clearTimeout(timeout);
-  }, [isOpen, load, query]);
+  }, [isOpen, query]);
 
   useEffect(() => {
     if (!value || selectedOption?.id === value) return;
@@ -219,7 +206,11 @@ const SearchPicker = ({
         open={isOpen}
         onOpenChange={open => {
           if (open) {
-            setPortalContainer(getPopoverPortalContainer(triggerRef.current));
+            setPortalContainer(
+              (triggerRef.current?.closest(
+                '[data-slot="dialog-content"], [data-slot="sheet-content"]'
+              ) ?? null) as HTMLElement | null
+            );
           }
           setIsOpen(open);
           if (!open) return;
@@ -227,6 +218,7 @@ const SearchPicker = ({
           setOptions([]);
           setCursor(null);
           setHasMore(true);
+          lastRequestKeyRef.current = null;
         }}
       >
         <PopoverPrimitive.Trigger asChild>
@@ -240,7 +232,11 @@ const SearchPicker = ({
               {selectedOption?.id === value ? (
                 selectedOption.label
               ) : value ? (
-                shortId(value)
+                value.length > 8 ? (
+                  value.slice(0, 8)
+                ) : (
+                  value
+                )
               ) : (
                 <span className="text-muted-foreground">{placeholder}</span>
               )}
@@ -369,16 +365,30 @@ export const RootShelfPicker = ({
                 { label: "Item IDs", value: node.itemIds?.length ?? 0 },
                 {
                   label: "Last analyzed",
-                  value: formatDateTime(node.lastAnalyzedAt),
+                  value: Number.isNaN(new Date(node.lastAnalyzedAt).getTime())
+                    ? String(node.lastAnalyzedAt)
+                    : new Date(node.lastAnalyzedAt).toLocaleString(),
                 },
-                { label: "Updated", value: formatDateTime(node.updatedAt) },
-                { label: "Created", value: formatDateTime(node.createdAt) },
+                {
+                  label: "Updated",
+                  value: Number.isNaN(new Date(node.updatedAt).getTime())
+                    ? String(node.updatedAt)
+                    : new Date(node.updatedAt).toLocaleString(),
+                },
+                {
+                  label: "Created",
+                  value: Number.isNaN(new Date(node.createdAt).getTime())
+                    ? String(node.createdAt)
+                    : new Date(node.createdAt).toLocaleString(),
+                },
                 {
                   label: "Deleted",
                   value:
                     node.deletedAt === null
                       ? "No"
-                      : formatDateTime(node.deletedAt),
+                      : Number.isNaN(new Date(node.deletedAt).getTime())
+                        ? String(node.deletedAt)
+                        : new Date(node.deletedAt).toLocaleString(),
                 },
               ],
             };
@@ -461,14 +471,26 @@ export const StationPicker = ({
                 { label: "Routines", value: node.routineCount },
                 { label: "Icon", value: node.icon },
                 { label: "Header", value: node.headerBackgroundURL },
-                { label: "Updated", value: formatDateTime(node.updatedAt) },
-                { label: "Created", value: formatDateTime(node.createdAt) },
+                {
+                  label: "Updated",
+                  value: Number.isNaN(new Date(node.updatedAt).getTime())
+                    ? String(node.updatedAt)
+                    : new Date(node.updatedAt).toLocaleString(),
+                },
+                {
+                  label: "Created",
+                  value: Number.isNaN(new Date(node.createdAt).getTime())
+                    ? String(node.createdAt)
+                    : new Date(node.createdAt).toLocaleString(),
+                },
                 {
                   label: "Deleted",
                   value:
                     node.deletedAt === null
                       ? "No"
-                      : formatDateTime(node.deletedAt),
+                      : Number.isNaN(new Date(node.deletedAt).getTime())
+                        ? String(node.deletedAt)
+                        : new Date(node.deletedAt).toLocaleString(),
                 },
               ],
             };
@@ -524,7 +546,7 @@ export const SubShelfPicker = ({
             query,
             after,
             first,
-            ...(rootShelfId ? { rootShelfId: toUUID(rootShelfId) } : {}),
+            ...(rootShelfId ? { rootShelfId: rootShelfId as UUID } : {}),
             sortBy: SearchSubShelfSortBy.LastUpdate,
             sortOrder: SearchSortOrder.Desc,
           },
@@ -549,21 +571,33 @@ export const SubShelfPicker = ({
             return {
               id: node.id,
               label: node.name,
-              description: `${node.id} · Root ${shortId(node.rootShelfId)}`,
+              description: `${node.id} · Root ${node.rootShelfId.length > 8 ? node.rootShelfId.slice(0, 8) : node.rootShelfId}`,
               details: [
                 { label: "Root shelf", value: node.rootShelfId },
                 { label: "Previous", value: node.prevSubShelfId },
                 { label: "Path depth", value: node.path?.length ?? 0 },
                 { label: "Children", value: node.nextSubShelfIds?.length ?? 0 },
                 { label: "Items", value: node.itemIds?.length ?? 0 },
-                { label: "Updated", value: formatDateTime(node.updatedAt) },
-                { label: "Created", value: formatDateTime(node.createdAt) },
+                {
+                  label: "Updated",
+                  value: Number.isNaN(new Date(node.updatedAt).getTime())
+                    ? String(node.updatedAt)
+                    : new Date(node.updatedAt).toLocaleString(),
+                },
+                {
+                  label: "Created",
+                  value: Number.isNaN(new Date(node.createdAt).getTime())
+                    ? String(node.createdAt)
+                    : new Date(node.createdAt).toLocaleString(),
+                },
                 {
                   label: "Deleted",
                   value:
                     node.deletedAt === null
                       ? "No"
-                      : formatDateTime(node.deletedAt),
+                      : Number.isNaN(new Date(node.deletedAt).getTime())
+                        ? String(node.deletedAt)
+                        : new Date(node.deletedAt).toLocaleString(),
                 },
               ],
             };
@@ -608,8 +642,14 @@ export const ShelfLocationPicker = ({
   onSelectRoot?: (rootShelfId: string) => void;
   onSelectSub: (subShelfId: string, rootShelfId: string) => void;
 }) => {
-  const [executeSearchRootShelves] = useSearchRootShelvesLazyQuery();
-  const [executeSearchSubShelves] = useSearchSubShelvesLazyQuery();
+  const [executeSearchRootShelves] = useSearchRootShelvesLazyQuery({
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
+  const [executeSearchSubShelves] = useSearchSubShelvesLazyQuery({
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [rootQuery, setRootQuery] = useState("");
   const [subShelfQuery, setSubShelfQuery] = useState("");
@@ -634,11 +674,19 @@ export const ShelfLocationPicker = ({
   );
   const isLoadingRootsRef = useRef(false);
   const isLoadingSubShelvesRef = useRef(false);
+  const lastRootRequestKeyRef = useRef<string | null>(null);
+  const lastSubShelfRequestKeyRef = useRef<string | null>(null);
 
   const loadRoots = useCallback(
     async (reset: boolean) => {
       if (isLoadingRootsRef.current) return;
       if (!reset && (!hasMoreRoots || !rootCursor)) return;
+
+      const requestKey = `${reset ? "reset" : "page"}:${rootQuery.trim()}:${
+        reset ? "" : rootCursor
+      }`;
+      if (lastRootRequestKeyRef.current === requestKey) return;
+      lastRootRequestKeyRef.current = requestKey;
 
       isLoadingRootsRef.current = true;
       setIsLoadingRoots(true);
@@ -683,16 +731,30 @@ export const ShelfLocationPicker = ({
                 { label: "Item IDs", value: node.itemIds?.length ?? 0 },
                 {
                   label: "Last analyzed",
-                  value: formatDateTime(node.lastAnalyzedAt),
+                  value: Number.isNaN(new Date(node.lastAnalyzedAt).getTime())
+                    ? String(node.lastAnalyzedAt)
+                    : new Date(node.lastAnalyzedAt).toLocaleString(),
                 },
-                { label: "Updated", value: formatDateTime(node.updatedAt) },
-                { label: "Created", value: formatDateTime(node.createdAt) },
+                {
+                  label: "Updated",
+                  value: Number.isNaN(new Date(node.updatedAt).getTime())
+                    ? String(node.updatedAt)
+                    : new Date(node.updatedAt).toLocaleString(),
+                },
+                {
+                  label: "Created",
+                  value: Number.isNaN(new Date(node.createdAt).getTime())
+                    ? String(node.createdAt)
+                    : new Date(node.createdAt).toLocaleString(),
+                },
                 {
                   label: "Deleted",
                   value:
                     node.deletedAt === null
                       ? "No"
-                      : formatDateTime(node.deletedAt),
+                      : Number.isNaN(new Date(node.deletedAt).getTime())
+                        ? String(node.deletedAt)
+                        : new Date(node.deletedAt).toLocaleString(),
                 },
               ],
             };
@@ -727,13 +789,19 @@ export const ShelfLocationPicker = ({
       if (isLoadingSubShelvesRef.current) return;
       if (!reset && (!hasMoreSubShelves || !subShelfCursor)) return;
 
+      const requestKey = `${activeRootShelfId}:${
+        reset ? "reset" : "page"
+      }:${subShelfQuery.trim()}:${reset ? "" : subShelfCursor}`;
+      if (lastSubShelfRequestKeyRef.current === requestKey) return;
+      lastSubShelfRequestKeyRef.current = requestKey;
+
       isLoadingSubShelvesRef.current = true;
       setIsLoadingSubShelves(true);
       try {
         const result = await executeSearchSubShelves({
           variables: {
             input: {
-              rootShelfId: toUUID(activeRootShelfId),
+              rootShelfId: activeRootShelfId as UUID,
               query: subShelfQuery.trim(),
               after: reset ? undefined : (subShelfCursor ?? undefined),
               first: reset ? 20 : 10,
@@ -767,14 +835,26 @@ export const ShelfLocationPicker = ({
                 { label: "Path depth", value: node.path?.length ?? 0 },
                 { label: "Children", value: node.nextSubShelfIds?.length ?? 0 },
                 { label: "Items", value: node.itemIds?.length ?? 0 },
-                { label: "Updated", value: formatDateTime(node.updatedAt) },
-                { label: "Created", value: formatDateTime(node.createdAt) },
+                {
+                  label: "Updated",
+                  value: Number.isNaN(new Date(node.updatedAt).getTime())
+                    ? String(node.updatedAt)
+                    : new Date(node.updatedAt).toLocaleString(),
+                },
+                {
+                  label: "Created",
+                  value: Number.isNaN(new Date(node.createdAt).getTime())
+                    ? String(node.createdAt)
+                    : new Date(node.createdAt).toLocaleString(),
+                },
                 {
                   label: "Deleted",
                   value:
                     node.deletedAt === null
                       ? "No"
-                      : formatDateTime(node.deletedAt),
+                      : Number.isNaN(new Date(node.deletedAt).getTime())
+                        ? String(node.deletedAt)
+                        : new Date(node.deletedAt).toLocaleString(),
                 },
               ],
             };
@@ -815,7 +895,7 @@ export const ShelfLocationPicker = ({
       void loadRoots(true);
     }, 220);
     return () => window.clearTimeout(timeout);
-  }, [isOpen, loadRoots, rootQuery]);
+  }, [isOpen, rootQuery]);
 
   useEffect(() => {
     if (!isOpen || !activeRootShelfId) return;
@@ -823,7 +903,7 @@ export const ShelfLocationPicker = ({
       void loadSubShelves(true);
     }, 220);
     return () => window.clearTimeout(timeout);
-  }, [activeRootShelfId, isOpen, loadSubShelves, subShelfQuery]);
+  }, [activeRootShelfId, isOpen, subShelfQuery]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -850,8 +930,10 @@ export const ShelfLocationPicker = ({
     if (mode === "root-or-sub" && selectedRootOption?.id === rootShelfId) {
       return selectedRootOption.label;
     }
-    if (subShelfId) return shortId(subShelfId);
-    if (mode === "root-or-sub" && rootShelfId) return shortId(rootShelfId);
+    if (subShelfId)
+      return subShelfId.length > 8 ? subShelfId.slice(0, 8) : subShelfId;
+    if (mode === "root-or-sub" && rootShelfId)
+      return rootShelfId.length > 8 ? rootShelfId.slice(0, 8) : rootShelfId;
     return "";
   })();
 
@@ -862,7 +944,11 @@ export const ShelfLocationPicker = ({
         open={isOpen}
         onOpenChange={open => {
           if (open) {
-            setPortalContainer(getPopoverPortalContainer(triggerRef.current));
+            setPortalContainer(
+              (triggerRef.current?.closest(
+                '[data-slot="dialog-content"], [data-slot="sheet-content"]'
+              ) ?? null) as HTMLElement | null
+            );
           }
           setIsOpen(open);
           if (!open) return;
@@ -874,6 +960,8 @@ export const ShelfLocationPicker = ({
           setSubShelfCursor(null);
           setHasMoreRoots(true);
           setHasMoreSubShelves(true);
+          lastRootRequestKeyRef.current = null;
+          lastSubShelfRequestKeyRef.current = null;
           setActiveRootShelfId(rootShelfId);
         }}
       >

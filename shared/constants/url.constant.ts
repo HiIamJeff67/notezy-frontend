@@ -308,12 +308,12 @@ export const WebURLPathDictionary = {
       _: (blockPackId: UUID, parentSubShelfId: UUID, rootShelfId: UUID) =>
         `block-pack-editor/${blockPackId}?parentSubShelfId=${parentSubShelfId}&rootShelfId=${rootShelfId}`,
     },
-    documents: {
-      _: "documents",
-    },
+    document: "document",
+    introduction: "introduction",
     dashboard: {
       _: "dashboard",
     },
+    trash: "trash",
     routines: {
       _: "routines",
       byStationId: (stationId: UUID) => `routines/${stationId}`,

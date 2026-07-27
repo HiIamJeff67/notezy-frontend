@@ -261,7 +261,7 @@ export const RealtimeProvider = ({
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";
           disposeBlockPackChannel(channel);
-          toast.error("BlockPack permission changed. Please reopen it.");
+          toast.error("This BlockPack room is no longer available.");
         } else if (frame.code === "resource_unavailable") {
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";

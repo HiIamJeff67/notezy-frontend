@@ -3,7 +3,7 @@ import type { StationNode } from "@shared/types/stationNode.type";
 import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
 import { useDrag, useDrop } from "react-dnd";
-import TrainStationIcon from "@/components/icons/TrainStationIcon";
+import { StationIcon } from "@/components/icons/WorkspaceEntityIcons";
 
 interface TimeRailsStationBarItemProps {
   station: StationNode;
@@ -62,7 +62,7 @@ const TimeRailsStationBarItem = ({
       {station.icon ? (
         <span className="mt-0.5 shrink-0 text-sm">{station.icon}</span>
       ) : (
-        <TrainStationIcon
+        <StationIcon
           size={14}
           className="mt-0.5 shrink-0 text-muted-foreground"
         />
