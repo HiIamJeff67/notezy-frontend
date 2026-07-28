@@ -15,6 +15,7 @@ import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import type { UUID } from "crypto";
 import { SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { RoutineTaskIcon } from "@/components/icons/WorkspaceEntityIcons";
 import { Button } from "@/components/ui/button";
@@ -34,8 +35,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStationRoutine } from "@/hooks";
+import {
+  translateRoutineTaskPurpose,
+  translateRoutineTaskStatus,
+} from "@/i18n/workspace";
 
 const RoutineTaskTable = () => {
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const [executeSearchRoutineTasks, routineTaskSearch] =
     useSearchRoutineTasksLazyQuery({
@@ -360,7 +366,7 @@ const RoutineTaskTable = () => {
         <div className="flex min-w-0 items-center gap-2">
           <RoutineTaskIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
-            Routine Task Table
+            {t("workspace.table.routineTaskTable")}
           </span>
           <span className="text-xs tabular-nums text-muted-foreground">
             {filteredRoutineTasks.length}
@@ -382,10 +388,12 @@ const RoutineTaskTable = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All status</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allStatus")}
+              </SelectItem>
               {AllRoutineTaskStatuses.map(routineTaskStatus => (
                 <SelectItem key={routineTaskStatus} value={routineTaskStatus}>
-                  {routineTaskStatus}
+                  {translateRoutineTaskStatus(routineTaskStatus, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -403,10 +411,12 @@ const RoutineTaskTable = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All purpose</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allPurpose")}
+              </SelectItem>
               {Object.values(RoutineTaskPurpose).map(routineTaskPurpose => (
                 <SelectItem key={routineTaskPurpose} value={routineTaskPurpose}>
-                  {routineTaskPurpose}
+                  {translateRoutineTaskPurpose(routineTaskPurpose, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -424,8 +434,12 @@ const RoutineTaskTable = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All routines</SelectItem>
-              <SelectItem value="Unlinked">Unlinked</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allRoutines")}
+              </SelectItem>
+              <SelectItem value="Unlinked">
+                {t("workspace.table.unlinked")}
+              </SelectItem>
               {stationRoutineManager.visibleRoutines.map(routine => (
                 <SelectItem key={routine.id} value={routine.id}>
                   {routine.title}
@@ -436,13 +450,13 @@ const RoutineTaskTable = () => {
           <DatePicker
             value={scheduledAfter}
             onValueChange={setScheduledAfter}
-            placeholder="Next after"
+            placeholder={t("workspace.table.nextAfter")}
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
-            placeholder="Next before"
+            placeholder={t("workspace.table.nextBefore")}
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
         </div>
@@ -461,14 +475,26 @@ const RoutineTaskTable = () => {
         <Table className="table-fixed text-xs">
           <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
             <TableRow>
-              <TableHead className="h-9 w-[19%] px-2">Task</TableHead>
-              <TableHead className="h-9 w-[10%] px-2">Station</TableHead>
-              <TableHead className="h-9 w-[9%] px-2">Status</TableHead>
-              <TableHead className="h-9 w-[13%] px-2">Purpose</TableHead>
-              <TableHead className="h-9 w-[17%] px-2">Routine</TableHead>
-              <TableHead className="h-9 w-[15%] px-2">Next</TableHead>
+              <TableHead className="h-9 w-[19%] px-2">
+                {t("workspace.table.task")}
+              </TableHead>
+              <TableHead className="h-9 w-[10%] px-2">
+                {t("workspace.table.station")}
+              </TableHead>
               <TableHead className="h-9 w-[9%] px-2">
-                Attempts
+                {t("workspace.table.status")}
+              </TableHead>
+              <TableHead className="h-9 w-[13%] px-2">
+                {t("workspace.table.purpose")}
+              </TableHead>
+              <TableHead className="h-9 w-[17%] px-2">
+                {t("workspace.table.routine")}
+              </TableHead>
+              <TableHead className="h-9 w-[15%] px-2">
+                {t("workspace.table.next")}
+              </TableHead>
+              <TableHead className="h-9 w-[9%] px-2">
+                {t("workspace.table.attempts")}
               </TableHead>
               <TableHead className="h-9 w-[8%] px-2" />
             </TableRow>
@@ -497,20 +523,22 @@ const RoutineTaskTable = () => {
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
                     <span className="break-words">
-                      {station?.name ?? "Unknown"}
+                      {station?.name ?? t("workspace.table.unknown")}
                     </span>
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
-                    {routineTask.status}
+                    {translateRoutineTaskStatus(routineTask.status, t)}
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
-                    <span className="break-words">{routineTask.purpose}</span>
+                    <span className="break-words">
+                      {translateRoutineTaskPurpose(routineTask.purpose, t)}
+                    </span>
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
                     <div className="flex min-w-0 flex-wrap gap-1">
                       {linkedRoutines.length === 0 ? (
                         <span className="text-xs text-muted-foreground">
-                          Unlinked
+                          {t("workspace.table.unlinked")}
                         </span>
                       ) : (
                         linkedRoutines.map(routine => (
@@ -526,7 +554,9 @@ const RoutineTaskTable = () => {
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
                     <span className="break-words">
-                      {routineTask.nextScheduledAt.toLocaleString()}
+                      {routineTask.nextScheduledAt.toLocaleString(
+                        i18n.resolvedLanguage
+                      )}
                     </span>
                   </TableCell>
                   <TableCell className="px-2 py-2.5 tabular-nums">
@@ -558,8 +588,8 @@ const RoutineTaskTable = () => {
                   className="h-28 text-center text-sm text-muted-foreground"
                 >
                   {isSearchingRoutineTasks
-                    ? "Loading routine tasks..."
-                    : "No routine tasks match the current filters."}
+                    ? t("workspace.table.loadingRoutineTasks")
+                    : t("workspace.table.noRoutineTasksMatch")}
                 </TableCell>
               </TableRow>
             )}

@@ -23,7 +23,6 @@ export interface WidgetProps {
 export type Widget = {
   id: UUID;
   name: string;
-  description: string;
   component: React.ComponentType<WidgetProps>;
   position: FrameCountPosition;
   size: FrameCountSize;
@@ -40,7 +39,6 @@ export type Widget = {
 
 export type PreviewWidget = {
   name: string;
-  description: string;
   component: React.ComponentType<any>;
   size: FrameCountSize;
   minSize: FrameCountSize;

@@ -61,7 +61,7 @@ export function LineChart<TMeta = unknown>({
   style,
   height,
   width,
-  ariaLabel = "Line chart",
+  ariaLabel,
   loading,
   emptyMessage,
   showLegend = true,

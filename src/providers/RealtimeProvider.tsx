@@ -31,6 +31,7 @@ import * as Y from "yjs";
 import type { z } from "zod";
 import { useNetwork } from "@/hooks/useNetwork";
 import { useUser } from "@/hooks/useUser";
+import i18n from "@/i18n";
 
 const RealtimeBlockPackChannelReleaseDelayMs = 250;
 
@@ -261,21 +262,23 @@ export const RealtimeProvider = ({
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";
           disposeBlockPackChannel(channel);
-          toast.error("This BlockPack room is no longer available.");
+          toast.error(
+            i18n.t("workspace.notifications.blockPackRoomUnavailable")
+          );
         } else if (frame.code === "resource_unavailable") {
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";
           disposeBlockPackChannel(channel);
-          toast.error("This BlockPack is no longer available.");
+          toast.error(i18n.t("workspace.notifications.blockPackUnavailable"));
         } else if (frame.code === "resync_required") {
           channel.lifecycleErrorCode = frame.code;
           channel.status = "error";
           channel.provider.setReadOnly(true);
           channel.provider.disconnect();
-          toast.error("Realtime document needs a resync.");
+          toast.error(i18n.t("workspace.notifications.realtimeResyncRequired"));
         } else {
           channel.provider.disconnect();
-          toast.error(frame.message);
+          toast.error(i18n.t("workspace.notifications.realtimeError"));
         }
         rerender();
       },

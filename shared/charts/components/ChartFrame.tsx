@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
 import {
   DEFAULT_VIEWBOX_HEIGHT,
@@ -56,9 +57,9 @@ export function ChartFrame<TMeta = unknown>({
   style,
   height = 280,
   width = "100%",
-  ariaLabel = "Chart",
+  ariaLabel,
   loading = false,
-  emptyMessage = "No chart data",
+  emptyMessage,
   showLegend = true,
   legendItems = [],
   active,
@@ -68,6 +69,7 @@ export function ChartFrame<TMeta = unknown>({
   children,
   formatValue = formatNumber,
 }: ChartFrameProps<TMeta>) {
+  const { t } = useTranslation();
   const frameClassName = [
     "relative flex min-h-0 min-w-0 flex-col overflow-visible text-foreground",
     className,
@@ -93,7 +95,7 @@ export function ChartFrame<TMeta = unknown>({
     >
       <div className="relative min-h-0 min-w-0 flex-1 overflow-visible">
         <svg
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ?? t("workspace.charts.charts")}
           className="block size-full overflow-visible"
           role="img"
           viewBox={`0 0 ${DEFAULT_VIEWBOX_WIDTH} ${DEFAULT_VIEWBOX_HEIGHT}`}
@@ -103,9 +105,9 @@ export function ChartFrame<TMeta = unknown>({
         {shouldShowState && (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
             {loading ? (
-              <Spinner aria-label="Loading chart data" />
+              <Spinner />
             ) : (
-              emptyMessage
+              (emptyMessage ?? t("workspace.charts.noData"))
             )}
           </div>
         )}
@@ -128,7 +130,7 @@ export function ChartFrame<TMeta = unknown>({
       </div>
       {showLegend && legendItems.length > 0 && !shouldShowState && (
         <div className="mt-2 flex min-h-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          {legendItems.map((item) => (
+          {legendItems.map(item => (
             <div key={item.id} className="flex min-w-0 items-center gap-1.5">
               <span
                 aria-hidden="true"
@@ -146,7 +148,7 @@ export function ChartFrame<TMeta = unknown>({
 
 function defaultTooltip<TMeta = unknown>(
   active: ChartActive<TMeta>,
-  formatValue: (value: number) => string,
+  formatValue: (value: number) => string
 ) {
   return (
     <div className="flex min-w-0 flex-col gap-1">

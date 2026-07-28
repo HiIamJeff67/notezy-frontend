@@ -13,6 +13,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import ItemPath from "@/components/paths/ItemPath/ItemPath";
@@ -36,7 +37,8 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
+import { useAppRouter, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 
 interface MaterialViewerFrameProps {
@@ -61,7 +63,7 @@ const MaterialViewerFrame = ({
   children,
 }: MaterialViewerFrameProps) => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
   const saveMaterialMutator = useSaveMyMaterialById();
@@ -88,16 +90,21 @@ const MaterialViewerFrame = ({
     async (text: string) => {
       try {
         await navigator.clipboard.writeText(text);
-        toast.success("Copied");
+        toast.success(t("workspace.notifications.copied"));
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     },
-    [languageManager]
+    [t]
   );
 
   const importFile = useCallback(
-    async (contentFile: File, successMessage = "Material file imported") => {
+    async (
+      contentFile: File,
+      successMessage = t("workspace.notifications.fileImported", {
+        name: contentFile.name,
+      })
+    ) => {
       const accessToken = LocalStorageManipulator.getItemByKey(
         LocalStorageKey.accessToken
       );
@@ -118,7 +125,7 @@ const MaterialViewerFrame = ({
       await loadFile();
       toast.success(successMessage);
     },
-    [loadFile, meta.id, meta.parentId, router, saveMaterialMutator]
+    [loadFile, meta.id, meta.parentId, router, saveMaterialMutator, t]
   );
 
   const handleImportFileOnClick = useCallback(
@@ -127,11 +134,11 @@ const MaterialViewerFrame = ({
         try {
           await importFile(contentFile);
         } catch (error) {
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       });
     },
-    [languageManager, importFile]
+    [t, importFile]
   );
 
   useEffect(() => {
@@ -163,7 +170,9 @@ const MaterialViewerFrame = ({
                 onClick={() => copyToClipboard(meta.id.toString())}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Id</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.id")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {meta.id}
                 </TruncatedText>
@@ -172,7 +181,9 @@ const MaterialViewerFrame = ({
                 onClick={() => copyToClipboard(meta.name)}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Name</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.name")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {meta.name}
                 </TruncatedText>
@@ -181,7 +192,9 @@ const MaterialViewerFrame = ({
                 onClick={() => copyToClipboard(meta.contentType)}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Content Type</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.contentType")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {meta.contentType}
                 </TruncatedText>
@@ -190,27 +203,41 @@ const MaterialViewerFrame = ({
                 onClick={() => copyToClipboard(String(meta.size))}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Size</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.size")}
+                </span>
                 <span className="text-muted-foreground">
-                  {String(meta.size)} bytes
+                  {t("workspace.viewer.bytes", { count: meta.size })}
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => copyToClipboard(meta.updatedAt.toLocaleString())}
+                onClick={() =>
+                  copyToClipboard(
+                    meta.updatedAt.toLocaleString(i18n.resolvedLanguage)
+                  )
+                }
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Updated At</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.updatedAt")}
+                </span>
                 <span className="text-muted-foreground">
-                  {meta.updatedAt.toLocaleString()}
+                  {meta.updatedAt.toLocaleString(i18n.resolvedLanguage)}
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => copyToClipboard(meta.createdAt.toLocaleString())}
+                onClick={() =>
+                  copyToClipboard(
+                    meta.createdAt.toLocaleString(i18n.resolvedLanguage)
+                  )
+                }
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Created At</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.createdAt")}
+                </span>
                 <span className="text-muted-foreground">
-                  {meta.createdAt.toLocaleString()}
+                  {meta.createdAt.toLocaleString(i18n.resolvedLanguage)}
                 </span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -220,7 +247,7 @@ const MaterialViewerFrame = ({
         <Menubar className="bg-muted/25 shrink-0">
           {menubarChildren}
           <MenubarMenu>
-            <MenubarTrigger>File</MenubarTrigger>
+            <MenubarTrigger>{t("workspace.viewer.file")}</MenubarTrigger>
             <MenubarContent align="end" side="bottom">
               <MenubarItem
                 disabled={!meta.downloadURL}
@@ -230,7 +257,7 @@ const MaterialViewerFrame = ({
                 }}
               >
                 <Copy />
-                Copy URL
+                {t("workspace.viewer.copyUrl")}
               </MenubarItem>
               <MenubarItem
                 disabled={!meta.downloadURL}
@@ -244,7 +271,7 @@ const MaterialViewerFrame = ({
                 }}
               >
                 <ExternalLink />
-                Open In New Tab
+                {t("workspace.viewer.openNewTab")}
               </MenubarItem>
               <MenubarSeparator />
               <MenubarSub>
@@ -257,7 +284,7 @@ const MaterialViewerFrame = ({
                   ) : (
                     <>
                       <FilePlus size={18} className="text-muted-foreground" />
-                      Import
+                      {t("workspace.viewer.import")}
                     </>
                   )}
                 </MenubarSubTrigger>
@@ -299,11 +326,11 @@ const MaterialViewerFrame = ({
             </MenubarContent>
           </MenubarMenu>
           <MenubarMenu>
-            <MenubarTrigger>View</MenubarTrigger>
+            <MenubarTrigger>{t("workspace.viewer.view")}</MenubarTrigger>
             <MenubarContent align="end" side="bottom">
               <MenubarItem onClick={async () => await loadFile()}>
                 <RotateCw />
-                Refresh
+                {t("workspace.viewer.refresh")}
               </MenubarItem>
               {viewAdditionalMenubarChildren}
             </MenubarContent>
@@ -324,12 +351,14 @@ const MaterialViewerFrame = ({
         )}
       >
         {isFileLoading && (
-          <div className="text-muted-foreground text-sm">Loading file...</div>
+          <div className="text-muted-foreground text-sm">
+            {t("workspace.viewer.loadingFile")}
+          </div>
         )}
         {!isFileLoading && !isFileAvailable && (
           <div className="w-full min-h-[60vh] flex justify-center items-center">
             <div className="font-bold text-foreground text-base text-center">
-              No file uploaded, please upload a file to view.
+              {t("workspace.viewer.noFile")}
             </div>
           </div>
         )}

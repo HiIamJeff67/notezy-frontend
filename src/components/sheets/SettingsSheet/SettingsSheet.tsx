@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Sheet,
   SheetContent,
@@ -10,6 +11,7 @@ import AccountSettingsPage from "@/pages/root/setting/account/AccountSettingsPag
 import PreferencesPage from "@/pages/root/setting/preferences/PreferencesPage";
 
 const SettingsSheet = () => {
+  const { t } = useTranslation();
   const { sheetPage, closeSheet } = useSettingsDisplay();
 
   return (
@@ -28,11 +30,11 @@ const SettingsSheet = () => {
         <SheetHeader className="sr-only">
           <SheetTitle>
             {sheetPage === "account"
-              ? "Account settings"
-              : "Preference settings"}
+              ? t("workspace.navigation.accountSettings")
+              : t("workspace.navigation.preferenceSettings")}
           </SheetTitle>
           <SheetDescription>
-            Manage Notezy settings without leaving the current workspace.
+            {t("workspace.navigation.settingsSheetDescription")}
           </SheetDescription>
         </SheetHeader>
         <div className="min-h-0 flex-1 overflow-hidden">

@@ -15,7 +15,6 @@ import { getDefaultTodoSetting } from "./TodoWidget/setting/todoSetting";
 export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   clock: {
     name: "clock",
-    description: "A simple clock",
     component: ClockWidget,
     size: {
       widthFrameCount: 1,
@@ -39,7 +38,6 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   },
   timer: {
     name: "timer",
-    description: "A simple pomodoro timer",
     component: TimerWidget,
     size: {
       widthFrameCount: 2,
@@ -70,7 +68,6 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   },
   todo: {
     name: "todo",
-    description: "A simple todo list",
     component: TodoWidget,
     size: {
       widthFrameCount: 2,
@@ -99,7 +96,6 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   },
   calendar: {
     name: "calendar",
-    description: "A simple calendar support marking selected days",
     component: CalendarWidget,
     size: {
       widthFrameCount: 2,
@@ -124,7 +120,6 @@ export const BasicPreviewWidgets: Record<string, PreviewWidget> = {
   },
   scratchPad: {
     name: "scratchPad",
-    description: "A simple place to write any text using markdown",
     component: ScratchPadWidget,
     size: {
       widthFrameCount: 2,

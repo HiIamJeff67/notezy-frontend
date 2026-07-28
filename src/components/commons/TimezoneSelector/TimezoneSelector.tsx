@@ -2,8 +2,10 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@shared/util/utils";
 import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatTimezoneDisplayName } from "@/i18n/workspace";
 
 export const SupportedTimezones = Array.from(
   new Set(["UTC", ...Intl.supportedValuesOf("timeZone")])
@@ -24,15 +26,22 @@ const TimezoneSelector = ({
   className,
   contentClassName,
 }: TimezoneSelectorProps) => {
+  const { i18n, t } = useTranslation();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [portalContainer, setPortalContainer] = useState<Element | null>(null);
 
-  const filteredTimezones = SupportedTimezones.filter(timezone =>
-    timezone.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  const filteredTimezones = SupportedTimezones.filter(timezone => {
+    const query = searchQuery.trim().toLowerCase();
+    return (
+      timezone.toLowerCase().includes(query) ||
+      formatTimezoneDisplayName(timezone, i18n.resolvedLanguage)
+        .toLowerCase()
+        .includes(query)
+    );
+  });
 
   return (
     <PopoverPrimitive.Root
@@ -62,7 +71,11 @@ const TimezoneSelector = ({
             className
           )}
         >
-          <span className="truncate">{value || "Select timezone"}</span>
+          <span className="truncate">
+            {value
+              ? formatTimezoneDisplayName(value, i18n.resolvedLanguage)
+              : t("workspace.accessibility.selectTimezone")}
+          </span>
           <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
         </Button>
       </PopoverPrimitive.Trigger>
@@ -85,7 +98,7 @@ const TimezoneSelector = ({
               ref={searchInputRef}
               value={searchQuery}
               autoComplete="off"
-              placeholder="Search timezones"
+              placeholder={t("workspace.accessibility.searchTimezones")}
               onChange={event => setSearchQuery(event.currentTarget.value)}
               onKeyDown={event => event.stopPropagation()}
               className="h-10 rounded-none border-0 bg-transparent pr-3 pl-9 shadow-none focus-visible:ring-0"
@@ -95,7 +108,7 @@ const TimezoneSelector = ({
           <div className="flex max-h-72 flex-col gap-0.5 overflow-y-auto p-1">
             {filteredTimezones.length === 0 ? (
               <span className="px-2 py-6 text-center text-sm text-muted-foreground">
-                No timezones found.
+                {t("workspace.accessibility.noTimezones")}
               </span>
             ) : (
               filteredTimezones.map(timezone => (
@@ -113,7 +126,10 @@ const TimezoneSelector = ({
                   <span className="flex size-4 shrink-0 items-center justify-center">
                     {value === timezone && <CheckIcon className="size-4" />}
                   </span>
-                  <span className="truncate">{timezone}</span>
+                  <span className="truncate">
+                    {formatTimezoneDisplayName(timezone, i18n.resolvedLanguage)}{" "}
+                    {`(${timezone})`}
+                  </span>
                 </Button>
               ))
             )}

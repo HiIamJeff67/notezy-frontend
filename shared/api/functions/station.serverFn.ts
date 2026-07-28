@@ -22,24 +22,23 @@ import {
   HardDeleteMyStationByIdResponse,
   HardDeleteMyStationsByIdsRequest,
   HardDeleteMyStationsByIdsResponse,
+  LeaveMyStationRequest,
+  LeaveMyStationResponse,
   RestoreMyStationByIdRequest,
   RestoreMyStationByIdResponse,
   RestoreMyStationsByIdsRequest,
   RestoreMyStationsByIdsResponse,
+  TransferMyStationOwnershipRequest,
+  TransferMyStationOwnershipResponse,
   UpdateMyStationByIdRequest,
   UpdateMyStationByIdResponse,
   UpdateMyStationsByIdsRequest,
   UpdateMyStationsByIdsResponse,
-  LeaveMyStationRequest,
-  LeaveMyStationResponse,
-  TransferMyStationOwnershipRequest,
-  TransferMyStationOwnershipResponse,
 } from "@shared/api/interfaces/station.interface";
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -86,8 +85,7 @@ const fetchStationMembership = async <T>(
   forwardUpstreamSetCookies(response);
   if (response.status === 204)
     return { success: true, data: null, exception: null } as T;
-  if (!isJsonResponse(response))
-    throw new Error(tKey.error.encounterUnknownError);
+  if (!isJsonResponse(response)) throw new Error("error.encounterUnknownError");
   const formattedResponse = (await response.json()) as T & {
     exception?: unknown;
     refreshableTokens?: { newAccessToken?: string };
@@ -169,7 +167,7 @@ export const GetMyStationById = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -215,7 +213,7 @@ export const GetAllMyStations = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -259,7 +257,7 @@ export const CreateStation = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as CreateStationResponse;
@@ -302,7 +300,7 @@ export const CreateStations = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as CreateStationsResponse;
@@ -345,7 +343,7 @@ export const UpdateMyStationById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -392,7 +390,7 @@ export const UpdateMyStationsByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -437,7 +435,7 @@ export const RestoreMyStationById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -484,7 +482,7 @@ export const RestoreMyStationsByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -529,7 +527,7 @@ export const DeleteMyStationById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -576,7 +574,7 @@ export const DeleteMyStationsByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -624,7 +622,7 @@ export const HardDeleteMyStationById = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -672,7 +670,7 @@ export const HardDeleteMyStationsByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =

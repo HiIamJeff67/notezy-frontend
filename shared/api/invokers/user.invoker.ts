@@ -1,11 +1,11 @@
-import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
-import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import {
   ExceptionReasonDictionary,
   NotezyAPIError,
 } from "@shared/api/exceptions";
 import { FetchClientExceptions } from "@shared/api/exceptions/client/fetch.exception";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import { NotezyFetchError } from "@shared/api/exceptions/errors/fetch.error";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import {
   GetMe,
   GetUserData,
@@ -25,7 +25,6 @@ import {
   type UpdateMeResponse,
   UpdateMeResponseSchema,
 } from "@shared/api/interfaces/user.interface";
-import { tKey } from "@shared/translations";
 import { ZodError } from "zod";
 
 export const queryFnGetUserData = async (
@@ -44,7 +43,7 @@ export const queryFnGetUserData = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          throw new Error("error.apiError.getUser.failedToGetUser");
         default:
           throw new Error(error.unWrap.message);
       }
@@ -72,7 +71,7 @@ export const queryFnGetMe = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          throw new Error("error.apiError.getUser.failedToGetUser");
         default:
           throw new Error(error.unWrap.message);
       }
@@ -100,7 +99,7 @@ export const mutationFnUpdateMe = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw new Error(tKey.error.apiError.getUser.failedToGetUser);
+          throw new Error("error.apiError.getUser.failedToGetUser");
         default:
           throw new Error(error.unWrap.message);
       }

@@ -10,6 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import { RoutineIcon } from "@/components/icons/WorkspaceEntityIcons";
 import RoutineMenu from "@/components/menus/RoutineMenu/RoutineMenu";
@@ -42,14 +43,15 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useModal, useStationRoutine } from "@/hooks";
+import { useLoading, useModal, useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface RoutineTagMenuItemProps {
   routineTag: RoutineTagNode;
 }
 
 const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const loadingManager = useLoading();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
@@ -63,9 +65,9 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         await stationRoutineManager
           .renameEditingRoutineTag()
-          .catch(error => toast.error(languageManager.tError(error)));
+          .catch(error => toast.error(translateError(error, t)));
       }),
-    [languageManager, loadingManager, stationRoutineManager]
+    [t, loadingManager, stationRoutineManager]
   );
 
   return (
@@ -109,7 +111,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                     event.stopPropagation();
                     await handleRenameRoutineTagOnSubmit();
                   }}
-                  aria-label="Save routine tag name"
+                  aria-label={t("workspace.menu.saveRoutineTagName")}
                 >
                   <CheckIcon className="size-4" />
                 </button>
@@ -127,7 +129,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                         void stationRoutineManager
                           .toggleRoutineTag(routineTag.id)
                           .catch(error =>
-                            toast.error(languageManager.tError(error))
+                            toast.error(translateError(error, t))
                           );
                       }}
                     >
@@ -154,11 +156,11 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               >
                 <HoverDetailCard
                   title={routineTag.name}
-                  subtitle="Routine Tag"
+                  subtitle={t("workspace.scope.routineTags")}
                   id={routineTag.id}
                   rows={[
                     {
-                      field: "Color",
+                      field: t("workspace.fields.color"),
                       value: (
                         <span className="inline-flex min-w-0 items-center justify-end gap-1.5">
                           <span
@@ -169,13 +171,19 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                         </span>
                       ),
                     },
-                    { field: "Icon", value: routineTag.icon ?? "None" },
-                    { field: "Routines", value: routineTag.routineCount },
                     {
-                      field: "Updated",
-                      value: new Date(
-                        routineTag.updatedAt
-                      ).toLocaleDateString(),
+                      field: t("workspace.fields.icon"),
+                      value: routineTag.icon ?? t("workspace.period.none"),
+                    },
+                    {
+                      field: t("workspace.scope.routines"),
+                      value: routineTag.routineCount,
+                    },
+                    {
+                      field: t("workspace.menu.updated"),
+                      value: new Date(routineTag.updatedAt).toLocaleDateString(
+                        i18n.resolvedLanguage
+                      ),
                     },
                   ]}
                 />
@@ -184,7 +192,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
           )}
 
           <ContextMenuContent className="min-w-40">
-            <ContextMenuLabel>View</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.view")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
@@ -196,41 +204,43 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 }}
               >
                 <SquarePen className="mr-2 size-4" />
-                Open in Inspector
+                {t("workspace.menu.openInspector")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
                   void stationRoutineManager
                     .duplicateRoutineTag(routineTag.id)
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <Copy className="mr-2 size-4" />
-                Duplicate
+                {t("workspace.menu.duplicate")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Link</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.link")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuSub
                 onOpenChange={open => {
                   if (!open) return;
                   void stationRoutineManager
                     .searchRoutines()
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <ContextMenuSubTrigger>
                   <RoutineIcon className="mr-2 size-4" />
-                  Routines
+                  {t("workspace.scope.routines")}
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   {availableRoutines.length === 0 ? (
-                    <ContextMenuItem disabled>No Routines</ContextMenuItem>
+                    <ContextMenuItem disabled>
+                      {t("workspace.menu.noRoutines")}
+                    </ContextMenuItem>
                   ) : (
                     availableRoutines.map(routine => {
                       const isLinked = routineTag.routines.some(
@@ -244,7 +254,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                             void stationRoutineManager
                               .linkRoutineTag(routine.id, routineTag.id)
                               .catch(error =>
-                                toast.error(languageManager.tError(error))
+                                toast.error(translateError(error, t))
                               );
                           }}
                         >
@@ -258,7 +268,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
               </ContextMenuSub>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -266,7 +276,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 }
               >
                 <Pencil className="mr-2 size-4" />
-                Rename
+                {t("workspace.menu.rename")}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
@@ -278,7 +288,7 @@ const RoutineTagMenuItem = ({ routineTag }: RoutineTagMenuItemProps) => {
                 }
               >
                 <Trash2 className="mr-2 size-4" />
-                Delete
+                {t("workspace.menu.delete")}
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>

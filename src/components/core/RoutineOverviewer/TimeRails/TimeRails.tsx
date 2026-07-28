@@ -9,6 +9,7 @@ import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
 import { CalendarClock, CalendarDays } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -32,6 +33,7 @@ export type TimeRailsStation = {
 };
 
 const TimeRails = () => {
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
   const timeRangeRoutinesQuerier = useGetAllMyRoutinesByTimeRange(undefined, {
@@ -1415,34 +1417,48 @@ const TimeRails = () => {
       <div className="flex min-h-11 select-none items-center justify-between gap-3 border-b border-border/80 bg-secondary px-3 py-2 @max-[680px]:flex-col @max-[680px]:items-start">
         <div className="flex min-w-0 items-center gap-2">
           <CalendarClock className="size-4 text-muted-foreground" />
-          <span className="text-sm font-medium">TimeRails</span>
+          <span className="text-sm font-medium">
+            {t("workspace.timeRails.title")}
+          </span>
           <span className="truncate text-xs text-muted-foreground">
             {stationRoutineManager.timeRailScale === "day"
-              ? visibleDayAt.toLocaleDateString([], {
+              ? visibleDayAt.toLocaleDateString(i18n.resolvedLanguage, {
                   weekday: "short",
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 })
               : stationRoutineManager.timeRailScale === "week"
-                ? `${visibleWeekStartAt.toLocaleDateString([], {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })} - ${visibleWeekEndAt.toLocaleDateString([], {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}`
-                : `${visibleMonthStartAt.toLocaleDateString([], {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })} - ${visibleMonthEndAt.toLocaleDateString([], {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}`}
+                ? `${visibleWeekStartAt.toLocaleDateString(
+                    i18n.resolvedLanguage,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )} - ${visibleWeekEndAt.toLocaleDateString(
+                    i18n.resolvedLanguage,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )}`
+                : `${visibleMonthStartAt.toLocaleDateString(
+                    i18n.resolvedLanguage,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )} - ${visibleMonthEndAt.toLocaleDateString(
+                    i18n.resolvedLanguage,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )}`}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -1457,26 +1473,32 @@ const TimeRails = () => {
                 <CalendarDays className="size-3.5" />
                 {stationRoutineManager.timeRailScale === "week"
                   ? visibleWeekStartAt
-                      .toLocaleDateString([], {
+                      .toLocaleDateString(i18n.resolvedLanguage, {
                         month: "short",
                         day: "numeric",
                       })
                       .concat(" - ")
                       .concat(
-                        visibleWeekEndAt.toLocaleDateString([], {
-                          month: "short",
-                          day: "numeric",
-                        })
+                        visibleWeekEndAt.toLocaleDateString(
+                          i18n.resolvedLanguage,
+                          {
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
                       )
                   : stationRoutineManager.timeRailScale === "day"
-                    ? visibleDayAt.toLocaleDateString([], {
+                    ? visibleDayAt.toLocaleDateString(i18n.resolvedLanguage, {
                         month: "short",
                         day: "numeric",
                       })
-                    : visibleMonthStartAt.toLocaleDateString([], {
-                        month: "short",
-                        year: "numeric",
-                      })}
+                    : visibleMonthStartAt.toLocaleDateString(
+                        i18n.resolvedLanguage,
+                        {
+                          month: "short",
+                          year: "numeric",
+                        }
+                      )}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-auto rounded-sm p-0">
@@ -1505,7 +1527,7 @@ const TimeRails = () => {
             className="h-8 rounded-sm px-3 text-xs"
             onClick={() => navigateToDate(new Date())}
           >
-            Today
+            {t("workspace.timeRails.today")}
           </Button>
         </div>
       </div>
@@ -1513,7 +1535,7 @@ const TimeRails = () => {
       <div className="min-h-0">
         {renderedTimeRailStations.length === 0 ? (
           <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
-            No stations match the current scope.
+            {t("workspace.timeRails.noStations")}
           </div>
         ) : (
           <div className="flex min-w-0 bg-inset">
@@ -1570,18 +1592,27 @@ const TimeRails = () => {
                         }}
                       >
                         {stationRoutineManager.timeRailScale === "day"
-                          ? tickMetric.tick.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
+                          ? tickMetric.tick.toLocaleTimeString(
+                              i18n.resolvedLanguage,
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                           : stationRoutineManager.timeRailScale === "week"
-                            ? tickMetric.tick.toLocaleDateString([], {
-                                weekday: "short",
-                                day: "numeric",
-                              })
-                            : tickMetric.tick.toLocaleDateString([], {
-                                day: "numeric",
-                              })}
+                            ? tickMetric.tick.toLocaleDateString(
+                                i18n.resolvedLanguage,
+                                {
+                                  weekday: "short",
+                                  day: "numeric",
+                                }
+                              )
+                            : tickMetric.tick.toLocaleDateString(
+                                i18n.resolvedLanguage,
+                                {
+                                  day: "numeric",
+                                }
+                              )}
                         <div
                           className="absolute top-0 right-0 h-full w-2 cursor-col-resize"
                           onPointerDown={event => {
@@ -1624,7 +1655,7 @@ const TimeRails = () => {
                       ))}
                       {timeRailStation.routines.length === 0 && (
                         <div className="sticky left-0 z-10 flex h-full w-40 items-center px-3 text-xs text-muted-foreground">
-                          No routines
+                          {t("workspace.scope.noRoutines")}
                         </div>
                       )}
                       {timeRailStation.routineOccurrences.map(

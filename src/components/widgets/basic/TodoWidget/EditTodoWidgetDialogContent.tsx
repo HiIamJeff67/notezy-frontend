@@ -1,5 +1,6 @@
 import { TodoSetting } from "@widgets/basic/TodoWidget/setting/todoSetting";
 import { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -16,10 +17,11 @@ const EditTodoWidgetDialogContent = ({
   setting,
   setSetting,
 }: EditTodoWidgetDialogContentProps) => {
+  const { t } = useTranslation();
   return (
-    <EditWidgetDialogContent title="編輯待辦清單">
+    <EditWidgetDialogContent title={t("workspace.widgets.editTodo")}>
       <EditWidgetDialogOption
-        title="標題文字大小"
+        title={t("workspace.widgets.titleFontSize")}
         alignment="vertical"
         currentValue={setting.titleFontSize.toString()}
       >
@@ -35,7 +37,7 @@ const EditTodoWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="項目文字大小"
+        title={t("workspace.widgets.itemFontSize")}
         alignment="vertical"
         currentValue={setting.itemFontSize.toString()}
       >
@@ -51,7 +53,7 @@ const EditTodoWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="項目高度"
+        title={t("workspace.widgets.itemHeight")}
         alignment="vertical"
         currentValue={setting.itemHeight.toString()}
       >

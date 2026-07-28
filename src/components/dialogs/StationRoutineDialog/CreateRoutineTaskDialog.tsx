@@ -10,6 +10,7 @@ import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine, useUser } from "@/hooks";
+import { useStationRoutine, useUser } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import {
+  translateRoutinePeriod,
+  translateRoutineTaskPurpose,
+} from "@/i18n/workspace";
 import type { ModalProps } from "@/providers/ModalProvider";
 import CreateRoutineTaskDialogSkeleton from "./CreateRoutineTaskDialogSkeleton";
 
@@ -59,7 +65,7 @@ const CreateRoutineTaskDialog = ({
   routineTitle,
   onCreated,
 }: CreateRoutineTaskDialogProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
   const payloadPreviewRef = useRef<HTMLPreElement>(null);
@@ -179,21 +185,20 @@ const CreateRoutineTaskDialog = ({
 
   const createRoutineTask = async () => {
     if (validation === null) {
-      setPayloadError("Payload must be valid JSON.");
+      setPayloadError(t("workspace.validation.invalidJson"));
       return;
     }
     if (!validation.success) {
       setPayloadError(
-        validation.error.issues[0]?.message ?? "Invalid payload."
+        validation.error.issues[0]?.message ??
+          t("workspace.validation.invalidPayload")
       );
       return;
     }
     setPayloadError("");
 
     if (isRoutineTaskCostUnitExceeded) {
-      toast.error(
-        "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
-      );
+      toast.error(t("workspace.validation.payloadQuotaExceeded"));
       return;
     }
 
@@ -212,14 +217,14 @@ const CreateRoutineTaskDialog = ({
       userManager.updateUserAccount({
         routineTaskCostUnitCount: estimatedUsageAfterCreate,
       });
-      toast.success("Routine task created");
+      toast.success(t("workspace.routineTask.created"));
       onClose();
     } catch (error) {
-      const message = languageManager.tError(error);
+      const message = translateError(error, t);
       toast.error(
         message.toLowerCase().includes("routine task") &&
           message.toLowerCase().includes("cost")
-          ? "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+          ? t("workspace.validation.payloadQuotaExceeded")
           : message
       );
     }
@@ -234,15 +239,13 @@ const CreateRoutineTaskDialog = ({
     >
       <DialogContent className="max-h-[90vh] overflow-visible rounded-sm sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create routine task</DialogTitle>
+          <DialogTitle>{t("workspace.routineTask.createTitle")}</DialogTitle>
           <DialogDescription>
-            Configure an executable task
-            {routineTitle
-              ? ` for ${routineTitle}`
-              : stationName
-                ? ` for ${stationName}`
-                : ""}
-            . Routine tasks require a network connection.
+            {routineTitle || stationName
+              ? t("workspace.routineTask.createDescriptionFor", {
+                  name: routineTitle ?? stationName ?? "",
+                })
+              : t("workspace.routineTask.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -259,7 +262,9 @@ const CreateRoutineTaskDialog = ({
           ) : (
             <>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-task-title">Title</Label>
+                <Label htmlFor="routine-task-title">
+                  {t("workspace.fields.title")}
+                </Label>
                 <Input
                   id="routine-task-title"
                   value={title}
@@ -267,13 +272,13 @@ const CreateRoutineTaskDialog = ({
                   maxLength={128}
                   autoFocus
                   onChange={event => setTitle(event.currentTarget.value)}
-                  placeholder="ex. Create the daily note"
+                  placeholder={t("workspace.routineTask.titlePlaceholder")}
                 />
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="flex min-w-0 flex-[1.35] flex-col gap-2">
-                  <Label>Purpose</Label>
+                  <Label>{t("workspace.fields.purpose")}</Label>
                   <Select
                     value={purpose}
                     onValueChange={value =>
@@ -282,68 +287,71 @@ const CreateRoutineTaskDialog = ({
                   >
                     <SelectTrigger className="w-full rounded-sm">
                       <SelectValue>
-                        {purpose.replace(
-                          /^(Create|Append|Update|Reset)(.+)$/,
-                          "$1．$2"
-                        )}
+                        {translateRoutineTaskPurpose(purpose, t)}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="z-[160]">
                       <SelectGroup>
-                        <SelectLabel>Create</SelectLabel>
+                        <SelectLabel>
+                          {t("workspace.fields.create")}
+                        </SelectLabel>
                         <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
-                          RootShelf
+                          {t("workspace.trash.rootShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
-                          SubShelf
+                          {t("workspace.trash.subShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
-                          BlockPack
+                          {t("workspace.trash.blockPack")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
-                          Routine
+                          {t("workspace.trash.routine")}
                         </SelectItem>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
-                        <SelectLabel>Append</SelectLabel>
+                        <SelectLabel>
+                          {t("workspace.fields.append")}
+                        </SelectLabel>
                         <SelectItem value={RoutineTaskPurpose.AppendBlock}>
-                          Block
+                          {t("workspace.fields.block")}
                         </SelectItem>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
-                        <SelectLabel>Update</SelectLabel>
+                        <SelectLabel>
+                          {t("workspace.fields.update")}
+                        </SelectLabel>
                         <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
-                          RootShelf
+                          {t("workspace.trash.rootShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
-                          SubShelf
+                          {t("workspace.trash.subShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
-                          BlockPack
+                          {t("workspace.trash.blockPack")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
-                          Block
+                          {t("workspace.fields.block")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
-                          Routine
+                          {t("workspace.trash.routine")}
                         </SelectItem>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
-                        <SelectLabel>Reset</SelectLabel>
+                        <SelectLabel>{t("workspace.fields.reset")}</SelectLabel>
                         <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
-                          RootShelf
+                          {t("workspace.trash.rootShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
-                          SubShelf
+                          {t("workspace.trash.subShelf")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
-                          BlockPack
+                          {t("workspace.trash.blockPack")}
                         </SelectItem>
                         <SelectItem value={RoutineTaskPurpose.ResetBlock}>
-                          Block
+                          {t("workspace.fields.block")}
                         </SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -351,7 +359,7 @@ const CreateRoutineTaskDialog = ({
                 </div>
 
                 <div className="flex min-w-36 flex-1 flex-col gap-2">
-                  <Label>Recurring</Label>
+                  <Label>{t("workspace.fields.recurring")}</Label>
                   <Select
                     value={period ?? "OneShot"}
                     onValueChange={value =>
@@ -364,10 +372,12 @@ const CreateRoutineTaskDialog = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="z-[160]">
-                      <SelectItem value="OneShot">One-shot</SelectItem>
+                      <SelectItem value="OneShot">
+                        {t("workspace.fields.oneShot")}
+                      </SelectItem>
                       {AllRoutinePeriods.map(routinePeriod => (
                         <SelectItem key={routinePeriod} value={routinePeriod}>
-                          {routinePeriod}
+                          {translateRoutinePeriod(routinePeriod, t)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -376,7 +386,7 @@ const CreateRoutineTaskDialog = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Next scheduled at</Label>
+                <Label>{t("workspace.fields.nextScheduledAt")}</Label>
                 <DatePicker
                   value={nextScheduledAt}
                   onValueChange={value => {
@@ -384,21 +394,25 @@ const CreateRoutineTaskDialog = ({
                     value.setSeconds(0, 0);
                     setNextScheduledAt(value);
                   }}
-                  placeholder="Select next execution time"
+                  placeholder={t("workspace.fields.selectNextExecutionTime")}
                   className="bg-card/45 hover:bg-card/60"
                   contentClassName="bg-card"
                 />
                 {nextScheduledAt && (
                   <span className="text-xs text-muted-foreground">
-                    Next expected run time: {nextScheduledAt.toLocaleString()}.
-                    Updating this later will not force an immediate rerun if the
-                    system schedule is already later.
+                    {t("workspace.inspector.nextExpectedRun", {
+                      date: nextScheduledAt.toLocaleString(
+                        i18n.resolvedLanguage
+                      ),
+                    })}
                   </span>
                 )}
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-task-payload">Payload</Label>
+                <Label htmlFor="routine-task-payload">
+                  {t("workspace.fields.payload")}
+                </Label>
                 <div
                   id="routine-task-payload"
                   role="button"
@@ -416,10 +430,15 @@ const CreateRoutineTaskDialog = ({
                         JSON.stringify(JSON.parse(clipboardText), null, 2)
                       );
                       setPayloadError("");
-                      toast.success("Payload imported from clipboard");
+                      toast.success(
+                        t("workspace.payload.importedFromClipboard")
+                      );
                     } catch {
-                      setPayloadError("Clipboard must contain valid JSON.");
-                      toast.error("Clipboard must contain valid JSON.");
+                      const message = t(
+                        "workspace.payload.clipboardMustContainValidJson"
+                      );
+                      setPayloadError(message);
+                      toast.error(message);
                     }
                   }}
                   onPaste={event => {
@@ -433,10 +452,15 @@ const CreateRoutineTaskDialog = ({
                         )
                       );
                       setPayloadError("");
-                      toast.success("Payload imported from clipboard");
+                      toast.success(
+                        t("workspace.payload.importedFromClipboard")
+                      );
                     } catch {
-                      setPayloadError("Pasted content must be valid JSON.");
-                      toast.error("Pasted content must be valid JSON.");
+                      const message = t(
+                        "workspace.payload.pastedMustBeValidJson"
+                      );
+                      setPayloadError(message);
+                      toast.error(message);
                     }
                   }}
                   onDragOver={event => {
@@ -454,13 +478,16 @@ const CreateRoutineTaskDialog = ({
                             JSON.stringify(JSON.parse(droppedText), null, 2)
                           );
                           setPayloadError("");
-                          toast.success("Payload imported from file");
+                          toast.success(
+                            t("workspace.payload.importedFromFile")
+                          );
                         })
                         .catch(() => {
-                          setPayloadError(
-                            "Dropped file must contain valid JSON."
+                          const message = t(
+                            "workspace.payload.droppedFileMustContainValidJson"
                           );
-                          toast.error("Dropped file must contain valid JSON.");
+                          setPayloadError(message);
+                          toast.error(message);
                         });
                       return;
                     }
@@ -474,10 +501,13 @@ const CreateRoutineTaskDialog = ({
                         )
                       );
                       setPayloadError("");
-                      toast.success("Payload imported");
+                      toast.success(t("workspace.payload.imported"));
                     } catch {
-                      setPayloadError("Dropped content must be valid JSON.");
-                      toast.error("Dropped content must be valid JSON.");
+                      const message = t(
+                        "workspace.payload.droppedContentMustBeValidJson"
+                      );
+                      setPayloadError(message);
+                      toast.error(message);
                     }
                   }}
                 >
@@ -491,8 +521,7 @@ const CreateRoutineTaskDialog = ({
                   </pre>
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/35 px-6 text-center text-foreground text-xs opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
                     <span className="rounded-sm bg-card/70 px-3 py-1.5 shadow-sm">
-                      Click to import JSON from clipboard, paste JSON, or drag a
-                      JSON file here.
+                      {t("workspace.payload.importHint")}
                     </span>
                   </div>
                 </div>
@@ -511,17 +540,20 @@ const CreateRoutineTaskDialog = ({
                     ) : (
                       <ChevronDownIcon className="size-3.5" />
                     )}
-                    {isPayloadExpanded ? "Collapse payload" : "Expand payload"}
+                    {isPayloadExpanded
+                      ? t("workspace.payload.collapse")
+                      : t("workspace.payload.expand")}
                   </button>
                 )}
                 <div className="flex items-start justify-between gap-3 rounded-sm border bg-card/45 px-3 py-2">
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className="text-xs text-muted-foreground">
-                      Routine task payload usage:{" "}
-                      {userManager.userAccount
-                        ? routineTaskCostUnitCount
-                        : "Not loaded"}{" "}
-                      / {maxRoutineTaskCostUnitCount} CostUnits.
+                      {t("workspace.payload.usage", {
+                        used: userManager.userAccount
+                          ? routineTaskCostUnitCount
+                          : t("workspace.payload.notLoaded"),
+                        limit: maxRoutineTaskCostUnitCount,
+                      })}
                     </span>
                     <span
                       className={`text-xs ${
@@ -531,11 +563,13 @@ const CreateRoutineTaskDialog = ({
                       }`}
                     >
                       {estimatedPayloadCostUnit === null
-                        ? "Payload must be valid JSON to estimate CostUnits."
-                        : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits.`}
+                        ? t("workspace.payload.estimateInvalid")
+                        : t("workspace.payload.estimatedUsage", {
+                            count: estimatedPayloadCostUnit,
+                          })}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Payload hard limit: 16 MiB.
+                      {t("workspace.payload.hardLimit")}
                     </span>
                     {payloadError.length > 0 && (
                       <span className="text-destructive text-xs">
@@ -550,14 +584,16 @@ const CreateRoutineTaskDialog = ({
                     className="shrink-0"
                     onClick={() => setIsPayloadEditorOpen(true)}
                   >
-                    Edit payload
+                    {t("workspace.payload.edit")}
                   </Button>
                 </div>
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
-                  <Label htmlFor="routine-task-priority">Priority</Label>
+                  <Label htmlFor="routine-task-priority">
+                    {t("workspace.fields.priority")}
+                  </Label>
                   <Input
                     id="routine-task-priority"
                     type="number"
@@ -571,7 +607,7 @@ const CreateRoutineTaskDialog = ({
                 </div>
                 <div className="flex w-full flex-col gap-2 sm:w-40 sm:shrink-0">
                   <Label htmlFor="routine-task-max-attempts">
-                    Max attempts
+                    {t("workspace.fields.maxAttempts")}
                   </Label>
                   <Input
                     id="routine-task-max-attempts"
@@ -597,7 +633,7 @@ const CreateRoutineTaskDialog = ({
               disabled={stationRoutineManager.isCreatingRoutineTask}
               onClick={onClose}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -609,7 +645,7 @@ const CreateRoutineTaskDialog = ({
               }
             >
               {stationRoutineManager.isCreatingRoutineTask && <Spinner />}
-              Create
+              {t("common.create")}
             </Button>
           </DialogFooter>
         </form>

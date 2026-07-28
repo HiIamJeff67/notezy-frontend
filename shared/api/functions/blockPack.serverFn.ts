@@ -2,8 +2,6 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  MoveMyBlockPacksByParentSubShelfIdsRequest,
-  MoveMyBlockPacksByParentSubShelfIdsResponse,
   CreateBlockPackRequest,
   CreateBlockPackResponse,
   CreateBlockPacksRequest,
@@ -24,6 +22,8 @@ import {
   MoveMyBlockPackByIdResponse,
   MoveMyBlockPacksByParentSubShelfIdRequest,
   MoveMyBlockPacksByParentSubShelfIdResponse,
+  MoveMyBlockPacksByParentSubShelfIdsRequest,
+  MoveMyBlockPacksByParentSubShelfIdsResponse,
   RestoreMyBlockPackByIdRequest,
   RestoreMyBlockPackByIdResponse,
   RestoreMyBlockPacksByIdsRequest,
@@ -37,7 +37,6 @@ import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -68,7 +67,7 @@ export const GetMyBlockPackById = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -118,7 +117,7 @@ export const GetMyBlockPackAndItsParentById = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -169,7 +168,7 @@ export const GetMyBlockPacksByParentSubShelfId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -220,7 +219,7 @@ export const GetAllMyBlockPacksByRootShelfId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -262,7 +261,7 @@ export const CreateBlockPack = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -303,7 +302,7 @@ export const CreateBlockPacks = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -347,7 +346,7 @@ export const UpdateMyBlockPackById = createServerFn({ method: "POST" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -394,7 +393,7 @@ export const UpdateMyBlockPacksByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -436,7 +435,7 @@ export const MoveMyBlockPackById = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -453,10 +452,14 @@ export const MoveMyBlockPackById = createServerFn({ method: "POST" })
     return formattedResponse;
   });
 
-export const MoveMyBlockPacksByParentSubShelfId = createServerFn({ method: "POST" })
+export const MoveMyBlockPacksByParentSubShelfId = createServerFn({
+  method: "POST",
+})
   .inputValidator((data: MoveMyBlockPacksByParentSubShelfIdRequest) => data)
   .handler(
-    async ({ data: request }): Promise<MoveMyBlockPacksByParentSubShelfIdResponse> => {
+    async ({
+      data: request,
+    }): Promise<MoveMyBlockPacksByParentSubShelfIdResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -480,7 +483,7 @@ export const MoveMyBlockPacksByParentSubShelfId = createServerFn({ method: "POST
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -503,7 +506,9 @@ export const MoveMyBlockPacksByParentSubShelfIds = createServerFn({
 })
   .inputValidator((data: MoveMyBlockPacksByParentSubShelfIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<MoveMyBlockPacksByParentSubShelfIdsResponse> => {
+    async ({
+      data: request,
+    }): Promise<MoveMyBlockPacksByParentSubShelfIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -527,7 +532,7 @@ export const MoveMyBlockPacksByParentSubShelfIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -572,7 +577,7 @@ export const RestoreMyBlockPackById = createServerFn({ method: "POST" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -619,7 +624,7 @@ export const RestoreMyBlockPacksByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -664,7 +669,7 @@ export const DeleteMyBlockPackById = createServerFn({ method: "POST" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -711,7 +716,7 @@ export const DeleteMyBlockPacksByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =

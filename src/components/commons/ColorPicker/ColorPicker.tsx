@@ -1,5 +1,6 @@
 import { cn } from "@shared/util/utils";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ColorPickerProps {
   value: string;
@@ -14,6 +15,7 @@ const ColorPicker = ({
   disabled = false,
   className,
 }: ColorPickerProps) => {
+  const { t } = useTranslation();
   const red = Number.parseInt(value.slice(1, 3), 16) / 255;
   const green = Number.parseInt(value.slice(3, 5), 16) / 255;
   const blue = Number.parseInt(value.slice(5, 7), 16) / 255;
@@ -118,7 +120,7 @@ const ColorPicker = ({
       <div
         role="slider"
         tabIndex={disabled ? -1 : 0}
-        aria-label="Color saturation and brightness"
+        aria-label={t("workspace.accessibility.colorSaturationBrightness")}
         aria-disabled={disabled}
         className={cn(
           "relative h-28 w-full touch-none overflow-hidden rounded-sm border border-border shadow-inner",
@@ -156,7 +158,7 @@ const ColorPicker = ({
       <div
         role="slider"
         tabIndex={disabled ? -1 : 0}
-        aria-label="Color hue"
+        aria-label={t("workspace.accessibility.colorHue")}
         aria-valuemin={0}
         aria-valuemax={359}
         aria-valuenow={Math.round(hue)}

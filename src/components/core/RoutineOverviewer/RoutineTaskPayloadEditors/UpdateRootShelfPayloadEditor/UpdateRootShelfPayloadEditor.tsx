@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
@@ -23,6 +24,7 @@ const UpdateRootShelfPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [rootShelfId, setRootShelfId] = useState("");
   const [name, setName] = useState("");
   const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
@@ -45,8 +47,8 @@ const UpdateRootShelfPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Update Root Shelf Payload"
-      description="Update fields on an existing root shelf."
+      title={t("workspace.payloadEditor.updateRootTitle")}
+      description={t("workspace.payloadEditor.updateRootDescription")}
       payloadPreview={JSON.stringify(
         {
           rootShelfId,
@@ -63,15 +65,15 @@ const UpdateRootShelfPayloadEditor = ({
     >
       <RootShelfPicker value={rootShelfId} onValueChange={setRootShelfId} />
       <div className="flex flex-col gap-2">
-        <Label>Name</Label>
+        <Label>{t("workspace.fields.name")}</Label>
         <Input
           value={name}
           onChange={event => setName(event.target.value)}
-          placeholder="(Optional)"
+          placeholder={t("workspace.station.optional")}
         />
       </div>
       <TemplatePatternEditor
-        label="Pattern Table"
+        label={t("workspace.payloadEditor.patternTable")}
         pattern={pattern}
         onPatternChange={setPattern}
       />

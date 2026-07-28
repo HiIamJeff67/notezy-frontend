@@ -61,7 +61,7 @@ export function BarChart<TMeta = unknown>({
   style,
   height,
   width,
-  ariaLabel = "Bar chart",
+  ariaLabel,
   loading,
   emptyMessage,
   showLegend = true,
@@ -84,28 +84,28 @@ export function BarChart<TMeta = unknown>({
   };
   const innerWidth = Math.max(
     0,
-    DEFAULT_VIEWBOX_WIDTH - mergedMargin.left - mergedMargin.right,
+    DEFAULT_VIEWBOX_WIDTH - mergedMargin.left - mergedMargin.right
   );
   const innerHeight = Math.max(
     0,
-    DEFAULT_VIEWBOX_HEIGHT - mergedMargin.top - mergedMargin.bottom,
+    DEFAULT_VIEWBOX_HEIGHT - mergedMargin.top - mergedMargin.bottom
   );
   const inner = {
     x: [mergedMargin.left, mergedMargin.left + innerWidth] as [number, number],
     y: [mergedMargin.top + innerHeight, mergedMargin.top] as [number, number],
   };
   const groupScale = createBandScale(
-    data.data.map((datum) => datum.id),
+    data.data.map(datum => datum.id),
     [mergedMargin.top, DEFAULT_VIEWBOX_HEIGHT - mergedMargin.bottom],
-    0.28,
+    0.28
   );
   const seriesScale = createBandScale(
-    data.series.map((series) => series.id),
+    data.series.map(series => series.id),
     [0, groupScale.bandwidth],
-    0.16,
+    0.16
   );
-  const chartValues = data.data.flatMap((datum) =>
-    data.series.map((series) => datum.values[series.id] ?? 0),
+  const chartValues = data.data.flatMap(datum =>
+    data.series.map(series => datum.values[series.id] ?? 0)
   );
   const domain =
     valueDomain ??
@@ -129,13 +129,13 @@ export function BarChart<TMeta = unknown>({
   const isEmpty =
     data.series.length === 0 ||
     data.data.length === 0 ||
-    chartValues.every((value) => !isFiniteChartValue(value));
+    chartValues.every(value => !isFiniteChartValue(value));
 
   const setActiveBar = (
     datum: CartesianChartDatum<TMeta>,
     seriesIndex: number,
     x: number,
-    y: number,
+    y: number
   ) => {
     const series = data.series[seriesIndex];
     const value = datum.values[series.id] ?? 0;
@@ -186,7 +186,7 @@ export function BarChart<TMeta = unknown>({
     >
       <g onMouseLeave={clearActive}>
         {showGrid &&
-          ticks.map((tick) => {
+          ticks.map(tick => {
             const x = xScale(tick);
             return (
               <g key={tick}>
@@ -221,7 +221,7 @@ export function BarChart<TMeta = unknown>({
           const label = datum.label ?? formatX(datum.x);
           const labelLines = splitSvgTextLines(
             label,
-            Math.max(4, Math.floor((mergedMargin.left - 16) / 6)),
+            Math.max(4, Math.floor((mergedMargin.left - 16) / 6))
           );
 
           return (
@@ -245,7 +245,7 @@ export function BarChart<TMeta = unknown>({
             </text>
           );
         })}
-        {data.data.map((datum) =>
+        {data.data.map(datum =>
           data.series.map((series, seriesIndex) => {
             const value = datum.values[series.id] ?? 0;
 
@@ -286,7 +286,7 @@ export function BarChart<TMeta = unknown>({
                 y={y}
               />
             );
-          }),
+          })
         )}
       </g>
     </ChartFrame>

@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
@@ -22,6 +23,7 @@ const CreateRootShelfPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
 
@@ -41,8 +43,8 @@ const CreateRootShelfPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Create Root Shelf Payload"
-      description="Create an empty root shelf."
+      title={t("workspace.payloadEditor.createRootTitle")}
+      description={t("workspace.payloadEditor.createRootDescription")}
       payloadPreview={JSON.stringify(
         {
           ...(name.trim() && { name }),
@@ -57,15 +59,15 @@ const CreateRootShelfPayloadEditor = ({
       onConfirm={onConfirm}
     >
       <div className="flex flex-col gap-2">
-        <Label>Name</Label>
+        <Label>{t("workspace.fields.name")}</Label>
         <Input
           value={name}
           onChange={event => setName(event.target.value)}
-          placeholder="ex. School"
+          placeholder={t("workspace.payloadEditor.nameExampleRoot")}
         />
       </div>
       <TemplatePatternEditor
-        label="Pattern Table"
+        label={t("workspace.payloadEditor.patternTable")}
         pattern={pattern}
         onPatternChange={setPattern}
       />

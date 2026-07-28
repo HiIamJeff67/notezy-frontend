@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
@@ -23,6 +24,7 @@ const CreateSubShelfPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [rootShelfId, setRootShelfId] = useState("");
   const [prevSubShelfId, setPrevSubShelfId] = useState("");
   const [name, setName] = useState("");
@@ -48,8 +50,8 @@ const CreateSubShelfPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Create Sub Shelf Payload"
-      description="Create an empty sub shelf under a root shelf."
+      title={t("workspace.payloadEditor.createSubTitle")}
+      description={t("workspace.payloadEditor.createSubDescription")}
       payloadPreview={JSON.stringify(
         {
           rootShelfId,
@@ -67,8 +69,8 @@ const CreateSubShelfPayloadEditor = ({
     >
       <ShelfLocationPicker
         mode="root-or-sub"
-        label="Parent location"
-        placeholder="Select RootShelf or Previous SubShelf"
+        label={t("workspace.payloadEditor.parentLocation")}
+        placeholder={t("workspace.payloadEditor.selectParent")}
         rootShelfId={rootShelfId}
         subShelfId={prevSubShelfId}
         onSelectRoot={nextRootShelfId => {
@@ -81,15 +83,15 @@ const CreateSubShelfPayloadEditor = ({
         }}
       />
       <div className="flex flex-col gap-2">
-        <Label>Name</Label>
+        <Label>{t("workspace.fields.name")}</Label>
         <Input
           value={name}
           onChange={event => setName(event.target.value)}
-          placeholder="ex. Notes"
+          placeholder={t("workspace.payloadEditor.nameExampleSub")}
         />
       </div>
       <TemplatePatternEditor
-        label="Pattern Table"
+        label={t("workspace.payloadEditor.patternTable")}
         pattern={pattern}
         onPatternChange={setPattern}
       />

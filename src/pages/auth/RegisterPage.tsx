@@ -1,5 +1,5 @@
-import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { ValidationClientException } from "@shared/api/exceptions/client/validation.exception";
+import { NotezyValidationError } from "@shared/api/exceptions/errors/validation.error";
 import { useRegister } from "@shared/api/hooks/auth.hook";
 import { useGetUserData } from "@shared/api/hooks/user.hook";
 import { queryFnGetUserData } from "@shared/api/invokers/user.invoker";
@@ -7,17 +7,18 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
 import toast from "@shared/lib/toast";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
-import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
-import { useAppRouter, useLanguage, useUser } from "@/hooks";
+import { useAppRouter, useUser } from "@/hooks";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
+import { translateError } from "@/i18n/error";
 
 const RegisterPage = () => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const userManager = useUser();
 
   const registerMutator = useRegister();
@@ -36,9 +37,7 @@ const RegisterPage = () => {
     const register = async () => {
       if (password !== confirmPassword) {
         throw new Error(
-          languageManager.t(
-            tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-          )
+          t("auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch")
         );
       }
 
@@ -85,7 +84,7 @@ const RegisterPage = () => {
         await register().catch(error => {
           setPassword("");
           setConfirmPassword("");
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         })
     );
   }, [
@@ -93,7 +92,7 @@ const RegisterPage = () => {
     email,
     password,
     confirmPassword,
-    languageManager,
+    t,
     userManager,
     registerMutator,
     router,
@@ -104,50 +103,50 @@ const RegisterPage = () => {
       <Suspense fallback={<StrictLoadingCover />}>
         <StrictLoadingCover condition={registerMutator.isPending} />
         <AuthPanel
-          title={languageManager.t(tKey.auth.register)}
-          subtitle={`${languageManager.t(
-            tKey.auth.authenticationPanelSubtitle
-          )} ${languageManager.t(tKey.auth.register)}`}
+          title={t("auth.register")}
+          subtitle={`${t(
+            "auth.authenticationPanelSubtitle"
+          )} ${t("auth.register")}`}
           inputs={[
             {
-              title: languageManager.t(tKey.auth.name),
-              placeholder: "ex. myName123",
+              title: t("auth.name"),
+              placeholder: t("auth.nameExample"),
               type: "text",
               value: name,
               onChange: setName,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.email),
-              placeholder: "ex. example123@email.com",
+              title: t("auth.email"),
+              placeholder: t("auth.emailExample"),
               type: "email",
               value: email,
               onChange: setEmail,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.password),
-              placeholder: "ex. example-password123(&@#$",
+              title: t("auth.password"),
+              placeholder: t("auth.passwordExample"),
               type: "password",
               value: password,
               onChange: setPassword,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.confirmPassword),
-              placeholder: "ex. example-password123(&@#$",
+              title: t("auth.confirmPassword"),
+              placeholder: t("auth.passwordExample"),
               type: "password",
               value: confirmPassword,
               onChange: setConfirmPassword,
               required: true,
             },
           ]}
-          submitButtonText={languageManager.t(tKey.auth.register)}
+          submitButtonText={t("auth.register")}
           onSubmit={handleRegisterOnSubmit}
           switchButtons={[
             {
-              description: languageManager.t(tKey.auth.alreadyHaveAnAccount),
-              title: languageManager.t(tKey.auth.login),
+              description: t("auth.alreadyHaveAnAccount"),
+              title: t("auth.login"),
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.login);
               },
@@ -156,7 +155,7 @@ const RegisterPage = () => {
           oauthButtons={[
             {
               provider: "google",
-              label: "Register via Google",
+              label: t("workspace.pages.googleRegister"),
               onClick: () =>
                 router.forceNavigate(
                   WebURLPathDictionary.oauth.google(
@@ -169,7 +168,7 @@ const RegisterPage = () => {
                 ),
             },
           ]}
-          statusDetail={"System Ready"}
+          statusDetail={t("workspace.pages.systemReady")}
           isLoading={isRegisterPending}
         />
       </Suspense>

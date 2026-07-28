@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import FormPayloadEditor from "../FormPayloadEditor";
 import { RootShelfPicker } from "../PayloadSearchPickers";
 
@@ -18,6 +19,7 @@ const ResetRootShelfPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [rootShelfId, setRootShelfId] = useState("");
 
   useEffect(() => {
@@ -33,8 +35,8 @@ const ResetRootShelfPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Reset Root Shelf Payload"
-      description="Soft-delete direct sub shelves under a root shelf."
+      title={t("workspace.payloadEditor.resetRootTitle")}
+      description={t("workspace.payloadEditor.resetRootDescription")}
       payloadPreview={JSON.stringify({ rootShelfId }, null, 2)}
       contentWidthClassName="!w-[min(900px,94vw)]"
       formWidthClassName="max-w-[460px]"

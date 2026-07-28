@@ -15,6 +15,7 @@ import type { RoutineNode } from "@shared/types/routineNode.type";
 import type { UUID } from "crypto";
 import { Bookmark, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { RoutineIcon } from "@/components/icons/WorkspaceEntityIcons";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStationRoutine } from "@/hooks";
+import {
+  translateRoutineStatus,
+  translateRoutineTaskStatus,
+} from "@/i18n/workspace";
 
 const RoutineTable = () => {
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const [executeSearchRoutines, routineSearch] = useSearchRoutinesLazyQuery({
     fetchPolicy: "cache-and-network",
@@ -351,7 +357,7 @@ const RoutineTable = () => {
         <div className="flex min-w-0 items-center gap-2">
           <RoutineIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
-            Routine Table
+            {t("workspace.table.routineTable")}
           </span>
           <span className="text-xs tabular-nums text-muted-foreground">
             {filteredRoutines.length}
@@ -371,10 +377,12 @@ const RoutineTable = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All status</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allStatus")}
+              </SelectItem>
               {AllRoutineStatuses.map(routineStatus => (
                 <SelectItem key={routineStatus} value={routineStatus}>
-                  {routineStatus}
+                  {translateRoutineStatus(routineStatus, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -382,13 +390,13 @@ const RoutineTable = () => {
           <DatePicker
             value={startsAfter}
             onValueChange={setStartsAfter}
-            placeholder="Starts after"
+            placeholder={t("workspace.table.startsAfter")}
             className="h-8 w-40 px-3 text-xs @max-[520px]:w-10 @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
           <DatePicker
             value={endsBefore}
             onValueChange={setEndsBefore}
-            placeholder="Ends before"
+            placeholder={t("workspace.table.endsBefore")}
             className="h-8 w-40 px-3 text-xs @max-[520px]:w-10 @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
           <label className="flex h-8 items-center gap-2 rounded-sm bg-transparent px-2 text-xs text-muted-foreground">
@@ -396,7 +404,9 @@ const RoutineTable = () => {
               checked={showUnscheduled}
               onCheckedChange={checked => setShowUnscheduled(checked === true)}
             />
-            <span className="@max-[520px]:sr-only">Unscheduled</span>
+            <span className="@max-[520px]:sr-only">
+              {t("workspace.table.unscheduled")}
+            </span>
           </label>
         </div>
       </div>
@@ -414,12 +424,24 @@ const RoutineTable = () => {
         <Table className="table-fixed">
           <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary">
             <TableRow>
-              <TableHead className="w-[18%] px-3">Routine</TableHead>
-              <TableHead className="w-[14%] px-3">Station</TableHead>
-              <TableHead className="w-[12%] px-3">Status</TableHead>
-              <TableHead className="w-[22%] px-3">Schedule</TableHead>
-              <TableHead className="w-[22%] px-3">Tags</TableHead>
-              <TableHead className="w-[7%] px-3">Tasks</TableHead>
+              <TableHead className="w-[18%] px-3">
+                {t("workspace.table.routine")}
+              </TableHead>
+              <TableHead className="w-[14%] px-3">
+                {t("workspace.table.station")}
+              </TableHead>
+              <TableHead className="w-[12%] px-3">
+                {t("workspace.table.status")}
+              </TableHead>
+              <TableHead className="w-[22%] px-3">
+                {t("workspace.table.schedule")}
+              </TableHead>
+              <TableHead className="w-[22%] px-3">
+                {t("workspace.table.tags")}
+              </TableHead>
+              <TableHead className="w-[7%] px-3">
+                {t("workspace.table.tasks")}
+              </TableHead>
               <TableHead className="w-[5%] px-2" />
             </TableRow>
           </TableHeader>
@@ -460,7 +482,7 @@ const RoutineTable = () => {
                         {routine.isPinned && (
                           <Bookmark
                             className="mt-0.5 size-3.5 shrink-0 fill-muted-foreground/20 text-muted-foreground"
-                            aria-label="Pinned routine"
+                            aria-label={t("workspace.table.pinnedRoutine")}
                           />
                         )}
                         <p className="whitespace-normal font-medium leading-snug [overflow-wrap:anywhere]">
@@ -471,23 +493,29 @@ const RoutineTable = () => {
                   </TableCell>
                   <TableCell className="px-3 py-3">
                     <span className="break-words">
-                      {station?.name ?? "Unknown"}
+                      {station?.name ?? t("workspace.table.unknown")}
                     </span>
                   </TableCell>
-                  <TableCell className="px-3 py-3">{routine.status}</TableCell>
+                  <TableCell className="px-3 py-3">
+                    {translateRoutineStatus(routine.status, t)}
+                  </TableCell>
                   <TableCell className="px-3 py-3">
                     {isScheduled ? (
                       <div className="flex flex-col text-xs">
                         <span className="break-words">
-                          {routine.scheduledStartAt.toLocaleString()}
+                          {routine.scheduledStartAt.toLocaleString(
+                            i18n.resolvedLanguage
+                          )}
                         </span>
                         <span className="text-muted-foreground">
-                          {routine.scheduledEndAt.toLocaleString()}
+                          {routine.scheduledEndAt.toLocaleString(
+                            i18n.resolvedLanguage
+                          )}
                         </span>
                       </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        Unscheduled
+                        {t("workspace.table.unscheduled")}
                       </span>
                     )}
                   </TableCell>
@@ -495,12 +523,13 @@ const RoutineTable = () => {
                     <div className="flex min-w-0 flex-wrap gap-1">
                       {routine.routineTagIds.length === 0 ? (
                         <span className="text-xs text-muted-foreground">
-                          Untagged
+                          {t("workspace.table.untagged")}
                         </span>
                       ) : routineTags.length === 0 ? (
                         <span className="text-xs text-muted-foreground">
-                          {routine.routineTagIds.length} tag
-                          {routine.routineTagIds.length > 1 ? "s" : ""}
+                          {t("workspace.table.tagCount", {
+                            count: routine.routineTagIds.length,
+                          })}
                         </span>
                       ) : (
                         <>
@@ -534,7 +563,7 @@ const RoutineTable = () => {
                               >
                                 <div className="flex flex-col gap-2">
                                   <p className="text-sm font-medium">
-                                    Routine Tags
+                                    {t("workspace.table.routineTags")}
                                   </p>
                                   <div className="flex max-h-52 flex-col gap-1.5 overflow-y-auto">
                                     {routineTags.map(routineTag => (
@@ -580,12 +609,14 @@ const RoutineTable = () => {
                           className="w-80 rounded-sm p-3"
                         >
                           <div className="flex flex-col gap-2">
-                            <p className="text-sm font-medium">Routine Tasks</p>
+                            <p className="text-sm font-medium">
+                              {t("workspace.table.routineTasks")}
+                            </p>
                             {routine.routineTasks.length === 0 ? (
                               <p className="text-xs text-muted-foreground">
-                                {routineTaskCount} linked task
-                                {routineTaskCount > 1 ? "s" : ""}. Task names
-                                are not loaded yet.
+                                {t("workspace.table.linkedTasksNotLoaded", {
+                                  count: routineTaskCount,
+                                })}
                               </p>
                             ) : (
                               <div className="flex max-h-56 flex-col gap-1.5 overflow-y-auto">
@@ -609,7 +640,10 @@ const RoutineTable = () => {
                                       {routineTask.title}
                                     </span>
                                     <span className="shrink-0 text-xs text-muted-foreground">
-                                      {routineTask.status}
+                                      {translateRoutineTaskStatus(
+                                        routineTask.status,
+                                        t
+                                      )}
                                     </span>
                                   </div>
                                 ))}
@@ -646,8 +680,8 @@ const RoutineTable = () => {
                   className="h-28 text-center text-sm text-muted-foreground"
                 >
                   {isSearchingRoutines
-                    ? "Loading routines..."
-                    : "No routines match the current filters."}
+                    ? t("workspace.table.loadingRoutines")
+                    : t("workspace.table.noRoutinesMatch")}
                 </TableCell>
               </TableRow>
             )}

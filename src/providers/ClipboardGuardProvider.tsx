@@ -1,6 +1,7 @@
 import toast from "@shared/lib/toast";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalPreferences } from "@/hooks/localPreferences";
 
 const builtInSensitivePatterns = [
@@ -52,6 +53,7 @@ export const ClipboardGuardProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const { t } = useTranslation();
   const { preferences } = useLocalPreferences();
 
   useEffect(() => {
@@ -60,22 +62,17 @@ export const ClipboardGuardProvider = ({
     const handleCopy = () => {
       const copiedText = getSelectedText();
       if (
-        !isPotentiallySensitive(
-          copiedText,
-          preferences.clipboardGuardPatterns
-        )
+        !isPotentiallySensitive(copiedText, preferences.clipboardGuardPatterns)
       ) {
         return;
       }
 
-      toast.warning(
-        "Copied sensitive-looking content. Check the target before pasting."
-      );
+      toast.warning(t("workspace.notifications.sensitiveClipboard"));
     };
 
     document.addEventListener("copy", handleCopy);
     return () => document.removeEventListener("copy", handleCopy);
-  }, [preferences.clipboardGuard, preferences.clipboardGuardPatterns]);
+  }, [preferences.clipboardGuard, preferences.clipboardGuardPatterns, t]);
 
   return children;
 };

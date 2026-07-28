@@ -1,3 +1,4 @@
+import type { UUID } from "node:crypto";
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import type {
@@ -9,11 +10,9 @@ import type {
   GetBlockPackParticipantsResponse,
 } from "@shared/api/interfaces/realtime.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import type { UUID } from "node:crypto";
 
 export const CreateMyRealtimeConnectionTicket = createServerFn({
   method: "POST",
@@ -43,7 +42,7 @@ export const CreateMyRealtimeConnectionTicket = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -86,7 +85,7 @@ export const CreateMyBlockPackChannelTicket = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -124,7 +123,7 @@ export const GetBlockPackParticipants = createServerFn({ method: "GET" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =

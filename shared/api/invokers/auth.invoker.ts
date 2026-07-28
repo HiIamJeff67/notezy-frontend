@@ -61,12 +61,11 @@ import {
   type ValidateEmailResponse,
   ValidateEmailResponseSchema,
 } from "@shared/api/interfaces/auth.interface";
-import { tKey } from "@shared/translations";
 import { ZodError } from "zod";
-import { NotezyFetchError } from "../exceptions/errors/fetch.error";
-import { NotezyValidationError } from "../exceptions/errors/validation.error";
 import { FetchClientExceptions } from "../exceptions/client/fetch.exception";
 import { ValidationClientException } from "../exceptions/client/validation.exception";
+import { NotezyFetchError } from "../exceptions/errors/fetch.error";
+import { NotezyValidationError } from "../exceptions/errors/validation.error";
 
 export const mutationFnRegister = async (
   request: RegisterRequest
@@ -85,14 +84,10 @@ export const mutationFnRegister = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.duplicateName:
-          throw error.setPresentation(
-            tKey.error.apiError.register.duplicateName
-          );
+          throw error.setPresentation("error.apiError.register.duplicateName");
 
         case ExceptionReasonDictionary.user.duplicateEmail:
-          throw error.setPresentation(
-            tKey.error.apiError.register.duplicateEmail
-          );
+          throw error.setPresentation("error.apiError.register.duplicateEmail");
 
         default:
           throw error;
@@ -123,9 +118,7 @@ export const mutationFnRegisterViaGoogle = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
       }
     } else if (error instanceof TypeError) {
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
@@ -152,9 +145,7 @@ export const mutationFnLogin = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
       }
     } else if (error instanceof TypeError) {
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
@@ -180,9 +171,7 @@ export const mutationFnLoginViaGoogle = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
       }
     } else if (error instanceof TypeError) {
       throw new NotezyFetchError(FetchClientExceptions.NetworkRequired());
@@ -209,9 +198,7 @@ export const mutationFnLogout = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);
@@ -241,9 +228,7 @@ export const mutationFnSendAuthCode = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);
@@ -273,9 +258,7 @@ export const mutationFnValidateEmail = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);
@@ -305,9 +288,7 @@ export const mutationFnResetEmail = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);
@@ -337,9 +318,7 @@ export const mutationFnForgetPassword = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);
@@ -393,9 +372,7 @@ export const mutationFnDeleteMe = async (
     } else if (error instanceof NotezyAPIError) {
       switch (error.unWrap.reason) {
         case ExceptionReasonDictionary.user.notFound:
-          throw error.setPresentation(
-            tKey.error.apiError.getUser.failedToGetUser
-          );
+          throw error.setPresentation("error.apiError.getUser.failedToGetUser");
 
         default:
           throw new Error(error.unWrap.message);

@@ -4,6 +4,7 @@ import { BlockPackNode, MaterialNode } from "@shared/types/itemNodes.type";
 import { RootShelfNode, SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ChevronRightIcon } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import WrapPlaceholder from "@/components/holders/WrapPlaceholder";
 import {
   BreadcrumbItem,
@@ -15,7 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
+import { useAppRouter, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface ItemPathItemProps {
   key?: any;
@@ -25,7 +27,7 @@ interface ItemPathItemProps {
 
 const ItemPathItem = ({ rootShelfNode, subShelfNode }: ItemPathItemProps) => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const handleBlockPackOnClick = useCallback(
@@ -40,7 +42,7 @@ const ItemPathItem = ({ rootShelfNode, subShelfNode }: ItemPathItemProps) => {
           )
         );
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     },
     [router, shelfItemManager]
@@ -58,7 +60,7 @@ const ItemPathItem = ({ rootShelfNode, subShelfNode }: ItemPathItemProps) => {
         router.push(nextPath);
         shelfItemManager.toggleMaterial(current);
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     },
     [router, shelfItemManager]

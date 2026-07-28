@@ -118,10 +118,14 @@ export const RoutineTaskPayloadSchema = z
       purpose === RoutineTaskPurpose.CreateBlockPack &&
       Array.isArray(payload.template?.blocks)
     ) {
-      payload.template.blocks.forEach((block, index) => {
+      payload.template.blocks.forEach((block: unknown, index: number) => {
+        const templateBlock =
+          block !== null && typeof block === "object"
+            ? (block as Record<string, unknown>)
+            : {};
         if (
-          typeof block?.clientId !== "string" ||
-          block.clientId.trim() === ""
+          typeof templateBlock.clientId !== "string" ||
+          templateBlock.clientId.trim() === ""
         ) {
           addPayloadIssue(
             ["template", "blocks", index, "clientId"],
@@ -129,8 +133,8 @@ export const RoutineTaskPayloadSchema = z
           );
         }
         if (
-          typeof block?.arborizedEditableBlock !== "object" ||
-          block.arborizedEditableBlock === null
+          typeof templateBlock.arborizedEditableBlock !== "object" ||
+          templateBlock.arborizedEditableBlock === null
         ) {
           addPayloadIssue(
             ["template", "blocks", index, "arborizedEditableBlock"],

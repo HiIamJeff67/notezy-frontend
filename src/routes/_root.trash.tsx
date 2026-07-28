@@ -15,6 +15,7 @@ import {
 } from "@shared/api/graphql/generated/graphql";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback } from "react";
+import i18n from "@/i18n";
 import TrashPage from "@/pages/root/trash/TrashPage";
 
 export const Route = createFileRoute("/_root/trash")({
@@ -116,7 +117,7 @@ export const Route = createFileRoute("/_root/trash")({
       !stationSearch.data ||
       !routineSearch.data
     ) {
-      throw new Error("Failed to load trash data.");
+      throw new Error(i18n.t("workspace.trash.loadFailed"));
     }
 
     return {

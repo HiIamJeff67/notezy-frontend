@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   HoverCard,
   HoverCardContent,
@@ -193,6 +194,8 @@ const ArticleNavigationSidebar = ({
   subParagraphBaseHeight = 12,
   onNavigate,
 }: ArticleNavigationSidebarProps) => {
+  const { t } = useTranslation();
+  const { preferences } = useLocalPreferences();
   const [activeId, setActiveId] = useState<string | undefined>();
   const articleRef = useContext(ArticleScrollContext);
   const itemIds = useMemo(() => {
@@ -228,7 +231,7 @@ const ArticleNavigationSidebar = ({
       setActiveId(activeSection?.id);
     };
     const onScroll = () => {
-      cancelAnimationFrame(animationFrame);
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
       animationFrame = requestAnimationFrame(updateActiveItem);
     };
 
@@ -236,7 +239,7 @@ const ArticleNavigationSidebar = ({
     articleElement.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
-      cancelAnimationFrame(animationFrame);
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
       articleElement.removeEventListener("scroll", onScroll);
     };
   }, [articleRef, itemIds]);
@@ -318,12 +321,17 @@ const ArticleNavigationSidebar = ({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 lg:sticky lg:block lg:top-1/2 lg:h-fit lg:w-24 lg:-translate-y-1/2",
+        "hidden shrink-0 lg:sticky lg:block lg:top-1/2 lg:h-fit lg:-translate-y-1/2",
+        preferences.density === "compact"
+          ? "lg:w-12"
+          : preferences.density === "comfortable"
+            ? "lg:w-20"
+            : "lg:w-16",
         className
       )}
     >
       <nav
-        aria-label="Article navigation"
+        aria-label={t("workspace.accessibility.articleNavigation")}
         className={
           items.some(item => item.children?.length) ? "space-y-7" : "space-y-3"
         }

@@ -1,7 +1,6 @@
 import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
-import { tKey } from "@shared/translations";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import {
   BellIcon,
@@ -21,6 +20,7 @@ import {
   UserRoundIcon,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import AvatarIcon from "@/components/icons/AvatarIcon";
 import ShelfCaseIcon from "@/components/icons/ShelfCaseIcon";
@@ -66,7 +66,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   useAppRouterActions,
-  useLanguage,
   useResizeSidebar,
   useSettingsDisplay,
   useShelfItem,
@@ -74,6 +73,7 @@ import {
 } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useUser } from "@/hooks/useUser";
+import { translateError } from "@/i18n/error";
 import { type SettingsPage } from "@/providers/SettingsDisplayProvider";
 
 interface AppSidebarProps {
@@ -84,7 +84,7 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
   if (disabled) return <></>;
 
   const router = useAppRouterActions();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const modalManager = useModal();
   const sidebarManager = useSidebar();
   const resizableSidebarManager = useResizeSidebar();
@@ -116,11 +116,11 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
     const initiallySearchRootShelves = async () =>
       await shelfItemManager
         .searchRootShelves()
-        .catch(error => toast.error(languageManager.tError(error)));
+        .catch(error => toast.error(translateError(error, t)));
     const initiallyLoadStationRoutineData = async () =>
       await stationRoutineManager
         .initializeStationRoutineData()
-        .catch(error => toast.error(languageManager.tError(error)));
+        .catch(error => toast.error(translateError(error, t)));
     initiallySearchRootShelves();
     initiallyLoadStationRoutineData();
   }, [userManager.userData?.publicId]);
@@ -148,7 +148,9 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 >
                   <LayoutDashboardIcon />
                   {sidebarManager.open && (
-                    <span className="truncate">Dashboard</span>
+                    <span className="truncate">
+                      {t("workspace.navigation.dashboard")}
+                    </span>
                   )}
                 </SidebarMenuButton>
                 <SidebarTrigger
@@ -167,7 +169,9 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 >
                   <RoutineIcon />
                   {sidebarManager.open && (
-                    <span className="truncate">Routines</span>
+                    <span className="truncate">
+                      {t("workspace.navigation.routines")}
+                    </span>
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -179,7 +183,9 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 >
                   <MessageSquareIcon />
                   {sidebarManager.open && (
-                    <span className="truncate">Community</span>
+                    <span className="truncate">
+                      {t("workspace.navigation.community")}
+                    </span>
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -194,27 +200,27 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="gap-2 [&[data-state=closed]:hover_.group-label-chevron-right]:block [&[data-state=open]:hover_.group-label-chevron-down]:block">
                 <ShelfCaseIcon size={16} />
-                <span>Shelves</span>
+                <span>{t("workspace.navigation.shelves")}</span>
                 <ChevronRight className="group-label-chevron-right hidden size-3" />
                 <ChevronDown className="group-label-chevron-down hidden size-3" />
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <SidebarGroupAction
               className="sidebar-group-label-action opacity-0 transition-opacity text-muted-foreground"
-              aria-label="Create root shelf"
-              title="Create root shelf"
+              aria-label={t("workspace.navigation.createRootShelf")}
+              title={t("workspace.navigation.createRootShelf")}
               onClick={() =>
                 modalManager.open("CreateShelfItemDialog", {
-                  dialogHeader: "Create a root shelf",
-                  dialogDescription: "Type a name for the new root shelf.",
+                  dialogHeader: t("workspace.navigation.createRootShelfDialog"),
+                  dialogDescription: t(
+                    "workspace.navigation.typeRootShelfName"
+                  ),
                   disableInput: false,
-                  inputPlaceholder: "Type new name here",
+                  inputPlaceholder: t("workspace.navigation.typeNewName"),
                   onCreate: async (newRootShelfName: string) => {
                     await shelfItemManager
                       .createRootShelf(newRootShelfName)
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
+                      .catch(error => toast.error(translateError(error, t)));
                   },
                   onCancel: modalManager.close,
                 })
@@ -242,15 +248,15 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="gap-2 [&[data-state=closed]:hover_.group-label-chevron-right]:block [&[data-state=open]:hover_.group-label-chevron-down]:block">
                 <StationIcon size={16} />
-                <span>Stations</span>
+                <span>{t("workspace.navigation.stations")}</span>
                 <ChevronRight className="group-label-chevron-right hidden size-3" />
                 <ChevronDown className="group-label-chevron-down hidden size-3" />
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <SidebarGroupAction
               className="sidebar-group-label-action opacity-0 transition-opacity text-muted-foreground"
-              aria-label="Create station"
-              title="Create station"
+              aria-label={t("workspace.navigation.createStation")}
+              title={t("workspace.navigation.createStation")}
               onClick={() => modalManager.open("CreateStationDialog", {})}
             >
               <PlusIcon />
@@ -266,13 +272,17 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                           <div className="group/routine-tags-label flex h-7 items-center justify-between px-2 text-xs text-muted-foreground">
                             <div className="flex min-w-0 items-center gap-2">
                               <TagIcon className="size-3.5 shrink-0" />
-                              <span className="truncate">Routine tags</span>
+                              <span className="truncate">
+                                {t("workspace.navigation.routineTags")}
+                              </span>
                             </div>
                             <button
                               type="button"
                               className="flex size-5 shrink-0 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/routine-tags-label:opacity-100 focus-visible:opacity-100"
-                              aria-label="Create routine tag"
-                              title="Create routine tag"
+                              aria-label={t(
+                                "workspace.navigation.createRoutineTag"
+                              )}
+                              title={t("workspace.navigation.createRoutineTag")}
                               onClick={() =>
                                 modalManager.open("CreateRoutineTagDialog", {
                                   onCreated: async routineTagId => {
@@ -305,13 +315,13 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 className={`w-full flex ${
                   sidebarManager.open ? "justify-start" : "justify-center"
                 } items-center select-none hover:bg-primary`}
-                onClick={() =>
-                  router.push(WebURLPathDictionary.root.document)
-                }
+                onClick={() => router.push(WebURLPathDictionary.root.document)}
               >
                 <FileTextIcon />
                 {sidebarManager.open && (
-                  <span className="truncate">Document</span>
+                  <span className="truncate">
+                    {t("workspace.navigation.document")}
+                  </span>
                 )}
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -326,7 +336,9 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
               >
                 <BookOpenIcon />
                 {sidebarManager.open && (
-                  <span className="truncate">Introduction</span>
+                  <span className="truncate">
+                    {t("workspace.navigation.introduction")}
+                  </span>
                 )}
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -338,7 +350,11 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                 onClick={() => router.push(WebURLPathDictionary.root.trash)}
               >
                 <Trash2Icon />
-                {sidebarManager.open && <span className="truncate">Trash</span>}
+                {sidebarManager.open && (
+                  <span className="truncate">
+                    {t("workspace.navigation.trash")}
+                  </span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -355,13 +371,15 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
                   className="text-xs font-semibold text-foreground transition-all"
                   width={`${resizableSidebarManager.width - 120}px`}
                 >
-                  {userManager.userData?.name || "User Name"}
+                  {userManager.userData?.name ||
+                    t("workspace.navigation.userName")}
                 </TruncatedText>
                 <TruncatedText
                   className="text-xs font-light text-foreground transition-all"
                   width={`${resizableSidebarManager.width - 120}px`}
                 >
-                  {userManager.userData?.status || "Offline"}
+                  {userManager.userData?.status ||
+                    t("workspace.navigation.offline")}
                 </TruncatedText>
               </div>
             </MenubarTrigger>
@@ -370,50 +388,50 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
             <MenubarMenu>
               <MenubarTrigger
                 className="px-2 py-2 flex items-center justify-center"
-                aria-label="Settings"
-                title="Settings"
+                aria-label={t("workspace.navigation.settings")}
+                title={t("workspace.navigation.settings")}
               >
                 <SettingsIcon size={20} />
               </MenubarTrigger>
               <MenubarContent className="w-64 bg-popover border-border">
                 <MenubarGroup>
                   <MenubarLabel className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
-                    Settings
+                    {t("workspace.navigation.settings")}
                   </MenubarLabel>
                   <MenubarItem
                     className="cursor-pointer"
                     onSelect={() => openSettings("account")}
                   >
                     <UserRoundIcon />
-                    <span>Account</span>
+                    <span>{t("workspace.navigation.account")}</span>
                   </MenubarItem>
                   <MenubarItem
                     className="cursor-pointer"
                     onSelect={() => openSettings("preferences")}
                   >
                     <SlidersHorizontalIcon />
-                    <span>Preferences</span>
+                    <span>{t("workspace.navigation.preferences")}</span>
                   </MenubarItem>
                 </MenubarGroup>
                 <MenubarSeparator />
                 <MenubarGroup>
                   <MenubarLabel className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
-                    Account
+                    {t("workspace.navigation.account")}
                   </MenubarLabel>
                   <MenubarItem className="cursor-pointer">
                     <Repeat2Icon />
-                    <span>{languageManager.t(tKey.auth.switchAccount)}</span>
+                    <span>{t("auth.switchAccount")}</span>
                   </MenubarItem>
                   <MenubarItem
                     className="cursor-pointer text-destructive focus:text-destructive"
                     onSelect={async () => {
                       router.push(WebURLPathDictionary.home);
                       await userManager.logout();
-                      toast.success("Logout successfully, see you next time ~");
+                      toast.success(t("workspace.notifications.logoutSuccess"));
                     }}
                   >
                     <LogOutIcon />
-                    <span>{languageManager.t(tKey.auth.logout)}</span>
+                    <span>{t("auth.logout")}</span>
                   </MenubarItem>
                 </MenubarGroup>
               </MenubarContent>
@@ -423,8 +441,8 @@ export function AppSidebar({ disabled = false }: AppSidebarProps) {
             <MenubarMenu>
               <MenubarTrigger
                 className="px-2 py-2 flex items-center justify-center"
-                aria-label="Notifications"
-                title="Notifications"
+                aria-label={t("workspace.navigation.notifications")}
+                title={t("workspace.navigation.notifications")}
               >
                 <BellIcon size={20} />
               </MenubarTrigger>

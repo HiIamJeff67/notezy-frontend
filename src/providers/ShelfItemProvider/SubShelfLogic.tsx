@@ -21,6 +21,7 @@ import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { RefObject, useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface UseSubShelfLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;
@@ -42,6 +43,7 @@ export const useSubShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseSubShelfLogicProps) => {
+  const { t } = useTranslation();
   const createSubShelfMutator = useCreateSubShelfByRootShelfId();
   const updateSubShelfMutator = useUpdateMySubShelfById();
   const deleteSubShelfMutator = useDeleteMySubShelfById();
@@ -250,7 +252,7 @@ export const useSubShelfLogic = ({
   const renameEditingSubShelf = useCallback(async (): Promise<void> => {
     try {
       if (!isNewSubShelfName() || !editingSubShelfNode) {
-        toast.error("the name of the given sub shelf node is invalid");
+        toast.error(t("workspace.notifications.invalidSubShelfName"));
         return;
       }
 

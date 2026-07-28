@@ -48,49 +48,6 @@ export type GetMyRootShelfByIdResponse = z.infer<
   typeof GetMyRootShelfByIdResponseSchema
 >;
 
-/* ============================== SearchRecentRootShelves ============================== */
-
-export const SearchRecentRootShelvesRequestSchema = NotezyRequestSchema.extend({
-  header: z
-    .object({
-      userAgent: z.string().min(1).optional(),
-      authorization: z.string().optional(),
-    })
-    .optional(),
-  param: z.object({
-    query: z.string().max(256).optional(),
-    limit: z.int32().min(1).optional(),
-    offset: z.int32().min(0).optional(),
-  }),
-});
-
-export type SearchRecentRootShelvesRequest = z.infer<
-  typeof SearchRecentRootShelvesRequestSchema
->;
-
-export const SearchRecentRootShelvesResponseSchema =
-  NotezyResponseSchema.extend({
-    data: z.array(
-      z.object({
-        id: z.uuidv4(),
-        name: z.string(),
-        subShelfCount: z.int32(),
-        itemCount: z.int32(),
-        lastAnalyzedAt: z.coerce.date(),
-        deletedAt: z.coerce.date().nullable(),
-        updatedAt: z.coerce.date(),
-        createdAt: z.coerce.date(),
-      })
-    ),
-    embedded: z.object({
-      publicId: z.string(),
-    }),
-  });
-
-export type SearchRecentRootShelvesResponse = z.infer<
-  typeof SearchRecentRootShelvesResponseSchema
->;
-
 /* ============================== CreateRootShelf ============================== */
 
 export const CreateRootShelfRequestSchema = NotezyRequestSchema.extend({

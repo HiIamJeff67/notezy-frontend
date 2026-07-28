@@ -138,11 +138,7 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import {
-  Marker,
-  MarkerContent,
-  MarkerIcon,
-} from "@/components/ui/marker";
+import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker";
 import {
   Menubar,
   MenubarCheckboxItem,
@@ -223,18 +219,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -248,13 +236,44 @@ const formSchema = z.object({
 });
 
 const sections = [
-  { id: "buttons", title: "Buttons", description: "Button, button group, toggle, and toggle group states." },
-  { id: "inputs", title: "Inputs", description: "Form fields, labels, input groups, textarea, checkbox, switch, and slider." },
-  { id: "selection", title: "Selection", description: "Select, calendar, tabs, and command surfaces." },
-  { id: "overlays", title: "Overlays", description: "Dialog, sheet, popover, hover card, tooltip, and toast." },
-  { id: "menus", title: "Menus", description: "Dropdown menu, context menu, and menubar interactions." },
-  { id: "content", title: "Content", description: "Card, table, breadcrumb, marker, aspect ratio, separator, skeleton, and spinner." },
-  { id: "layout", title: "Layout", description: "Resizable panels, collapsible content, and sidebar primitives." },
+  {
+    id: "buttons",
+    title: "Buttons",
+    description: "Button, button group, toggle, and toggle group states.",
+  },
+  {
+    id: "inputs",
+    title: "Inputs",
+    description:
+      "Form fields, labels, input groups, textarea, checkbox, switch, and slider.",
+  },
+  {
+    id: "selection",
+    title: "Selection",
+    description: "Select, calendar, tabs, and command surfaces.",
+  },
+  {
+    id: "overlays",
+    title: "Overlays",
+    description: "Dialog, sheet, popover, hover card, tooltip, and toast.",
+  },
+  {
+    id: "menus",
+    title: "Menus",
+    description: "Dropdown menu, context menu, and menubar interactions.",
+  },
+  {
+    id: "content",
+    title: "Content",
+    description:
+      "Card, table, breadcrumb, marker, aspect ratio, separator, skeleton, and spinner.",
+  },
+  {
+    id: "layout",
+    title: "Layout",
+    description:
+      "Resizable panels, collapsible content, and sidebar primitives.",
+  },
 ] as const;
 
 const buttonVariants = [
@@ -452,7 +471,10 @@ function InputsSection() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mode</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a mode" />
@@ -480,11 +502,19 @@ function InputsSection() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="playground-disabled">Disabled</Label>
-            <Input id="playground-disabled" disabled value="Locked field" readOnly />
+            <Input
+              id="playground-disabled"
+              disabled
+              value="Locked field"
+              readOnly
+            />
           </div>
           <div className="grid gap-2 md:col-span-2">
             <Label htmlFor="playground-note">Note</Label>
-            <Textarea id="playground-note" placeholder="Theme preview copy..." />
+            <Textarea
+              id="playground-note"
+              placeholder="Theme preview copy..."
+            />
           </div>
         </div>
       </DemoPanel>
@@ -537,7 +567,11 @@ function InputsSection() {
               <span>Contrast preview</span>
               <span className="text-muted-foreground">{sliderValue[0]}%</span>
             </div>
-            <Slider value={sliderValue} onValueChange={setSliderValue} max={100} />
+            <Slider
+              value={sliderValue}
+              onValueChange={setSliderValue}
+              max={100}
+            />
           </div>
         </div>
       </DemoPanel>
@@ -588,17 +622,28 @@ function SelectionSection() {
               <TabsTrigger value="tokens">Tokens</TabsTrigger>
               <TabsTrigger value="states">States</TabsTrigger>
             </TabsList>
-            <TabsContent value="preview" className="rounded-md border border-border p-4">
+            <TabsContent
+              value="preview"
+              className="rounded-md border border-border p-4"
+            >
               <p className="text-sm text-muted-foreground">
-                Tab content should use card and muted foreground tokens without extra overrides.
+                Tab content should use card and muted foreground tokens without
+                extra overrides.
               </p>
             </TabsContent>
-            <TabsContent value="tokens" className="rounded-md border border-border p-4">
+            <TabsContent
+              value="tokens"
+              className="rounded-md border border-border p-4"
+            >
               <p className="text-sm text-muted-foreground">
-                Use this area to compare selected, hover, and inactive tab states.
+                Use this area to compare selected, hover, and inactive tab
+                states.
               </p>
             </TabsContent>
-            <TabsContent value="states" className="rounded-md border border-border p-4">
+            <TabsContent
+              value="states"
+              className="rounded-md border border-border p-4"
+            >
               <p className="text-sm text-muted-foreground">
                 Focus rings and active backgrounds should stay legible.
               </p>
@@ -774,7 +819,8 @@ function OverlaysSection() {
               variant="outline"
               onClick={() =>
                 toast.success("Theme toast", {
-                  description: "Sonner uses the same background and border tokens.",
+                  description:
+                    "Sonner uses the same background and border tokens.",
                 })
               }
             >
@@ -823,11 +869,21 @@ function MenusSection() {
               <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuRadioGroup value="standard">
-                  <DropdownMenuRadioItem value="standard">Standard</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="forest">Forest</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="neon">Neon</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="phoenix">Phoenix</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="pearl">Pearl</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="standard">
+                    Standard
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="forest">
+                    Forest
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="neon">
+                    Neon
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="phoenix">
+                    Phoenix
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="pearl">
+                    Pearl
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -855,8 +911,12 @@ function MenusSection() {
               <ContextMenuSubTrigger>Move to</ContextMenuSubTrigger>
               <ContextMenuSubContent>
                 <ContextMenuRadioGroup value="today">
-                  <ContextMenuRadioItem value="today">Today</ContextMenuRadioItem>
-                  <ContextMenuRadioItem value="later">Later</ContextMenuRadioItem>
+                  <ContextMenuRadioItem value="today">
+                    Today
+                  </ContextMenuRadioItem>
+                  <ContextMenuRadioItem value="later">
+                    Later
+                  </ContextMenuRadioItem>
                 </ContextMenuRadioGroup>
               </ContextMenuSubContent>
             </ContextMenuSub>
@@ -891,7 +951,9 @@ function MenusSection() {
               <MenubarCheckboxItem checked>Show sidebar</MenubarCheckboxItem>
               <MenubarRadioGroup value="comfortable">
                 <MenubarRadioItem value="compact">Compact</MenubarRadioItem>
-                <MenubarRadioItem value="comfortable">Comfortable</MenubarRadioItem>
+                <MenubarRadioItem value="comfortable">
+                  Comfortable
+                </MenubarRadioItem>
               </MenubarRadioGroup>
             </MenubarContent>
           </MenubarMenu>
@@ -916,7 +978,9 @@ function ContentSection() {
               Card surfaces should sit cleanly on the page background.
             </CardDescription>
             <CardAction>
-              <Button variant="outline" size="sm">View</Button>
+              <Button variant="outline" size="sm">
+                View
+              </Button>
             </CardAction>
           </CardHeader>
           <CardContent>
@@ -1011,12 +1075,18 @@ function ContentSection() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-            <AspectRatio ratio={16 / 9} className="overflow-hidden rounded-md border border-border bg-muted">
+            <AspectRatio
+              ratio={16 / 9}
+              className="overflow-hidden rounded-md border border-border bg-muted"
+            >
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 16:9 media surface
               </div>
             </AspectRatio>
-            <Separator orientation="vertical" className="hidden h-full md:block" />
+            <Separator
+              orientation="vertical"
+              className="hidden h-full md:block"
+            />
           </div>
         </div>
       </DemoPanel>
@@ -1078,13 +1148,18 @@ function LayoutSection() {
               </div>
             </div>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Toggle collapsible">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Toggle collapsible"
+              >
                 <ChevronDownIcon />
               </Button>
             </CollapsibleTrigger>
           </div>
           <CollapsibleContent className="mt-2 rounded-md border border-border p-3 text-sm text-muted-foreground">
-            Sidebar, chart, and popover tokens can be expanded here as the theme system grows.
+            Sidebar, chart, and popover tokens can be expanded here as the theme
+            system grows.
           </CollapsibleContent>
         </Collapsible>
       </DemoPanel>
@@ -1122,7 +1197,9 @@ function LayoutSection() {
                         </SidebarMenuButton>
                         <SidebarMenuSub>
                           <SidebarMenuSubItem>
-                            <SidebarMenuSubButton>Preferences</SidebarMenuSubButton>
+                            <SidebarMenuSubButton>
+                              Preferences
+                            </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         </SidebarMenuSub>
                       </SidebarMenuItem>
@@ -1176,15 +1253,16 @@ export function ThemeComponentShowcase() {
                   ShadCN Theme Surface
                 </h1>
                 <p className="mt-3 text-muted-foreground">
-                  A scrollable component sheet for tuning globals.css tokens against
-                  every shared UI primitive in the project.
+                  A scrollable component sheet for tuning globals.css tokens
+                  against every shared UI primitive in the project.
                 </p>
               </div>
               <Button
                 variant="outline"
                 onClick={() =>
                   toast.info("Playground ready", {
-                    description: "Use this page while adjusting theme variables.",
+                    description:
+                      "Use this page while adjusting theme variables.",
                   })
                 }
               >

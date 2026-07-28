@@ -1,4 +1,5 @@
 import { useDropzone } from "react-dropzone";
+import { useTranslation } from "react-i18next";
 
 interface DropFileZoneProps {
   accept?: Record<string, string[]>;
@@ -19,12 +20,9 @@ const DropFileZone = ({
   height = "100px",
   className = "",
   onDrop,
-  children = (
-    <p className="text-sm text-muted-foreground">
-      Drop Files or Click Here to Select Uploaded Files
-    </p>
-  ),
+  children,
 }: DropFileZoneProps) => {
+  const { t } = useTranslation();
   const { getRootProps, getInputProps, isDragActive, isDragReject } =
     useDropzone({
       accept,
@@ -49,7 +47,11 @@ const DropFileZone = ({
         } ${className}`}
     >
       <input {...getInputProps()} />
-      {children}
+      {children ?? (
+        <p className="text-sm text-muted-foreground">
+          {t("workspace.accessibility.dropFiles")}
+        </p>
+      )}
     </div>
   );
 };

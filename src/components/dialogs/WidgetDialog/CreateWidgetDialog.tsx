@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
 import { PreviewWidget } from "@/components/widgets/widget";
-import { useEffect } from "react";
 
 interface CreateWidgetDialogProps {
   open: boolean;
@@ -20,6 +21,29 @@ const CreateWidgetDialog = ({
   onOpenChange,
   onCreate,
 }: CreateWidgetDialogProps) => {
+  const { t } = useTranslation();
+  const previewLabels = {
+    clock: {
+      name: t("workspace.widgets.clock"),
+      description: t("workspace.widgets.clockDescription"),
+    },
+    timer: {
+      name: t("workspace.widgets.timer"),
+      description: t("workspace.widgets.timerDescription"),
+    },
+    todo: {
+      name: t("workspace.widgets.todo"),
+      description: t("workspace.widgets.todoDescription"),
+    },
+    calendar: {
+      name: t("workspace.widgets.calendar"),
+      description: t("workspace.widgets.calendarDescription"),
+    },
+    scratchPad: {
+      name: t("workspace.widgets.scratchPad"),
+      description: t("workspace.widgets.scratchPadDescription"),
+    },
+  };
   useEffect(() => {
     if (open || typeof document === "undefined") return;
     const timerId = window.setTimeout(() => {
@@ -40,25 +64,27 @@ const CreateWidgetDialog = ({
         "
       >
         <DialogHeader>
-          <DialogTitle>Add New Widgets</DialogTitle>
+          <DialogTitle>{t("workspace.widgets.addNew")}</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Preview the widgets and choose one to add it to your dashboard. You
-          can also visit the community to find more third party widgets which
-          are created by other users or even create widgets on your own.
+          {t("workspace.widgets.addDescription")}
         </DialogDescription>
-        <div className="w-full font-bold mb-2">Basic</div>
+        <div className="w-full font-bold mb-2">
+          {t("workspace.widgets.basic")}
+        </div>
         <div className="w-full flex-1 flex flex-col gap-3 overflow-y-auto max-h-[60vh] md:max-h-[70vh]">
-          {Object.values(BasicPreviewWidgets).map((previewWidget, index) => (
+          {Object.entries(BasicPreviewWidgets).map(([key, previewWidget]) => (
             <div
-              key={index}
+              key={key}
               className="w-full flex items-center justify-between rounded-lg border border-border bg-muted hover:bg-accent transition p-4 cursor-pointer"
               onClick={() => onCreate(previewWidget)}
             >
               <div className="flex-1 text-left pr-4">
-                <div className="font-bold text-lg">{previewWidget.name}</div>
+                <div className="font-bold text-lg">
+                  {previewLabels[key as keyof typeof previewLabels].name}
+                </div>
                 <div className="font-normal text-sm text-muted-foreground mt-1">
-                  {previewWidget.description}
+                  {previewLabels[key as keyof typeof previewLabels].description}
                 </div>
               </div>
               <div

@@ -13,6 +13,7 @@ import { WidgetProps } from "@widgets/widget";
 import type { UUID } from "crypto";
 import { CheckIcon, GripVertical, LinkIcon, Plus, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { VerticalDNDable } from "@/components/commons/DNDable/VerticalDNDable";
 import DebouncedInput from "@/components/inputs/DebouncedInput";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ const TodoWidget = ({
   setData: setRawData,
   sync,
 }: WidgetProps) => {
+  const { t } = useTranslation();
   const [setting, setSetting] = useAnyTypeState<TodoSetting>(
     [rawSetting, setRawSetting],
     getDefaultTodoSetting()
@@ -122,7 +124,7 @@ const TodoWidget = ({
             <DebouncedInput
               className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/50 focus-visible:ring-1 px-2 h-auto py-1"
               style={{ fontSize: `${setting.titleFontSize}px` }}
-              placeholder="Enter a Todo Title"
+              placeholder={t("workspace.widgets.todoTitlePlaceholder")}
               value={data.title}
               onValueChange={newTitle => {
                 setData(prev => ({ ...prev, title: newTitle }));
@@ -147,7 +149,7 @@ const TodoWidget = ({
             className="flex-1 w-full font-bold border-none shadow-none bg-transparent hover:bg-muted/30 px-2 rounded transition cursor-text select-text"
             onClick={() => setShowTitleInput(true)}
           >
-            {data.title}
+            {data.title || t("workspace.widgets.todo")}
           </h3>
         )}
       </div>
@@ -192,7 +194,7 @@ const TodoWidget = ({
                     fontSize: `${setting.itemFontSize}px`,
                     height: `${setting.itemHeight}px`,
                   }}
-                  placeholder="Task description..."
+                  placeholder={t("workspace.widgets.taskDescription")}
                   value={todo.text}
                   onValueChange={newText => update(todo.id, "text", newText)}
                 />
@@ -216,10 +218,12 @@ const TodoWidget = ({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-72" align="end" sideOffset={6}>
-                    <label className="text-sm font-medium">Attach Link</label>
+                    <label className="text-sm font-medium">
+                      {t("workspace.widgets.attachLink")}
+                    </label>
                     <div className="flex gap-2 mt-2">
                       <Input
-                        placeholder="place an url, ex. https://..."
+                        placeholder={t("workspace.widgets.urlPlaceholder")}
                         value={todo.link || ""}
                         onChange={e => update(todo.id, "link", e.target.value)}
                         className="h-8 text-xs"
@@ -231,7 +235,7 @@ const TodoWidget = ({
                           className="h-8"
                           onClick={() => window.open(todo.link, "_blank")}
                         >
-                          Go
+                          {t("workspace.widgets.go")}
                         </Button>
                       )}
                     </div>
@@ -267,7 +271,9 @@ const TodoWidget = ({
           onClick={add}
         >
           <Plus className="mr-1 shrink-0" />
-          <span className="lg:text-sm sm:text-xs">Add New Item</span>
+          <span className="lg:text-sm sm:text-xs">
+            {t("workspace.widgets.addNewItem")}
+          </span>
         </Button>
         {hasChanged && (
           <Button
@@ -280,7 +286,9 @@ const TodoWidget = ({
             }}
           >
             <CheckIcon className="mr-1 shrink-0" />
-            <span className="lg:text-sm sm:text-xs">Save changes</span>
+            <span className="lg:text-sm sm:text-xs">
+              {t("workspace.widgets.saveChanges")}
+            </span>
           </Button>
         )}
       </div>

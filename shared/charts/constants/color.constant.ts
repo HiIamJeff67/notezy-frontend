@@ -9,4 +9,3 @@ export const DEFAULT_CHART_COLORS = [
 export function getChartColor(index: number, override?: string) {
   return override ?? DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length];
 }
-

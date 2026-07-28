@@ -12,7 +12,6 @@ import {
   UpdateMyAccountResponse,
 } from "@shared/api/interfaces/userAccount.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -40,7 +39,7 @@ export const GetMyAccount = createServerFn({ method: "GET" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetMyAccountResponse;
@@ -81,7 +80,7 @@ export const UpdateMyAccount = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -122,7 +121,7 @@ export const BindGoogleAccount = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -163,7 +162,7 @@ export const UnbindGoogleAccount = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =

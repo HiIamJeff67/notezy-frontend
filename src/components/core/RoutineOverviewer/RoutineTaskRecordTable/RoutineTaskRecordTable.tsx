@@ -12,6 +12,7 @@ import {
 import type { UUID } from "crypto";
 import { HistoryIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import {
   Select,
@@ -29,6 +30,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStationRoutine } from "@/hooks";
+import {
+  translateRoutineTaskPurpose,
+  translateRoutineTaskRecordStatus,
+} from "@/i18n/workspace";
 
 type RoutineTaskRecordRow = {
   id: UUID;
@@ -49,6 +54,7 @@ const RoutineTaskRecordTable = ({
 }: {
   routineTaskIds?: UUID[];
 }) => {
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const [executeSearch, recordSearch] = useSearchRoutineTaskRecordsLazyQuery({
     fetchPolicy: "cache-and-network",
@@ -191,7 +197,7 @@ const RoutineTaskRecordTable = ({
         <div className="flex min-w-0 items-center gap-2">
           <HistoryIcon className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium @max-[520px]:sr-only">
-            Routine Task Record Table
+            {t("workspace.table.routineTaskRecordTable")}
           </span>
           <span className="text-xs tabular-nums text-muted-foreground">
             {filteredRecords.length}
@@ -213,10 +219,12 @@ const RoutineTaskRecordTable = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All status</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allStatus")}
+              </SelectItem>
               {AllRoutineTaskRecordStatuses.map(recordStatus => (
                 <SelectItem key={recordStatus} value={recordStatus}>
-                  {recordStatus}
+                  {translateRoutineTaskRecordStatus(recordStatus, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -234,10 +242,12 @@ const RoutineTaskRecordTable = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All purpose</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allPurpose")}
+              </SelectItem>
               {AllRoutineTaskPurposes.map(taskPurpose => (
                 <SelectItem key={taskPurpose} value={taskPurpose}>
-                  {taskPurpose}
+                  {translateRoutineTaskPurpose(taskPurpose, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -245,13 +255,13 @@ const RoutineTaskRecordTable = ({
           <DatePicker
             value={scheduledAfter}
             onValueChange={setScheduledAfter}
-            placeholder="Scheduled after"
+            placeholder={t("workspace.table.scheduledAfter")}
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
-            placeholder="Scheduled before"
+            placeholder={t("workspace.table.scheduledBefore")}
             className="h-8 w-40 min-w-0 text-xs @max-[1040px]:w-full @max-[520px]:justify-center @max-[520px]:px-0 @max-[520px]:[&_span]:hidden"
           />
         </div>
@@ -268,15 +278,27 @@ const RoutineTaskRecordTable = ({
         <Table className="table-fixed text-xs">
           <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
             <TableRow>
-              <TableHead className="h-9 w-[18%] px-2">Task</TableHead>
-              <TableHead className="h-9 w-[14%] px-2">Status</TableHead>
-              <TableHead className="h-9 w-[16%] px-2">Purpose</TableHead>
-              <TableHead className="h-9 w-[15%] px-2">Scheduled</TableHead>
-              <TableHead className="h-9 w-[15%] px-2">Ended</TableHead>
-              <TableHead className="h-9 w-[10%] px-2">
-                Cost
+              <TableHead className="h-9 w-[18%] px-2">
+                {t("workspace.table.task")}
               </TableHead>
-              <TableHead className="h-9 w-[12%] px-2">Error</TableHead>
+              <TableHead className="h-9 w-[14%] px-2">
+                {t("workspace.table.status")}
+              </TableHead>
+              <TableHead className="h-9 w-[16%] px-2">
+                {t("workspace.table.purpose")}
+              </TableHead>
+              <TableHead className="h-9 w-[15%] px-2">
+                {t("workspace.table.scheduled")}
+              </TableHead>
+              <TableHead className="h-9 w-[15%] px-2">
+                {t("workspace.table.ended")}
+              </TableHead>
+              <TableHead className="h-9 w-[10%] px-2">
+                {t("workspace.table.cost")}
+              </TableHead>
+              <TableHead className="h-9 w-[12%] px-2">
+                {t("workspace.table.error")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -291,22 +313,30 @@ const RoutineTaskRecordTable = ({
                       {task?.title ?? record.routineTaskId}
                     </span>
                   </TableCell>
-                  <TableCell className="px-2 py-2.5">{record.status}</TableCell>
                   <TableCell className="px-2 py-2.5">
-                    <span className="line-clamp-2">{record.purpose}</span>
+                    {translateRoutineTaskRecordStatus(record.status, t)}
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
-                    {record.scheduledAt.toLocaleString()}
+                    <span className="line-clamp-2">
+                      {translateRoutineTaskPurpose(record.purpose, t)}
+                    </span>
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
-                    {record.actualEndedAt?.toLocaleString() ?? "None"}
+                    {record.scheduledAt.toLocaleString(i18n.resolvedLanguage)}
+                  </TableCell>
+                  <TableCell className="px-2 py-2.5">
+                    {record.actualEndedAt?.toLocaleString(
+                      i18n.resolvedLanguage
+                    ) ?? t("workspace.period.none")}
                   </TableCell>
                   <TableCell className="px-2 py-2.5 tabular-nums">
                     {record.costUnit}
                   </TableCell>
                   <TableCell className="px-2 py-2.5">
                     <span className="line-clamp-2">
-                      {record.errorCode ?? record.errorReason ?? "None"}
+                      {record.errorCode ??
+                        record.errorReason ??
+                        t("workspace.period.none")}
                     </span>
                   </TableCell>
                 </TableRow>
@@ -319,8 +349,8 @@ const RoutineTaskRecordTable = ({
                   className="h-28 text-center text-sm text-muted-foreground"
                 >
                   {isSearching
-                    ? "Loading routine task records..."
-                    : "No routine task records match the current filters."}
+                    ? t("workspace.records.loading")
+                    : t("workspace.records.noMatches")}
                 </TableCell>
               </TableRow>
             )}

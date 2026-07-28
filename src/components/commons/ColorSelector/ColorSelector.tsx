@@ -11,13 +11,15 @@ import {
   XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useLanguage, useUser } from "@/hooks";
+import { useUser } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import Closeable from "../Closeable/Closeable";
 import ColorPicker from "../ColorPicker/ColorPicker";
 
@@ -37,7 +39,7 @@ const ColorSelector = ({
   className,
 }: ColorSelectorProps) => {
   const userManager = useUser();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -87,13 +89,13 @@ const ColorSelector = ({
           );
           forceUpdate();
         } catch (error) {
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }
     };
 
     initializeColors();
-  }, [userManager.userData, languageManager, forceUpdate]);
+  }, [userManager.userData, t, forceUpdate]);
 
   const syncColors = useCallback(
     (syncColors?: string[]) => {
@@ -162,7 +164,7 @@ const ColorSelector = ({
           size="icon"
           disabled={disabled}
           className="size-10 shrink-0 rounded-sm"
-          aria-label="Select color"
+          aria-label={t("workspace.accessibility.selectColor")}
         >
           {value ? (
             <span
@@ -199,7 +201,9 @@ const ColorSelector = ({
                   variant="ghost"
                   size="icon"
                   className="relative size-8 shrink-0 rounded-sm p-1"
-                  aria-label={`Select ${color}`}
+                  aria-label={t("workspace.accessibility.selectNamedColor", {
+                    color,
+                  })}
                   onClick={() => {
                     onValueChange(color);
                     setIsOpen(false);
@@ -232,7 +236,7 @@ const ColorSelector = ({
             />
             <span className="flex min-w-0 flex-1 flex-col items-start">
               <span className="text-xs font-medium text-foreground">
-                Custom color
+                {t("workspace.accessibility.customColor")}
               </span>
               <span className="font-mono text-xs font-normal text-muted-foreground">
                 {customColor.toUpperCase()}
@@ -265,7 +269,7 @@ const ColorSelector = ({
                   }}
                 >
                   <XIcon />
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -279,7 +283,7 @@ const ColorSelector = ({
                   }}
                 >
                   <CheckIcon />
-                  Add
+                  {t("workspace.viewer.add")}
                 </Button>
               </div>
             </div>

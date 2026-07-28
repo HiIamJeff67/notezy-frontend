@@ -2,6 +2,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@shared/util/utils";
 import { CalendarIcon } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -24,12 +25,15 @@ interface DatePickerProps {
 const DatePicker = ({
   value,
   onValueChange,
-  placeholder = "Select date and time",
+  placeholder,
   disabled,
   isInvalid = false,
   className,
   contentClassName,
 }: DatePickerProps) => {
+  const { i18n, t } = useTranslation();
+  const displayPlaceholder =
+    placeholder ?? t("workspace.accessibility.selectDateTime");
   const triggerRef = useRef<HTMLButtonElement>(null);
   const hourWheelRef = useRef<HTMLDivElement>(null);
   const minuteWheelRef = useRef<HTMLDivElement>(null);
@@ -100,12 +104,15 @@ const DatePicker = ({
               <CalendarIcon className="size-4 shrink-0" />
               <span className="truncate">
                 {value
-                  ? `${value.toDateString()} at ${value.toLocaleTimeString([], {
+                  ? value.toLocaleString(i18n.resolvedLanguage, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: hourCycle === "12",
-                    })}`
-                  : placeholder}
+                    })
+                  : displayPlaceholder}
               </span>
             </Button>
           </PopoverPrimitive.Trigger>
@@ -118,11 +125,13 @@ const DatePicker = ({
             <CalendarIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <p className="text-sm font-medium">
-                {value ? value.toLocaleDateString() : placeholder}
+                {value
+                  ? value.toLocaleDateString(i18n.resolvedLanguage)
+                  : displayPlaceholder}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {value
-                  ? value.toLocaleString([], {
+                  ? value.toLocaleString(i18n.resolvedLanguage, {
                       weekday: "long",
                       year: "numeric",
                       month: "long",
@@ -131,7 +140,7 @@ const DatePicker = ({
                       minute: "2-digit",
                       hour12: hourCycle === "12",
                     })
-                  : "No date and time selected"}
+                  : t("workspace.accessibility.noDateTimeSelected")}
               </p>
             </div>
           </div>
@@ -168,7 +177,7 @@ const DatePicker = ({
           />
           <div className="flex items-center justify-between border-t border-b px-2 py-1.5">
             <span className="text-xs font-medium text-muted-foreground">
-              Time
+              {t("workspace.accessibility.time")}
             </span>
             <ToggleGroup
               type="single"
@@ -184,14 +193,14 @@ const DatePicker = ({
             >
               <ToggleGroupItem
                 value="12"
-                aria-label="Use 12-hour time"
+                aria-label={t("workspace.accessibility.use12HourTime")}
                 className="h-7 rounded-r-none px-2 text-[11px]"
               >
                 12H
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="24"
-                aria-label="Use 24-hour time"
+                aria-label={t("workspace.accessibility.use24HourTime")}
                 className="h-7 rounded-l-none border-l-0 px-2 text-[11px]"
               >
                 24H
@@ -201,7 +210,7 @@ const DatePicker = ({
           <div className="flex">
             <div className="flex min-w-0 flex-1 flex-col border-r">
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                Hour
+                {t("workspace.accessibility.hour")}
               </span>
               <div className="relative h-32 overflow-hidden">
                 <div
@@ -301,7 +310,7 @@ const DatePicker = ({
               )}
             >
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                Minute
+                {t("workspace.accessibility.minute")}
               </span>
               <div className="relative h-32 overflow-hidden">
                 <div
@@ -379,7 +388,7 @@ const DatePicker = ({
             {hourCycle === "12" && (
               <div className="flex w-14 flex-col">
                 <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                  Period
+                  {t("workspace.accessibility.period")}
                 </span>
                 <div className="flex flex-1 flex-col justify-center gap-1 p-2">
                   <Button
@@ -404,7 +413,7 @@ const DatePicker = ({
                     }}
                     className="h-7 rounded-sm px-2 text-xs"
                   >
-                    AM
+                    {t("workspace.accessibility.am")}
                   </Button>
                   <Button
                     type="button"
@@ -428,7 +437,7 @@ const DatePicker = ({
                     }}
                     className="h-7 rounded-sm px-2 text-xs"
                   >
-                    PM
+                    {t("workspace.accessibility.pm")}
                   </Button>
                 </div>
               </div>

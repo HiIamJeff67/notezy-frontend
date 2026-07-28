@@ -1,5 +1,6 @@
 import { ScratchPadSetting } from "@widgets/basic/ScratchPadWidget/setting/scratchPadSetting";
 import { Dispatch, lazy, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
@@ -23,12 +24,16 @@ const EditScratchPadWidgetDialog = ({
   setting,
   setSetting,
 }: EditScratchPadWidgetDialogProps) => {
+  const { t } = useTranslation();
   return (
     <EditWidgetDialog open={open} onOpenChange={onOpenChange}>
       <DeferredSuspense
         trigger={open}
         fallback={
-          <EditWidgetDialogContentSkeleton title="編輯草稿本" count={1} />
+          <EditWidgetDialogContentSkeleton
+            title={t("workspace.widgets.editScratchPad")}
+            count={1}
+          />
         }
         fallbackDelayMs={100}
       >

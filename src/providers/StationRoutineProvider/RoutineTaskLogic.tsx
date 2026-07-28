@@ -28,6 +28,7 @@ import type { StationNode } from "@shared/types/stationNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { type RefObject, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface UseRoutineTaskLogicProps {
   stationsRef: RefObject<LRUCache<UUID, StationNode>>;
@@ -38,6 +39,7 @@ export const useRoutineTaskLogic = ({
   stationsRef,
   forceUpdate,
 }: UseRoutineTaskLogicProps) => {
+  const { t } = useTranslation();
   const createRoutineTaskMutator = useCreateRoutineTaskByRoutineId();
   const getAllRoutineTasksByRoutineIdsQuerier =
     useGetAllMyRoutineTasksByRoutineIds();
@@ -180,9 +182,7 @@ export const useRoutineTaskLogic = ({
         };
       }
       if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        toast.error(
-          "You're only available to see routine tasks when you're online."
-        );
+        toast.error(t("workspace.notifications.routineTasksOnlineOnly"));
         return {
           hasNextPage: false,
           endEncodedSearchCursor: null,
@@ -335,7 +335,7 @@ export const useRoutineTaskLogic = ({
             .endEncodedSearchCursor ?? null,
       };
     },
-    [executeSearch, forceUpdate, stationsRef]
+    [executeSearch, forceUpdate, stationsRef, t]
   );
 
   const loadMoreRoutineTaskCandidates = useCallback(async (): Promise<void> => {

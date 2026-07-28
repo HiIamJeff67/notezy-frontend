@@ -8,6 +8,7 @@ import {
 } from "@shared/api/graphql/generated/graphql";
 import { SearchIcon, Trash2Icon } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   BlockPackIcon,
   MaterialIcon,
@@ -45,12 +46,12 @@ type TrashSearchData = {
 };
 
 const typeMetadata = {
-  rootShelf: { icon: RootShelfIcon, label: "Root shelf" },
-  subShelf: { icon: SubShelfIcon, label: "Sub shelf" },
-  material: { icon: MaterialIcon, label: "Material" },
-  blockPack: { icon: BlockPackIcon, label: "Block pack" },
-  station: { icon: StationIcon, label: "Station" },
-  routine: { icon: RoutineIcon, label: "Routine" },
+  rootShelf: { icon: RootShelfIcon, labelKey: "rootShelf" },
+  subShelf: { icon: SubShelfIcon, labelKey: "subShelf" },
+  material: { icon: MaterialIcon, labelKey: "material" },
+  blockPack: { icon: BlockPackIcon, labelKey: "blockPack" },
+  station: { icon: StationIcon, labelKey: "station" },
+  routine: { icon: RoutineIcon, labelKey: "routine" },
 } as const;
 
 const TrashPage = ({
@@ -62,6 +63,7 @@ const TrashPage = ({
   searchData: TrashSearchData;
   onQueryChange: (query: string) => void;
 }) => {
+  const { i18n, t } = useTranslation();
   const [query, setQuery] = useState(initialQuery);
   const [selectedType, setSelectedType] = useState<TrashItemType | "all">(
     "all"
@@ -123,13 +125,15 @@ const TrashPage = ({
           <div className="flex items-center gap-3 text-muted-foreground">
             <Trash2Icon className="size-5" />
             <span className="font-mono text-xs uppercase tracking-[0.16em]">
-              Workspace
+              {t("workspace.trash.eyebrow")}
             </span>
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">垃圾桶</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {t("workspace.trash.title")}
+            </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              查看已軟刪除的資料。還原與永久清除操作會在後端行為確認後加入。
+              {t("workspace.trash.description")}
             </p>
           </div>
         </header>
@@ -139,7 +143,7 @@ const TrashPage = ({
           <Input
             value={query}
             onChange={event => setQuery(event.target.value)}
-            placeholder="搜尋垃圾桶中的資料"
+            placeholder={t("workspace.trash.searchPlaceholder")}
             className="pl-9"
           />
         </div>
@@ -153,15 +157,17 @@ const TrashPage = ({
             }}
             className="w-max min-w-full justify-start"
           >
-            {[
-              ["all", "全部"],
-              ["rootShelf", "Root shelves"],
-              ["subShelf", "Sub shelves"],
-              ["material", "Materials"],
-              ["blockPack", "Block packs"],
-              ["station", "Stations"],
-              ["routine", "Routines"],
-            ].map(([value, label]) => (
+            {(
+              [
+                ["all", "all"],
+                ["rootShelf", "rootShelves"],
+                ["subShelf", "subShelves"],
+                ["material", "materials"],
+                ["blockPack", "blockPacks"],
+                ["station", "stations"],
+                ["routine", "routines"],
+              ] as const
+            ).map(([value, labelKey]) => (
               <ToggleGroupItem
                 key={value}
                 value={value}
@@ -169,7 +175,7 @@ const TrashPage = ({
                 size="sm"
                 className="h-8 flex-none rounded-sm px-3 text-xs data-[state=on]:bg-accent data-[state=on]:text-accent-foreground border-none"
               >
-                {label}
+                {t(`workspace.trash.${labelKey}` as never)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -179,9 +185,11 @@ const TrashPage = ({
           {visibleEntries.length === 0 ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-2 text-center">
               <Trash2Icon className="size-6 text-muted-foreground" />
-              <p className="text-sm font-medium">垃圾桶是空的</p>
+              <p className="text-sm font-medium">
+                {t("workspace.trash.emptyTitle")}
+              </p>
               <p className="text-sm text-muted-foreground">
-                沒有符合目前搜尋與類型篩選的已刪除資料。
+                {t("workspace.trash.emptyDescription")}
               </p>
             </div>
           ) : (
@@ -199,13 +207,19 @@ const TrashPage = ({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">
-                      {entry.name ?? entry.title ?? "Untitled"}
+                      {entry.name ??
+                        entry.title ??
+                        t("workspace.trash.untitled")}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {metadata.label} · 已刪除於{" "}
+                      {t(`workspace.trash.${metadata.labelKey}` as never)} ·{" "}
                       {entry.deletedAt
-                        ? new Date(entry.deletedAt).toLocaleString()
-                        : "未知時間"}
+                        ? t("workspace.trash.deletedAt", {
+                            date: new Date(entry.deletedAt).toLocaleString(
+                              i18n.resolvedLanguage
+                            ),
+                          })
+                        : t("workspace.trash.unknownTime")}
                     </p>
                   </div>
                 </div>

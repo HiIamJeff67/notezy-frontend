@@ -5,7 +5,6 @@ export * from "./useBackgroundImages";
 export * from "./useBlockEditor";
 export * from "./useDebounce";
 export * from "./useDeferredMount";
-export * from "./useLanguage";
 export * from "./useLoading";
 export * from "./useMobile";
 export * from "./useModal";

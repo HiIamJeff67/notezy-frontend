@@ -1,4 +1,5 @@
 import { cn } from "@shared/util/utils";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface WeekdayPickerProps {
@@ -15,16 +16,17 @@ const WeekdayPicker = ({
   onValueChange,
   className,
 }: WeekdayPickerProps) => {
+  const { t } = useTranslation();
   return (
     <div className={cn("flex flex-wrap gap-1.5", className)}>
       {[
-        { value: 1, label: "Mon" },
-        { value: 2, label: "Tue" },
-        { value: 3, label: "Wed" },
-        { value: 4, label: "Thu" },
-        { value: 5, label: "Fri" },
-        { value: 6, label: "Sat" },
-        { value: 7, label: "Sun" },
+        { value: 1, label: t("workspace.accessibility.monday") },
+        { value: 2, label: t("workspace.accessibility.tuesday") },
+        { value: 3, label: t("workspace.accessibility.wednesday") },
+        { value: 4, label: t("workspace.accessibility.thursday") },
+        { value: 5, label: t("workspace.accessibility.friday") },
+        { value: 6, label: t("workspace.accessibility.saturday") },
+        { value: 7, label: t("workspace.accessibility.sunday") },
       ].map(weekday => {
         const isSelected =
           weekday.value >= value.start && weekday.value <= value.end;

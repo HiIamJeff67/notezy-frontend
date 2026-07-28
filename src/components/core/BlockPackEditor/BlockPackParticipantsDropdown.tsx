@@ -14,6 +14,7 @@ import toast from "@shared/lib/toast";
 import { cn } from "@shared/util/utils";
 import { Plus, UserPlusIcon, UsersIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import AddShelfCollaboratorDialog, {
   type ShelfCollaboratorPermission,
 } from "@/components/dialogs/ShelfSharingDialog/AddShelfCollaboratorDialog";
@@ -37,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRealtime } from "@/hooks/useRealtime";
 import { useUser } from "@/hooks/useUser";
+import { translateError } from "@/i18n/error";
 
 interface BlockPackParticipantsDropdownProps {
   blockPackId: UUID;
@@ -55,6 +57,7 @@ const BlockPackParticipantsDropdown = ({
   rootShelfId,
   isEditorReady,
 }: BlockPackParticipantsDropdownProps) => {
+  const { t } = useTranslation();
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -107,7 +110,7 @@ const BlockPackParticipantsDropdown = ({
       const displayName =
         typeof user.name === "string" && user.name.trim()
           ? user.name
-          : "Participant";
+          : t("workspace.viewer.participant");
       const previous = map.get(user.publicId);
       map.set(user.publicId, {
         userPublicId: user.publicId,
@@ -118,7 +121,7 @@ const BlockPackParticipantsDropdown = ({
     }
 
     return map;
-  }, [awarenessVersion, realtimeChannel?.provider]);
+  }, [awarenessVersion, realtimeChannel?.provider, t]);
   const displayedParticipants = useMemo(
     () =>
       Array.from(awarenessUsersByPublicId.values()).filter(
@@ -211,7 +214,8 @@ const BlockPackParticipantsDropdown = ({
       rows.set(userPublicId, {
         userPublicId,
         displayName:
-          publicUsersByPublicId.get(userPublicId)?.displayName ?? "Sharer",
+          publicUsersByPublicId.get(userPublicId)?.displayName ??
+          t("workspace.viewer.sharer"),
         avatarURL:
           (
             publicUsersByPublicId.get(userPublicId)
@@ -235,7 +239,7 @@ const BlockPackParticipantsDropdown = ({
           publicUser?.displayName ??
           participant.displayName ??
           participant.name ??
-          "Participant",
+          t("workspace.viewer.participant"),
         avatarURL:
           (
             publicUser?.info as unknown as FragmentedBasicPublicUserInfoFragment | null
@@ -274,6 +278,7 @@ const BlockPackParticipantsDropdown = ({
     publicUsersByPublicId,
     removedUserPublicIds,
     rootShelf,
+    t,
   ]);
   const selectableUserPublicIds = useMemo(
     () =>
@@ -346,7 +351,7 @@ const BlockPackParticipantsDropdown = ({
       return;
 
     if (userPublicId.trim() === currentUserPublicId) {
-      toast.error("You cannot edit your own sharing permission");
+      toast.error(t("workspace.notifications.cannotEditOwnSharingPermission"));
       return;
     }
 
@@ -368,7 +373,7 @@ const BlockPackParticipantsDropdown = ({
         next.delete(response.data.userPublicId);
         return next;
       });
-      toast.success("Sharing permission updated");
+      toast.success(t("workspace.notifications.sharingPermissionUpdated"));
       setUserPublicId("");
       setPermission(AccessControlPermission.Read);
       setIsAddOpen(false);
@@ -377,7 +382,7 @@ const BlockPackParticipantsDropdown = ({
         variables: { input: { query: "", first: 64 } },
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -408,13 +413,13 @@ const BlockPackParticipantsDropdown = ({
         }
         return next;
       });
-      toast.success("Sharing permissions deleted");
+      toast.success(t("workspace.notifications.sharingPermissionsDeleted"));
       setSelectedUserPublicIds(new Set());
       searchRootShelves({
         variables: { input: { query: "", first: 64 } },
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -429,7 +434,7 @@ const BlockPackParticipantsDropdown = ({
           <Button
             variant="ghost"
             className="h-10 min-w-11 px-2 hover:bg-transparent"
-            aria-label="Open collaborators"
+            aria-label={t("workspace.viewer.openCollaborators")}
           >
             <AvatarGroup className="-space-x-2.5">
               {displayedParticipants
@@ -492,15 +497,17 @@ const BlockPackParticipantsDropdown = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-80 p-2">
           <div className="px-2 py-1.5">
-            <p className="text-sm font-medium">Participants</p>
+            <p className="text-sm font-medium">
+              {t("workspace.viewer.participants")}
+            </p>
             <p className="text-xs text-muted-foreground">
-              Active users in this BlockPack room
+              {t("workspace.viewer.activeUsers")}
             </p>
           </div>
           <div className="max-h-72 overflow-y-auto py-1">
             {displayedParticipants.length === 0 ? (
               <div className="px-2 py-6 text-sm text-muted-foreground">
-                No active participants yet.
+                {t("workspace.viewer.noActiveParticipants")}
               </div>
             ) : (
               displayedParticipants.map(participant => {
@@ -570,7 +577,13 @@ const BlockPackParticipantsDropdown = ({
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                        {participantPermission}
+                        {participantPermission === "owner"
+                          ? t("workspace.viewer.owner")
+                          : participantPermission === "admin"
+                            ? t("workspace.viewer.admin")
+                            : participantPermission === "write"
+                              ? t("workspace.viewer.write")
+                              : t("workspace.viewer.read")}
                       </span>
                     </div>
                   </div>
@@ -589,7 +602,7 @@ const BlockPackParticipantsDropdown = ({
               }}
             >
               <UsersIcon className="size-4" />
-              Overview
+              {t("workspace.viewer.overview")}
             </Button>
             <Button
               className="w-full justify-start"
@@ -603,7 +616,7 @@ const BlockPackParticipantsDropdown = ({
               }}
             >
               <UserPlusIcon className="size-4" />
-              Add by public ID
+              {t("workspace.viewer.addByPublicId")}
             </Button>
           </div>
         </DropdownMenuContent>

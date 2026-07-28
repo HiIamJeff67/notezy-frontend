@@ -1,5 +1,6 @@
 import { cn } from "@shared/util/utils";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalPreferences } from "@/hooks/localPreferences";
 
 interface HoverDetailCardProps {
@@ -20,15 +21,18 @@ const HoverDetailCard = ({
   rows,
   className,
 }: HoverDetailCardProps) => {
+  const { t } = useTranslation();
   const { preferences } = useLocalPreferences();
 
   if (preferences.privatePreviews) {
     return (
       <div className={cn("flex min-w-0 flex-col", className)}>
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium">Private preview</div>
+          <div className="truncate text-sm font-medium">
+            {t("workspace.accessibility.privatePreview")}
+          </div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">
-            Turn off private previews to show full details.
+            {t("workspace.accessibility.privatePreviewDescription")}
           </div>
         </div>
       </div>

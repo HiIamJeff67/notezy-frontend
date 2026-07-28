@@ -8,6 +8,7 @@ import {
   convertBlocksToPDF,
   convertBlocksToPlainText,
 } from "@shared/util/convertBlocksToFiles";
+import { useTranslation } from "react-i18next";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import TruncatedText from "@/components/commons/TruncatedText/TruncatedText";
 import BlockPackParticipantsDropdown from "@/components/core/BlockPackEditor/BlockPackParticipantsDropdown";
@@ -29,8 +30,9 @@ import {
 } from "@/components/ui/menubar";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useShelfItem } from "@/hooks";
+import { useShelfItem } from "@/hooks";
 import { useBlockEditor } from "@/hooks/useBlockEditor";
+import { translateError } from "@/i18n/error";
 // @ts-ignore allow side-effect import of BlockNote
 import "@blocknote/core/style.css";
 import { BlockNoteView } from "@blocknote/shadcn";
@@ -54,7 +56,7 @@ interface BlockPackEditorContentProps {
 const BlockPackEditorContent = ({
   blockPackMeta,
 }: BlockPackEditorContentProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const sidebarManager = useSidebar();
   const shelfItemManager = useShelfItem();
   const { preferences } = useLocalPreferences();
@@ -83,9 +85,9 @@ const BlockPackEditorContent = ({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Copied");
+      toast.success(t("workspace.notifications.copied"));
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -119,9 +121,11 @@ const BlockPackEditorContent = ({
 
         editor.replaceBlocks([editor.document[0]?.id], blocks);
 
-        toast.success(`Imported ${file.name}`);
+        toast.success(
+          t("workspace.notifications.fileImported", { name: file.name })
+        );
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     });
   };
@@ -169,27 +173,22 @@ const BlockPackEditorContent = ({
         a.click();
         URL.revokeObjectURL(url);
 
-        toast.success(`Exported`);
+        toast.success(t("workspace.notifications.exported"));
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     });
   };
 
   const handleResync = async () => {
-    if (
-      !window.confirm(
-        "Resync this document? Unsynced local changes will be discarded."
-      )
-    )
-      return;
+    if (!window.confirm(t("workspace.viewer.resyncConfirm"))) return;
 
     setIsResyncing(true);
     try {
       await resync();
-      toast.success("Reconnecting to the latest document...");
+      toast.success(t("workspace.notifications.reconnecting"));
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     } finally {
       setIsResyncing(false);
     }
@@ -222,7 +221,9 @@ const BlockPackEditorContent = ({
                 }}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Id</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.id")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {blockPackMeta.id}
                 </TruncatedText>
@@ -231,7 +232,9 @@ const BlockPackEditorContent = ({
                 onClick={() => copyToClipboard(blockPackMeta.name)}
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Name</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.name")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {blockPackMeta.name}
                 </TruncatedText>
@@ -242,7 +245,9 @@ const BlockPackEditorContent = ({
                 }
                 className="hover:cursor-pointer"
               >
-                <span className="font-semibold">Block Count</span>
+                <span className="font-semibold">
+                  {t("workspace.viewer.blockCount")}
+                </span>
                 <TruncatedText width="200px" className="text-muted-foreground">
                   {blockPackMeta.blockCount}
                 </TruncatedText>
@@ -251,13 +256,21 @@ const BlockPackEditorContent = ({
                 <DropdownMenuItem
                   onClick={() => {
                     if (blockPackMeta.updatedAt)
-                      copyToClipboard(blockPackMeta.updatedAt.toLocaleString());
+                      copyToClipboard(
+                        blockPackMeta.updatedAt.toLocaleString(
+                          i18n.resolvedLanguage
+                        )
+                      );
                   }}
                   className="hover:cursor-pointer"
                 >
-                  <span className="font-semibold">Updated At</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.updatedAt")}
+                  </span>
                   <span className="text-muted-foreground">
-                    {blockPackMeta.updatedAt.toLocaleString()}
+                    {blockPackMeta.updatedAt.toLocaleString(
+                      i18n.resolvedLanguage
+                    )}
                   </span>
                 </DropdownMenuItem>
               )}
@@ -265,13 +278,21 @@ const BlockPackEditorContent = ({
                 <DropdownMenuItem
                   onClick={() => {
                     if (blockPackMeta.createdAt)
-                      copyToClipboard(blockPackMeta.createdAt.toLocaleString());
+                      copyToClipboard(
+                        blockPackMeta.createdAt.toLocaleString(
+                          i18n.resolvedLanguage
+                        )
+                      );
                   }}
                   className="hover:cursor-pointer"
                 >
-                  <span className="font-semibold">Created At</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.createdAt")}
+                  </span>
                   <span className="text-muted-foreground">
-                    {blockPackMeta.createdAt.toLocaleString()}
+                    {blockPackMeta.createdAt.toLocaleString(
+                      i18n.resolvedLanguage
+                    )}
                   </span>
                 </DropdownMenuItem>
               )}
@@ -293,7 +314,9 @@ const BlockPackEditorContent = ({
                 {isImporting ? (
                   <Spinner />
                 ) : (
-                  <span className="leading-none">Import</span>
+                  <span className="leading-none">
+                    {t("workspace.viewer.import")}
+                  </span>
                 )}
               </MenubarTrigger>
               <MenubarContent align="end" side="bottom">
@@ -304,7 +327,7 @@ const BlockPackEditorContent = ({
                   onDrop={handleImportFiles}
                 >
                   <p className="text-sm text-muted-foreground">
-                    Drop Files or Click Here to Select Uploaded Files (.json)
+                    {t("workspace.viewer.dropFiles")}
                   </p>
                 </DropFileZone>
               </MenubarContent>
@@ -317,7 +340,9 @@ const BlockPackEditorContent = ({
                 {isExporting ? (
                   <Spinner />
                 ) : (
-                  <span className="leading-none">Export</span>
+                  <span className="leading-none">
+                    {t("workspace.viewer.export")}
+                  </span>
                 )}
               </MenubarTrigger>
               <MenubarContent align="end" side="bottom">
@@ -327,7 +352,9 @@ const BlockPackEditorContent = ({
                     await handleExportFiles(ContentType.Markdown);
                   }}
                 >
-                  <span className="font-semibold">Markdown</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.markdown")}
+                  </span>
                   <span className="text-muted-foreground">(.md)</span>
                 </MenubarItem>
                 <MenubarItem
@@ -335,7 +362,9 @@ const BlockPackEditorContent = ({
                     await handleExportFiles(ContentType.HTML)
                   }
                 >
-                  <span className="font-semibold">HTML</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.html")}
+                  </span>
                   <span className="text-muted-foreground">(.html)</span>
                 </MenubarItem>
                 <MenubarItem
@@ -343,7 +372,9 @@ const BlockPackEditorContent = ({
                     await handleExportFiles(ContentType.PlainText)
                   }
                 >
-                  <span className="font-semibold">Plain Text</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.plainText")}
+                  </span>
                   <span className="text-muted-foreground">(.txt)</span>
                 </MenubarItem>
                 <MenubarItem
@@ -351,13 +382,17 @@ const BlockPackEditorContent = ({
                     await handleExportFiles(ContentType.JSON)
                   }
                 >
-                  <span className="font-semibold">Raw JSON</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.rawJson")}
+                  </span>
                   <span className="text-muted-foreground">(.json)</span>
                 </MenubarItem>
                 <MenubarItem
                   onClick={async () => await handleExportFiles(ContentType.PDF)}
                 >
-                  <span className="font-semibold">PDF</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.pdf")}
+                  </span>
                   <span className="text-muted-foreground">(.pdf)</span>
                 </MenubarItem>
                 <MenubarItem
@@ -365,7 +400,9 @@ const BlockPackEditorContent = ({
                     await handleExportFiles(ContentType.DOCX)
                   }
                 >
-                  <span className="font-semibold">Word</span>
+                  <span className="font-semibold">
+                    {t("workspace.viewer.word")}
+                  </span>
                   <span className="text-muted-foreground">(.docx)</span>
                 </MenubarItem>
               </MenubarContent>
@@ -397,10 +434,12 @@ const BlockPackEditorContent = ({
         >
           {state === "syncError" ? (
             <div className="flex min-h-80 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
-              <p>Realtime document needs a resync.</p>
+              <p>{t("workspace.viewer.resyncRequired")}</p>
               <Button disabled={isResyncing} onClick={handleResync}>
                 {isResyncing && <Spinner />}
-                {isResyncing ? "Resyncing..." : "Resync document"}
+                {isResyncing
+                  ? t("workspace.viewer.resyncing")
+                  : t("workspace.viewer.resyncDocument")}
               </Button>
             </div>
           ) : (

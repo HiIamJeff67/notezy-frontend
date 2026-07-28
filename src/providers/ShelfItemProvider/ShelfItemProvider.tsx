@@ -116,9 +116,7 @@ export const ShelfItemProvider = ({
         "notezy:block-pack-room-unavailable",
         handleRealtimeUnavailable
       );
-  }, [
-    itemLogic.removeBlockPackOptimistically,
-  ]);
+  }, [itemLogic.removeBlockPackOptimistically]);
 
   const contextValue: ShelfItemContextType = {
     inputRef: inputRef,

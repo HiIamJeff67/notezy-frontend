@@ -1,6 +1,7 @@
 import { WebURLPathDictionary } from "@shared/constants";
 import { useLocation } from "@tanstack/react-router";
 import { Suspense, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 import { useAppRouter } from "@/hooks";
@@ -8,13 +9,14 @@ import { useAppRouter } from "@/hooks";
 function RedirectErrorPage() {
   const location = useLocation();
   const router = useAppRouter();
+  const { t } = useTranslation();
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search]
   );
-  const title = searchParams.get("title") || "Redirect error";
+  const title = searchParams.get("title") || t("workspace.pages.redirectError");
   const description =
-    searchParams.get("description") || "Unknown error occurred when redirect";
+    searchParams.get("description") || t("workspace.pages.redirectUnknown");
 
   return (
     <Suspense fallback={<StrictLoadingCover />}>
@@ -23,13 +25,13 @@ function RedirectErrorPage() {
         <p className="text-gray-600">{description}</p>
         <div className="flex justify-center items-center gap-4">
           <Button variant="outline" onClick={() => {}}>
-            Contact us
+            {t("workspace.pages.contactUs")}
           </Button>
           <Button
             variant="outline"
             onClick={() => router.push(WebURLPathDictionary.home)}
           >
-            Go back
+            {t("workspace.pages.goBack")}
           </Button>
         </div>
       </div>

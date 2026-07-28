@@ -69,10 +69,6 @@ import {
   prepareBlockPackSyncJobs,
 } from "./blockPackSyncLogic";
 import {
-  mergeRootShelfTransactions,
-  prepareRootShelfSyncJobs,
-} from "./rootShelfSyncLogic";
-import {
   mergeRoutineRelationTransactions,
   prepareRoutineRelationSyncJobs,
 } from "./RoutineRelationSyncLogic";
@@ -84,6 +80,10 @@ import {
   mergeRoutineTagTransactions,
   prepareRoutineTagSyncJobs,
 } from "./RoutineTagSyncLogic";
+import {
+  mergeRootShelfTransactions,
+  prepareRootShelfSyncJobs,
+} from "./rootShelfSyncLogic";
 import {
   mergeStationTransactions,
   prepareStationSyncJobs,

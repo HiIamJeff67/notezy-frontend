@@ -2,7 +2,6 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import { CurrentAPIBaseURL } from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { getRequestHeader } from "@tanstack/react-start/server";
 
@@ -61,7 +60,7 @@ export async function fetchVisualizeResponse<TResponse>(
   });
 
   if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw new Error("error.encounterUnknownError");
   }
   forwardUpstreamSetCookies(response);
   const formattedResponse = (await response.json()) as TResponse & {

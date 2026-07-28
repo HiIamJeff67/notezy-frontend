@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormPayloadEditor from "../FormPayloadEditor";
@@ -19,6 +20,7 @@ const ResetBlockPackPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [blockPackId, setBlockPackId] = useState("");
 
   useEffect(() => {
@@ -34,8 +36,8 @@ const ResetBlockPackPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Reset Block Pack Payload"
-      description="Reset a block pack to an empty block pack."
+      title={t("workspace.payloadEditor.resetBlockPackTitle")}
+      description={t("workspace.payloadEditor.resetBlockPackDescription")}
       payloadPreview={JSON.stringify({ blockPackId }, null, 2)}
       contentWidthClassName="!w-[min(900px,94vw)]"
       formWidthClassName="max-w-[460px]"
@@ -43,7 +45,7 @@ const ResetBlockPackPayloadEditor = ({
       onConfirm={onConfirm}
     >
       <div className="flex flex-col gap-2">
-        <Label>Block pack ID</Label>
+        <Label>{t("workspace.payloadEditor.blockPackId")}</Label>
         <Input
           value={blockPackId}
           onChange={event => setBlockPackId(event.target.value)}

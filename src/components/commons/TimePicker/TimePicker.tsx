@@ -2,6 +2,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@shared/util/utils";
 import { ClockIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -18,12 +19,15 @@ interface TimePickerProps {
 const TimePicker = ({
   value,
   onValueChange,
-  placeholder = "Select time",
+  placeholder,
   disabled = false,
   isInvalid = false,
   className,
   contentClassName,
 }: TimePickerProps) => {
+  const { i18n, t } = useTranslation();
+  const displayPlaceholder =
+    placeholder ?? t("workspace.accessibility.selectTime");
   const triggerRef = useRef<HTMLButtonElement>(null);
   const hourWheelRef = useRef<HTMLDivElement>(null);
   const minuteWheelRef = useRef<HTMLDivElement>(null);
@@ -101,12 +105,12 @@ const TimePicker = ({
           <ClockIcon className="size-4 shrink-0" />
           <span className="truncate">
             {value
-              ? value.toLocaleTimeString([], {
+              ? value.toLocaleTimeString(i18n.resolvedLanguage, {
                   hour: "2-digit",
                   minute: "2-digit",
                   hour12: hourCycle === "12",
                 })
-              : placeholder}
+              : displayPlaceholder}
           </span>
         </Button>
       </PopoverPrimitive.Trigger>
@@ -121,7 +125,7 @@ const TimePicker = ({
         >
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-xs font-medium text-muted-foreground">
-              Time
+              {t("workspace.accessibility.time")}
             </span>
             <ToggleGroup
               type="single"
@@ -137,14 +141,14 @@ const TimePicker = ({
             >
               <ToggleGroupItem
                 value="12"
-                aria-label="Use 12-hour time"
+                aria-label={t("workspace.accessibility.use12HourTime")}
                 className="h-7 rounded-r-none px-2 text-[11px]"
               >
                 12H
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="24"
-                aria-label="Use 24-hour time"
+                aria-label={t("workspace.accessibility.use24HourTime")}
                 className="h-7 rounded-l-none border-l-0 px-2 text-[11px]"
               >
                 24H
@@ -154,7 +158,7 @@ const TimePicker = ({
           <div className="flex">
             <div className="flex min-w-0 flex-1 flex-col border-r">
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                Hour
+                {t("workspace.accessibility.hour")}
               </span>
               <div className="relative h-36 overflow-hidden">
                 <div
@@ -257,7 +261,7 @@ const TimePicker = ({
               )}
             >
               <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                Minute
+                {t("workspace.accessibility.minute")}
               </span>
               <div className="relative h-36 overflow-hidden">
                 <div
@@ -338,7 +342,7 @@ const TimePicker = ({
             {hourCycle === "12" && (
               <div className="flex w-16 flex-col">
                 <span className="border-b py-1.5 text-center text-[11px] text-muted-foreground">
-                  Period
+                  {t("workspace.accessibility.period")}
                 </span>
                 <div className="flex flex-1 flex-col justify-center gap-1 p-2">
                   <Button
@@ -365,7 +369,7 @@ const TimePicker = ({
                     }}
                     className="h-8 rounded-sm px-2 text-xs"
                   >
-                    AM
+                    {t("workspace.accessibility.am")}
                   </Button>
                   <Button
                     type="button"
@@ -391,7 +395,7 @@ const TimePicker = ({
                     }}
                     className="h-8 rounded-sm px-2 text-xs"
                   >
-                    PM
+                    {t("workspace.accessibility.pm")}
                   </Button>
                 </div>
               </div>

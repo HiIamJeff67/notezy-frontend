@@ -2,10 +2,12 @@ import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import MaterialMenuItem from "@/components/menus/MaterialMenu/MaterialMenuItem";
 import MaterialMenuItemSkeleton from "@/components/menus/MaterialMenu/MaterialMenuItemSkeleton";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface MaterialMenuProps {
   parent: SubShelfNode;
@@ -13,7 +15,7 @@ interface MaterialMenuProps {
 
 const MaterialMenu = ({ parent }: MaterialMenuProps) => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const handleRenameMaterialOnSubmit = useCallback(
@@ -22,9 +24,9 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
         async () =>
           await shelfItemManager
             .renameEditingMaterial()
-            .catch(error => toast.error(languageManager.tError(error)))
+            .catch(error => toast.error(translateError(error, t)))
       ),
-    [loadingManager, languageManager, shelfItemManager]
+    [loadingManager, t, shelfItemManager]
   );
 
   return (
@@ -70,7 +72,7 @@ const MaterialMenu = ({ parent }: MaterialMenuProps) => {
                         e.stopPropagation();
                         await handleRenameMaterialOnSubmit();
                       }}
-                      aria-label="Save material name"
+                      aria-label={t("workspace.menu.saveMaterialName")}
                     >
                       <CheckIcon className="size-4" />
                     </button>

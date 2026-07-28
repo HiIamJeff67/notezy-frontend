@@ -3,6 +3,7 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { Maximize2Icon, PanelRightOpenIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Article,
   ArticleContent,
@@ -13,10 +14,6 @@ import {
   ArticleParagraphHeader,
   ArticleParagraphSeparator,
 } from "@/components/commons/Article/Article";
-import AboutTab from "@/components/panels/PreferencesPanel/tabs/AboutTab";
-import BrowserPermissionsTab from "@/components/panels/PreferencesPanel/tabs/BrowserPermissionsTab";
-import NotificationsTab from "@/components/panels/PreferencesPanel/tabs/NotificationsTab";
-import PrivacyTab from "@/components/panels/PreferencesPanel/tabs/PrivacyTab";
 import { Button } from "@/components/ui/button";
 import { useAppRouterActions, useSettingsDisplay } from "@/hooks";
 import { useLocalPreferences } from "@/hooks/localPreferences";
@@ -25,51 +22,10 @@ import {
   EditorSettings,
   OfflineSettings,
 } from "./PreferencesPageContent";
-
-const navigationItems = [
-  {
-    id: "appearance",
-    title: "外觀",
-    description: "調整主題、語言、密度與畫面互動回饋。",
-    weight: 5,
-  },
-  {
-    id: "editor",
-    title: "編輯器",
-    description: "設定閱讀寬度、字級與編輯時出現的工具。",
-    weight: 4,
-  },
-  {
-    id: "offline",
-    title: "離線資料",
-    description: "管理本機快取、Yjs 文件與瀏覽器儲存空間。",
-    weight: 3,
-  },
-  {
-    id: "privacy",
-    title: "隱私",
-    description: "控制起始畫面、預覽資訊與本機剪貼簿保護。",
-    weight: 2,
-  },
-  {
-    id: "browser-permissions",
-    title: "瀏覽器權限",
-    description: "查看並重新授權此瀏覽器提供的能力。",
-    weight: 3,
-  },
-  {
-    id: "notifications",
-    title: "通知",
-    description: "決定桌面、同步與 routine 提醒的傳送方式。",
-    weight: 3,
-  },
-  {
-    id: "about",
-    title: "關於",
-    description: "查看版本資訊、匯出本機偏好或重設設定。",
-    weight: 2,
-  },
-] satisfies ArticleNavigationItem[];
+import AboutTab from "./tabs/AboutTab";
+import BrowserPermissionsTab from "./tabs/BrowserPermissionsTab";
+import NotificationsTab from "./tabs/NotificationsTab";
+import PrivacyTab from "./tabs/PrivacyTab";
 
 const PreferencesPage = ({
   displayMode = "page",
@@ -79,6 +35,24 @@ const PreferencesPage = ({
   const { isReady } = useLocalPreferences();
   const router = useAppRouterActions();
   const { openSheet, closeSheet } = useSettingsDisplay();
+  const { t } = useTranslation();
+  const navigationConfig = [
+    ["appearance", "settingsPage.preferences.appearance", 5],
+    ["editor", "settingsPage.preferences.editor", 4],
+    ["offline", "settingsPage.preferences.offline", 3],
+    ["privacy", "settingsPage.preferences.privacy", 2],
+    ["browser-permissions", "settingsPage.preferences.browserPermissions", 3],
+    ["notifications", "settingsPage.preferences.notifications", 3],
+    ["about", "settingsPage.preferences.about", 2],
+  ] as const satisfies ReadonlyArray<
+    readonly [string, string, NonNullable<ArticleNavigationItem["weight"]>]
+  >;
+  const navigationItems = navigationConfig.map(([id, key, weight]) => ({
+    id,
+    title: String(t(`${key}.title` as never)),
+    description: String(t(`${key}.description` as never)),
+    weight,
+  })) satisfies ArticleNavigationItem[];
 
   return (
     <div
@@ -94,10 +68,14 @@ const PreferencesPage = ({
         className="absolute top-3 left-4 z-20 size-7 p-0 select-none bg-transparent text-foreground hover:bg-primary sm:left-6"
         aria-label={
           displayMode === "sheet"
-            ? "Open settings as a page"
-            : "Open settings in sheet"
+            ? t("settingsPage.openAsPage")
+            : t("settingsPage.openInSheet")
         }
-        title={displayMode === "sheet" ? "Open as page" : "Open in sheet"}
+        title={
+          displayMode === "sheet"
+            ? t("settingsPage.openAsPage")
+            : t("settingsPage.openInSheet")
+        }
         onClick={() => {
           LocalStorageManipulator.setItem(
             LocalStorageKey.settingsDisplayMode,
@@ -116,7 +94,7 @@ const PreferencesPage = ({
       >
         {displayMode === "sheet" ? <Maximize2Icon /> : <PanelRightOpenIcon />}
       </Button>
-      <Article className={displayMode === "sheet" ? "lg:gap-0" : undefined}>
+      <Article className="lg:gap-0">
         <ArticleNavigationSidebar
           items={navigationItems}
           paragraphBaseHeight={12}
@@ -134,8 +112,9 @@ const PreferencesPage = ({
         >
           <PreferenceTab
             id="appearance"
-            title="外觀"
-            description="調整主題、語言、密度與畫面互動回饋。"
+            title={t("settingsPage.preferences.appearance.title")}
+            description={t("settingsPage.preferences.appearance.description")}
+            eyebrow={t("settingsPage.preferences.eyebrow")}
             primary
           >
             {isReady && <AppearanceSettings />}
@@ -145,8 +124,8 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="editor"
-            title="編輯器"
-            description="設定閱讀寬度、字級與編輯時出現的工具。"
+            title={t("settingsPage.preferences.editor.title")}
+            description={t("settingsPage.preferences.editor.description")}
           >
             {isReady && <EditorSettings />}
           </PreferenceTab>
@@ -155,8 +134,8 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="offline"
-            title="離線資料"
-            description="管理本機快取、Yjs 文件與瀏覽器儲存空間。"
+            title={t("settingsPage.preferences.offline.title")}
+            description={t("settingsPage.preferences.offline.description")}
           >
             {isReady && <OfflineSettings />}
           </PreferenceTab>
@@ -165,8 +144,8 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="privacy"
-            title="隱私"
-            description="控制起始畫面、預覽資訊與本機剪貼簿保護。"
+            title={t("settingsPage.preferences.privacy.title")}
+            description={t("settingsPage.preferences.privacy.description")}
           >
             <PrivacyTab />
           </PreferenceTab>
@@ -175,8 +154,10 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="browser-permissions"
-            title="瀏覽器權限"
-            description="查看並重新授權此瀏覽器提供的能力。"
+            title={t("settingsPage.preferences.browserPermissions.title")}
+            description={t(
+              "settingsPage.preferences.browserPermissions.description"
+            )}
           >
             <BrowserPermissionsTab />
           </PreferenceTab>
@@ -185,8 +166,10 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="notifications"
-            title="通知"
-            description="決定桌面、同步與 routine 提醒的傳送方式。"
+            title={t("settingsPage.preferences.notifications.title")}
+            description={t(
+              "settingsPage.preferences.notifications.description"
+            )}
           >
             <NotificationsTab />
           </PreferenceTab>
@@ -195,8 +178,8 @@ const PreferencesPage = ({
 
           <PreferenceTab
             id="about"
-            title="關於"
-            description="查看版本資訊、匯出本機偏好或重設設定。"
+            title={t("settingsPage.preferences.about.title")}
+            description={t("settingsPage.preferences.about.description")}
           >
             <AboutTab />
           </PreferenceTab>
@@ -210,12 +193,14 @@ const PreferenceTab = ({
   id,
   title,
   description,
+  eyebrow,
   children,
   primary = false,
 }: {
   id: string;
   title: string;
   description: string;
+  eyebrow?: string;
   children: ReactNode;
   primary?: boolean;
 }) => (
@@ -223,7 +208,7 @@ const PreferenceTab = ({
     <ArticleParagraphHeader>
       {primary && (
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          Preference settings
+          {eyebrow}
         </p>
       )}
       {primary ? (

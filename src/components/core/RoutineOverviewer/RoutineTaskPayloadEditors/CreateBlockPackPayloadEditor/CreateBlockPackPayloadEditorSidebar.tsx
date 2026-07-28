@@ -9,6 +9,7 @@ import toast from "@shared/lib/toast";
 import { CopyIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { translateRoutineTaskPurpose } from "@/i18n/workspace";
 import { ShelfLocationPicker } from "../PayloadSearchPickers";
 import TemplatePatternEditor, {
   type RoutineTaskTemplatePattern,
@@ -79,6 +81,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
   setSelectedPatternIds,
   payloadPreview,
 }: CreateBlockPackPayloadEditorSidebarProps) => {
+  const { t } = useTranslation();
   const [executeSearchBlocks] = useSearchBlocksLazyQuery({
     fetchPolicy: "network-only",
     nextFetchPolicy: "network-only",
@@ -221,8 +224,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
         <>
           <ShelfLocationPicker
             mode="sub-only"
-            label="Target SubShelf"
-            placeholder="Select SubShelf"
+            label={t("workspace.payloadEditor.targetSubShelf")}
+            placeholder={t("workspace.payloadEditor.selectSubShelf")}
             rootShelfId=""
             subShelfId={targetSubShelfId}
             onSelectSub={nextTargetSubShelfId =>
@@ -230,15 +233,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
             }
           />
           <div className="flex flex-col gap-2">
-            <Label>Template Name</Label>
+            <Label>{t("workspace.payloadEditor.templateName")}</Label>
             <Input
               value={templateName}
               onChange={event => setTemplateName(event.currentTarget.value)}
-              placeholder="ex. Daily {{date}}"
+              placeholder={t("workspace.payloadEditor.templateNameExample")}
             />
           </div>
           <TemplatePatternEditor
-            label="Pattern Table"
+            label={t("workspace.payloadEditor.patternTable")}
             pattern={templatePattern}
             onPatternChange={setTemplatePattern}
           />
@@ -246,7 +249,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
       )}
       {(purpose === "AppendBlock" || purpose === "UpdateBlock") && (
         <TemplatePatternEditor
-          label="Pattern Table"
+          label={t("workspace.payloadEditor.patternTable")}
           pattern={templatePattern}
           onPatternChange={setTemplatePattern}
         />
@@ -254,7 +257,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
       {purpose === "AppendBlock" && (
         <>
           <div className="flex flex-col gap-2">
-            <Label>Block pack id</Label>
+            <Label>{t("workspace.payloadEditor.blockPackId")}</Label>
             <Input
               value={blockPackId}
               onChange={event => setBlockPackId(event.currentTarget.value)}
@@ -265,7 +268,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
       {(purpose === RoutineTaskPurpose.UpdateBlock ||
         purpose === RoutineTaskPurpose.ResetBlock) && (
         <div className="flex flex-col gap-2">
-          <Label>Block</Label>
+          <Label>{t("workspace.payloadEditor.block")}</Label>
           <PopoverPrimitive.Root
             modal
             open={isBlockPickerOpen}
@@ -288,7 +291,9 @@ const CreateBlockPackPayloadEditorSidebar = ({
                   {selectedBlockLabel || blockId ? (
                     selectedBlockLabel || blockId.slice(0, 8)
                   ) : (
-                    <span className="text-muted-foreground">Select Block</span>
+                    <span className="text-muted-foreground">
+                      {t("workspace.payloadEditor.selectBlock")}
+                    </span>
                   )}
                 </span>
               </Button>
@@ -305,7 +310,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                     onChange={event =>
                       setBlockSearchQuery(event.currentTarget.value)
                     }
-                    placeholder="Search blocks"
+                    placeholder={t("workspace.payloadEditor.searchBlocks")}
                     className="h-8"
                   />
                 </div>
@@ -325,9 +330,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow className="transition-none hover:bg-transparent">
-                        <TableHead className="h-8 w-24 p-1.5">ID</TableHead>
-                        <TableHead className="h-8 w-28 p-1.5">Type</TableHead>
-                        <TableHead className="h-8 p-1.5">Content</TableHead>
+                        <TableHead className="h-8 w-24 p-1.5">
+                          {t("workspace.payloadEditor.id")}
+                        </TableHead>
+                        <TableHead className="h-8 w-28 p-1.5">
+                          {t("workspace.payloadEditor.type")}
+                        </TableHead>
+                        <TableHead className="h-8 p-1.5">
+                          {t("workspace.payloadEditor.content")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -338,8 +349,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
                             className="p-5 text-center text-xs text-muted-foreground"
                           >
                             {isSearchingBlocks
-                              ? "Searching blocks"
-                              : "No blocks"}
+                              ? t("workspace.payloadEditor.searchingBlocks")
+                              : t("workspace.payloadEditor.noBlocks")}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -400,8 +411,8 @@ const CreateBlockPackPayloadEditorSidebar = ({
                 {hasMoreBlocks && (
                   <div className="shrink-0 border-t px-3 py-2 text-center text-muted-foreground text-xs">
                     {isSearchingBlocks
-                      ? "Loading more blocks"
-                      : "Scroll to load more"}
+                      ? t("workspace.payloadEditor.loadingMoreBlocks")
+                      : t("workspace.payloadEditor.scrollToLoadMore")}
                   </div>
                 )}
               </PopoverPrimitive.Content>
@@ -412,9 +423,11 @@ const CreateBlockPackPayloadEditorSidebar = ({
 
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold">Template Table</div>
+          <div className="text-sm font-semibold">
+            {t("workspace.payloadEditor.templateTable")}
+          </div>
           <div className="text-xs text-muted-foreground">
-            Blocks scanned for token replacement.
+            {t("workspace.payloadEditor.blocksScanned")}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -442,9 +455,11 @@ const CreateBlockPackPayloadEditorSidebar = ({
                 className="z-[220] flex h-72 w-[480px] origin-[--radix-popover-content-transform-origin] flex-col overflow-hidden rounded-sm border bg-popover p-0 text-popover-foreground shadow-md outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
               >
                 <div className="shrink-0 border-b px-3 py-2">
-                  <div className="text-sm font-semibold">Select Block</div>
+                  <div className="text-sm font-semibold">
+                    {t("workspace.payloadEditor.selectBlock")}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    Choose blocks to mark as templates.
+                    {t("workspace.payloadEditor.chooseTemplateBlocks")}
                   </div>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto p-2">
@@ -452,9 +467,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
                     <TableHeader>
                       <TableRow>
                         <TableHead className="h-8 w-8 p-1.5"></TableHead>
-                        <TableHead className="h-8 w-24 p-1.5">ID</TableHead>
-                        <TableHead className="h-8 w-24 p-1.5">Type</TableHead>
-                        <TableHead className="h-8 p-1.5">Content</TableHead>
+                        <TableHead className="h-8 w-24 p-1.5">
+                          {t("workspace.payloadEditor.id")}
+                        </TableHead>
+                        <TableHead className="h-8 w-24 p-1.5">
+                          {t("workspace.payloadEditor.type")}
+                        </TableHead>
+                        <TableHead className="h-8 p-1.5">
+                          {t("workspace.payloadEditor.content")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -464,7 +485,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                             colSpan={4}
                             className="p-5 text-center text-xs text-muted-foreground"
                           >
-                            No available blocks
+                            {t("workspace.payloadEditor.noAvailableBlocks")}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -509,10 +530,16 @@ const CreateBlockPackPayloadEditorSidebar = ({
                                   void navigator.clipboard
                                     .writeText(availablePatternBlock.id)
                                     .then(() =>
-                                      toast.success("Block id copied")
+                                      toast.success(
+                                        t("workspace.clipboard.blockIdCopied")
+                                      )
                                     )
                                     .catch(() =>
-                                      toast.error("Unable to copy block id")
+                                      toast.error(
+                                        t(
+                                          "workspace.clipboard.blockIdCopyFailed"
+                                        )
+                                      )
                                     );
                                 }}
                               >
@@ -531,9 +558,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
                                         2
                                       )
                                     )
-                                    .then(() => toast.success("Block copied"))
+                                    .then(() =>
+                                      toast.success(
+                                        t("workspace.clipboard.blockCopied")
+                                      )
+                                    )
                                     .catch(() =>
-                                      toast.error("Unable to copy block")
+                                      toast.error(
+                                        t("workspace.clipboard.blockCopyFailed")
+                                      )
                                     );
                                 }}
                               >
@@ -555,9 +588,15 @@ const CreateBlockPackPayloadEditorSidebar = ({
                                         2
                                       )
                                     )
-                                    .then(() => toast.success("Block copied"))
+                                    .then(() =>
+                                      toast.success(
+                                        t("workspace.clipboard.blockCopied")
+                                      )
+                                    )
                                     .catch(() =>
-                                      toast.error("Unable to copy block")
+                                      toast.error(
+                                        t("workspace.clipboard.blockCopyFailed")
+                                      )
                                     );
                                 }}
                               >
@@ -593,7 +632,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                       setIsPatternBlockPickerOpen(false);
                     }}
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     type="button"
@@ -615,7 +654,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                       setIsPatternBlockPickerOpen(false);
                     }}
                   >
-                    Confirm
+                    {t("common.confirm")}
                   </Button>
                 </div>
               </PopoverPrimitive.Content>
@@ -653,10 +692,18 @@ const CreateBlockPackPayloadEditorSidebar = ({
             <TableHeader>
               <TableRow className="transition-none hover:bg-transparent">
                 <TableHead className="h-8 w-8 p-1.5"></TableHead>
-                <TableHead className="h-8 w-16 p-1.5">ID</TableHead>
-                <TableHead className="h-8 w-20 p-1.5">Type</TableHead>
-                <TableHead className="h-8 p-1.5">Content</TableHead>
-                <TableHead className="h-8 w-36 p-1.5">Props</TableHead>
+                <TableHead className="h-8 w-16 p-1.5">
+                  {t("workspace.payloadEditor.id")}
+                </TableHead>
+                <TableHead className="h-8 w-20 p-1.5">
+                  {t("workspace.payloadEditor.type")}
+                </TableHead>
+                <TableHead className="h-8 p-1.5">
+                  {t("workspace.payloadEditor.content")}
+                </TableHead>
+                <TableHead className="h-8 w-36 p-1.5">
+                  {t("workspace.payloadEditor.props")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -666,7 +713,7 @@ const CreateBlockPackPayloadEditorSidebar = ({
                     colSpan={5}
                     className="h-56 px-2 py-6 text-center text-xs text-muted-foreground"
                   >
-                    No template blocks
+                    {t("workspace.payloadEditor.noTemplateBlocks")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -705,10 +752,16 @@ const CreateBlockPackPayloadEditorSidebar = ({
                           void navigator.clipboard
                             .writeText(patternBlock.id)
                             .then(() =>
-                              toast.success("Template block id copied")
+                              toast.success(
+                                t("workspace.clipboard.templateBlockIdCopied")
+                              )
                             )
                             .catch(() =>
-                              toast.error("Unable to copy template block id")
+                              toast.error(
+                                t(
+                                  "workspace.clipboard.templateBlockIdCopyFailed"
+                                )
+                              )
                             );
                         }}
                       >
@@ -771,7 +824,9 @@ const CreateBlockPackPayloadEditorSidebar = ({
           className="-mt-px h-8 min-h-8 w-full shrink-0 rounded-t-none rounded-b-sm py-0"
           onClick={() => setIsTemplateTableExpanded(current => !current)}
         >
-          {isTemplateTableExpanded ? "Close" : "Expand"}
+          {isTemplateTableExpanded
+            ? t("workspace.payloadEditor.close")
+            : t("workspace.payloadEditor.expand")}
         </Button>
       </div>
       <Separator />
@@ -779,9 +834,14 @@ const CreateBlockPackPayloadEditorSidebar = ({
       <div className="flex shrink-0 flex-col gap-2">
         <div className="flex items-center justify-between">
           <div>
-            <Label>Payload Preview</Label>
+            <Label>{t("workspace.payloadEditor.payloadPreview")}</Label>
             <p className="mt-1 text-xs text-muted-foreground">
-              Generated JSON for {purpose}. The backend is still authoritative.
+              {t("workspace.payloadEditor.generatedJson", {
+                purpose: translateRoutineTaskPurpose(
+                  purpose as RoutineTaskPurpose,
+                  t
+                ),
+              })}
             </p>
           </div>
           <Button
@@ -791,8 +851,12 @@ const CreateBlockPackPayloadEditorSidebar = ({
             onClick={() => {
               void navigator.clipboard
                 .writeText(payloadPreview)
-                .then(() => toast.success("Payload preview copied"))
-                .catch(() => toast.error("Unable to copy payload preview"));
+                .then(() =>
+                  toast.success(t("workspace.clipboard.payloadPreviewCopied"))
+                )
+                .catch(() =>
+                  toast.error(t("workspace.clipboard.payloadPreviewCopyFailed"))
+                );
             }}
           >
             <CopyIcon className="size-4" />

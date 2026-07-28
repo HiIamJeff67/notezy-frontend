@@ -17,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   BlockPackIcon,
@@ -54,13 +55,12 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useLoading, useModal, useShelfItem, useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import {
-  useLanguage,
-  useLoading,
-  useModal,
-  useShelfItem,
-  useStationRoutine,
-} from "@/hooks";
+  translateRoutinePeriod,
+  translateRoutineStatus,
+} from "@/i18n/workspace";
 
 interface RoutineMenuItemProps {
   station: StationNode;
@@ -68,7 +68,7 @@ interface RoutineMenuItemProps {
 }
 
 const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const loadingManager = useLoading();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
@@ -88,8 +88,10 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
           item.type === GraphQLItemType.ItemTypeBlockPack
             ? ItemType.BlockPack
             : ItemType.Material,
-        rootShelfName: item.rootShelf?.name ?? "Unknown root",
-        parentSubShelfName: item.parentSubShelf?.name ?? "Unknown sub shelf",
+        rootShelfName:
+          item.rootShelf?.name ?? t("workspace.menu.unknownRootShelf"),
+        parentSubShelfName:
+          item.parentSubShelf?.name ?? t("workspace.menu.unknownSubShelf"),
       };
     }) ?? [];
 
@@ -98,9 +100,9 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         await stationRoutineManager
           .renameEditingRoutine()
-          .catch(error => toast.error(languageManager.tError(error)));
+          .catch(error => toast.error(translateError(error, t)));
       }),
-    [languageManager, loadingManager, stationRoutineManager]
+    [t, loadingManager, stationRoutineManager]
   );
 
   return (
@@ -144,7 +146,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                     event.stopPropagation();
                     await handleRenameRoutineOnSubmit();
                   }}
-                  aria-label="Save routine title"
+                  aria-label={t("workspace.menu.saveRoutineTitle")}
                 >
                   <CheckIcon className="size-4" />
                 </button>
@@ -166,7 +168,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                         void stationRoutineManager
                           .toggleRoutine(station.id, routine.id)
                           .catch(error =>
-                            toast.error(languageManager.tError(error))
+                            toast.error(translateError(error, t))
                           );
                       }}
                     >
@@ -187,30 +189,44 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               >
                 <HoverDetailCard
                   title={routine.title}
-                  subtitle="Routine"
+                  subtitle={t("workspace.table.routine")}
                   id={routine.id}
                   rows={[
                     {
-                      field: "Station",
+                      field: t("workspace.table.station"),
                       value: station.name,
                     },
                     {
-                      field: "Description",
-                      value: routine.description || "None",
-                    },
-                    { field: "Status", value: routine.status },
-                    { field: "Period", value: routine.period ?? "One-shot" },
-                    { field: "Tags", value: routine.routineTagIds.length },
-                    { field: "Tasks", value: routine.routineTaskIds.length },
-                    {
-                      field: "Start",
-                      value: new Date(
-                        routine.scheduledStartAt
-                      ).toLocaleString(),
+                      field: t("workspace.fields.description"),
+                      value: routine.description || t("workspace.period.none"),
                     },
                     {
-                      field: "End",
-                      value: new Date(routine.scheduledEndAt).toLocaleString(),
+                      field: t("workspace.table.status"),
+                      value: translateRoutineStatus(routine.status, t),
+                    },
+                    {
+                      field: t("workspace.payloadEditor.period"),
+                      value: translateRoutinePeriod(routine.period, t),
+                    },
+                    {
+                      field: t("workspace.table.tags"),
+                      value: routine.routineTagIds.length,
+                    },
+                    {
+                      field: t("workspace.table.tasks"),
+                      value: routine.routineTaskIds.length,
+                    },
+                    {
+                      field: t("workspace.inspector.start"),
+                      value: new Date(routine.scheduledStartAt).toLocaleString(
+                        i18n.resolvedLanguage
+                      ),
+                    },
+                    {
+                      field: t("workspace.inspector.end"),
+                      value: new Date(routine.scheduledEndAt).toLocaleString(
+                        i18n.resolvedLanguage
+                      ),
                     },
                   ]}
                 />
@@ -219,7 +235,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
           )}
 
           <ContextMenuContent className="min-w-44">
-            <ContextMenuLabel>View</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.view")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -230,7 +246,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }
               >
                 <HistoryIcon className="mr-2 size-4" />
-                View all task records
+                {t("workspace.menu.viewAllTaskRecords")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
@@ -243,21 +259,21 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }}
               >
                 <SquarePen className="mr-2 size-4" />
-                Open in Inspector
+                {t("workspace.menu.openInspector")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
                   void stationRoutineManager
                     .duplicateRoutine(routine.id)
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <Copy className="mr-2 size-4" />
-                Duplicate
+                {t("workspace.menu.duplicate")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
@@ -272,11 +288,11 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }
               >
                 <ClipboardList className="mr-2 size-4" />
-                Task
+                {t("workspace.table.task")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Link</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.link")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuSub
                 onOpenChange={open => {
@@ -284,15 +300,13 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                   window.setTimeout(() => {
                     void stationRoutineManager
                       .searchRoutineTags()
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
+                      .catch(error => toast.error(translateError(error, t)));
                   }, 0);
                 }}
               >
                 <ContextMenuSubTrigger>
                   <RoutineTagIcon className="mr-2 size-4" />
-                  Tags
+                  {t("workspace.table.tags")}
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent
                   className="max-h-72 min-w-48 overflow-y-auto"
@@ -311,13 +325,13 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                     }
                     void stationRoutineManager
                       .loadMoreRoutineTags()
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
+                      .catch(error => toast.error(translateError(error, t)));
                   }}
                 >
                   {stationRoutineManager.routineTags.length === 0 ? (
-                    <ContextMenuItem disabled>No Tags</ContextMenuItem>
+                    <ContextMenuItem disabled>
+                      {t("workspace.menu.noTags")}
+                    </ContextMenuItem>
                   ) : (
                     stationRoutineManager.routineTags.map(routineTag => {
                       const isLinked = routine.routineTagIds.includes(
@@ -337,7 +351,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                                 isLinked
                               )
                               .catch(error =>
-                                toast.error(languageManager.tError(error))
+                                toast.error(translateError(error, t))
                               );
                           }}
                         >
@@ -359,15 +373,13 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                         rootShelfId: null,
                         parentSubShelfId: null,
                       })
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
+                      .catch(error => toast.error(translateError(error, t)));
                   }, 0);
                 }}
               >
                 <ContextMenuSubTrigger>
                   <PackagePlus className="mr-2 size-4" />
-                  Items
+                  {t("workspace.menu.items")}
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent
                   className="max-h-80 min-w-64 overflow-y-auto"
@@ -386,19 +398,19 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                     }
                     void shelfItemManager
                       .loadMoreItems()
-                      .catch(error =>
-                        toast.error(languageManager.tError(error))
-                      );
+                      .catch(error => toast.error(translateError(error, t)));
                   }}
                 >
                   {shelfItemManager.itemSearch.loading &&
                   searchedItems.length === 0 ? (
                     <ContextMenuItem disabled>
                       <LoaderCircle className="mr-2 size-4 animate-spin" />
-                      Loading
+                      {t("workspace.fields.loading")}
                     </ContextMenuItem>
                   ) : searchedItems.length === 0 ? (
-                    <ContextMenuItem disabled>No Items</ContextMenuItem>
+                    <ContextMenuItem disabled>
+                      {t("workspace.menu.noItems")}
+                    </ContextMenuItem>
                   ) : (
                     <>
                       {searchedItems.map(item => {
@@ -420,12 +432,12 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                                 .then(() =>
                                   toast.success(
                                     isLinked
-                                      ? "Item disconnected"
-                                      : "Item connected"
+                                      ? t("workspace.menu.itemDisconnected")
+                                      : t("workspace.menu.itemConnected")
                                   )
                                 )
                                 .catch(error =>
-                                  toast.error(languageManager.tError(error))
+                                  toast.error(translateError(error, t))
                                 );
                             }}
                           >
@@ -436,7 +448,10 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                             )}
                             <span className="min-w-0 truncate">
                               {item.rootShelfName} / {item.parentSubShelfName} /{" "}
-                              {item.type} · {item.id.slice(0, 8)}
+                              {item.type === ItemType.BlockPack
+                                ? t("workspace.trash.blockPack")
+                                : t("workspace.trash.material")}{" "}
+                              · {item.id.slice(0, 8)}
                             </span>
                           </ContextMenuCheckboxItem>
                         );
@@ -447,17 +462,19 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
               </ContextMenuSub>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
                   void stationRoutineManager
                     .updateRoutine(routine.id, { isPinned: !routine.isPinned })
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <Bookmark className="mr-2 size-4" />
-                {routine.isPinned ? "Unpin" : "Pin"}
+                {routine.isPinned
+                  ? t("workspace.menu.unpin")
+                  : t("workspace.menu.pin")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
@@ -465,7 +482,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }
               >
                 <Pencil className="mr-2 size-4" />
-                Rename
+                {t("workspace.menu.rename")}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
@@ -477,7 +494,7 @@ const RoutineMenuItem = ({ station, routine }: RoutineMenuItemProps) => {
                 }
               >
                 <Trash2 className="mr-2 size-4" />
-                Delete
+                {t("workspace.menu.delete")}
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>

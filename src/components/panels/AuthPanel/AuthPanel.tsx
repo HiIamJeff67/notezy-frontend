@@ -6,6 +6,7 @@ import {
 } from "@/components/icons/OAuthIcon";
 import "@/global/styles/panel.css";
 import { toCamelCase } from "@shared/util/stringCaseConversions";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 
 const OAuthIcons = {
@@ -65,6 +66,7 @@ const AuthPanel = ({
   statusDetail,
   isLoading = false,
 }: AuthPanelProps) => {
+  const { t } = useTranslation();
   const themeManager = useTheme();
 
   return (
@@ -210,7 +212,7 @@ const AuthPanel = ({
               "
             >
               <span className="relative z-2">
-                {isLoading ? "PROCESSING..." : submitButtonText}
+                {isLoading ? t("workspace.pages.processing") : submitButtonText}
               </span>
               {!isLoading && (
                 <div
@@ -236,7 +238,7 @@ const AuthPanel = ({
                       : "text-gray-600"
                   }`}
                 >
-                  Or Continue With
+                  {t("workspace.pages.orContinueWith")}
                 </span>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
               </div>

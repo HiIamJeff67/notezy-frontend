@@ -3,6 +3,7 @@ import type { StationNode } from "@shared/types/stationNode.type";
 import { cn } from "@shared/util/utils";
 import type { UUID } from "crypto";
 import { useDrag, useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { StationIcon } from "@/components/icons/WorkspaceEntityIcons";
 
 interface TimeRailsStationBarItemProps {
@@ -18,6 +19,7 @@ const TimeRailsStationBarItem = ({
   rowHeight,
   onMove,
 }: TimeRailsStationBarItemProps) => {
+  const { t } = useTranslation();
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: DNDType.DraggableTimeRailsStation.toString(),
@@ -70,7 +72,7 @@ const TimeRailsStationBarItem = ({
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate text-sm font-medium">{station.name}</p>
         <p className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
-          {routineCount} routines
+          {t("workspace.timeRails.routineCount", { count: routineCount })}
         </p>
       </div>
     </div>

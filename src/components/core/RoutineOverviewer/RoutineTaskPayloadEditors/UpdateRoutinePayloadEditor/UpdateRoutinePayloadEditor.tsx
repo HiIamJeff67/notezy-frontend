@@ -4,6 +4,7 @@ import {
   RoutineTaskPurpose,
 } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  translateRoutinePeriod,
+  translateRoutineStatus,
+} from "@/i18n/workspace";
 import FormPayloadEditor from "../FormPayloadEditor";
 import TemplatePatternEditor, {
   type RoutineTaskTemplatePattern,
@@ -36,6 +41,7 @@ const UpdateRoutinePayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [routineId, setRoutineId] = useState("");
   const [title, setTitle] = useState("");
   const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
@@ -87,8 +93,8 @@ const UpdateRoutinePayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Update Routine Payload"
-      description="Update routine fields without changing links, tags, or tasks."
+      title={t("workspace.payloadEditor.updateRoutineTitle")}
+      description={t("workspace.payloadEditor.updateRoutineDescription")}
       payloadPreview={JSON.stringify(
         {
           routineId,
@@ -115,7 +121,7 @@ const UpdateRoutinePayloadEditor = ({
       onConfirm={onConfirm}
     >
       <div className="flex flex-col gap-2">
-        <Label>Routine ID</Label>
+        <Label>{t("workspace.payloadEditor.routineId")}</Label>
         <Input
           value={routineId}
           onChange={event => setRoutineId(event.target.value)}
@@ -123,15 +129,15 @@ const UpdateRoutinePayloadEditor = ({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label>Title</Label>
+          <Label>{t("workspace.fields.title")}</Label>
           <Input
             value={title}
             onChange={event => setTitle(event.target.value)}
-            placeholder="ex. Review {{date}}"
+            placeholder={t("workspace.payloadEditor.routineTitleExample")}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Status</Label>
+          <Label>{t("workspace.table.status")}</Label>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger>
               <SelectValue />
@@ -139,7 +145,7 @@ const UpdateRoutinePayloadEditor = ({
             <SelectContent className="z-[190]">
               {AllRoutineStatuses.map(routineStatus => (
                 <SelectItem key={routineStatus} value={routineStatus}>
-                  {routineStatus}
+                  {translateRoutineStatus(routineStatus, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -147,12 +153,12 @@ const UpdateRoutinePayloadEditor = ({
         </div>
       </div>
       <TemplatePatternEditor
-        label="Pattern Table"
+        label={t("workspace.payloadEditor.patternTable")}
         pattern={pattern}
         onPatternChange={setPattern}
       />
       <div className="flex flex-col gap-2">
-        <Label>Description</Label>
+        <Label>{t("workspace.fields.description")}</Label>
         <Textarea
           value={description}
           onChange={event => setDescription(event.target.value)}
@@ -161,47 +167,47 @@ const UpdateRoutinePayloadEditor = ({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label>Scheduled start</Label>
+          <Label>{t("workspace.payloadEditor.scheduledStart")}</Label>
           <DatePicker
             value={scheduledStartAt ? new Date(scheduledStartAt) : undefined}
             onValueChange={value => {
               value?.setSeconds(0, 0);
               setScheduledStartAt(value ? value.toISOString() : "");
             }}
-            placeholder="Select start date and time"
+            placeholder={t("workspace.fields.selectStartDateTime")}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Scheduled end</Label>
+          <Label>{t("workspace.payloadEditor.scheduledEnd")}</Label>
           <DatePicker
             value={scheduledEndAt ? new Date(scheduledEndAt) : undefined}
             onValueChange={value => {
               value?.setSeconds(0, 0);
               setScheduledEndAt(value ? value.toISOString() : "");
             }}
-            placeholder="Select end date and time"
+            placeholder={t("workspace.fields.selectEndDateTime")}
           />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label>Period</Label>
+          <Label>{t("workspace.payloadEditor.period")}</Label>
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="z-[190]">
-              <SelectItem value="None">None</SelectItem>
+              <SelectItem value="None">{t("workspace.period.none")}</SelectItem>
               {AllRoutinePeriods.map(routinePeriod => (
                 <SelectItem key={routinePeriod} value={routinePeriod}>
-                  {routinePeriod}
+                  {translateRoutinePeriod(routinePeriod, t)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Timezone</Label>
+          <Label>{t("workspace.inspector.timezone")}</Label>
           <Input
             value={timezone}
             onChange={event => setTimezone(event.target.value)}
@@ -213,7 +219,7 @@ const UpdateRoutinePayloadEditor = ({
           checked={isPinned}
           onCheckedChange={checked => setIsPinned(checked === true)}
         />
-        Pin routine
+        {t("workspace.routine.pin")}
       </label>
     </FormPayloadEditor>
   );

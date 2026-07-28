@@ -1,5 +1,6 @@
 import { AccessControlPermission } from "@shared/api/interfaces/enums/accessControlPermission.enum";
 import type { UUID } from "crypto";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,57 +50,70 @@ const AddShelfCollaboratorDialog = ({
   currentUserPublicId,
   isPending,
   onSubmit,
-}: AddShelfCollaboratorDialogProps) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent overlayClassName="z-[170]" className="z-[180] sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle>Add collaborator</DialogTitle>
-        <DialogDescription>
-          Paste a user public ID and choose the RootShelf permission.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-4">
-        <Input
-          value={userPublicId}
-          onChange={event => onUserPublicIdChange(event.target.value)}
-          placeholder="User public ID"
-        />
-        <Select
-          value={permission}
-          onValueChange={value =>
-            onPermissionChange(value as ShelfCollaboratorPermission)
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="z-[190]">
-            {permissionOptions.map(value => (
-              <SelectItem key={value} value={value}>
-                {value}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
-        <Button
-          disabled={
-            !canManageSharing ||
-            isPending ||
-            !userPublicId.trim() ||
-            userPublicId.trim() === currentUserPublicId
-          }
-          onClick={onSubmit}
-        >
-          {isPending ? "Adding..." : "Add"}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
+}: AddShelfCollaboratorDialogProps) => {
+  const { t } = useTranslation();
+  const permissionLabel = (value: ShelfCollaboratorPermission) => {
+    if (value === AccessControlPermission.Admin)
+      return t("workspace.viewer.admin");
+    if (value === AccessControlPermission.Write)
+      return t("workspace.viewer.write");
+    return t("workspace.viewer.read");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent overlayClassName="z-[170]" className="z-[180] sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t("workspace.dialogs.addCollaborator")}</DialogTitle>
+          <DialogDescription>
+            {t("workspace.dialogs.addCollaboratorDescription")}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <Input
+            value={userPublicId}
+            onChange={event => onUserPublicIdChange(event.target.value)}
+            placeholder={t("workspace.dialogs.userPublicId")}
+          />
+          <Select
+            value={permission}
+            onValueChange={value =>
+              onPermissionChange(value as ShelfCollaboratorPermission)
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="z-[190]">
+              {permissionOptions.map(value => (
+                <SelectItem key={value} value={value}>
+                  {permissionLabel(value)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t("workspace.widgets.cancel")}
+          </Button>
+          <Button
+            disabled={
+              !canManageSharing ||
+              isPending ||
+              !userPublicId.trim() ||
+              userPublicId.trim() === currentUserPublicId
+            }
+            onClick={onSubmit}
+          >
+            {isPending
+              ? t("workspace.dialogs.adding")
+              : t("workspace.viewer.add")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default AddShelfCollaboratorDialog;

@@ -1,4 +1,5 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
+import { useTranslation } from "react-i18next";
 import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 import MaterialViewerFrame from "./MaterialViewerFrame";
 
@@ -11,6 +12,7 @@ const MaterialUnsupportedViewerContent = ({
   meta,
   materialContentType,
 }: MaterialUnsupportedViewerContentProps) => {
+  const { t } = useTranslation();
   return (
     <MaterialViewerFrame
       meta={meta}
@@ -24,7 +26,7 @@ const MaterialUnsupportedViewerContent = ({
           rel="noreferrer"
           className="underline text-primary"
         >
-          Open file in new tab
+          {t("workspace.viewer.openFileNewTab")}
         </a>
       )}
     </MaterialViewerFrame>

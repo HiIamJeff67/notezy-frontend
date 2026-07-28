@@ -1,5 +1,6 @@
 import { Image } from "@unpic/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import DropFileZone from "@/components/commons/DropFileZone/DropFileZone";
 import { Button } from "@/components/ui/button";
@@ -25,19 +26,18 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
   open,
   onOpenChange,
   maxCount = 5,
-  title = "Upload Image",
+  title,
   onUpload,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   const [uploadedImages, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const handleOnDrop = (files: File[]) => {
     if (files.length > maxCount) {
-      setError(
-        `You can only upload max to ${maxCount} images at the same time`
-      );
+      setError(t("workspace.dialogs.maxImages", { count: maxCount }));
       return;
     }
     setSelectedFiles(prev => [...prev, ...files]);
@@ -46,7 +46,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
 
   const handleOnUpload = async () => {
     if (uploadedImages.length === 0) {
-      setError("Please select at least one image");
+      setError(t("workspace.dialogs.selectAtLeastOneImage"));
       return;
     }
     try {
@@ -64,10 +64,12 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>
+            {title ?? t("workspace.dialogs.uploadImage")}
+          </DialogTitle>
         </DialogHeader>
         <DialogDescription className="px-2">
-          {`Upload your images below ( You can only upload max to ${maxCount} images at the same time )`}
+          {t("workspace.dialogs.uploadImagesDescription", { count: maxCount })}
         </DialogDescription>
         <DropFileZone
           accept={{ "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"] }}
@@ -80,7 +82,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         >
           <div className="flex-col justify-center items-center">
             <p className="text-sm text-muted-foreground">
-              Drop Files or Click Here to Select Uploaded Images
+              {t("workspace.dialogs.dropImages")}
             </p>
           </div>
         </DropFileZone>
@@ -114,7 +116,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
         {error && <div className="text-destructive text-sm">{error}</div>}
         <div className="w-full flex justify-end gap-2 mt-4">
           <Button variant="secondary" disabled={isUploading} onClick={onCancel}>
-            Cancel
+            {t("workspace.widgets.cancel")}
           </Button>
           <Button
             variant="default"
@@ -122,7 +124,7 @@ const UploadImageDialog: React.FC<UploadImageDialogProps> = ({
             disabled={uploadedImages.length === 0 || isUploading}
           >
             {isUploading && <Spinner />}
-            Upload
+            {t("workspace.dialogs.upload")}
           </Button>
         </div>
       </DialogContent>

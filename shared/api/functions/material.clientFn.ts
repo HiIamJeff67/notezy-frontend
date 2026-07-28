@@ -4,7 +4,6 @@ import {
   SaveMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 
 export async function SaveMyMaterialById(
@@ -34,9 +33,10 @@ export async function SaveMyMaterialById(
   );
 
   if (!isJsonResponse(response)) {
-    throw new Error(tKey.error.encounterUnknownError);
+    throw new Error("error.encounterUnknownError");
   }
-  const formattedResponse = (await response.json()) as SaveMyMaterialByIdResponse;
+  const formattedResponse =
+    (await response.json()) as SaveMyMaterialByIdResponse;
   if (formattedResponse.exception != null) {
     throw new NotezyAPIError(new NotezyException(formattedResponse.exception));
   }

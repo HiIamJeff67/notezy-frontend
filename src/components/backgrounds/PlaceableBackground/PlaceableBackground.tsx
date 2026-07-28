@@ -154,10 +154,7 @@ const PlaceableBackground = ({
         ...style,
       }}
     >
-      <div
-        className="relative min-h-full"
-        style={{ minHeight: surfaceHeight }}
-      >
+      <div className="relative min-h-full" style={{ minHeight: surfaceHeight }}>
         {children}
         {dropPlaceholderSize && (
           <div
@@ -232,7 +229,11 @@ const PlaceableBackground = ({
                 position: FrameCountPosition
               ) => {
                 if (frameProps.droppableProps.drop !== undefined) {
-                  frameProps.droppableProps.drop(draggedItem, monitor, position);
+                  frameProps.droppableProps.drop(
+                    draggedItem,
+                    monitor,
+                    position
+                  );
                   setDropPlaceholderSize(undefined);
                 }
               },

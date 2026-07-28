@@ -1,5 +1,6 @@
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,6 +49,7 @@ const TemplatePatternEditor = ({
   pattern,
   onPatternChange,
 }: TemplatePatternEditorProps) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [editingPattern, setEditingPattern] = useState<{
     originalToken: string;
@@ -67,7 +69,9 @@ const TemplatePatternEditor = ({
         <div>
           <Label>{label}</Label>
           <p className="mt-1 text-xs text-muted-foreground">
-            Values available as {"{{token}}"}.
+            {t("workspace.payloadEditor.valuesAvailableAsTokens", {
+              token: "{{token}}",
+            })}
           </p>
         </div>
         <Button
@@ -105,16 +109,16 @@ const TemplatePatternEditor = ({
             <TableHeader>
               <TableRow className="transition-none hover:bg-transparent">
                 <TableHead className="h-8 w-[84px] p-1 text-left">
-                  Token
+                  {t("workspace.payloadEditor.token")}
                 </TableHead>
                 <TableHead className="h-8 w-[96px] p-1 text-left">
-                  Source
+                  {t("workspace.payloadEditor.source")}
                 </TableHead>
                 <TableHead className="h-8 w-[88px] p-1 text-left">
-                  Target
+                  {t("workspace.payloadEditor.target")}
                 </TableHead>
                 <TableHead className="h-8 w-[72px] p-1 text-left">
-                  Option
+                  {t("workspace.payloadEditor.option")}
                 </TableHead>
                 <TableHead className="h-8 w-12 p-0"></TableHead>
               </TableRow>
@@ -126,7 +130,7 @@ const TemplatePatternEditor = ({
                     colSpan={5}
                     className="h-56 px-2 py-6 text-center text-xs text-muted-foreground"
                   >
-                    No pattern values
+                    {t("workspace.payloadEditor.noPatternValues")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -140,10 +144,10 @@ const TemplatePatternEditor = ({
                   const option =
                     binding.source === "blockCheckboxCount"
                       ? binding.checked === undefined
-                        ? "Any"
+                        ? t("workspace.payloadEditor.any")
                         : binding.checked
-                          ? "Checked"
-                          : "Unchecked"
+                          ? t("workspace.payloadEditor.checked")
+                          : t("workspace.payloadEditor.unchecked")
                       : binding.timezone;
 
                   return (
@@ -182,7 +186,9 @@ const TemplatePatternEditor = ({
                             variant="ghost"
                             size="icon"
                             className="size-6 shrink-0"
-                            aria-label={`Edit ${token}`}
+                            aria-label={t("workspace.payloadEditor.editToken", {
+                              token,
+                            })}
                             onClick={() =>
                               setEditingPattern({
                                 originalToken: token,
@@ -198,7 +204,10 @@ const TemplatePatternEditor = ({
                             variant="ghost"
                             size="icon"
                             className="size-6 shrink-0"
-                            aria-label={`Delete ${token}`}
+                            aria-label={t(
+                              "workspace.payloadEditor.deleteToken",
+                              { token }
+                            )}
                             onClick={() => {
                               const nextPattern = { ...pattern };
                               delete nextPattern[token];
@@ -223,7 +232,9 @@ const TemplatePatternEditor = ({
           className="-mt-px h-8 min-h-8 w-full shrink-0 rounded-t-none rounded-b-sm py-0"
           onClick={() => setIsExpanded(current => !current)}
         >
-          {isExpanded ? "Close" : "Expand"}
+          {isExpanded
+            ? t("workspace.payloadEditor.close")
+            : t("workspace.payloadEditor.expand")}
         </Button>
       </div>
 
@@ -237,12 +248,16 @@ const TemplatePatternEditor = ({
           className="z-[230] w-[min(480px,calc(100vw-2rem))] rounded-sm"
         >
           <DialogHeader>
-            <DialogTitle>Edit pattern</DialogTitle>
+            <DialogTitle>
+              {t("workspace.payloadEditor.editPattern")}
+            </DialogTitle>
           </DialogHeader>
           {editingPattern && (
             <div className="grid gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="pattern-token">Token</Label>
+                <Label htmlFor="pattern-token">
+                  {t("workspace.payloadEditor.token")}
+                </Label>
                 <Input
                   id="pattern-token"
                   value={editingPattern.token}
@@ -256,7 +271,9 @@ const TemplatePatternEditor = ({
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="pattern-source">Source</Label>
+                <Label htmlFor="pattern-source">
+                  {t("workspace.payloadEditor.source")}
+                </Label>
                 <select
                   id="pattern-source"
                   value={editingPattern.binding.source}
@@ -298,7 +315,9 @@ const TemplatePatternEditor = ({
                 </select>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="pattern-target">Target</Label>
+                <Label htmlFor="pattern-target">
+                  {t("workspace.payloadEditor.target")}
+                </Label>
                 <Input
                   id="pattern-target"
                   value={
@@ -315,9 +334,9 @@ const TemplatePatternEditor = ({
                   }
                   placeholder={
                     editingPattern.binding.source === "blockText"
-                      ? "Block ID"
+                      ? t("workspace.payloadEditor.blockId")
                       : editingPattern.binding.source === "blockCheckboxCount"
-                        ? "BlockPack ID"
+                        ? t("workspace.payloadEditor.blockPackId")
                         : "2006-01-02"
                   }
                   onChange={event => {
@@ -334,7 +353,9 @@ const TemplatePatternEditor = ({
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="pattern-option">Option</Label>
+                <Label htmlFor="pattern-option">
+                  {t("workspace.payloadEditor.option")}
+                </Label>
                 {editingPattern.binding.source === "blockCheckboxCount" ? (
                   <select
                     id="pattern-option"
@@ -356,9 +377,13 @@ const TemplatePatternEditor = ({
                     }
                     className="h-9 w-full rounded-sm border border-input bg-transparent px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                   >
-                    <option value="">Any</option>
-                    <option value="true">Checked</option>
-                    <option value="false">Unchecked</option>
+                    <option value="">{t("workspace.payloadEditor.any")}</option>
+                    <option value="true">
+                      {t("workspace.payloadEditor.checked")}
+                    </option>
+                    <option value="false">
+                      {t("workspace.payloadEditor.unchecked")}
+                    </option>
                   </select>
                 ) : (
                   <Input
@@ -383,7 +408,7 @@ const TemplatePatternEditor = ({
               variant="outline"
               onClick={() => setEditingPattern(null)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -397,7 +422,7 @@ const TemplatePatternEditor = ({
                 setEditingPattern(null);
               }}
             >
-              Save
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

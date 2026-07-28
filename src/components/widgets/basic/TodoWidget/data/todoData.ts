@@ -19,7 +19,7 @@ export const getDefaultTodoData = (
   items?: TodoItem[]
 ): TodoData => {
   return {
-    title: title ?? "unknown",
+    title: title ?? "",
     items: items ?? [],
   };
 };

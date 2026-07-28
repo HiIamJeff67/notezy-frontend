@@ -25,6 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
@@ -42,7 +43,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useAppRouter, useLanguage } from "@/hooks";
+import { useAppRouter } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 import MaterialViewerFrame from "./MaterialViewerFrame";
 
@@ -71,7 +73,7 @@ type AnnotationTool = Annotation["type"];
 
 const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const saveMaterialMutator = useSaveMyMaterialById();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -481,11 +483,11 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
         },
       });
       router.refresh();
-      toast.success("PDF annotations saved");
+      toast.success(t("workspace.notifications.pdfAnnotationsSaved"));
       setAnnotations([]);
       await loadPdf(nextPdfBytes);
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     } finally {
       setIsApplyingAnnotations(false);
     }
@@ -495,7 +497,7 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
     if (!pdfBytes) return;
 
     downloadPdfBytes(pdfBytes, meta.name);
-    toast.success("PDF downloaded");
+    toast.success(t("workspace.notifications.pdfDownloaded"));
   };
 
   const handleDownloadAnnotatedPdf = async () => {
@@ -506,13 +508,9 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
     try {
       const nextPdfBytes = await applyAnnotationsToPdf();
       downloadPdfBytes(nextPdfBytes, meta.name);
-      toast.success("Annotated PDF downloaded");
+      toast.success(t("workspace.notifications.annotatedPdfDownloaded"));
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to download annotated PDF"
-      );
+      toast.error(translateError(error, t));
     } finally {
       setIsApplyingAnnotations(false);
     }
@@ -645,28 +643,28 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
             <ToggleGroupItem
               disabled={!pdfDocument || isLoading}
               value="highlight"
-              aria-label="Highlight"
+              aria-label={t("workspace.viewer.highlight")}
             >
               <HighlighterIcon />
             </ToggleGroupItem>
             <ToggleGroupItem
               disabled={!pdfDocument || isLoading}
               value="text"
-              aria-label="Text"
+              aria-label={t("workspace.viewer.text")}
             >
               <TypeIcon />
             </ToggleGroupItem>
             <ToggleGroupItem
               disabled={!pdfDocument || isLoading}
               value="drawing"
-              aria-label="Drawing"
+              aria-label={t("workspace.viewer.drawing")}
             >
               <PencilIcon />
             </ToggleGroupItem>
             <ToggleGroupItem
               disabled={!pdfDocument || isLoading}
               value="cursor"
-              aria-label="Cancel"
+              aria-label={t("workspace.viewer.cancel")}
             >
               <MousePointer />
             </ToggleGroupItem>
@@ -675,7 +673,7 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
       }
       menubarChildren={
         <MenubarMenu>
-          <MenubarTrigger>Edit</MenubarTrigger>
+          <MenubarTrigger>{t("workspace.viewer.edit")}</MenubarTrigger>
           <MenubarContent align="end" side="bottom">
             <MenubarItem
               disabled={scale <= 0.5 || isLoading}
@@ -684,11 +682,13 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
               }
             >
               <MinusIcon />
-              Zoom Out
+              {t("workspace.viewer.zoomOut")}
               <MenubarShortcut>-</MenubarShortcut>
             </MenubarItem>
             <MenubarItem disabled={isLoading} onSelect={() => setScale(1)}>
-              Reset Zoom ({Math.round(scale * 100)}%)
+              {t("workspace.viewer.resetZoom", {
+                percent: Math.round(scale * 100),
+              })}
               <MenubarShortcut>0</MenubarShortcut>
             </MenubarItem>
             <MenubarItem
@@ -698,7 +698,7 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
               }
             >
               <PlusIcon />
-              Zoom In
+              {t("workspace.viewer.zoomIn")}
               <MenubarShortcut>+</MenubarShortcut>
             </MenubarItem>
             <MenubarSeparator />
@@ -706,7 +706,7 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
               disabled={currentPage <= 1 || isLoading}
               onSelect={() => setCurrentPage(page => Math.max(1, page - 1))}
             >
-              Previous Page
+              {t("workspace.viewer.previousPage")}
               <MenubarShortcut>←</MenubarShortcut>
             </MenubarItem>
             <MenubarItem
@@ -715,7 +715,10 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
                 setCurrentPage(page => Math.min(totalPages, page + 1))
               }
             >
-              Next Page ({currentPage} / {totalPages || 1})
+              {t("workspace.viewer.nextPage", {
+                current: currentPage,
+                total: totalPages || 1,
+              })}
               <MenubarShortcut>→</MenubarShortcut>
             </MenubarItem>
           </MenubarContent>
@@ -725,21 +728,21 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
         <>
           <MenubarItem disabled={!pdfBytes} onSelect={handleDownloadPdf}>
             <DownloadIcon />
-            Download PDF
+            {t("workspace.viewer.downloadPdf")}
           </MenubarItem>
           <MenubarItem
             disabled={annotations.length === 0 || isApplyingAnnotations}
             onSelect={handleDownloadAnnotatedPdf}
           >
             <DownloadIcon />
-            Download Annotated PDF
+            {t("workspace.viewer.downloadAnnotatedPdf")}
           </MenubarItem>
           <MenubarItem
             disabled={annotations.length === 0 || isApplyingAnnotations}
             onSelect={handleSave}
           >
             <SaveIcon />
-            Save Annotations
+            {t("workspace.viewer.saveAnnotations")}
             <MenubarShortcut>⌘S</MenubarShortcut>
           </MenubarItem>
         </>
@@ -754,12 +757,12 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
         >
           {isLoading && (
             <div className="sticky top-4 z-10 mx-auto w-fit rounded-md bg-neutral-800/95 px-4 py-2 text-sm text-neutral-100 shadow-lg">
-              Loading PDF...
+              {t("workspace.viewer.loadingPdf")}
             </div>
           )}
           {!isAvailable && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-neutral-100">
-              Failed to load PDF preview.
+              {t("workspace.viewer.failedPdfPreview")}
             </div>
           )}
           <div className="w-max min-w-full min-h-full flex items-start justify-center">
@@ -789,7 +792,7 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                aria-label="Text annotation position"
+                aria-label={t("workspace.viewer.textAnnotationPosition")}
                 className="absolute size-1 -translate-x-1/2 -translate-y-1/2 opacity-0"
                 style={{
                   left: textAnnotationPopover?.left ?? 0,
@@ -811,10 +814,10 @@ const MaterialPDFViewerContent = ({ meta }: MaterialPDFViewerContentProps) => {
                   autoFocus
                   value={textAnnotationDraft}
                   onChange={event => setTextAnnotationDraft(event.target.value)}
-                  placeholder="Input text"
+                  placeholder={t("workspace.viewer.inputText")}
                 />
                 <Button variant="secondary" type="submit" size="sm">
-                  Add
+                  {t("workspace.viewer.add")}
                 </Button>
                 <Button
                   variant="destructive"

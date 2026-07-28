@@ -4,6 +4,7 @@ import type { UUID } from "crypto";
 import { CheckIcon, PlusIcon, WrenchIcon } from "lucide-react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import PlaceableBackground from "@/components/backgrounds/PlaceableBackground/PlaceableBackground";
 import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
@@ -38,6 +39,7 @@ const DashboardElementZIndexes = {
 };
 
 const DashboardPage = () => {
+  const { t } = useTranslation();
   const screenManager = useScreen();
   const widgetManager = useWidget();
   const modalManager = useModal();
@@ -408,13 +410,13 @@ const DashboardPage = () => {
             <ModifyImageHover
               className="absolute"
               imageSrc=""
-              imageAlt="Dashboard background image"
+              imageAlt={t("workspace.navigation.dashboardBackgroundImage")}
               onClick={() =>
                 modalManager.open("SelectBackgroundImageDialog", {
                   cropperAspectRatio: cropperAspectRatio,
                 })
               }
-              hoverText="點擊以變更背景圖片"
+              hoverText={t("workspace.navigation.changeBackgroundImage")}
             />
           )}
         </GridBackground>
@@ -426,13 +428,13 @@ const DashboardPage = () => {
           {isEditing && (
             <ModifyImageHover
               className="absolute inset-0"
-              imageAlt="Dashboard background image"
+              imageAlt={t("workspace.navigation.dashboardBackgroundImage")}
               onClick={() =>
                 modalManager.open("SelectBackgroundImageDialog", {
                   cropperAspectRatio: cropperAspectRatio,
                 })
               }
-              hoverText="點擊以變更背景圖片"
+              hoverText={t("workspace.navigation.changeBackgroundImage")}
             />
           )}
         </ProgressiveBackground>
@@ -650,13 +652,13 @@ const DashboardPage = () => {
                       <DropdownMenuItem
                         onClick={() => setEditingWidgetIndex(index)}
                       >
-                        Edit
+                        {t("common.edit")}
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem
                       onClick={() => widgetManager.remove(index)}
                     >
-                      Delete
+                      {t("common.delete")}
                     </DropdownMenuItem>
                   </>
                 }

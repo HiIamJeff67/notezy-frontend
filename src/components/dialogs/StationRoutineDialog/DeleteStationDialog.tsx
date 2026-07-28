@@ -1,6 +1,7 @@
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteStationDialogProps extends ModalProps {
@@ -28,7 +30,7 @@ const DeleteStationDialog = ({
   stationName,
   onDeleted,
 }: DeleteStationDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const [confirmation, setConfirmation] = useState<string>("");
 
@@ -42,10 +44,10 @@ const DeleteStationDialog = ({
     try {
       await stationRoutineManager.deleteStation(stationId);
       await onDeleted?.();
-      toast.success("Station deleted");
+      toast.success(t("workspace.station.deleted"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -58,10 +60,9 @@ const DeleteStationDialog = ({
     >
       <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete a station</DialogTitle>
+          <DialogTitle>{t("workspace.station.deleteTitle")}</DialogTitle>
           <DialogDescription>
-            This moves the station and its routines out of active views. Type
-            the station name to confirm.
+            {t("workspace.station.deleteDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -76,7 +77,9 @@ const DeleteStationDialog = ({
               aria-invalid={
                 confirmation.length > 0 && confirmation !== stationName
               }
-              placeholder={`Type the name of "${stationName}"`}
+              placeholder={t("workspace.station.deletePlaceholder", {
+                name: stationName,
+              })}
             />
           </div>
 
@@ -87,7 +90,7 @@ const DeleteStationDialog = ({
               disabled={stationRoutineManager.isDeletingStation}
               onClick={onClose}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -99,7 +102,7 @@ const DeleteStationDialog = ({
               onClick={deleteStation}
             >
               {stationRoutineManager.isDeletingStation && <Spinner />}
-              Delete
+              {t("common.delete")}
             </Button>
           </DialogFooter>
         </div>

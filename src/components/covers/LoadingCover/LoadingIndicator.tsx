@@ -12,6 +12,7 @@ const GHOST_STROKE_WIDTH = 18;
 const GHOST_STROKE_MITER_LIMIT = 2;
 
 const LoadingIndicator = () => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center">
       <svg
@@ -45,10 +46,12 @@ const LoadingIndicator = () => {
         </g>
       </svg>
       <p className="text-base font-semibold tracking-[0.16em] text-[var(--loading-logo-front)]">
-        LOADING
+        {t("common.loading")}
       </p>
     </div>
   );
 };
 
 export default LoadingIndicator;
+
+import { useTranslation } from "react-i18next";

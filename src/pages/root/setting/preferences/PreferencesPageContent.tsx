@@ -1,12 +1,9 @@
 import { LocalYjsDocumentStore } from "@shared/blockpack/core";
+import { AllLanguageData } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import { HardDriveIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Section,
-  SettingRow,
-  SwitchRow,
-} from "@/components/panels/PreferencesPanel/PreferenceRows";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,11 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { useLanguage, useTheme } from "@/hooks";
+import { useTheme } from "@/hooks";
 import type { Density, EditorWidth } from "@/hooks/localPreferences";
 import { useLocalPreferences } from "@/hooks/localPreferences";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { useRealtime } from "@/hooks/useRealtime";
+import { Section, SettingRow, SwitchRow } from "./tabs/PreferenceRows";
 
 const formatStorageSize = (bytes = 0) => {
   const mb = bytes / 1024 / 1024;
@@ -30,26 +28,28 @@ const formatStorageSize = (bytes = 0) => {
 
 const AppearanceSettings = () => {
   const { preferences, updatePreference } = useLocalPreferences();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const themeManager = useTheme();
 
   return (
     <Section>
       <SettingRow
-        title="主題"
-        description="調整整個產品的色彩與明暗層次，會立即套用在目前裝置。"
+        title={t("settingsPage.preferences.appearance.theme")}
+        description={t("settingsPage.preferences.appearance.themeDescription")}
       >
         <Select
           value={themeManager.currentTheme.id}
           onValueChange={value => void themeManager.switchCurrentTheme(value)}
         >
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="選擇主題" />
+            <SelectValue
+              placeholder={t("settingsPage.preferences.appearance.chooseTheme")}
+            />
           </SelectTrigger>
           <SelectContent>
             {themeManager.availableThemes.map(theme => (
               <SelectItem key={theme.id} value={theme.id}>
-                {theme.name}
+                {t(theme.translationKey)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -57,26 +57,25 @@ const AppearanceSettings = () => {
       </SettingRow>
 
       <SettingRow
-        title="介面語言"
-        description="切換介面顯示語言；內容本身不會被翻譯或改寫。"
+        title={t("settingsPage.preferences.appearance.language")}
+        description={t(
+          "settingsPage.preferences.appearance.languageDescription"
+        )}
       >
         <Select
-          value={languageManager.currentLanguage.key}
-          onValueChange={value => {
-            const language = languageManager.availableLanguages.find(
-              item => item.key === value
-            );
-            if (language) {
-              languageManager.setCurrentLanguage(language);
-            }
-          }}
+          value={i18n.resolvedLanguage}
+          onValueChange={value => void i18n.changeLanguage(value)}
         >
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="選擇語言" />
+            <SelectValue
+              placeholder={t(
+                "settingsPage.preferences.appearance.chooseLanguage"
+              )}
+            />
           </SelectTrigger>
           <SelectContent>
-            {languageManager.availableLanguages.map(language => (
-              <SelectItem key={language.key} value={language.key}>
+            {AllLanguageData.map(language => (
+              <SelectItem key={language.code} value={language.code}>
                 {language.nativeName}
               </SelectItem>
             ))}
@@ -85,14 +84,19 @@ const AppearanceSettings = () => {
       </SettingRow>
 
       <SettingRow
-        title="密度"
-        description="控制列表、按鈕和面板之間的間距，影響畫面資訊量。"
+        title={t("settingsPage.preferences.appearance.density")}
+        description={t(
+          "settingsPage.preferences.appearance.densityDescription"
+        )}
       >
         <div className="flex rounded-md border border-border bg-muted p-1">
           {[
-            ["comfortable", "寬鬆"],
-            ["balanced", "標準"],
-            ["compact", "緊湊"],
+            [
+              "comfortable",
+              t("settingsPage.preferences.appearance.comfortable"),
+            ],
+            ["balanced", t("settingsPage.preferences.appearance.balanced")],
+            ["compact", t("settingsPage.preferences.appearance.compact")],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -111,19 +115,23 @@ const AppearanceSettings = () => {
       </SettingRow>
 
       <SwitchRow
-        title="低動態"
-        description="減少轉場和動態效果，適合長時間工作或對動畫敏感時使用。"
+        title={t("settingsPage.preferences.appearance.reduceMotion")}
+        description={t(
+          "settingsPage.preferences.appearance.reduceMotionDescription"
+        )}
         checked={preferences.reduceMotion}
         onCheckedChange={checked => updatePreference("reduceMotion", checked)}
       />
       <SwitchRow
-        title="操作回饋"
-        description="保留按鈕、切換和選取時的細微觸覺感與視覺回饋。"
+        title={t("settingsPage.preferences.appearance.tactileFeedback")}
+        description={t(
+          "settingsPage.preferences.appearance.tactileFeedbackDescription"
+        )}
         checked={preferences.tactileFeedback}
         onCheckedChange={checked =>
           updatePreference("tactileFeedback", checked)
         }
-        unsupportedReason="尚未支援"
+        unsupportedReason={t("settingsPage.preferences.appearance.unsupported")}
         hideSeparator
       />
     </Section>
@@ -132,12 +140,13 @@ const AppearanceSettings = () => {
 
 const EditorSettings = () => {
   const { preferences, updatePreference } = useLocalPreferences();
+  const { t } = useTranslation();
 
   return (
     <Section>
       <SettingRow
-        title="頁面寬度"
-        description="調整編輯區預設寬度，讓閱讀、書寫或整理大量內容更順手。"
+        title={t("settingsPage.preferences.editor.pageWidth")}
+        description={t("settingsPage.preferences.editor.pageWidthDescription")}
       >
         <Select
           value={preferences.editorWidth}
@@ -149,16 +158,22 @@ const EditorSettings = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="narrow">窄版</SelectItem>
-            <SelectItem value="standard">標準</SelectItem>
-            <SelectItem value="wide">寬版</SelectItem>
+            <SelectItem value="narrow">
+              {t("settingsPage.preferences.editor.narrow")}
+            </SelectItem>
+            <SelectItem value="standard">
+              {t("settingsPage.preferences.editor.standard")}
+            </SelectItem>
+            <SelectItem value="wide">
+              {t("settingsPage.preferences.editor.wide")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </SettingRow>
 
       <SettingRow
-        title="文字尺寸"
-        description="設定編輯器中的基準字級，只影響本機顯示偏好。"
+        title={t("settingsPage.preferences.editor.textSize")}
+        description={t("settingsPage.preferences.editor.textSizeDescription")}
       >
         <div className="flex w-52 shrink-0 items-center gap-3">
           <Slider
@@ -177,26 +192,28 @@ const EditorSettings = () => {
       </SettingRow>
 
       <SwitchRow
-        title="自動換行"
-        description="讓長句自動折行，不需要水平捲動即可閱讀完整段落。"
+        title={t("settingsPage.preferences.editor.lineWrap")}
+        description={t("settingsPage.preferences.editor.lineWrapDescription")}
         checked={preferences.lineWrap}
         onCheckedChange={checked => updatePreference("lineWrap", checked)}
       />
       <SwitchRow
-        title="拼字檢查"
-        description="使用瀏覽器本機拼字檢查能力輔助輸入，不會把內容送到 Notezy API。"
+        title={t("settingsPage.preferences.editor.spellcheck")}
+        description={t("settingsPage.preferences.editor.spellcheckDescription")}
         checked={preferences.spellcheck}
         onCheckedChange={checked => updatePreference("spellcheck", checked)}
       />
       <SwitchRow
-        title="快速插入列"
-        description="在編輯時顯示常用插入工具，方便快速加入區塊、routine 或素材。"
+        title={t("settingsPage.preferences.editor.quickInsert")}
+        description={t(
+          "settingsPage.preferences.editor.quickInsertDescription"
+        )}
         checked={preferences.quickInsert}
         onCheckedChange={checked => updatePreference("quickInsert", checked)}
       />
       <SwitchRow
-        title="拖曳編輯列"
-        description="顯示每個區塊左側的六點拖曳把手，用來移動或操作區塊。"
+        title={t("settingsPage.preferences.editor.dragHandle")}
+        description={t("settingsPage.preferences.editor.dragHandleDescription")}
         checked={preferences.blockDragHandle}
         onCheckedChange={checked =>
           updatePreference("blockDragHandle", checked)
@@ -216,6 +233,7 @@ const OfflineSettings = () => {
   } = useLocalPreferences();
   const backgroundImages = useBackgroundImages();
   const { activeBlockPackChannelCount } = useRealtime();
+  const { t } = useTranslation();
   const [backgroundCache, setBackgroundCache] = useState({
     totalBytes: 0,
     count: 0,
@@ -241,25 +259,27 @@ const OfflineSettings = () => {
   const clearUnusedBackgroundImages = async () => {
     await backgroundImages.clearUnused();
     await refreshCacheUsage();
-    toast.success("Unused background images cleared.");
+    toast.success(t("settingsPage.preferences.offline.clearUnusedSuccess"));
   };
 
   const clearAllBackgroundImages = async () => {
-    if (!window.confirm("Clear all local background images?")) return;
+    if (!window.confirm(t("settingsPage.preferences.offline.clearAllConfirm")))
+      return;
     await backgroundImages.clearAll();
     await refreshCacheUsage();
-    toast.success("Background image cache cleared.");
+    toast.success(t("settingsPage.preferences.offline.clearAllSuccess"));
   };
 
   const clearLocalYjsDocuments = async () => {
     if (activeBlockPackChannelCount > 0) {
-      toast.error("Close active BlockPack editors before clearing Yjs cache.");
+      toast.error(t("settingsPage.preferences.offline.activeEditors"));
       return;
     }
-    if (!window.confirm("Clear local Yjs document recovery cache?")) return;
+    if (!window.confirm(t("settingsPage.preferences.offline.clearYjsConfirm")))
+      return;
     await LocalYjsDocumentStore.clear();
     await refreshCacheUsage();
-    toast.success("Local Yjs document cache cleared.");
+    toast.success(t("settingsPage.preferences.offline.clearYjsSuccess"));
   };
 
   return (
@@ -268,10 +288,10 @@ const OfflineSettings = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-medium">
             <HardDriveIcon className="size-4 text-primary" />
-            本機儲存額度
+            {t("settingsPage.preferences.offline.storage")}
           </div>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            瀏覽器回報的網站使用量與估算上限。
+            {t("settingsPage.preferences.offline.storageDescription")}
           </p>
         </div>
 
@@ -283,20 +303,32 @@ const OfflineSettings = () => {
             />
           </div>
           <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-            <span>已使用 {formatStorageSize(storageEstimate?.usage)}</span>
-            <span>上限 {formatStorageSize(storageEstimate?.quota)}</span>
+            <span>
+              {t("settingsPage.preferences.offline.used", {
+                size: formatStorageSize(storageEstimate?.usage),
+              })}
+            </span>
+            <span>
+              {t("settingsPage.preferences.offline.limit", {
+                size: formatStorageSize(storageEstimate?.quota),
+              })}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
           <div>
-            <div className="text-muted-foreground">Yjs 文件</div>
+            <div className="text-muted-foreground">
+              {t("settingsPage.preferences.offline.yjsDocuments")}
+            </div>
             <div className="mt-1 font-medium">
               {formatStorageSize(yjsCache.totalSize)}
             </div>
           </div>
           <div>
-            <div className="text-muted-foreground">背景圖片</div>
+            <div className="text-muted-foreground">
+              {t("settingsPage.preferences.offline.backgroundImages")}
+            </div>
             <div className="mt-1 font-medium">
               {formatStorageSize(backgroundCache.totalBytes)}
             </div>
@@ -306,44 +338,59 @@ const OfflineSettings = () => {
 
       <Section>
         <SwitchRow
-          title="本機資料庫"
-          description="準備用來控制 Notezy 是否在瀏覽器本機保存工作資料。"
+          title={t("settingsPage.preferences.offline.localDatabase")}
+          description={t(
+            "settingsPage.preferences.offline.localDatabaseDescription"
+          )}
           checked={preferences.localVault}
           onCheckedChange={checked => updatePreference("localVault", checked)}
-          unsupportedReason="待串接"
+          unsupportedReason={t("settingsPage.preferences.offline.pending")}
         />
         <SwitchRow
-          title="離線佇列"
-          description="準備用來控制離線操作是否先排入本機佇列，等連線恢復後再同步。"
+          title={t("settingsPage.preferences.offline.offlineQueue")}
+          description={t(
+            "settingsPage.preferences.offline.offlineQueueDescription"
+          )}
           checked={preferences.offlineQueue}
           onCheckedChange={checked => updatePreference("offlineQueue", checked)}
-          unsupportedReason="待串接"
+          unsupportedReason={t("settingsPage.preferences.offline.pending")}
         />
         <SwitchRow
-          title="附件快取"
-          description="準備用來控制近期附件是否保存在本機快取。"
+          title={t("settingsPage.preferences.offline.attachmentCache")}
+          description={t(
+            "settingsPage.preferences.offline.attachmentCacheDescription"
+          )}
           checked={preferences.cacheAttachments}
           onCheckedChange={checked =>
             updatePreference("cacheAttachments", checked)
           }
-          unsupportedReason="待串接"
+          unsupportedReason={t("settingsPage.preferences.offline.pending")}
         />
         <SettingRow
-          title="清理週期"
-          description="準備用來設定本機快取資料的保留天數。"
-          unsupportedReason="待串接"
+          title={t("settingsPage.preferences.offline.cleanupPeriod")}
+          description={t(
+            "settingsPage.preferences.offline.cleanupPeriodDescription"
+          )}
+          unsupportedReason={t("settingsPage.preferences.offline.pending")}
         >
           <span className="text-sm font-semibold">
-            {preferences.cleanupAfterDays}d
+            {t("settingsPage.preferences.offline.cleanupDays", {
+              count: preferences.cleanupAfterDays,
+            })}
           </span>
         </SettingRow>
         <SettingRow
-          title="Yjs 文件快取"
-          description="用於瀏覽器關閉、離線或重連後恢復 BlockPack 協作文件。"
+          title={t("settingsPage.preferences.offline.yjsCache")}
+          description={t(
+            "settingsPage.preferences.offline.yjsCacheDescription"
+          )}
         >
           <div className="flex flex-col items-end gap-2">
             <span className="text-xs text-muted-foreground">
-              {yjsCache.count} docs · {formatStorageSize(yjsCache.totalSize)}
+              {t("settingsPage.preferences.offline.documents", {
+                count: yjsCache.count,
+              })}{" "}
+              · {formatStorageSize(yjsCache.totalSize)}
             </span>
             <Button
               type="button"
@@ -353,19 +400,23 @@ const OfflineSettings = () => {
               disabled={activeBlockPackChannelCount > 0}
               onClick={clearLocalYjsDocuments}
             >
-              清除
+              {t("settingsPage.preferences.offline.clear")}
             </Button>
           </div>
         </SettingRow>
         <SettingRow
-          title="背景圖片快取"
-          description="本機背景圖片上限為 1 GB；新增圖片前會先檢查瀏覽器剩餘配額。"
+          title={t("settingsPage.preferences.offline.backgroundCache")}
+          description={t(
+            "settingsPage.preferences.offline.backgroundCacheDescription"
+          )}
           hideSeparator
         >
           <div className="flex flex-col items-end gap-2">
             <span className="text-xs text-muted-foreground">
-              {backgroundCache.count} images ·{" "}
-              {formatStorageSize(backgroundCache.totalBytes)}
+              {t("settingsPage.preferences.offline.images", {
+                count: backgroundCache.count,
+              })}{" "}
+              · {formatStorageSize(backgroundCache.totalBytes)}
             </span>
             <div className="flex gap-2">
               <Button
@@ -375,7 +426,7 @@ const OfflineSettings = () => {
                 className="h-8 px-3 text-xs"
                 onClick={clearUnusedBackgroundImages}
               >
-                清除未使用
+                {t("settingsPage.preferences.offline.clearUnused")}
               </Button>
               <Button
                 type="button"
@@ -384,7 +435,7 @@ const OfflineSettings = () => {
                 className="h-8 px-3 text-xs"
                 onClick={clearAllBackgroundImages}
               >
-                全部清除
+                {t("settingsPage.preferences.offline.clearAll")}
               </Button>
             </div>
           </div>

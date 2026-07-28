@@ -2,6 +2,7 @@ import type { SupportedIcon } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import type { ModalProps } from "@/providers/ModalProvider";
 import CreateStationDialogSkeleton from "./CreateStationDialogSkeleton";
 
@@ -29,7 +31,7 @@ const CreateStationDialog = ({
   onClose,
   onCreated,
 }: CreateStationDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
 
   const [name, setName] = useState<string>("");
@@ -69,10 +71,10 @@ const CreateStationDialog = ({
           : trimmedHeaderBackgroundURL
       );
       await onCreated?.(stationNode.id);
-      toast.success("Station created");
+      toast.success(t("workspace.station.created"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -85,9 +87,9 @@ const CreateStationDialog = ({
     >
       <DialogContent className="max-h-[85vh] overflow-visible rounded-sm sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Create station</DialogTitle>
+          <DialogTitle>{t("workspace.station.createTitle")}</DialogTitle>
           <DialogDescription>
-            Create a workspace for routines, tasks, and scheduling.
+            {t("workspace.station.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -104,7 +106,9 @@ const CreateStationDialog = ({
           ) : (
             <>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="station-name">Name</Label>
+                <Label htmlFor="station-name">
+                  {t("workspace.station.name")}
+                </Label>
                 <Input
                   id="station-name"
                   value={name}
@@ -112,27 +116,28 @@ const CreateStationDialog = ({
                   maxLength={128}
                   autoFocus
                   onChange={event => setName(event.currentTarget.value)}
-                  placeholder="What do you want to handle or manage in this station?"
+                  placeholder={t("workspace.station.namePlaceholder")}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="station-description">
-                  Description (Optional)
+                  {t("workspace.station.description")} (
+                  {t("workspace.station.optional")})
                 </Label>
                 <Textarea
                   id="station-description"
                   value={description}
                   maxLength={1024}
                   onChange={event => setDescription(event.currentTarget.value)}
-                  placeholder="Describe the detail about this station"
+                  placeholder={t("workspace.station.descriptionPlaceholder")}
                   className="min-h-24 resize-none"
                 />
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:shrink-0">
-                  <Label>Icon</Label>
+                  <Label>{t("workspace.station.icon")}</Label>
                   <SupportedIconTable
                     value={icon}
                     onValueChange={setIcon}
@@ -141,7 +146,9 @@ const CreateStationDialog = ({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <Label htmlFor="station-background-url">Background URL</Label>
+                  <Label htmlFor="station-background-url">
+                    {t("workspace.station.backgroundUrl")}
+                  </Label>
                   <Input
                     id="station-background-url"
                     type="url"
@@ -164,7 +171,7 @@ const CreateStationDialog = ({
               disabled={stationRoutineManager.isCreatingStation}
               onClick={onClose}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -175,7 +182,7 @@ const CreateStationDialog = ({
               }
             >
               {stationRoutineManager.isCreatingStation && <Spinner />}
-              Create
+              {t("common.create")}
             </Button>
           </DialogFooter>
         </form>

@@ -19,6 +19,7 @@ import React, {
 } from "react";
 import { useAppRouterActions, useLoading, useNetwork } from "@/hooks";
 import { useTransactionSynchronizer } from "@/hooks/useTransactionSynchronizer";
+import i18n from "@/i18n";
 
 interface UserContextType {
   enableInitialFetching: boolean;
@@ -114,9 +115,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 WebURLPathDictionary.home
               )
             ) {
-              toast.error(
-                "Your account has been logged out, please try to log in again."
-              );
+              toast.error(i18n.t("workspace.notifications.sessionExpired"));
               router.push(WebURLPathDictionary.auth.login);
             }
           }
@@ -185,9 +184,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 WebURLPathDictionary.home
               )
             ) {
-              toast.error(
-                "Your account has been logged out, please try to log in again."
-              );
+              toast.error(i18n.t("workspace.notifications.sessionExpired"));
               router.push(WebURLPathDictionary.auth.login);
             }
           }
@@ -233,9 +230,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 WebURLPathDictionary.home
               )
             ) {
-              toast.error(
-                "Your account has been logged out, please try to log in again."
-              );
+              toast.error(i18n.t("workspace.notifications.sessionExpired"));
               router.push(WebURLPathDictionary.auth.login);
             }
           }
@@ -281,9 +276,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 WebURLPathDictionary.home
               )
             ) {
-              toast.error(
-                "Your account has been logged out, please try to log in again."
-              );
+              toast.error(i18n.t("workspace.notifications.sessionExpired"));
               router.push(WebURLPathDictionary.auth.login);
             }
           }

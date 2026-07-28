@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +31,7 @@ const DeleteShelfItemDialog = ({
   onDelete,
   onCancel,
 }: DeleteShelfItemDialogProps) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
@@ -71,7 +73,7 @@ const DeleteShelfItemDialog = ({
             className="w-3/10"
           >
             {isDeleting && <Spinner />}
-            Delete
+            {t("common.delete")}
           </Button>
           <Button
             disabled={isDeleting}
@@ -81,7 +83,7 @@ const DeleteShelfItemDialog = ({
               onClose();
             }}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
         </div>
       </DialogContent>

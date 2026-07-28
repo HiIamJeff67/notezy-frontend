@@ -9,4 +9,3 @@ export interface PieChartSlice<TMeta = unknown> {
 export interface PieChartData<TMeta = unknown> {
   slices: PieChartSlice<TMeta>[];
 }
-

@@ -1,94 +1,97 @@
-export const metadata = {
-  title: "Privacy Policy | Notezy",
-};
+import { Trans, useTranslation } from "react-i18next";
+
+const CONTACT_EMAIL = "your-email@example.com";
 
 const PrivacyPolicyPage = () => {
+  const { t } = useTranslation();
+  const emailLink = (
+    <a href={`mailto:${CONTACT_EMAIL}`} className="underline" />
+  );
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 text-foreground">
-      <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
+      <h1 className="text-3xl font-bold mb-2">
+        {t("workspace.pages.privacy.title")}
+      </h1>
       <p className="text-sm text-muted-foreground mb-8">
-        Last updated: March 9, 2026
+        {t("workspace.pages.privacy.lastUpdated")}
       </p>
 
       <section className="mb-6">
         <h2 className="text-xl font-semibold mb-2">
-          1. Information We Collect
+          {t("workspace.pages.privacy.collectTitle")}
         </h2>
-        <p>When you use Notezy, we may collect the following information:</p>
+        <p>{t("workspace.pages.privacy.collectIntro")}</p>
         <ul className="list-disc ml-6 mt-2 space-y-1">
-          <li>Account information (name, email address)</li>
-          <li>Content you create (notes, documents)</li>
-          <li>Usage data (pages visited, features used)</li>
-          <li>Device and browser information</li>
+          <li>{t("workspace.pages.privacy.accountInfo")}</li>
+          <li>{t("workspace.pages.privacy.createdContent")}</li>
+          <li>{t("workspace.pages.privacy.usageData")}</li>
+          <li>{t("workspace.pages.privacy.deviceInfo")}</li>
         </ul>
       </section>
 
       <section className="mb-6">
         <h2 className="text-xl font-semibold mb-2">
-          2. How We Use Your Information
+          {t("workspace.pages.privacy.useTitle")}
         </h2>
         <ul className="list-disc ml-6 mt-2 space-y-1">
-          <li>To provide and maintain the Notezy service</li>
-          <li>To improve user experience</li>
-          <li>To communicate with you about updates</li>
+          <li>{t("workspace.pages.privacy.provideService")}</li>
+          <li>{t("workspace.pages.privacy.improveExperience")}</li>
+          <li>{t("workspace.pages.privacy.communicateUpdates")}</li>
         </ul>
       </section>
 
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">3. Data Sharing</h2>
-        <p>
-          We do not sell your personal data. We may share data with third-party
-          services (e.g., authentication providers) solely to operate the
-          service.
-        </p>
+        <h2 className="text-xl font-semibold mb-2">
+          {t("workspace.pages.privacy.sharingTitle")}
+        </h2>
+        <p>{t("workspace.pages.privacy.sharingText")}</p>
       </section>
 
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">4. Data Retention</h2>
-        <p>
-          We retain your data as long as your account is active. You may request
-          deletion at any time by contacting us.
-        </p>
+        <h2 className="text-xl font-semibold mb-2">
+          {t("workspace.pages.privacy.retentionTitle")}
+        </h2>
+        <p>{t("workspace.pages.privacy.retentionText")}</p>
       </section>
 
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">5. Your Rights</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          {t("workspace.pages.privacy.rightsTitle")}
+        </h2>
         <p>
-          You have the right to access, correct, or delete your personal data.
-          Contact us at{" "}
-          <a href="mailto:your-email@example.com" className="underline">
-            your-email@example.com
-          </a>
-          .
-        </p>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">6. Cookies</h2>
-        <p>
-          We use cookies and local storage to maintain your session and
-          preferences.
+          <Trans
+            i18nKey="workspace.pages.privacy.rightsText"
+            values={{ email: CONTACT_EMAIL }}
+            components={{ email: emailLink }}
+          />
         </p>
       </section>
 
       <section className="mb-6">
         <h2 className="text-xl font-semibold mb-2">
-          7. Changes to This Policy
+          {t("workspace.pages.privacy.cookiesTitle")}
         </h2>
-        <p>
-          We may update this policy from time to time. We will notify you of
-          significant changes via the application.
-        </p>
+        <p>{t("workspace.pages.privacy.cookiesText")}</p>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">
+          {t("workspace.pages.privacy.changesTitle")}
+        </h2>
+        <p>{t("workspace.pages.privacy.changesText")}</p>
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold mb-2">8. Contact Us</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          {t("workspace.pages.privacy.contactTitle")}
+        </h2>
         <p>
-          If you have questions, contact us at{" "}
-          <a href="mailto:your-email@example.com" className="underline">
-            your-email@example.com
-          </a>
-          .
+          <Trans
+            i18nKey="workspace.pages.privacy.contactText"
+            values={{ email: CONTACT_EMAIL }}
+            components={{ email: emailLink }}
+          />
         </p>
       </section>
     </div>

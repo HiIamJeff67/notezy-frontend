@@ -13,6 +13,7 @@ import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ContainableSelect from "@/components/commons/ContainableSelect/ContainableSelect";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine, useUser } from "@/hooks";
+import { useStationRoutine, useUser } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import {
+  translateRoutinePeriod,
+  translateRoutineTaskPurpose,
+  translateRoutineTaskStatus,
+} from "@/i18n/workspace";
 import InspectorLoadingCover from "./InspectorLoadingCover";
 
 const RoutineTaskPayloadEditor = lazy(
@@ -54,7 +61,7 @@ const RoutineTaskInspector = ({
   isOpen,
   onClose,
 }: RoutineTaskInspectorProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const userManager = useUser();
   const getRoutineTaskQuerier = useGetMyRoutineTaskById();
@@ -157,7 +164,7 @@ const RoutineTaskInspector = ({
         });
       })
       .catch(error => {
-        if (!cancelled) toast.error(languageManager.tError(error));
+        if (!cancelled) toast.error(translateError(error, t));
       })
       .finally(() => {
         if (!cancelled) setIsLoadingRoutineTaskDetail(false);
@@ -203,20 +210,18 @@ const RoutineTaskInspector = ({
       payload =
         values.payload.trim().length === 0 ? {} : JSON.parse(values.payload);
     } catch {
-      toast.error("Payload must be valid JSON.");
+      toast.error(t("workspace.validation.invalidJson"));
       return;
     }
     if (
       new TextEncoder().encode(JSON.stringify(payload ?? {})).length >
       16_777_216
     ) {
-      toast.error("Payload must be smaller than 16 MiB.");
+      toast.error(t("workspace.validation.payloadTooLarge"));
       return;
     }
     if (isRoutineTaskCostUnitExceeded) {
-      toast.error(
-        "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
-      );
+      toast.error(t("workspace.validation.payloadQuotaExceeded"));
       return;
     }
 
@@ -242,14 +247,14 @@ const RoutineTaskInspector = ({
       void userManager.fetchUserAccount(
         LocalStorageManipulator.getItemByKey(LocalStorageKey.accessToken)
       );
-      toast.success("Routine task updated");
+      toast.success(t("workspace.routineTask.updated"));
       onClose();
     } catch (error) {
-      const message = languageManager.tError(error);
+      const message = translateError(error, t);
       toast.error(
         message.toLowerCase().includes("routine task") &&
           message.toLowerCase().includes("cost")
-          ? "Routine task payload quota exceeded. Reduce the template size or upgrade your plan."
+          ? t("workspace.validation.payloadQuotaExceeded")
           : message
       );
     }
@@ -269,13 +274,15 @@ const RoutineTaskInspector = ({
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
             <SheetTitle className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0">Edit routine task of</span>
+              <span className="shrink-0">
+                {t("workspace.inspector.editRoutineTaskOf")}
+              </span>
               <span className="min-w-0 truncate text-foreground">
-                "{values.title || "Routine task"}"
+                "{values.title || t("workspace.table.task")}"
               </span>
             </SheetTitle>
             <SheetDescription>
-              Configure the action this routine task will execute.
+              {t("workspace.inspector.routineTaskDescription")}
             </SheetDescription>
           </SheetHeader>
           <form
@@ -288,7 +295,9 @@ const RoutineTaskInspector = ({
           >
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-task-inspector-title">Title</Label>
+                <Label htmlFor="routine-task-inspector-title">
+                  {t("workspace.fields.title")}
+                </Label>
                 <Input
                   id="routine-task-inspector-title"
                   value={values.title}
@@ -306,7 +315,7 @@ const RoutineTaskInspector = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Purpose</Label>
+                <Label>{t("workspace.fields.purpose")}</Label>
                 <ContainableSelect
                   value={values.purpose}
                   onValueChange={purpose =>
@@ -315,66 +324,63 @@ const RoutineTaskInspector = ({
                       purpose: purpose as RoutineTaskPurpose,
                     }))
                   }
-                  valueLabel={values.purpose.replace(
-                    /^(Create|Append|Update|Reset)(.+)$/,
-                    "$1．$2"
-                  )}
+                  valueLabel={translateRoutineTaskPurpose(values.purpose, t)}
                 >
                   <SelectGroup>
-                    <SelectLabel>Create</SelectLabel>
+                    <SelectLabel>{t("workspace.fields.create")}</SelectLabel>
                     <SelectItem value={RoutineTaskPurpose.CreateRootShelf}>
-                      RootShelf
+                      {t("workspace.trash.rootShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.CreateSubShelf}>
-                      SubShelf
+                      {t("workspace.trash.subShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.CreateBlockPack}>
-                      BlockPack
+                      {t("workspace.trash.blockPack")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.CreateRoutine}>
-                      Routine
+                      {t("workspace.trash.routine")}
                     </SelectItem>
                   </SelectGroup>
                   <SelectSeparator />
                   <SelectGroup>
-                    <SelectLabel>Append</SelectLabel>
+                    <SelectLabel>{t("workspace.fields.append")}</SelectLabel>
                     <SelectItem value={RoutineTaskPurpose.AppendBlock}>
-                      Block
+                      {t("workspace.fields.block")}
                     </SelectItem>
                   </SelectGroup>
                   <SelectSeparator />
                   <SelectGroup>
-                    <SelectLabel>Update</SelectLabel>
+                    <SelectLabel>{t("workspace.fields.update")}</SelectLabel>
                     <SelectItem value={RoutineTaskPurpose.UpdateRootShelf}>
-                      RootShelf
+                      {t("workspace.trash.rootShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.UpdateSubShelf}>
-                      SubShelf
+                      {t("workspace.trash.subShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.UpdateBlockPack}>
-                      BlockPack
+                      {t("workspace.trash.blockPack")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.UpdateBlock}>
-                      Block
+                      {t("workspace.fields.block")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.UpdateRoutine}>
-                      Routine
+                      {t("workspace.trash.routine")}
                     </SelectItem>
                   </SelectGroup>
                   <SelectSeparator />
                   <SelectGroup>
-                    <SelectLabel>Reset</SelectLabel>
+                    <SelectLabel>{t("workspace.fields.reset")}</SelectLabel>
                     <SelectItem value={RoutineTaskPurpose.ResetRootShelf}>
-                      RootShelf
+                      {t("workspace.trash.rootShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.ResetSubShelf}>
-                      SubShelf
+                      {t("workspace.trash.subShelf")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.ResetBlockPack}>
-                      BlockPack
+                      {t("workspace.trash.blockPack")}
                     </SelectItem>
                     <SelectItem value={RoutineTaskPurpose.ResetBlock}>
-                      Block
+                      {t("workspace.fields.block")}
                     </SelectItem>
                   </SelectGroup>
                 </ContainableSelect>
@@ -383,7 +389,7 @@ const RoutineTaskInspector = ({
               <div className="flex gap-4">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Label htmlFor="routine-task-inspector-priority">
-                    Priority
+                    {t("workspace.fields.priority")}
                   </Label>
                   <Input
                     id="routine-task-inspector-priority"
@@ -402,7 +408,7 @@ const RoutineTaskInspector = ({
 
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Label htmlFor="routine-task-inspector-attempts">
-                    Max attempts
+                    {t("workspace.fields.maxAttempts")}
                   </Label>
                   <Input
                     id="routine-task-inspector-attempts"
@@ -422,7 +428,7 @@ const RoutineTaskInspector = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Next scheduled at</Label>
+                <Label>{t("workspace.fields.nextScheduledAt")}</Label>
                 <DatePicker
                   value={values.nextScheduledAt}
                   onValueChange={nextScheduledAt => {
@@ -433,21 +439,26 @@ const RoutineTaskInspector = ({
                       nextScheduledAt,
                     }));
                   }}
-                  placeholder="Select next execution time"
+                  placeholder={t("workspace.fields.selectNextExecutionTime")}
                 />
                 <span className="text-xs text-muted-foreground">
-                  Next expected run time:{" "}
-                  {values.nextScheduledAt.toLocaleString()}. Updating it will
-                  not force an immediate rerun if the backend system schedule is
-                  later.
+                  {t("workspace.inspector.nextExpectedRun", {
+                    date: values.nextScheduledAt.toLocaleString(
+                      i18n.resolvedLanguage
+                    ),
+                  })}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  System claimable time: {values.scheduledAt.toLocaleString()}.
+                  {t("workspace.inspector.systemClaimableTime", {
+                    date: values.scheduledAt.toLocaleString(
+                      i18n.resolvedLanguage
+                    ),
+                  })}
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Recurring</Label>
+                <Label>{t("workspace.fields.recurring")}</Label>
                 <ContainableSelect
                   value={values.period ?? "OneShot"}
                   onValueChange={period =>
@@ -458,17 +469,22 @@ const RoutineTaskInspector = ({
                     }))
                   }
                   options={[
-                    { value: "OneShot", label: "One-shot" },
+                    {
+                      value: "OneShot",
+                      label: t("workspace.fields.oneShot"),
+                    },
                     ...AllRoutinePeriods.map(routinePeriod => ({
                       value: routinePeriod,
-                      label: routinePeriod,
+                      label: translateRoutinePeriod(routinePeriod, t),
                     })),
                   ]}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-task-inspector-payload">Payload</Label>
+                <Label htmlFor="routine-task-inspector-payload">
+                  {t("workspace.fields.payload")}
+                </Label>
                 <div
                   id="routine-task-inspector-payload"
                   className="max-h-64 overflow-y-auto rounded-sm border bg-background p-3"
@@ -483,14 +499,15 @@ const RoutineTaskInspector = ({
                   className="w-fit"
                   onClick={() => setIsPayloadEditorOpen(true)}
                 >
-                  Edit payload
+                  {t("workspace.payload.edit")}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Routine task payload usage:{" "}
-                  {userManager.userAccount
-                    ? routineTaskCostUnitCount
-                    : "Not loaded"}{" "}
-                  / {maxRoutineTaskCostUnitCount} CostUnits.
+                  {t("workspace.payload.usage", {
+                    used: userManager.userAccount
+                      ? routineTaskCostUnitCount
+                      : t("workspace.payload.notLoaded"),
+                    limit: maxRoutineTaskCostUnitCount,
+                  })}
                 </span>
                 <span
                   className={`text-xs ${
@@ -500,19 +517,27 @@ const RoutineTaskInspector = ({
                   }`}
                 >
                   {estimatedPayloadCostUnit === null
-                    ? "Payload must be valid JSON to estimate CostUnits."
-                    : `This routine task will use about ${estimatedPayloadCostUnit} CostUnits after save.`}
+                    ? t("workspace.payload.estimateInvalid")
+                    : t("workspace.payload.estimatedUsage", {
+                        count: estimatedPayloadCostUnit,
+                      })}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3 text-sm">
-                <span className="text-muted-foreground">Current status</span>
+                <span className="text-muted-foreground">
+                  {t("workspace.inspector.currentStatus")}
+                </span>
                 <span className="font-medium">
-                  {routineTaskNode?.status ?? "Loading"}
+                  {routineTaskNode
+                    ? translateRoutineTaskStatus(routineTaskNode.status, t)
+                    : t("workspace.fields.loading")}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3 text-sm">
-                <span className="text-muted-foreground">Cost unit</span>
+                <span className="text-muted-foreground">
+                  {t("workspace.inspector.costUnit")}
+                </span>
                 <span className="font-medium tabular-nums">
                   {values.costUnit}
                 </span>
@@ -532,7 +557,7 @@ const RoutineTaskInspector = ({
                 }
               >
                 {stationRoutineManager.isUpdatingRoutineTask && <Spinner />}
-                Save
+                {t("common.save")}
               </Button>
               <Button
                 type="button"
@@ -541,7 +566,7 @@ const RoutineTaskInspector = ({
                 disabled={stationRoutineManager.isUpdatingRoutineTask}
                 onClick={onClose}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
             </SheetFooter>
           </form>
@@ -562,7 +587,7 @@ const RoutineTaskInspector = ({
             </Suspense>
           )}
           <InspectorLoadingCover
-            label="Loading"
+            label={t("common.loading")}
             show={isLoadingRoutineTaskDetail}
           />
         </div>

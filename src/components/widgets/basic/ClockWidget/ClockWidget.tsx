@@ -5,7 +5,9 @@ import {
 } from "@widgets/basic/ClockWidget/setting/clockSetting";
 import { WidgetProps } from "@widgets/widget";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
+import { formatTimezoneDisplayName } from "@/i18n/workspace";
 import EditClockWidgetDialog from "./EditClockWidgetDialog";
 
 const ClockWidget = ({
@@ -16,6 +18,7 @@ const ClockWidget = ({
   setting: rawSetting,
   setSetting: setRawSetting,
 }: WidgetProps) => {
+  const { i18n } = useTranslation();
   const [time, setTime] = useState(() => new Date());
   const [setting, setSetting] = useAnyTypeState<ClockSetting>(
     [rawSetting, setRawSetting],
@@ -116,7 +119,9 @@ const ClockWidget = ({
               className="font-semibold tracking-wider"
               style={{ fontSize: setting.timerFontSize }}
             >
-              {targetTime.toLocaleTimeString("en-US", { hour12: false })}
+              {targetTime.toLocaleTimeString(i18n.resolvedLanguage, {
+                hour12: false,
+              })}
             </span>
           )}
           {setting.enableLocale && (
@@ -125,7 +130,10 @@ const ClockWidget = ({
                 className="text-foreground font-bold whitespace-nowrap"
                 style={{ fontSize: setting.localeFontSize }}
               >
-                {setting.selectedTimeZone.displayName}
+                {formatTimezoneDisplayName(
+                  setting.selectedTimeZone.locale,
+                  i18n.resolvedLanguage
+                )}
               </span>
               <span
                 className="text-muted-foreground whitespace-nowrap"

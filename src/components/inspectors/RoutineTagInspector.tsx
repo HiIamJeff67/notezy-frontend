@@ -7,6 +7,7 @@ import type { RoutineTagNode } from "@shared/types/routineTagNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ColorSelector from "@/components/commons/ColorSelector/ColorSelector";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import InspectorLoadingCover from "./InspectorLoadingCover";
 
 interface RoutineTagInspectorProps {
@@ -35,7 +37,7 @@ const RoutineTagInspector = ({
   isOpen,
   onClose,
 }: RoutineTagInspectorProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const getRoutineTagQuerier = useGetMyRoutineTagById();
 
@@ -96,7 +98,7 @@ const RoutineTagInspector = ({
         });
       })
       .catch(error => {
-        if (!cancelled) toast.error(languageManager.tError(error));
+        if (!cancelled) toast.error(translateError(error, t));
       })
       .finally(() => {
         if (!cancelled) setIsLoadingRoutineTagDetail(false);
@@ -123,10 +125,10 @@ const RoutineTagInspector = ({
           icon: values.icon === null,
         }
       );
-      toast.success("Routine tag updated");
+      toast.success(t("workspace.routineTag.updated"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -144,13 +146,15 @@ const RoutineTagInspector = ({
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
             <SheetTitle className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0">Edit routine tag of </span>
+              <span className="shrink-0">
+                {t("workspace.inspector.editRoutineTagOf")}
+              </span>
               <span className="min-w-0 truncate text-foreground">
-                "{values.name || "Routine tag"}"
+                "{values.name || t("workspace.scope.routineTags")}"
               </span>
             </SheetTitle>
             <SheetDescription>
-              Change the classification used to group routines.
+              {t("workspace.inspector.routineTagDescription")}
             </SheetDescription>
           </SheetHeader>
           <form
@@ -163,7 +167,9 @@ const RoutineTagInspector = ({
           >
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-tag-inspector-name">Name</Label>
+                <Label htmlFor="routine-tag-inspector-name">
+                  {t("workspace.fields.name")}
+                </Label>
                 <Input
                   id="routine-tag-inspector-name"
                   value={values.name}
@@ -182,7 +188,7 @@ const RoutineTagInspector = ({
 
               <div className="flex items-end gap-4">
                 <div className="flex shrink-0 flex-col gap-2">
-                  <Label>Color</Label>
+                  <Label>{t("workspace.fields.color")}</Label>
                   <ColorSelector
                     value={values.color}
                     onValueChange={color =>
@@ -193,7 +199,7 @@ const RoutineTagInspector = ({
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-2">
-                  <Label>Icon</Label>
+                  <Label>{t("workspace.fields.icon")}</Label>
                   <SupportedIconTable
                     value={values.icon}
                     onValueChange={icon =>
@@ -216,7 +222,7 @@ const RoutineTagInspector = ({
                 }
               >
                 {stationRoutineManager.isUpdatingRoutineTag && <Spinner />}
-                Save
+                {t("common.save")}
               </Button>
               <Button
                 type="button"
@@ -225,12 +231,12 @@ const RoutineTagInspector = ({
                 disabled={stationRoutineManager.isUpdatingRoutineTag}
                 onClick={onClose}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
             </SheetFooter>
           </form>
           <InspectorLoadingCover
-            label="Loading"
+            label={t("common.loading")}
             show={isLoadingRoutineTagDetail}
           />
         </div>

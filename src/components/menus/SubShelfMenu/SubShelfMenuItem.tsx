@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { useDrag, useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   BlockPackIcon,
@@ -53,8 +54,9 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
+import { translateError } from "@/i18n/error";
 
 interface SubShelfMenuItemProps {
   summary: ShelfTreeSummary;
@@ -72,7 +74,7 @@ const SubShelfMenuItem = ({
   depth,
 }: SubShelfMenuItemProps) => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const modalManager = useModal();
   const shelfItemManager = useShelfItem();
 
@@ -128,7 +130,7 @@ const SubShelfMenuItem = ({
     return (
       <SidebarMenuSubItem>
         <SidebarMenuButton className="rounded-sm text-muted">
-          ... (Too deep)
+          {t("workspace.menu.tooDeep")}
         </SidebarMenuButton>
       </SidebarMenuSubItem>
     );
@@ -136,44 +138,48 @@ const SubShelfMenuItem = ({
 
   const handleCreateMaterial = useCallback(async () => {
     try {
-      await shelfItemManager.createMaterial(root.id, current, "new material");
+      await shelfItemManager.createMaterial(
+        root.id,
+        current,
+        t("workspace.menu.newMaterial")
+      );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
-  }, [root, current, languageManager, shelfItemManager]);
+  }, [root, current, t, shelfItemManager]);
 
   const handleCreateBlockPack = useCallback(async () => {
     try {
       await shelfItemManager.createBlockPack(
         root.id,
         current,
-        "new block pack"
+        t("workspace.menu.newBlockPack")
       );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
-  }, [root, current, languageManager, shelfItemManager]);
+  }, [root, current, t, shelfItemManager]);
 
   const handleCreateSubShelf = useCallback(async () => {
     try {
       await shelfItemManager.createSubShelf(
         summary.root.id,
         current,
-        "new sub shelf"
+        t("workspace.menu.newSubShelf")
       );
       if (!current.isExpanded) {
         await shelfItemManager.expandSubShelf(root, current);
       }
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
-  }, [root, current, languageManager, shelfItemManager]);
+  }, [root, current, t, shelfItemManager]);
 
   const handleRenameSubShelfOnSubmit = useCallback(
     async () =>
@@ -181,9 +187,9 @@ const SubShelfMenuItem = ({
         async () =>
           await shelfItemManager
             .renameEditingSubShelf()
-            .catch(error => toast.error(languageManager.tError(error)))
+            .catch(error => toast.error(translateError(error, t)))
       ),
-    [loadingManager, languageManager, shelfItemManager]
+    [loadingManager, t, shelfItemManager]
   );
 
   return (
@@ -229,55 +235,57 @@ const SubShelfMenuItem = ({
             >
               <HoverDetailCard
                 title={current.name}
-                subtitle="Sub Shelf"
+                subtitle={t("workspace.trash.subShelf")}
                 id={current.id}
                 rows={[
                   {
-                    field: "Sub Shelves",
+                    field: t("workspace.menu.subShelves"),
                     value: Object.keys(current.children).length,
                   },
                   {
-                    field: "Materials",
+                    field: t("workspace.menu.materials"),
                     value: Object.keys(current.materialNodes).length,
                   },
                   {
-                    field: "Block Packs",
+                    field: t("workspace.menu.blockPacks"),
                     value: Object.keys(current.blockPackNodes).length,
                   },
                   {
-                    field: "Updated",
-                    value: new Date(current.updatedAt).toLocaleDateString(),
+                    field: t("workspace.menu.updated"),
+                    value: new Date(current.updatedAt).toLocaleDateString(
+                      i18n.resolvedLanguage
+                    ),
                   },
                 ]}
               />
             </HoverCardContent>
           </HoverCard>
           <ContextMenuContent>
-            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuSub>
                 <ContextMenuSubTrigger>
                   <PackagePlus className="mr-2 size-4" />
-                  Items
+                  {t("workspace.menu.items")}
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   <ContextMenuItem onClick={handleCreateMaterial}>
                     <MaterialIcon className="mr-2 size-4" />
-                    Material
+                    {t("workspace.menu.material")}
                   </ContextMenuItem>
                   <ContextMenuItem onClick={handleCreateBlockPack}>
                     <BlockPackIcon className="mr-2 size-4" />
-                    Block Pack
+                    {t("workspace.menu.blockPack")}
                   </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
               <ContextMenuItem onClick={handleCreateSubShelf}>
                 <FolderPlus className="mr-2 size-4" />
-                Sub Shelf
+                {t("workspace.menu.subShelf")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -285,23 +293,26 @@ const SubShelfMenuItem = ({
                 }
               >
                 <Pencil className="mr-2 size-4" />
-                Rename
+                {t("workspace.menu.rename")}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() =>
                   modalManager.open("DeleteShelfItemDialog", {
-                    dialogHeader: "Delete a sub shelf",
-                    dialogDescription: `Are you sure about deleting the sub shelf of "${current.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
+                    dialogHeader: t("workspace.menu.deleteSubShelf"),
+                    dialogDescription: t(
+                      "workspace.menu.deleteSubDescription",
+                      { name: current.name }
+                    ),
                     confirmKeyword: "DELETE",
-                    inputPlaceholder: `Type "DELETE" here`,
+                    inputPlaceholder: t("workspace.menu.typeDelete"),
                     onDelete: async () =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () => {
                           await shelfItemManager
                             .deleteSubShelf(prev, current)
                             .catch(error =>
-                              toast.error(languageManager.tError(error))
+                              toast.error(translateError(error, t))
                             );
                         }
                       ),
@@ -310,7 +321,7 @@ const SubShelfMenuItem = ({
                 }
               >
                 <Trash2 className="mr-2 size-4" />
-                Delete
+                {t("workspace.menu.delete")}
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>
@@ -376,7 +387,9 @@ const SubShelfMenuItem = ({
                                     e.stopPropagation();
                                     await handleRenameSubShelfOnSubmit();
                                   }}
-                                  aria-label="Save sub shelf name"
+                                  aria-label={t(
+                                    "workspace.menu.saveSubShelfName"
+                                  )}
                                 >
                                   <CheckIcon className="size-4" />
                                 </button>

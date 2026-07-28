@@ -1,8 +1,18 @@
+export type ThemeTranslationKey =
+  | "themes.defaultStandard"
+  | "themes.defaultNeon"
+  | "themes.defaultOcean"
+  | "themes.defaultForest"
+  | "themes.defaultPhoenix"
+  | "themes.defaultPearl"
+  | "themes.defaultSakura"
+  | "themes.defaultCitrus";
+
 export interface ThemeData {
   id: string;
   name: string;
   isDark: boolean;
-  translationKey: string;
+  translationKey: ThemeTranslationKey;
   authorName: string;
   authorAvatarURL: string;
   version: string;

@@ -1,5 +1,6 @@
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineDialogProps extends ModalProps {
@@ -26,17 +28,17 @@ const DeleteRoutineDialog = ({
   routineTitle,
   onDeleted,
 }: DeleteRoutineDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
 
   const deleteRoutine = async () => {
     try {
       await stationRoutineManager.deleteRoutine(routineId);
       await onDeleted?.();
-      toast.success("Routine deleted");
+      toast.success(t("workspace.routine.deleted"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -49,10 +51,9 @@ const DeleteRoutineDialog = ({
     >
       <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete a routine</DialogTitle>
+          <DialogTitle>{t("workspace.routine.deleteTitle")}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <strong>{routineTitle}</strong>?
-            This removes the routine from active schedules.
+            {t("workspace.routine.deleteDescription", { title: routineTitle })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -62,7 +63,7 @@ const DeleteRoutineDialog = ({
             disabled={stationRoutineManager.isDeletingRoutine}
             onClick={onClose}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -71,7 +72,7 @@ const DeleteRoutineDialog = ({
             onClick={deleteRoutine}
           >
             {stationRoutineManager.isDeletingRoutine && <Spinner />}
-            Delete
+            {t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

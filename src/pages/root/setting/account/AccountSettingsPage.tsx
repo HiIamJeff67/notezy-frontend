@@ -5,6 +5,7 @@ import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { Maximize2Icon, PanelRightOpenIcon } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Article,
   ArticleContent,
@@ -15,60 +16,16 @@ import {
   ArticleParagraphHeader,
   ArticleParagraphSeparator,
 } from "@/components/commons/Article/Article";
-import AccountModificationTab from "@/components/panels/AccountSettingsPanel/AccountModificationTab";
-import AccountTab from "@/components/panels/AccountSettingsPanel/AccountTab";
-import BindingTab from "@/components/panels/AccountSettingsPanel/BindingTab";
-import OfflineTab from "@/components/panels/AccountSettingsPanel/OfflineTab";
-import ProfileTab from "@/components/panels/AccountSettingsPanel/ProfileTab";
-import SecurityTab from "@/components/panels/AccountSettingsPanel/SecurityTab";
-import UpgradeTab from "@/components/panels/AccountSettingsPanel/UpgradeTab";
 import { Button } from "@/components/ui/button";
-import {
-  useAppRouter,
-  useLanguage,
-  useNetwork,
-  useSettingsDisplay,
-  useUser,
-} from "@/hooks";
-
-const navigationItems = [
-  {
-    id: "personal",
-    title: "個人",
-    description: "管理公開個人資料、頭像與自我介紹。",
-    weight: 5,
-  },
-  {
-    id: "account",
-    title: "帳戶",
-    description: "檢視帳戶識別、方案與基本狀態。",
-    weight: 3,
-  },
-  {
-    id: "upgrade",
-    title: "升級方案",
-    description: "比較方案額度並選擇適合的工作規模。",
-    weight: 4,
-  },
-  {
-    id: "security",
-    title: "安全",
-    description: "驗證電子郵件並查看帳戶安全相關操作。",
-    weight: 2,
-  },
-  {
-    id: "binding",
-    title: "帳戶綁定",
-    description: "綁定備用聯絡方式與外部帳戶。",
-    weight: 3,
-  },
-  {
-    id: "account-modification",
-    title: "帳戶修改",
-    description: "處理帳戶重設與不可逆的修改操作。",
-    weight: 4,
-  },
-] satisfies ArticleNavigationItem[];
+import { useAppRouter, useNetwork, useSettingsDisplay, useUser } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import AccountModificationTab from "./tabs/AccountModificationTab";
+import AccountTab from "./tabs/AccountTab";
+import BindingTab from "./tabs/BindingTab";
+import OfflineTab from "./tabs/OfflineTab";
+import ProfileTab from "./tabs/ProfileTab";
+import SecurityTab from "./tabs/SecurityTab";
+import UpgradeTab from "./tabs/UpgradeTab";
 
 const AccountSettingsPage = ({
   displayMode = "page",
@@ -76,13 +33,51 @@ const AccountSettingsPage = ({
   displayMode?: "page" | "sheet";
 }) => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const userManager = useUser();
   const { isOnline } = useNetwork();
   const { openSheet, closeSheet } = useSettingsDisplay();
   const sendAuthCodeMutator = useSendAuthCode();
   const [sendAuthCodeTimeCounter, setSendAuthCodeTimeCounter] = useState(0);
   const [isSendAuthCodePending, startSendAuthCodeTransition] = useTransition();
+  const navigationItems = [
+    {
+      id: "personal",
+      title: t("settingsPage.account.personal.title"),
+      description: t("settingsPage.account.personal.description"),
+      weight: 5,
+    },
+    {
+      id: "account",
+      title: t("settingsPage.account.account.title"),
+      description: t("settingsPage.account.account.description"),
+      weight: 3,
+    },
+    {
+      id: "upgrade",
+      title: t("settingsPage.account.upgrade.title"),
+      description: t("settingsPage.account.upgrade.description"),
+      weight: 4,
+    },
+    {
+      id: "security",
+      title: t("settingsPage.account.security.title"),
+      description: t("settingsPage.account.security.description"),
+      weight: 2,
+    },
+    {
+      id: "binding",
+      title: t("settingsPage.account.binding.title"),
+      description: t("settingsPage.account.binding.description"),
+      weight: 3,
+    },
+    {
+      id: "account-modification",
+      title: t("settingsPage.account.modification.title"),
+      description: t("settingsPage.account.modification.description"),
+      weight: 4,
+    },
+  ] satisfies ArticleNavigationItem[];
 
   useEffect(() => {
     if (sendAuthCodeTimeCounter === 0) return;
@@ -106,14 +101,16 @@ const AccountSettingsPage = ({
           if (sendAuthCodeTimeCounter > 0) {
             onBlock?.();
             toast.error(
-              `The auth code is already sent, please wait until ${sendAuthCodeTimeCounter} seconds later to resent again`
+              t("settingsPage.account.authCodeAlreadySent", {
+                count: sendAuthCodeTimeCounter,
+              })
             );
             return;
           }
           if (userManager.userData?.email === undefined) {
             router.push(WebURLPathDictionary.home);
             userManager.logout();
-            throw new Error("The user session is expired, please login again");
+            throw new Error(t("settingsPage.account.sessionExpired"));
           }
 
           const response = await sendAuthCodeMutator.mutateAsync({
@@ -131,21 +128,17 @@ const AccountSettingsPage = ({
             Math.max(AuthCodeBlockedSecond, blockTime)
           );
           toast.success(
-            `Auth code email sent, please check your email of ${userManager.userData.email}`
+            t("settingsPage.account.authCodeSent", {
+              email: userManager.userData.email,
+            })
           );
         } catch (error) {
           fallback?.();
           setSendAuthCodeTimeCounter(0);
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }),
-    [
-      languageManager,
-      router,
-      sendAuthCodeMutator,
-      sendAuthCodeTimeCounter,
-      userManager,
-    ]
+    [t, router, sendAuthCodeMutator, sendAuthCodeTimeCounter, userManager]
   );
 
   const authCodeProps = {
@@ -169,10 +162,14 @@ const AccountSettingsPage = ({
         className="absolute top-3 left-4 z-20 size-7 p-0 select-none bg-transparent text-foreground hover:bg-primary sm:left-6"
         aria-label={
           displayMode === "sheet"
-            ? "Open settings as a page"
-            : "Open settings in sheet"
+            ? t("settingsPage.openAsPage")
+            : t("settingsPage.openInSheet")
         }
-        title={displayMode === "sheet" ? "Open as page" : "Open in sheet"}
+        title={
+          displayMode === "sheet"
+            ? t("settingsPage.openAsPage")
+            : t("settingsPage.openInSheet")
+        }
         onClick={() => {
           LocalStorageManipulator.setItem(
             LocalStorageKey.settingsDisplayMode,
@@ -191,7 +188,7 @@ const AccountSettingsPage = ({
       >
         {displayMode === "sheet" ? <Maximize2Icon /> : <PanelRightOpenIcon />}
       </Button>
-      <Article className={displayMode === "sheet" ? "lg:gap-0" : undefined}>
+      <Article className="lg:gap-0">
         <ArticleNavigationSidebar
           items={navigationItems}
           paragraphBaseHeight={12}
@@ -204,19 +201,19 @@ const AccountSettingsPage = ({
           className={
             displayMode === "sheet"
               ? "px-4 pt-12 sm:px-6 lg:pl-0 lg:pr-14"
-              : undefined
+              : "pt-12"
           }
         >
           <ArticleParagraph id="personal">
             <ArticleParagraphHeader>
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                Account settings
+                {t("settingsPage.account.eyebrow")}
               </p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-                個人
+                {t("settingsPage.account.personal.title")}
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                調整其他人看見的個人資訊與介紹。
+                {t("settingsPage.account.personal.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">
@@ -228,9 +225,11 @@ const AccountSettingsPage = ({
 
           <ArticleParagraph id="account">
             <ArticleParagraphHeader>
-              <h2 className="text-2xl font-semibold tracking-tight">帳戶</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {t("settingsPage.account.account.title")}
+              </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                檢視帳戶本身的識別資訊、狀態與目前方案。
+                {t("settingsPage.account.account.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">
@@ -243,10 +242,10 @@ const AccountSettingsPage = ({
           <ArticleParagraph id="upgrade">
             <ArticleParagraphHeader>
               <h2 className="text-2xl font-semibold tracking-tight">
-                升級方案
+                {t("settingsPage.account.upgrade.title")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                比較方案額度並選擇適合的工作規模。
+                {t("settingsPage.account.upgrade.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">
@@ -258,9 +257,11 @@ const AccountSettingsPage = ({
 
           <ArticleParagraph id="security">
             <ArticleParagraphHeader>
-              <h2 className="text-2xl font-semibold tracking-tight">安全</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {t("settingsPage.account.security.title")}
+              </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                驗證電子郵件並管理帳戶安全相關操作。
+                {t("settingsPage.account.security.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">
@@ -277,10 +278,10 @@ const AccountSettingsPage = ({
           <ArticleParagraph id="binding">
             <ArticleParagraphHeader>
               <h2 className="text-2xl font-semibold tracking-tight">
-                帳戶綁定
+                {t("settingsPage.account.binding.title")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                綁定備用聯絡方式與外部帳戶。
+                {t("settingsPage.account.binding.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">
@@ -301,10 +302,10 @@ const AccountSettingsPage = ({
           <ArticleParagraph id="account-modification">
             <ArticleParagraphHeader>
               <h2 className="text-2xl font-semibold tracking-tight">
-                帳戶修改
+                {t("settingsPage.account.modification.title")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                進行重設、變更電子郵件、密碼或永久刪除帳戶。
+                {t("settingsPage.account.modification.description")}
               </p>
             </ArticleParagraphHeader>
             <ArticleParagraphContent className="max-w-none text-foreground">

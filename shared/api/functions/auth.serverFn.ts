@@ -26,7 +26,6 @@ import {
   ValidateEmailResponse,
 } from "@shared/api/interfaces/auth.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -52,7 +51,7 @@ export const Register = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as RegisterResponse;
@@ -87,7 +86,7 @@ export const RegisterViaGoogle = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -123,7 +122,7 @@ export const Login = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as LoginResponse;
@@ -158,7 +157,7 @@ export const LoginViaGoogle = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as LoginViaGoogleResponse;
@@ -195,7 +194,7 @@ export const Logout = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const rawResponse = (await response.json()) as Partial<LogoutResponse>;
@@ -234,7 +233,7 @@ export const SendAuthCode = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     const formattedResponse = (await response.json()) as SendAuthCodeResponse;
     if (formattedResponse.exception != null) {
@@ -271,7 +270,7 @@ export const ValidateEmail = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as ValidateEmailResponse;
@@ -312,7 +311,7 @@ export const ResetEmail = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as ResetEmailResponse;
@@ -350,7 +349,7 @@ export const ForgetPassword = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     const formattedResponse = (await response.json()) as ForgetPasswordResponse;
     if (formattedResponse.exception != null) {
@@ -387,7 +386,7 @@ export const ResetMe = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as ResetMeResponse;
@@ -428,7 +427,7 @@ export const DeleteMe = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     const formattedResponse = (await response.json()) as DeleteMeResponse;
     if (formattedResponse.exception != null) {

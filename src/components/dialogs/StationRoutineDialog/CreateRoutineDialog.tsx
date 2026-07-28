@@ -6,6 +6,7 @@ import {
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import MonthlyDayPicker from "@/components/commons/MonthlyDayPicker/MonthlyDayPicker";
 import TimePicker from "@/components/commons/TimePicker/TimePicker";
@@ -32,7 +33,9 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import { translateRoutinePeriod } from "@/i18n/workspace";
 import type { ModalProps } from "@/providers/ModalProvider";
 import CreateRoutineDialogSkeleton from "./CreateRoutineDialogSkeleton";
 
@@ -49,7 +52,7 @@ const CreateRoutineDialog = ({
   stationName,
   onCreated,
 }: CreateRoutineDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
 
   const [title, setTitle] = useState<string>("");
@@ -113,10 +116,13 @@ const CreateRoutineDialog = ({
     >
       <DialogContent className="max-h-[90vh] overflow-visible rounded-sm sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create routine</DialogTitle>
+          <DialogTitle>{t("workspace.routine.createTitle")}</DialogTitle>
           <DialogDescription>
-            Add a routine{stationName ? ` to ${stationName}` : ""}. Without a
-            custom schedule, the default one-hour time window is used.
+            {stationName
+              ? t("workspace.routine.createDescriptionForStation", {
+                  station: stationName,
+                })
+              : t("workspace.routine.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -199,10 +205,10 @@ const CreateRoutineDialog = ({
                 }
               );
               await onCreated?.(routineNode.id);
-              toast.success("Routine created");
+              toast.success(t("workspace.routine.created"));
               onClose();
             } catch (error) {
-              toast.error(languageManager.tError(error));
+              toast.error(translateError(error, t));
             }
           }}
         >
@@ -211,7 +217,9 @@ const CreateRoutineDialog = ({
           ) : (
             <>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-title">Title</Label>
+                <Label htmlFor="routine-title">
+                  {t("workspace.fields.title")}
+                </Label>
                 <Input
                   id="routine-title"
                   value={title}
@@ -219,29 +227,31 @@ const CreateRoutineDialog = ({
                   maxLength={128}
                   autoFocus
                   onChange={event => setTitle(event.currentTarget.value)}
-                  placeholder="What this routine is aimed to do"
+                  placeholder={t("workspace.routine.titlePlaceholder")}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-description">Description</Label>
+                <Label htmlFor="routine-description">
+                  {t("workspace.fields.description")}
+                </Label>
                 <Textarea
                   id="routine-description"
                   value={description}
                   maxLength={1024}
                   onChange={event => setDescription(event.currentTarget.value)}
                   className="min-h-24 resize-none"
-                  placeholder="Describe the detail about this routine"
+                  placeholder={t("workspace.routine.descriptionPlaceholder")}
                 />
               </div>
 
               <div className="flex items-center justify-between border-y py-3">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="routine-custom-schedule">
-                    Custom schedule
+                    {t("workspace.fields.customSchedule")}
                   </Label>
                   <span className="text-muted-foreground text-xs">
-                    Set an explicit start and end time.
+                    {t("workspace.fields.customScheduleDescription")}
                   </span>
                 </div>
                 <Switch
@@ -265,7 +275,7 @@ const CreateRoutineDialog = ({
                 <>
                   {period === RoutinePeriod.Weekly ? (
                     <div className="flex flex-col gap-2">
-                      <Label>Weekdays</Label>
+                      <Label>{t("workspace.fields.weekdays")}</Label>
                       <WeekdayPicker
                         value={weekdayRange}
                         onValueChange={setWeekdayRange}
@@ -273,24 +283,24 @@ const CreateRoutineDialog = ({
                     </div>
                   ) : period === RoutinePeriod.Monthly ? (
                     <div className="flex flex-col gap-2">
-                      <Label>Month days</Label>
+                      <Label>{t("workspace.fields.monthDays")}</Label>
                       <MonthlyDayPicker
                         value={monthlyDayRange}
                         onValueChange={setMonthlyDayRange}
                       />
                       <span className="text-xs text-muted-foreground">
-                        Limited to day 1 - 28 to keep every month valid.
+                        {t("workspace.fields.monthDaysDescription")}
                       </span>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4 sm:flex-row">
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
-                        <Label>Starts</Label>
+                        <Label>{t("workspace.fields.starts")}</Label>
                         {period === RoutinePeriod.Daily ? (
                           <TimePicker
                             value={scheduledStartAt}
                             onValueChange={setScheduledStartAt}
-                            placeholder="Select start time"
+                            placeholder={t("workspace.fields.selectStartTime")}
                             className="bg-card/45 hover:bg-card/60"
                             contentClassName="bg-card"
                           />
@@ -298,7 +308,9 @@ const CreateRoutineDialog = ({
                           <DatePicker
                             value={scheduledStartAt}
                             onValueChange={setScheduledStartAt}
-                            placeholder="Select start date and time"
+                            placeholder={t(
+                              "workspace.fields.selectStartDateTime"
+                            )}
                             className="bg-card/45 hover:bg-card/60"
                             contentClassName="bg-card"
                           />
@@ -306,13 +318,13 @@ const CreateRoutineDialog = ({
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
-                        <Label>Ends</Label>
+                        <Label>{t("workspace.fields.ends")}</Label>
                         {period === RoutinePeriod.Daily ? (
                           <TimePicker
                             value={scheduledEndAt}
                             onValueChange={setScheduledEndAt}
                             isInvalid={hasInvalidSchedule}
-                            placeholder="Select end time"
+                            placeholder={t("workspace.fields.selectEndTime")}
                             className="bg-card/45 hover:bg-card/60"
                             contentClassName="bg-card"
                           />
@@ -326,7 +338,9 @@ const CreateRoutineDialog = ({
                                 : undefined
                             }
                             isInvalid={hasInvalidSchedule}
-                            placeholder="Select end date and time"
+                            placeholder={t(
+                              "workspace.fields.selectEndDateTime"
+                            )}
                             className="bg-card/45 hover:bg-card/60"
                             contentClassName="bg-card"
                           />
@@ -339,7 +353,7 @@ const CreateRoutineDialog = ({
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
                 <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
-                  <Label>Repeat</Label>
+                  <Label>{t("workspace.fields.repeat")}</Label>
                   <Select
                     value={period ?? "none"}
                     onValueChange={value => {
@@ -358,10 +372,12 @@ const CreateRoutineDialog = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="z-[160]">
-                      <SelectItem value="none">Does not repeat</SelectItem>
+                      <SelectItem value="none">
+                        {t("workspace.fields.noRepeat")}
+                      </SelectItem>
                       {AllRoutinePeriods.map(routinePeriod => (
                         <SelectItem key={routinePeriod} value={routinePeriod}>
-                          {routinePeriod}
+                          {translateRoutinePeriod(routinePeriod, t)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -377,7 +393,7 @@ const CreateRoutineDialog = ({
                     checked={isPinned}
                     onCheckedChange={checked => setIsPinned(checked === true)}
                   />
-                  <span>Pin</span>
+                  <span>{t("workspace.routine.pin")}</span>
                 </label>
               </div>
             </>
@@ -390,7 +406,7 @@ const CreateRoutineDialog = ({
               disabled={stationRoutineManager.isCreatingRoutine}
               onClick={onClose}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -402,7 +418,7 @@ const CreateRoutineDialog = ({
               }
             >
               {stationRoutineManager.isCreatingRoutine && <Spinner />}
-              Create
+              {t("common.create")}
             </Button>
           </DialogFooter>
         </form>

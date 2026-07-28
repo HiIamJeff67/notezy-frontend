@@ -3,6 +3,7 @@ import { DNDType } from "@shared/enums";
 import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
+import type { UUID } from "crypto";
 import {
   CheckIcon,
   Crown,
@@ -12,9 +13,9 @@ import {
   SquareDotIcon,
   Trash2,
 } from "lucide-react";
-import type { UUID } from "crypto";
 import { useCallback } from "react";
 import { useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import EmptyShelfIcon from "@/components/icons/EmptyShelfIcon";
 import { RootShelfIcon } from "@/components/icons/WorkspaceEntityIcons";
@@ -46,8 +47,9 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
+import { translateError } from "@/i18n/error";
 
 interface RootShelfMenuItemProps {
   rootShelfEdge: SearchRootShelfEdge;
@@ -59,7 +61,7 @@ const RootShelfMenuItem = ({
   index,
 }: RootShelfMenuItemProps) => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const modalManager = useModal();
   const shelfItemManager = useShelfItem();
 
@@ -94,9 +96,9 @@ const RootShelfMenuItem = ({
         async () =>
           await shelfItemManager
             .renameEditingRootShelf()
-            .catch(error => toast.error(languageManager.tError(error)))
+            .catch(error => toast.error(translateError(error, t)))
       ),
-    [loadingManager, languageManager, shelfItemManager]
+    [loadingManager, t, shelfItemManager]
   );
 
   if (!summary) return <RootShelfMenuItemSkeleton key={index} />;
@@ -141,7 +143,7 @@ const RootShelfMenuItem = ({
                     e.stopPropagation();
                     await handleRenameRootShelfOnSubmit();
                   }}
-                  aria-label="Save root shelf name"
+                  aria-label={t("workspace.menu.saveRootShelfName")}
                 >
                   <CheckIcon className="size-4" />
                 </button>
@@ -185,16 +187,22 @@ const RootShelfMenuItem = ({
               >
                 <HoverDetailCard
                   title={summary.root.name}
-                  subtitle="Root Shelf"
+                  subtitle={t("workspace.trash.rootShelf")}
                   id={summary.root.id}
                   rows={[
-                    { field: "Sub Shelves", value: summary.root.subShelfCount },
-                    { field: "Items", value: summary.root.itemCount },
                     {
-                      field: "Updated",
+                      field: t("workspace.payloadEditor.subShelves"),
+                      value: summary.root.subShelfCount,
+                    },
+                    {
+                      field: t("workspace.menu.items"),
+                      value: summary.root.itemCount,
+                    },
+                    {
+                      field: t("workspace.menu.updated"),
                       value: new Date(
                         summary.root.updatedAt
-                      ).toLocaleDateString(),
+                      ).toLocaleDateString(i18n.resolvedLanguage),
                     },
                   ]}
                 />
@@ -207,23 +215,23 @@ const RootShelfMenuItem = ({
             </SidebarMenuAction>
           )}
           <ContextMenuContent>
-            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={async () =>
                   await shelfItemManager.createSubShelf(
                     summary.root.id,
                     null,
-                    "new sub shelf"
+                    t("workspace.menu.newSubShelf")
                   )
                 }
               >
                 <FolderPlus className="mr-2 size-4" />
-                Sub Shelf
+                {t("workspace.menu.subShelf")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -231,24 +239,29 @@ const RootShelfMenuItem = ({
                 }
               >
                 <Pencil className="mr-2 size-4" />
-                Rename
+                {t("workspace.menu.rename")}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
                 disabled={!shelfItemManager.canDeleteRootShelf(summary.root.id)}
                 onClick={() =>
                   modalManager.open("DeleteShelfItemDialog", {
-                    dialogHeader: "Delete a root shelf",
-                    dialogDescription: `Are you sure about deleting the root shelf of "${summary.root.name}" ? To delete it, please type the keyword of "DELETE" in the below input area.`,
+                    dialogHeader: t("workspace.menu.deleteRootShelf"),
+                    dialogDescription: t(
+                      "workspace.menu.deleteRootDescription",
+                      {
+                        name: summary.root.name,
+                      }
+                    ),
                     confirmKeyword: "DELETE",
-                    inputPlaceholder: `Type "DELETE" here`,
+                    inputPlaceholder: t("workspace.menu.typeDelete"),
                     onDelete: async () =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () => {
                           await shelfItemManager
                             .deleteRootShelf(summary.root)
                             .catch(error =>
-                              toast.error(languageManager.tError(error))
+                              toast.error(translateError(error, t))
                             );
                         }
                       ),
@@ -257,7 +270,7 @@ const RootShelfMenuItem = ({
                 }
               >
                 <Trash2 className="mr-2 size-4" />
-                Delete
+                {t("workspace.menu.delete")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
@@ -269,18 +282,15 @@ const RootShelfMenuItem = ({
                     void loadingManager.startAsyncTransactionLoading(async () =>
                       shelfItemManager
                         .leaveRootShelf(summary.root.id)
-                        .catch(error =>
-                          toast.error(languageManager.tError(error))
-                        )
+                        .catch(error => toast.error(translateError(error, t)))
                     );
                     return;
                   }
                   modalManager.open("CreateShelfItemDialog", {
-                    dialogHeader: "Leave root shelf",
-                    dialogDescription:
-                      "Owners must choose an existing member to receive ownership before leaving.",
-                    inputPlaceholder: "Member public UUID",
-                    submitLabel: "Leave",
+                    dialogHeader: t("workspace.menu.leaveRootShelf"),
+                    dialogDescription: t("workspace.menu.ownerMustChoose"),
+                    inputPlaceholder: t("workspace.menu.memberPublicId"),
+                    submitLabel: t("workspace.menu.leave"),
                     onCreate: async value =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () =>
@@ -294,7 +304,7 @@ const RootShelfMenuItem = ({
                 }}
               >
                 <LogOut className="mr-2 size-4" />
-                Leave
+                {t("workspace.menu.leave")}
               </ContextMenuItem>
               <ContextMenuItem
                 disabled={
@@ -304,11 +314,12 @@ const RootShelfMenuItem = ({
                 }
                 onClick={() =>
                   modalManager.open("CreateShelfItemDialog", {
-                    dialogHeader: "Transfer root shelf ownership",
-                    dialogDescription:
-                      "Enter the public UUID of an existing root-shelf member.",
-                    inputPlaceholder: "Member public UUID",
-                    submitLabel: "Transfer",
+                    dialogHeader: t(
+                      "workspace.menu.transferRootShelfOwnership"
+                    ),
+                    dialogDescription: t("workspace.menu.enterRootShelfMember"),
+                    inputPlaceholder: t("workspace.menu.memberPublicId"),
+                    submitLabel: t("workspace.menu.transfer"),
                     onCreate: async value =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () =>
@@ -322,7 +333,7 @@ const RootShelfMenuItem = ({
                 }
               >
                 <Crown className="mr-2 size-4" />
-                Transfer ownership
+                {t("workspace.menu.transferOwnership")}
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>

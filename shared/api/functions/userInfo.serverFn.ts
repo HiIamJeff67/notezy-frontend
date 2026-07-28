@@ -8,7 +8,6 @@ import {
   UpdateMyInfoResponse,
 } from "@shared/api/interfaces/userInfo.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -36,7 +35,7 @@ export const GetMyInfo = createServerFn({ method: "GET" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as GetMyInfoResponse;
@@ -76,7 +75,7 @@ export const UpdateMyInfo = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as UpdateMyInfoResponse;

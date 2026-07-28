@@ -10,6 +10,7 @@ import type { StationNode } from "@shared/types/stationNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,8 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import InspectorLoadingCover from "./InspectorLoadingCover";
 
 interface StationInspectorProps {
@@ -38,7 +40,7 @@ const StationInspector = ({
   isOpen,
   onClose,
 }: StationInspectorProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const getStationQuerier = useGetMyStationById();
 
@@ -106,7 +108,7 @@ const StationInspector = ({
         });
       })
       .catch(error => {
-        if (!cancelled) toast.error(languageManager.tError(error));
+        if (!cancelled) toast.error(translateError(error, t));
       })
       .finally(() => {
         if (!cancelled) setIsLoadingStationDetail(false);
@@ -137,10 +139,10 @@ const StationInspector = ({
           headerBackgroundURL: headerBackgroundURL.length === 0,
         }
       );
-      toast.success("Station updated");
+      toast.success(t("workspace.station.updated"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -158,13 +160,15 @@ const StationInspector = ({
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
             <SheetTitle className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0">Edit station of</span>
+              <span className="shrink-0">
+                {t("workspace.inspector.editStationOf")}
+              </span>
               <span className="min-w-0 truncate text-foreground">
-                "{values.name || "Station"}"
+                "{values.name || t("workspace.trash.station")}"
               </span>
             </SheetTitle>
             <SheetDescription>
-              Update how this station is named and presented.
+              {t("workspace.inspector.stationDescription")}
             </SheetDescription>
           </SheetHeader>
           <form
@@ -177,7 +181,9 @@ const StationInspector = ({
           >
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="station-inspector-name">Name</Label>
+                <Label htmlFor="station-inspector-name">
+                  {t("workspace.fields.name")}
+                </Label>
                 <Input
                   id="station-inspector-name"
                   value={values.name}
@@ -196,7 +202,7 @@ const StationInspector = ({
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="station-inspector-description">
-                  Description
+                  {t("workspace.fields.description")}
                 </Label>
                 <Textarea
                   id="station-inspector-description"
@@ -215,7 +221,7 @@ const StationInspector = ({
 
               <div className="flex items-end gap-4">
                 <div className="flex shrink-0 flex-col gap-2">
-                  <Label>Icon</Label>
+                  <Label>{t("workspace.fields.icon")}</Label>
                   <SupportedIconTable
                     value={values.icon}
                     onValueChange={icon =>
@@ -227,7 +233,7 @@ const StationInspector = ({
 
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Label htmlFor="station-inspector-background">
-                    Background URL
+                    {t("workspace.fields.backgroundUrl")}
                   </Label>
                   <Input
                     id="station-inspector-background"
@@ -258,7 +264,7 @@ const StationInspector = ({
                 }
               >
                 {stationRoutineManager.isUpdatingStation && <Spinner />}
-                Save
+                {t("common.save")}
               </Button>
               <Button
                 type="button"
@@ -267,12 +273,12 @@ const StationInspector = ({
                 disabled={stationRoutineManager.isUpdatingStation}
                 onClick={onClose}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
             </SheetFooter>
           </form>
           <InspectorLoadingCover
-            label="Loading"
+            label={t("common.loading")}
             show={isLoadingStationDetail}
           />
         </div>

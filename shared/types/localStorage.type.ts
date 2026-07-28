@@ -1,4 +1,3 @@
-import { LanguageData } from "@shared/types/languageData.type";
 import { ThemeData } from "@shared/types/theme.type";
 
 export enum LocalStorageKey {
@@ -19,7 +18,7 @@ export type SettingsDisplayMode = "page" | "sheet";
 
 export interface LocalStorageItem {
   [LocalStorageKey.theme]: ThemeData | null;
-  [LocalStorageKey.language]: LanguageData | null;
+  [LocalStorageKey.language]: string | null;
   [LocalStorageKey.lastVisitedAt]: Date | null;
   [LocalStorageKey.accessToken]: string | null;
   [LocalStorageKey.sidebarWidth]: string | null;

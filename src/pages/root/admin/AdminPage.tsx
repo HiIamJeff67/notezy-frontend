@@ -1,10 +1,12 @@
 import { localDB } from "@shared/api/local/db";
 import { User } from "@shared/api/local/schemas";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import { Button } from "@/components/ui/button";
 
 const AdminPage = () => {
+  const { t } = useTranslation();
   const [isLoadingPreviewOpen, setIsLoadingPreviewOpen] = useState(false);
 
   const logAllExistingUsers = async (): Promise<void> => {
@@ -17,27 +19,29 @@ const AdminPage = () => {
       <div className="p-4 flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={localDB.download}>
-            Download Local DB File
+            {t("workspace.pages.downloadLocalDb")}
           </Button>
           <Button variant="secondary" onClick={logAllExistingUsers}>
-            Log all existing users
+            {t("workspace.pages.logUsers")}
           </Button>
         </div>
 
         <div className="max-w-md rounded-xl border border-border bg-card p-4">
-          <p className="text-base font-semibold">Loading Indicator Test</p>
+          <p className="text-base font-semibold">
+            {t("workspace.pages.loadingTest")}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Open fullscreen loading cover and close it manually.
+            {t("workspace.pages.loadingTestDescription")}
           </p>
           <div className="mt-3 flex gap-2">
             <Button onClick={() => setIsLoadingPreviewOpen(true)}>
-              Show Loading
+              {t("workspace.pages.showLoading")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsLoadingPreviewOpen(false)}
             >
-              Hide Loading
+              {t("workspace.pages.hideLoading")}
             </Button>
           </div>
         </div>
@@ -50,7 +54,7 @@ const AdminPage = () => {
             variant="destructive"
             onClick={() => setIsLoadingPreviewOpen(false)}
           >
-            Close Loading
+            {t("workspace.pages.closeLoading")}
           </Button>
         </div>
       ) : null}

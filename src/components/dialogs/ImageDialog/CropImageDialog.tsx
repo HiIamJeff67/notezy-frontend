@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import ImageCropper from "@/components/commons/ImageCropper/ImageCropper";
 import {
   Dialog,
@@ -24,16 +25,15 @@ const CropImageDialog = ({
   onComplete,
   onCancel,
 }: CropImageDialogProps) => {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md shadow-xl rounded-xl p-6 flex flex-col items-center gap-4">
         <DialogHeader>
-          <DialogTitle>Crop Image</DialogTitle>
+          <DialogTitle>{t("workspace.dialogs.cropImage")}</DialogTitle>
         </DialogHeader>
         <DialogDescription className="px-8">
-          Drag the zone display in the screen to fit and crop the image. The
-          size of the zone is decided based on the current width and height of
-          your screen.
+          {t("workspace.dialogs.cropImageDescription")}
         </DialogDescription>
         <ImageCropper
           imageURL={imageURL}

@@ -1,4 +1,5 @@
 import { Dispatch, lazy, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
@@ -23,12 +24,16 @@ const EditClockWidgetDialog = ({
   setting,
   setSetting,
 }: EditClockWidgetDialogProps) => {
+  const { t } = useTranslation();
   return (
     <EditWidgetDialog open={open} onOpenChange={onOpenChange}>
       <DeferredSuspense
         trigger={open}
         fallback={
-          <EditWidgetDialogContentSkeleton title="編輯時鐘" count={6} />
+          <EditWidgetDialogContentSkeleton
+            title={t("workspace.widgets.editClock")}
+            count={6}
+          />
         }
         fallbackDelayMs={100}
       >

@@ -1,5 +1,6 @@
 import { ScratchPadSetting } from "@widgets/basic/ScratchPadWidget/setting/scratchPadSetting";
 import { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -15,10 +16,11 @@ const EditScratchPadWidgetDialogContent = ({
   setting,
   setSetting,
 }: EditScratchPadWidgetDialogContentProps) => {
+  const { t } = useTranslation();
   return (
-    <EditWidgetDialogContent title="編輯草稿本">
+    <EditWidgetDialogContent title={t("workspace.widgets.editScratchPad")}>
       <EditWidgetDialogOption
-        title="草稿本內文文字大小"
+        title={t("workspace.widgets.scratchPadFontSize")}
         alignment="vertical"
         currentValue={setting.fontSize.toString()}
       >

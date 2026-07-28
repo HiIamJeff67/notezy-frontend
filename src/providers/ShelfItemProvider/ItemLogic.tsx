@@ -40,11 +40,7 @@ interface UseItemLogicProps {
   inputRef: RefObject<HTMLInputElement | null>;
   setFocusedNode: Dispatch<
     SetStateAction<
-      | RootShelfNode
-      | SubShelfNode
-      | MaterialNode
-      | BlockPackNode
-      | undefined
+      RootShelfNode | SubShelfNode | MaterialNode | BlockPackNode | undefined
     >
   >;
   forceUpdate: () => void;

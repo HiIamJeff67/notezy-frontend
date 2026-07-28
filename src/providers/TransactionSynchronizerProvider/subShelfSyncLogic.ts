@@ -1,6 +1,4 @@
 import {
-  MoveMySubShelvesByRootShelfIdsRequest,
-  MoveMySubShelvesByRootShelfIdsRequestSchema,
   CreateSubShelfByRootShelfIdRequestSchema,
   CreateSubShelvesByRootShelfIdsRequest,
   CreateSubShelvesByRootShelfIdsRequestSchema,
@@ -9,6 +7,8 @@ import {
   DeleteMySubShelvesByIdsRequestSchema,
   MoveMySubShelfRequestSchema,
   MoveMySubShelvesByRootShelfIdRequestSchema,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsRequestSchema,
   RestoreMySubShelfByIdRequestSchema,
   RestoreMySubShelvesByIdsRequest,
   RestoreMySubShelvesByIdsRequestSchema,
@@ -23,16 +23,16 @@ import { InferSelectModel } from "drizzle-orm";
 import {
   dropEntityPendingOperations,
   EntityState,
-  getTransactionSequences,
   getMergedSequences,
-  MergedTransactionsResult,
+  getTransactionSequences,
   MergedTransaction,
+  MergedTransactionsResult,
+  markTransactionsAsMerged,
   mergeSet,
   PreparedSyncJobsResult,
   SyncHeader,
   SyncJob,
 } from "./TransactionSynchronizerProvider";
-import { markTransactionsAsMerged } from "./TransactionSynchronizerProvider";
 
 interface SubShelfMutators {
   createSubShelvesMutator: {
@@ -44,7 +44,9 @@ interface SubShelfMutators {
     mutateAsync: (request: UpdateMySubShelvesByIdsRequest) => Promise<unknown>;
   };
   moveSubShelvesMutator: {
-    mutateAsync: (request: MoveMySubShelvesByRootShelfIdsRequest) => Promise<unknown>;
+    mutateAsync: (
+      request: MoveMySubShelvesByRootShelfIdsRequest
+    ) => Promise<unknown>;
   };
   restoreSubShelvesMutator: {
     mutateAsync: (request: RestoreMySubShelvesByIdsRequest) => Promise<unknown>;
@@ -149,7 +151,10 @@ export const prepareSubShelfSyncJobs = ({
         if (one.success) {
           const id = one.data.body.id;
           if (!id) {
-            mergeSet(parseFailedSequences, getTransactionSequences(transaction));
+            mergeSet(
+              parseFailedSequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
           createSubShelvesMap.set(id, {
@@ -194,7 +199,10 @@ export const prepareSubShelfSyncJobs = ({
             if (one.data.body.values.name !== undefined) {
               createState.body.name = one.data.body.values.name;
             }
-            mergeSet(createState.sequences, getTransactionSequences(transaction));
+            mergeSet(
+              createState.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -228,14 +236,20 @@ export const prepareSubShelfSyncJobs = ({
 
         const many = UpdateMySubShelvesByIdsRequestSchema.safeParse(request);
         if (many.success) {
-          for (const [index, updated] of many.data.body.updatedSubShelves.entries()) {
+          for (const [
+            index,
+            updated,
+          ] of many.data.body.updatedSubShelves.entries()) {
             const id = updated.subShelfId;
             const createState = createSubShelvesMap.get(id);
             if (createState) {
               if (updated.values.name !== undefined) {
                 createState.body.name = updated.values.name;
               }
-              mergeSet(createState.sequences, getTransactionSequences(transaction));
+              mergeSet(
+                createState.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -256,7 +270,10 @@ export const prepareSubShelfSyncJobs = ({
                 many.data.affected.prevSubShelfIds[index] ??
                 many.data.affected.prevSubShelfIds[0] ??
                 null;
-              mergeSet(existing.sequences, getTransactionSequences(transaction));
+              mergeSet(
+                existing.sequences,
+                getTransactionSequences(transaction)
+              );
             } else {
               updateSubShelvesMap.set(id, {
                 body: {
@@ -293,7 +310,10 @@ export const prepareSubShelfSyncJobs = ({
               oneByOne.data.body.destinationRootShelfId;
             createState.body.prevSubShelfId =
               oneByOne.data.body.destinationSubShelfId;
-            mergeSet(createState.sequences, getTransactionSequences(transaction));
+            mergeSet(
+              createState.sequences,
+              getTransactionSequences(transaction)
+            );
             break;
           }
 
@@ -309,7 +329,8 @@ export const prepareSubShelfSyncJobs = ({
           break;
         }
 
-        const oneToOne = MoveMySubShelvesByRootShelfIdRequestSchema.safeParse(request);
+        const oneToOne =
+          MoveMySubShelvesByRootShelfIdRequestSchema.safeParse(request);
         if (oneToOne.success) {
           for (const id of oneToOne.data.body.sourceSubShelfIds) {
             const createState = createSubShelvesMap.get(id);
@@ -318,7 +339,10 @@ export const prepareSubShelfSyncJobs = ({
                 oneToOne.data.body.destinationRootShelfId;
               createState.body.prevSubShelfId =
                 oneToOne.data.body.destinationSubShelfId;
-              mergeSet(createState.sequences, getTransactionSequences(transaction));
+              mergeSet(
+                createState.sequences,
+                getTransactionSequences(transaction)
+              );
               continue;
             }
 
@@ -336,7 +360,8 @@ export const prepareSubShelfSyncJobs = ({
           break;
         }
 
-        const many = MoveMySubShelvesByRootShelfIdsRequestSchema.safeParse(request);
+        const many =
+          MoveMySubShelvesByRootShelfIdsRequestSchema.safeParse(request);
         if (many.success) {
           for (const moved of many.data.body.moveSubShelves) {
             for (const id of moved.sourceSubShelfIds) {
@@ -344,7 +369,10 @@ export const prepareSubShelfSyncJobs = ({
               if (createState) {
                 createState.body.rootShelfId = moved.destinationRootShelfId;
                 createState.body.prevSubShelfId = moved.destinationSubShelfId;
-                mergeSet(createState.sequences, getTransactionSequences(transaction));
+                mergeSet(
+                  createState.sequences,
+                  getTransactionSequences(transaction)
+                );
                 continue;
               }
 

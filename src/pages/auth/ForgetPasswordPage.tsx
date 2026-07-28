@@ -4,7 +4,6 @@ import {
 } from "@shared/api/hooks/auth.hook";
 import { AuthCodeBlockedSecond, WebURLPathDictionary } from "@shared/constants";
 import toast from "@shared/lib/toast";
-import { tKey } from "@shared/translations";
 import {
   Suspense,
   useCallback,
@@ -12,15 +11,17 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useTranslation } from "react-i18next";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
-import { useAppRouter, useLanguage } from "@/hooks";
+import { useAppRouter } from "@/hooks";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
+import { translateError } from "@/i18n/error";
 
 const ForgetPasswordPage = () => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const sendAuthCodeMutator = useSendAuthCode();
   const forgetPasswordMutator = useForgetPassword();
 
@@ -81,10 +82,10 @@ const ForgetPasswordPage = () => {
           );
         } catch (error) {
           setSendAuthCodeTimeCounter(0);
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }),
-    [email, languageManager, sendAuthCodeMutator]
+    [email, t, sendAuthCodeMutator]
   );
 
   const handleResetPasswordOnSubmit = useCallback(
@@ -93,9 +94,7 @@ const ForgetPasswordPage = () => {
         try {
           if (newPassword !== confirmNewPassword) {
             throw new Error(
-              languageManager.t(
-                tKey.auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch
-              )
+              t("auth.pleaseMakeSurePasswordAndConfirmPasswordAreMatch")
             );
           }
 
@@ -118,7 +117,7 @@ const ForgetPasswordPage = () => {
         } catch (error) {
           setNewPassword("");
           setConfirmNewPassword("");
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       });
     },
@@ -127,7 +126,7 @@ const ForgetPasswordPage = () => {
       authCode,
       newPassword,
       confirmNewPassword,
-      languageManager,
+      t,
       forgetPasswordMutator,
       router,
     ]
@@ -144,22 +143,22 @@ const ForgetPasswordPage = () => {
           }
         />
         <AuthPanel
-          title={languageManager.t(tKey.auth.resetPassword)}
-          subtitle={`${languageManager.t(
-            tKey.auth.authenticationPanelSubtitle
-          )} ${languageManager.t(tKey.auth.resetPassword)}`}
+          title={t("auth.resetPassword")}
+          subtitle={`${t(
+            "auth.authenticationPanelSubtitle"
+          )} ${t("auth.resetPassword")}`}
           inputs={[
             {
-              title: languageManager.t(tKey.auth.email),
-              placeholder: "ex. example123@email.com",
+              title: t("auth.email"),
+              placeholder: t("auth.emailExample"),
               type: "email",
               value: email,
               onChange: setEmail,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.authCode),
-              placeholder: "ex. 123456",
+              title: t("auth.authCode"),
+              placeholder: t("auth.authCodeExample"),
               type: "number",
               value: authCode,
               onChange: setAuthCode,
@@ -168,53 +167,49 @@ const ForgetPasswordPage = () => {
                 description:
                   sendAuthCodeTimeCounter > 0
                     ? `${sendAuthCodeTimeCounter}s`
-                    : `${languageManager.t(
-                        tKey.common.send
-                      )}${languageManager.t(
-                        tKey.syntax.separator
-                      )}${languageManager.t(tKey.auth.authCode)}`,
+                    : `${t("common.send")}${t(
+                        "syntax.separator"
+                      )}${t("auth.authCode")}`,
                 onClick: async () => handleSendAuthCodeOnClick(),
                 disabled: sendAuthCodeTimeCounter > 0,
               },
             },
             {
-              title: languageManager.t(tKey.auth.newPassword),
-              placeholder: "ex. example-password123(&@#$",
+              title: t("auth.newPassword"),
+              placeholder: t("auth.passwordExample"),
               type: "password",
               value: newPassword,
               onChange: setNewPassword,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.confirmNewPassword),
-              placeholder: "ex. example-password123(&@#$",
+              title: t("auth.confirmNewPassword"),
+              placeholder: t("auth.passwordExample"),
               type: "password",
               value: confirmNewPassword,
               onChange: setConfirmNewPassword,
               required: true,
             },
           ]}
-          submitButtonText={languageManager.t(tKey.auth.resetPassword)}
+          submitButtonText={t("auth.resetPassword")}
           onSubmit={handleResetPasswordOnSubmit}
           switchButtons={[
             {
-              description: languageManager.t(
-                tKey.auth.haveNotRegisterAnAccount
-              ),
-              title: languageManager.t(tKey.auth.register),
+              description: t("auth.haveNotRegisterAnAccount"),
+              title: t("auth.register"),
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
             {
-              description: languageManager.t(tKey.auth.alreadyHaveAnAccount),
-              title: languageManager.t(tKey.auth.login),
+              description: t("auth.alreadyHaveAnAccount"),
+              title: t("auth.login"),
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.login);
               },
             },
           ]}
-          statusDetail={"System Ready"}
+          statusDetail={t("workspace.pages.systemReady")}
           isLoading={isResetPasswordPending}
         />
       </Suspense>

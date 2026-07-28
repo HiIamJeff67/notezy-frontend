@@ -4,6 +4,7 @@ import { BlockPackNode } from "@shared/types/itemNodes.type";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   ContextMenu,
@@ -20,7 +21,8 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useAppRouter, useLanguage, useShelfItem } from "@/hooks";
+import { useAppRouter, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface BlockPackMenuItemProps {
   parent: SubShelfNode;
@@ -29,7 +31,7 @@ interface BlockPackMenuItemProps {
 
 const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const handleBlockPackOnClick = useCallback(() => {
@@ -43,7 +45,7 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
       );
       shelfItemManager.toggleBlockPack(current);
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   }, [parent, current, router, shelfItemManager]);
 
@@ -72,34 +74,36 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
         >
           <HoverDetailCard
             title={current.name}
-            subtitle="Block Pack"
+            subtitle={t("workspace.trash.blockPack")}
             id={current.id}
             rows={[
-              { field: "Blocks", value: current.blockCount },
+              { field: t("workspace.menu.blocks"), value: current.blockCount },
               {
-                field: "Updated",
-                value: new Date(current.updatedAt).toLocaleDateString(),
+                field: t("workspace.menu.updated"),
+                value: new Date(current.updatedAt).toLocaleDateString(
+                  i18n.resolvedLanguage
+                ),
               },
             ]}
           />
         </HoverCardContent>
       </HoverCard>
       <ContextMenuContent>
-        <ContextMenuLabel>View</ContextMenuLabel>
+        <ContextMenuLabel>{t("workspace.menu.view")}</ContextMenuLabel>
         <ContextMenuGroup>
           <ContextMenuItem onClick={handleBlockPackOnClick}>
             <ExternalLink className="mr-2 size-4" />
-            Open
+            {t("workspace.menu.open")}
           </ContextMenuItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuLabel>Edit</ContextMenuLabel>
+        <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
         <ContextMenuGroup>
           <ContextMenuItem
             onClick={() => shelfItemManager.startRenamingItemNode(current)}
           >
             <Pencil className="mr-2 size-4" />
-            Rename
+            {t("workspace.menu.rename")}
           </ContextMenuItem>
           <ContextMenuItem
             className="text-destructive focus:text-destructive"
@@ -111,7 +115,7 @@ const BlockPackMenuItem = ({ parent, current }: BlockPackMenuItemProps) => {
             }}
           >
             <Trash2 className="mr-2 size-4" />
-            Delete
+            {t("workspace.menu.delete")}
           </ContextMenuItem>
         </ContextMenuGroup>
       </ContextMenuContent>

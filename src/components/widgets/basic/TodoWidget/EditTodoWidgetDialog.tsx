@@ -1,5 +1,6 @@
 import { TodoSetting } from "@widgets/basic/TodoWidget/setting/todoSetting";
 import { Dispatch, lazy, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { DeferredSuspense } from "@/components/commons/DeferredSuspense/DeferredSuspense";
 import {
   EditWidgetDialog,
@@ -23,12 +24,16 @@ const EditTodoWidgetDialog = ({
   setting,
   setSetting,
 }: EditTodoWidgetDialogProps) => {
+  const { t } = useTranslation();
   return (
     <EditWidgetDialog open={open} onOpenChange={onOpenChange}>
       <DeferredSuspense
         trigger={open}
         fallback={
-          <EditWidgetDialogContentSkeleton title="編輯時鐘" count={3} />
+          <EditWidgetDialogContentSkeleton
+            title={t("workspace.widgets.editTodo")}
+            count={3}
+          />
         }
         fallbackDelayMs={100}
       >

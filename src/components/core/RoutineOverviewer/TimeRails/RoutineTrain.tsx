@@ -3,12 +3,17 @@ import type { RoutineNode } from "@shared/types/routineNode.type";
 import { cn } from "@shared/util/utils";
 import { Bookmark } from "lucide-react";
 import type { PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  translateRoutinePeriod,
+  translateRoutineStatus,
+} from "@/i18n/workspace";
 
 const RoutineTrain = ({
   routine,
@@ -36,6 +41,8 @@ const RoutineTrain = ({
   isResizing: boolean;
   canResize?: boolean;
 }) => {
+  const { i18n, t } = useTranslation();
+
   return (
     <HoverCard openDelay={180} closeDelay={120}>
       <HoverCardTrigger asChild>
@@ -101,16 +108,32 @@ const RoutineTrain = ({
           subtitle={stationName}
           id={routine.id}
           rows={[
-            { field: "Status", value: routine.status },
-            { field: "Period", value: routine.period ?? "One-shot" },
             {
-              field: "Start",
-              value: routine.scheduledStartAt.toLocaleString(),
+              field: t("workspace.table.status"),
+              value: translateRoutineStatus(routine.status, t),
             },
-            { field: "End", value: routine.scheduledEndAt.toLocaleString() },
             {
-              field: "Tags",
-              value: tagNames.length > 0 ? tagNames.join(", ") : "Untagged",
+              field: t("workspace.payloadEditor.period"),
+              value: translateRoutinePeriod(routine.period, t),
+            },
+            {
+              field: t("workspace.inspector.start"),
+              value: routine.scheduledStartAt.toLocaleString(
+                i18n.resolvedLanguage
+              ),
+            },
+            {
+              field: t("workspace.inspector.end"),
+              value: routine.scheduledEndAt.toLocaleString(
+                i18n.resolvedLanguage
+              ),
+            },
+            {
+              field: t("workspace.table.tags"),
+              value:
+                tagNames.length > 0
+                  ? tagNames.join(", ")
+                  : t("workspace.table.untagged"),
             },
           ]}
         />

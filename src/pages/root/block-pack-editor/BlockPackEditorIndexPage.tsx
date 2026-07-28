@@ -1,14 +1,15 @@
 import toast from "@shared/lib/toast";
-import { tKey } from "@shared/translations";
 import { GraduationCapIcon } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 const BlockPackEditorIndexPage = () => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const [newShelfName, setNewShelfName] = useState<string>("");
@@ -17,25 +18,25 @@ const BlockPackEditorIndexPage = () => {
     await loadingManager.startAsyncTransactionLoading(async () => {
       try {
         if (newShelfName.replaceAll(" ", "") === "") {
-          throw new Error("new shelf name must not be empty");
+          throw new Error(t("workspace.pages.newShelfNameEmpty"));
         }
 
         await shelfItemManager.createRootShelf(newShelfName);
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       } finally {
         setNewShelfName("");
       }
     });
-  }, [newShelfName, loadingManager, languageManager, shelfItemManager]);
+  }, [newShelfName, loadingManager, t, shelfItemManager]);
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center gap-4">
       <div className="w-full text-center font-bold text-4xl mb-2 px-2">
-        Ready to start a new block pack space?
+        {t("workspace.pages.newBlockPackSpace")}
       </div>
       <Input
-        placeholder="type your new shelf name here"
+        placeholder={t("workspace.navigation.shelfNamePlaceholder")}
         value={newShelfName}
         onChange={e => setNewShelfName(e.target.value)}
         className="w-2/3"
@@ -46,11 +47,11 @@ const BlockPackEditorIndexPage = () => {
           type="submit"
           onClick={handleCreateRootShelfOnSubmit}
         >
-          {languageManager.t(tKey.common.confirm)}
+          {t("common.confirm")}
         </Button>
         <Button variant="secondary">
           <GraduationCapIcon />
-          <span>See Tutorial</span>
+          <span>{t("workspace.navigation.seeTutorial")}</span>
         </Button>
       </div>
     </div>

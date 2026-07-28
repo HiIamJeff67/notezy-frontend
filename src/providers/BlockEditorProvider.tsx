@@ -10,6 +10,7 @@ import {
 import { WebURLPathDictionary } from "@shared/constants";
 import { randomColor } from "@shared/util/random";
 import { createContext, useCallback, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type * as Y from "yjs";
 import { useAppRouterActions } from "@/hooks/useAppRouter";
 import { useBlockPackRealtimeChannel, useRealtime } from "@/hooks/useRealtime";
@@ -43,6 +44,7 @@ export const BlockEditorProvider = ({
   children,
   blockPackMeta,
 }: BlockEditorProviderProps) => {
+  const { t } = useTranslation();
   const { userData } = useUser();
   const router = useAppRouterActions();
   const requestedRealtimePermission =
@@ -70,7 +72,10 @@ export const BlockEditorProvider = ({
           fragment: getNotezyBlockNoteXmlFragment(channel.doc) as Y.XmlFragment,
           provider: channel.provider,
           user: {
-            name: userData?.displayName ?? userData?.name ?? "Notezy User",
+            name:
+              userData?.displayName ??
+              userData?.name ??
+              t("workspace.dialogs.user"),
             publicId: userData?.publicId,
             color: randomColor(),
           } as { name: string; color: string },
@@ -78,7 +83,7 @@ export const BlockEditorProvider = ({
         },
         trailingBlock: false,
       }),
-    [blockPackMeta.id, channel.doc, channel.provider, userData]
+    [blockPackMeta.id, channel.doc, channel.provider, t, userData]
   );
 
   const state: BlockEditorState =

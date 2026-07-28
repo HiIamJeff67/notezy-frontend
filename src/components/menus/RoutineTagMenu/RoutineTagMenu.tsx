@@ -1,9 +1,11 @@
 import { lazy, Suspense } from "react";
+import RoutineTagMenuItemSkeleton from "@/components/menus/RoutineTagMenu/RoutineTagMenuItemSkeleton";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { useStationRoutine } from "@/hooks";
-import RoutineTagMenuItemSkeleton from "@/components/menus/RoutineTagMenu/RoutineTagMenuItemSkeleton";
 
-const RoutineTagMenuItem = lazy(() => import("@/components/menus/RoutineTagMenu/RoutineTagMenuItem"));
+const RoutineTagMenuItem = lazy(
+  () => import("@/components/menus/RoutineTagMenu/RoutineTagMenuItem")
+);
 
 const RoutineTagMenu = () => {
   const stationRoutineManager = useStationRoutine();

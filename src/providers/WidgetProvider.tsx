@@ -3,9 +3,11 @@ import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BasicPreviewWidgets } from "@/components/widgets/basic/basic";
 import { Widget } from "@/components/widgets/widget";
-import { useLanguage, useUser } from "@/hooks";
+import { useUser } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface WidgetContextType {
   hasChanged: boolean;
@@ -37,7 +39,7 @@ interface WidgetProviderProps {
 }
 
 export const WidgetProvider = ({ children }: WidgetProviderProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const userManager = useUser();
 
   const [_, setUpdateTrigger] = useState<number>(0);
@@ -65,13 +67,13 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
           ).filter(widget => widget.component !== undefined) as Widget[];
           forceUpdate();
         } catch (error) {
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }
     };
 
     initializeWidgets();
-  }, [userManager.userData, languageManager, forceUpdate]);
+  }, [userManager.userData, t, forceUpdate]);
 
   const getWidgets = useCallback(() => widgetsRef.current, []);
 
@@ -163,7 +165,7 @@ export const WidgetProvider = ({ children }: WidgetProviderProps) => {
       );
 
       if (hasChangedRef.current) {
-        toast.success("Successfully save the widgets");
+        toast.success(t("workspace.notifications.widgetsSaved"));
       }
 
       hasChangedRef.current = false;

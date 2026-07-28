@@ -2,10 +2,12 @@ import toast from "@shared/lib/toast";
 import { SubShelfNode } from "@shared/types/shelfNodes.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import BlockPackMenuItem from "@/components/menus/BlockPackMenu/BlockPackMenuItem";
 import BlockPackMenuItemSkeleton from "@/components/menus/BlockPackMenu/BlockPackMenuItemSkeleton";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface BlockPackMenuProps {
   parent: SubShelfNode;
@@ -13,7 +15,7 @@ interface BlockPackMenuProps {
 
 const BlockPackMenu = ({ parent }: BlockPackMenuProps) => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const handleRenameBlockPackOnSubmit = useCallback(async () => {
@@ -21,9 +23,9 @@ const BlockPackMenu = ({ parent }: BlockPackMenuProps) => {
       async () =>
         await shelfItemManager
           .renameEditingBlockPack()
-          .catch(error => toast.error(languageManager.tError(error)))
+          .catch(error => toast.error(translateError(error, t)))
     );
-  }, [loadingManager, languageManager, shelfItemManager]);
+  }, [loadingManager, t, shelfItemManager]);
 
   return (
     <Suspense fallback={<BlockPackMenuItemSkeleton />}>
@@ -71,7 +73,7 @@ const BlockPackMenu = ({ parent }: BlockPackMenuProps) => {
                         e.stopPropagation();
                         await handleRenameBlockPackOnSubmit();
                       }}
-                      aria-label="Save block pack name"
+                      aria-label={t("workspace.menu.saveBlockPackName")}
                     >
                       <CheckIcon className="size-4" />
                     </button>

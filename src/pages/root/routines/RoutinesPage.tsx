@@ -19,9 +19,7 @@ const RoutinesPage = ({ stationId }: RoutinesPageProps) => {
     );
   }, [initializeStationRoutineData, userData?.publicId]);
 
-  return (
-    <RoutineViewer stationId={stationId} />
-  );
+  return <RoutineViewer stationId={stationId} />;
 };
 
 export default RoutinesPage;

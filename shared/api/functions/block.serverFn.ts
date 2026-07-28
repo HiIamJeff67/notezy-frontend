@@ -13,7 +13,6 @@ import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -41,7 +40,7 @@ export const GetMyBlockById = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
 
     forwardUpstreamSetCookies(response);
@@ -85,7 +84,7 @@ export const GetMyBlocksByIds = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
 
     forwardUpstreamSetCookies(response);
@@ -133,7 +132,7 @@ export const GetMyBlocksByBlockPackId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
 
       forwardUpstreamSetCookies(response);

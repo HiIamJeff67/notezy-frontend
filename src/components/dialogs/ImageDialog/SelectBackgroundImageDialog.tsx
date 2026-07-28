@@ -1,6 +1,7 @@
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
 import Closeable from "@/components/commons/Closeable/Closeable";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useLanguage } from "@/hooks";
 import { useBackgroundImages } from "@/hooks/useBackgroundImages";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
+import { translateError } from "@/i18n/error";
 import { ModalProps } from "@/providers/ModalProvider";
 import CropImageDialog from "./CropImageDialog";
 import UploadImageDialog from "./UploadImageDialog";
@@ -26,7 +27,7 @@ const SelectBackgroundImageDialog = ({
   onClose,
   cropperAspectRatio,
 }: SelectBackgroundImageDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
 
   const backgroundImagesManager = useBackgroundImages();
 
@@ -54,7 +55,8 @@ const SelectBackgroundImageDialog = ({
   );
 
   useEffect(() => {
-    const currentId = backgroundImagesManager.currentBackgroundImage?.id ?? null;
+    const currentId =
+      backgroundImagesManager.currentBackgroundImage?.id ?? null;
     if (currentId && thumbnails.some(thumb => thumb.id === currentId)) {
       setSelectedBackgroundImageId(currentId);
       return;
@@ -93,10 +95,10 @@ const SelectBackgroundImageDialog = ({
           setCroppedBackgroundImagePack(null);
           setCropImageDialogOpen(false);
         } catch (error) {
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }),
-    [croppedBackgroundImagePack, backgroundImagesManager, languageManager]
+    [croppedBackgroundImagePack, backgroundImagesManager, t]
   );
 
   const handleCropImageOnSelect = useCallback(
@@ -111,10 +113,10 @@ const SelectBackgroundImageDialog = ({
           setCroppedBackgroundImagePack(imagePack);
           setCropImageDialogOpen(true);
         } catch (error) {
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       }),
-    [selectedBackgroundImageId, backgroundImagesManager, languageManager]
+    [selectedBackgroundImageId, backgroundImagesManager, t]
   );
 
   const handleThumbnailOnSelect = useCallback(
@@ -123,10 +125,10 @@ const SelectBackgroundImageDialog = ({
       try {
         await backgroundImagesManager.setCurrentBackgroundImageById(id);
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     },
-    [backgroundImagesManager, languageManager]
+    [backgroundImagesManager, t]
   );
 
   const handleThumbnailOnRemove = useCallback(
@@ -136,16 +138,18 @@ const SelectBackgroundImageDialog = ({
           .filter(thumb => thumb.id !== id)
           .map(thumb => thumb.id);
         const fallbackId =
-          remainingIds.length > 0 ? remainingIds[remainingIds.length - 1] : null;
+          remainingIds.length > 0
+            ? remainingIds[remainingIds.length - 1]
+            : null;
 
         await backgroundImagesManager.remove([id]);
         setSelectedBackgroundImageId(fallbackId);
         await backgroundImagesManager.setCurrentBackgroundImageById(fallbackId);
       } catch (error) {
-        toast.error(languageManager.tError(error));
+        toast.error(translateError(error, t));
       }
     },
-    [backgroundImagesManager, languageManager, thumbnails]
+    [backgroundImagesManager, t, thumbnails]
   );
 
   return (
@@ -165,16 +169,17 @@ const SelectBackgroundImageDialog = ({
         "
       >
         <DialogHeader>
-          <DialogTitle>Select Background Images</DialogTitle>
+          <DialogTitle>
+            {t("workspace.dialogs.selectBackgroundImages")}
+          </DialogTitle>
         </DialogHeader>
         <DialogDescription className="px-4">
-          Select a image to display on the background. There's only one image
-          available to display at the same time.
+          {t("workspace.dialogs.selectBackgroundDescription")}
         </DialogDescription>
         <UploadImageDialog
           open={uploadImageDialogOpen}
           onOpenChange={setUploadImageDialogOpen}
-          title="Upload Background Images"
+          title={t("workspace.dialogs.uploadBackgroundImages")}
           onUpload={async (files: File[]) => {
             const uploadedIds = await backgroundImagesManager.upload(files);
             if (uploadedIds.length > 0) {
@@ -205,7 +210,7 @@ const SelectBackgroundImageDialog = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto max-h-[60vh] w-full mt-4 p-2">
           {thumbnails.length === 0 ? (
             <div className="col-span-full text-center text-muted-foreground py-8">
-              No background images available.
+              {t("workspace.dialogs.noBackgroundImages")}
             </div>
           ) : (
             thumbnails.map(thumb => (
@@ -228,7 +233,7 @@ const SelectBackgroundImageDialog = ({
                   {/* leave the client images to use the original react img component */}
                   <img
                     src={thumb.thumbnailURL}
-                    alt="Background thumbnail"
+                    alt={t("workspace.dialogs.backgroundThumbnail")}
                     className="w-full h-full object-cover"
                   />
                 </Closeable>
@@ -243,14 +248,14 @@ const SelectBackgroundImageDialog = ({
             disabled={selectedBackgroundImageId === null}
             onClick={handleCropImageOnSelect}
           >
-            Crop
+            {t("workspace.dialogs.crop")}
           </Button>
           <Button
             variant="secondary"
             className="w-20"
             onClick={() => setUploadImageDialogOpen(true)}
           >
-            Upload
+            {t("workspace.dialogs.upload")}
           </Button>
           <Button
             variant="default"
@@ -258,7 +263,7 @@ const SelectBackgroundImageDialog = ({
             disabled={selectedBackgroundImageId === null}
             onClick={() => onClose()}
           >
-            Confirm
+            {t("workspace.dialogs.confirm")}
           </Button>
         </div>
       </DialogContent>

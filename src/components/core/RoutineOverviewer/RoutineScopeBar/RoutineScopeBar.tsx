@@ -1,7 +1,4 @@
-import {
-  ChartNoAxesCombined,
-  Tags,
-} from "lucide-react";
+import { ChartNoAxesCombined, Tags } from "lucide-react";
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
@@ -9,6 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   RoutineIcon,
   RoutineTaskIcon,
@@ -48,6 +46,7 @@ const RoutineScopeBar = ({
   showAddChart = true,
   showStationStatus = true,
 }: RoutineScopeBarProps) => {
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
 
   const [pendingStationIds, setPendingStationIds] = useState(
@@ -97,15 +96,19 @@ const RoutineScopeBar = ({
                   icon={<StationIcon size={14} />}
                   presentCount={stationRoutineManager.visibleStations.length}
                   totalCount={stationRoutineManager.statusSummary.totalStations}
-                  title="Stations"
+                  title={t("workspace.scope.stations")}
                 />
               </HoverCardTrigger>
               <HoverCardContent align="end" className="w-72 rounded-sm p-0">
                 <div className="border-b px-3 py-2.5">
-                  <p className="text-sm font-medium">Present stations</p>
+                  <p className="text-sm font-medium">
+                    {t("workspace.scope.presentStations")}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {stationRoutineManager.presence.stationIds.length} of{" "}
-                    {stationRoutineManager.stations.length} stations are shown
+                    {t("workspace.scope.stationsShown", {
+                      shown: stationRoutineManager.presence.stationIds.length,
+                      total: stationRoutineManager.stations.length,
+                    })}
                   </p>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-1.5">
@@ -141,7 +144,7 @@ const RoutineScopeBar = ({
                   ))}
                   {stationRoutineManager.stations.length === 0 && (
                     <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-                      No stations
+                      {t("workspace.scope.noStations")}
                     </p>
                   )}
                 </div>
@@ -157,7 +160,7 @@ const RoutineScopeBar = ({
                       )
                     }
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     type="button"
@@ -181,7 +184,7 @@ const RoutineScopeBar = ({
                       );
                     }}
                   >
-                    Filter
+                    {t("workspace.scope.filter")}
                   </Button>
                 </div>
               </HoverCardContent>
@@ -191,7 +194,7 @@ const RoutineScopeBar = ({
             icon={<RoutineIcon className="size-3.5" />}
             presentCount={stationRoutineManager.visibleRoutines.length}
             totalCount={stationRoutineManager.statusSummary.totalRoutines}
-            title="Routines"
+            title={t("workspace.scope.routines")}
           />
           <HoverCard
             openDelay={250}
@@ -213,15 +216,19 @@ const RoutineScopeBar = ({
                 totalCount={
                   stationRoutineManager.statusSummary.totalRoutineTags
                 }
-                title="Routine tags"
+                title={t("workspace.scope.routineTags")}
               />
             </HoverCardTrigger>
             <HoverCardContent align="end" className="w-72 rounded-sm p-0">
               <div className="border-b px-3 py-2.5">
-                <p className="text-sm font-medium">Present routine tags</p>
+                <p className="text-sm font-medium">
+                  {t("workspace.scope.presentRoutineTags")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {stationRoutineManager.presence.routineTagIds.length} of{" "}
-                  {stationRoutineManager.routineTags.length} tags are shown
+                  {t("workspace.scope.tagsShown", {
+                    shown: stationRoutineManager.presence.routineTagIds.length,
+                    total: stationRoutineManager.routineTags.length,
+                  })}
                 </p>
               </div>
               <div className="max-h-64 overflow-y-auto p-1.5">
@@ -261,7 +268,7 @@ const RoutineScopeBar = ({
                 ))}
                 {stationRoutineManager.routineTags.length === 0 && (
                   <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-                    No routine tags
+                    {t("workspace.scope.noRoutineTags")}
                   </p>
                 )}
                 <Separator className="my-1.5" />
@@ -274,7 +281,9 @@ const RoutineScopeBar = ({
                       )
                     }
                   />
-                  <span className="text-sm">Untagged routines</span>
+                  <span className="text-sm">
+                    {t("workspace.scope.untaggedRoutines")}
+                  </span>
                 </label>
               </div>
               <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
@@ -292,7 +301,7 @@ const RoutineScopeBar = ({
                     );
                   }}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -325,7 +334,7 @@ const RoutineScopeBar = ({
                     }
                   }}
                 >
-                  Filter
+                  {t("workspace.scope.filter")}
                 </Button>
               </div>
             </HoverCardContent>
@@ -334,7 +343,7 @@ const RoutineScopeBar = ({
             icon={<RoutineTaskIcon className="size-3.5" />}
             presentCount={stationRoutineManager.visibleRoutineTasks.length}
             totalCount={stationRoutineManager.statusSummary.totalRoutineTasks}
-            title="Routine tasks"
+            title={t("workspace.scope.routineTasks")}
           />
         </div>
       </div>
@@ -347,14 +356,16 @@ const RoutineScopeBar = ({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Add chart"
+                aria-label={t("workspace.scope.addChart")}
                 className="size-7 rounded-sm"
                 onClick={onOpenAddChart}
               >
                 <ChartNoAxesCombined className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Add charts</TooltipContent>
+            <TooltipContent side="bottom">
+              {t("workspace.scope.addCharts")}
+            </TooltipContent>
           </Tooltip>
         )}
 
@@ -373,24 +384,36 @@ const RoutineScopeBar = ({
             size="sm"
             className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
-            <span className="@max-[480px]:hidden">Daily</span>
-            <span className="hidden @max-[480px]:inline">D</span>
+            <span className="@max-[480px]:hidden">
+              {t("workspace.scope.daily")}
+            </span>
+            <span className="hidden @max-[480px]:inline">
+              {t("workspace.scope.dailyShort")}
+            </span>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="week"
             size="sm"
             className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
-            <span className="@max-[480px]:hidden">Weekly</span>
-            <span className="hidden @max-[480px]:inline">W</span>
+            <span className="@max-[480px]:hidden">
+              {t("workspace.scope.weekly")}
+            </span>
+            <span className="hidden @max-[480px]:inline">
+              {t("workspace.scope.weeklyShort")}
+            </span>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="month"
             size="sm"
             className="h-7 rounded-sm bg-transparent px-2 text-xs hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
           >
-            <span className="@max-[480px]:hidden">Monthly</span>
-            <span className="hidden @max-[480px]:inline">M</span>
+            <span className="@max-[480px]:hidden">
+              {t("workspace.scope.monthly")}
+            </span>
+            <span className="hidden @max-[480px]:inline">
+              {t("workspace.scope.monthlyShort")}
+            </span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
@@ -399,21 +422,28 @@ const RoutineScopeBar = ({
 };
 
 const StatusPill = forwardRef<HTMLDivElement, StatusPillProps>(
-  ({ icon, presentCount, totalCount, title, ...props }, ref) => (
-    <div
-      ref={ref}
-      {...props}
-      className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-card px-2"
-      aria-label={`${title}: ${presentCount} of ${totalCount} present`}
-    >
-      {icon}
-      <div className="tabular-nums">
-        <span className="@max-[480px]:hidden">{presentCount}</span>
-        <span className="px-0.5 @max-[480px]:hidden">|</span>
-        {totalCount}
+  ({ icon, presentCount, totalCount, title, ...props }, ref) => {
+    const { t } = useTranslation();
+    return (
+      <div
+        ref={ref}
+        {...props}
+        className="flex h-7 items-center gap-1 rounded-sm border border-border/50 bg-card px-2"
+        aria-label={t("workspace.scope.presentSummary", {
+          title,
+          shown: presentCount,
+          total: totalCount,
+        })}
+      >
+        {icon}
+        <div className="tabular-nums">
+          <span className="@max-[480px]:hidden">{presentCount}</span>
+          <span className="px-0.5 @max-[480px]:hidden">|</span>
+          {totalCount}
+        </div>
       </div>
-    </div>
-  )
+    );
+  }
 );
 StatusPill.displayName = "StatusPill";
 

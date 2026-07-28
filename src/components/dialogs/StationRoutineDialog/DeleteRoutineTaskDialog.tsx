@@ -4,6 +4,7 @@ import toast from "@shared/lib/toast";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface DeleteRoutineTaskDialogProps extends ModalProps {
@@ -30,7 +31,7 @@ const DeleteRoutineTaskDialog = ({
   routineTaskTitle,
   onDeleted,
 }: DeleteRoutineTaskDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const deleteRoutineTaskMutator = useHardDeleteMyRoutineTaskById();
 
   const deleteRoutineTask = async () => {
@@ -48,15 +49,15 @@ const DeleteRoutineTaskDialog = ({
         },
       });
       if (response.success === false) {
-        toast.error(languageManager.tError(response.exception));
+        toast.error(translateError(response.exception, t));
         return;
       }
 
       await onDeleted?.();
-      toast.success("Routine task deleted");
+      toast.success(t("workspace.routineTask.deleted"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -69,10 +70,11 @@ const DeleteRoutineTaskDialog = ({
     >
       <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete a routine task</DialogTitle>
+          <DialogTitle>{t("workspace.routineTask.deleteTitle")}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <strong>{routineTaskTitle}</strong>?
-            This permanently removes the task.
+            {t("workspace.routineTask.deleteDescription", {
+              title: routineTaskTitle,
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -83,7 +85,7 @@ const DeleteRoutineTaskDialog = ({
             disabled={deleteRoutineTaskMutator.isPending}
             onClick={onClose}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -92,7 +94,7 @@ const DeleteRoutineTaskDialog = ({
             onClick={deleteRoutineTask}
           >
             {deleteRoutineTaskMutator.isPending && <Spinner />}
-            Delete
+            {t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

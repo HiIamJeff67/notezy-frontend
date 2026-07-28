@@ -9,4 +9,3 @@ export const DEFAULT_CHART_MARGIN: ChartMargin = {
 
 export const DEFAULT_VIEWBOX_WIDTH = 640;
 export const DEFAULT_VIEWBOX_HEIGHT = 280;
-

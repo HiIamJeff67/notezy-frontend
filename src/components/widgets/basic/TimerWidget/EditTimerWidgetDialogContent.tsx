@@ -1,5 +1,6 @@
 import { TimerSetting } from "@widgets/basic/TimerWidget/setting/timerSetting";
 import { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -17,10 +18,11 @@ const EditTimerWidgetDialogContent = ({
   setting,
   setSetting,
 }: EditTimerWidgetDialogContentProps) => {
+  const { t } = useTranslation();
   return (
-    <EditWidgetDialogContent title="編輯計時器">
+    <EditWidgetDialogContent title={t("workspace.widgets.editTimer")}>
       <EditWidgetDialogOption
-        title="計時器文字大小"
+        title={t("workspace.widgets.timerFontSize")}
         alignment="vertical"
         currentValue={setting.counterFontSize.toString()}
       >
@@ -36,7 +38,7 @@ const EditTimerWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="按鈕文字大小"
+        title={t("workspace.widgets.buttonFontSize")}
         alignment="vertical"
         currentValue={setting.buttonSize.toString()}
       >
@@ -52,8 +54,8 @@ const EditTimerWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="安靜模式"
-        description="開啟安靜模式已關閉介面多餘按鈕，包含：開始或中斷按鈕、暫停按鈕、查看歷史紀錄按鈕等等"
+        title={t("workspace.widgets.quietMode")}
+        description={t("workspace.widgets.quietModeDescription")}
       >
         <Switch
           checked={setting.isSilence}

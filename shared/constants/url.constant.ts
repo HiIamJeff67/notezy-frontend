@@ -84,7 +84,6 @@ export const APIURLPathDictionary = {
   },
   rootShelf: {
     getMyRootShelfById: "rootShelf/getMyRootShelfById",
-    searchRecentRootShelves: "rootShelf/searchRecentRootShelves",
     createRootShelf: "rootShelf/createRootShelf",
     createRootShelves: "rootShelf/createRootShelves",
     upsertRootShelfPermission: (rootShelfId: UUID, userPublicId: UUID) =>

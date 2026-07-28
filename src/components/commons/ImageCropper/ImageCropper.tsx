@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Cropper, { Area } from "react-easy-crop";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface ImageCropperProps {
@@ -15,6 +16,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   onComplete,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState<number>(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -80,7 +82,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           className="px-4 py-2 z-100"
           onClick={onCancel}
         >
-          Cancel
+          {t("workspace.widgets.cancel")}
         </Button>
         <Button
           variant="default"
@@ -94,7 +96,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
             onComplete(croppedBlob);
           }}
         >
-          Complete
+          {t("workspace.dialogs.complete")}
         </Button>
       </div>
     </div>

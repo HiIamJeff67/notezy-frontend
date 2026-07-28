@@ -1,6 +1,7 @@
 import { ClockStyles } from "@widgets/basic/ClockWidget/data/clockStyles";
 import { TimeZones } from "@widgets/basic/ClockWidget/data/timeZones";
 import { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import {
   EditWidgetDialogContent,
   EditWidgetDialogOption,
@@ -16,6 +17,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { ClockSetting } from "@/components/widgets/basic/ClockWidget/setting/clockSetting";
+import { formatTimezoneDisplayName } from "@/i18n/workspace";
 
 interface EditClockWidgetDialogContentProps {
   setting: ClockSetting;
@@ -26,11 +28,18 @@ const EditClockWidgetDialogContent = ({
   setting,
   setSetting,
 }: EditClockWidgetDialogContentProps) => {
+  const { i18n, t } = useTranslation();
+  const styleLabel = (name: "classic" | "minimal" | "modern") =>
+    name === "classic"
+      ? t("workspace.widgets.classic")
+      : name === "minimal"
+        ? t("workspace.widgets.minimal")
+        : t("workspace.widgets.modern");
   return (
-    <EditWidgetDialogContent title="編輯時鐘">
+    <EditWidgetDialogContent title={t("workspace.widgets.editClock")}>
       <EditWidgetDialogOption
-        title="時區"
-        description="提供多種時區，切換後將會直接改變時鐘顯示的時間"
+        title={t("workspace.widgets.timezone")}
+        description={t("workspace.widgets.timezoneDescription")}
       >
         <Select
           value={setting.selectedTimeZone.locale}
@@ -44,12 +53,13 @@ const EditClockWidgetDialogContent = ({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="時區" />
+            <SelectValue placeholder={t("workspace.widgets.timezone")} />
           </SelectTrigger>
           <SelectContent>
             {TimeZones.map(tz => (
               <SelectItem key={tz.index} value={tz.locale}>
-                {tz.displayName} (UTC
+                {formatTimezoneDisplayName(tz.locale, i18n.resolvedLanguage)}{" "}
+                (UTC
                 {tz.offset >= 0 ? "+" : ""}
                 {tz.offset})
               </SelectItem>
@@ -59,8 +69,8 @@ const EditClockWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="時鐘款式"
-        description="時鐘樣式會影響時鐘的時針、分針、秒針、以及中心圓點和外部輪廓等等"
+        title={t("workspace.widgets.clockStyle")}
+        description={t("workspace.widgets.clockStyleDescription")}
       >
         <Select
           value={setting.selectedClockStyle.index.toString()}
@@ -72,7 +82,7 @@ const EditClockWidgetDialogContent = ({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="選擇款式" />
+            <SelectValue placeholder={t("workspace.widgets.selectStyle")} />
           </SelectTrigger>
           <SelectContent>
             {ClockStyles.map(clockStyle => (
@@ -80,7 +90,7 @@ const EditClockWidgetDialogContent = ({
                 key={clockStyle.index}
                 value={clockStyle.index.toString()}
               >
-                {clockStyle.name}
+                {styleLabel(clockStyle.name)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -88,8 +98,8 @@ const EditClockWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="顯示下方時間"
-        description="開啟以透過小時、分鐘以及秒來顯示當前時間"
+        title={t("workspace.widgets.showTime")}
+        description={t("workspace.widgets.showTimeDescription")}
       >
         <Switch
           checked={setting.enableTimer}
@@ -103,8 +113,8 @@ const EditClockWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="顯示地區"
-        description="開啟以顯示時區和其所在地區的名稱"
+        title={t("workspace.widgets.showRegion")}
+        description={t("workspace.widgets.showRegionDescription")}
       >
         <Switch
           checked={setting.enableLocale}
@@ -118,7 +128,7 @@ const EditClockWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="下方時間文字大小"
+        title={t("workspace.widgets.timeFontSize")}
         alignment="vertical"
         currentValue={setting.timerFontSize.toString()}
       >
@@ -134,7 +144,7 @@ const EditClockWidgetDialogContent = ({
       </EditWidgetDialogOption>
       <EditWidgetDialogSeparator />
       <EditWidgetDialogOption
-        title="地區文字大小"
+        title={t("workspace.widgets.regionFontSize")}
         alignment="vertical"
         currentValue={setting.localeFontSize.toString()}
       >

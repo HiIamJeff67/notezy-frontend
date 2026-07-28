@@ -1,6 +1,7 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { NotezyBlockPackEditor } from "@shared/blockpack/core";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { translateRoutineTaskPurpose } from "@/i18n/workspace";
 import type { RoutineTaskTemplatePattern } from "../TemplatePatternEditor";
 import CreateBlockPackPayloadEditorSidebar from "./CreateBlockPackPayloadEditorSidebar";
 import CreateBlockPackPayloadTemplateEditor from "./CreateBlockPackPayloadTemplateEditor";
@@ -49,6 +51,7 @@ const CreateBlockPackPayloadEditor = ({
   onClose,
   onConfirm,
 }: CreateBlockPackPayloadEditorProps) => {
+  const { t } = useTranslation();
   const didInitializeOpenDialogRef = useRef(false);
   const parsedInitialPayload = useMemo(() => {
     try {
@@ -68,7 +71,7 @@ const CreateBlockPackPayloadEditor = ({
   const [templateName, setTemplateName] = useState<string>(
     typeof parsedInitialPayload.template?.name === "string"
       ? parsedInitialPayload.template.name
-      : "Routine block pack"
+      : t("workspace.payloadEditor.defaultBlockPackName")
   );
   const [templatePattern, setTemplatePattern] =
     useState<RoutineTaskTemplatePattern>(
@@ -232,7 +235,7 @@ const CreateBlockPackPayloadEditor = ({
     setTemplateName(
       typeof parsedInitialPayload.template?.name === "string"
         ? parsedInitialPayload.template.name
-        : "Routine block pack"
+        : t("workspace.payloadEditor.defaultBlockPackName")
     );
     setTemplatePattern(
       parsedInitialPayload.pattern &&
@@ -282,12 +285,15 @@ const CreateBlockPackPayloadEditor = ({
     const templateBlocks =
       purpose === RoutineTaskPurpose.CreateBlockPack &&
       Array.isArray(parsedInitialPayload.template?.blocks)
-        ? parsedInitialPayload.template.blocks
+        ? (parsedInitialPayload.template.blocks as Array<{
+            arborizedEditableBlock?: unknown;
+          }>)
         : [];
     const loadedBlocks =
       purpose === RoutineTaskPurpose.CreateBlockPack
         ? templateBlocks.map(
-            rawBlock => rawBlock?.arborizedEditableBlock ?? rawBlock
+            (rawBlock: { arborizedEditableBlock?: unknown }) =>
+              rawBlock.arborizedEditableBlock ?? rawBlock
           )
         : (purpose === RoutineTaskPurpose.AppendBlock ||
               purpose === RoutineTaskPurpose.UpdateBlock) &&
@@ -301,7 +307,8 @@ const CreateBlockPackPayloadEditor = ({
               },
             ];
     const blocks = loadedBlocks.filter(
-      block => typeof block?.id === "string" && block.id.trim().length > 0
+      (block: { id?: unknown }) =>
+        typeof block.id === "string" && block.id.trim().length > 0
     );
     if (blocks.length === 0) {
       blocks.push({
@@ -413,7 +420,9 @@ const CreateBlockPackPayloadEditor = ({
       return {
         targetSubShelfId,
         template: {
-          name: templateName.trim() || "Routine block pack",
+          name:
+            templateName.trim() ||
+            t("workspace.payloadEditor.defaultBlockPackName"),
           icon: null,
           headerBackgroundURL: null,
           blocks: templateBlocks,
@@ -503,9 +512,11 @@ const CreateBlockPackPayloadEditor = ({
             usesPayloadSidebar ? "border-b bg-secondary px-5 py-4" : ""
           }
         >
-          <DialogTitle>Payload editor</DialogTitle>
+          <DialogTitle>{t("workspace.payloadEditor.title")}</DialogTitle>
           <DialogDescription>
-            Build the payload for {purpose}. Backend cost is authoritative.
+            {t("workspace.payloadEditor.generatedJson", {
+              purpose: translateRoutineTaskPurpose(purpose, t),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -553,16 +564,16 @@ const CreateBlockPackPayloadEditor = ({
             ) : (
               <main className="flex max-h-[72vh] min-h-0 flex-col overflow-hidden bg-card">
                 <div className="min-h-0 flex-1 overflow-y-auto p-5">
-                  <Label>Payload Preview</Label>
+                  <Label>{t("workspace.payloadEditor.payloadPreview")}</Label>
                   <pre className="mt-2 min-h-64 whitespace-pre-wrap break-words rounded-sm border bg-background p-3 font-mono text-xs">
                     {payloadPreview}
                   </pre>
                 </div>
                 <DialogFooter className="min-h-10 border-t bg-secondary px-4 py-2">
                   <span className="mr-auto self-center text-xs text-muted-foreground">
-                    Estimated payload cost:{" "}
-                    {Math.ceil(new Blob([payloadPreview]).size / 1024)}{" "}
-                    CostUnits
+                    {t("workspace.payloadEditor.estimatedCost", {
+                      count: Math.ceil(new Blob([payloadPreview]).size / 1024),
+                    })}
                   </span>
                   <Button
                     type="button"
@@ -573,7 +584,7 @@ const CreateBlockPackPayloadEditor = ({
                       onClose();
                     }}
                   >
-                    Save
+                    {t("common.save")}
                   </Button>
                 </DialogFooter>
               </main>
@@ -583,7 +594,7 @@ const CreateBlockPackPayloadEditor = ({
           <>
             {isResetBlockPack ? (
               <div className="flex flex-col gap-2">
-                <Label>Block pack id</Label>
+                <Label>{t("workspace.payloadEditor.blockPackId")}</Label>
                 <Input
                   value={blockPackId}
                   onChange={event => setBlockPackId(event.currentTarget.value)}
@@ -591,7 +602,7 @@ const CreateBlockPackPayloadEditor = ({
               </div>
             ) : isResetBlock ? (
               <div className="flex flex-col gap-2">
-                <Label>Block id</Label>
+                <Label>{t("workspace.payloadEditor.blockId")}</Label>
                 <Input
                   value={blockId}
                   onChange={event => setBlockId(event.currentTarget.value)}
@@ -599,7 +610,7 @@ const CreateBlockPackPayloadEditor = ({
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <Label>Raw JSON payload</Label>
+                <Label>{t("workspace.payloadEditor.rawJsonPayload")}</Label>
                 <Textarea
                   value={rawPayload}
                   onChange={event => setRawPayload(event.currentTarget.value)}
@@ -609,11 +620,12 @@ const CreateBlockPackPayloadEditor = ({
             )}
             <DialogFooter>
               <span className="mr-auto self-center text-xs text-muted-foreground">
-                Estimated payload cost:{" "}
-                {Math.ceil(new Blob([payloadPreview]).size / 1024)} CostUnits
+                {t("workspace.payloadEditor.estimatedCost", {
+                  count: Math.ceil(new Blob([payloadPreview]).size / 1024),
+                })}
               </span>
               <Button type="button" variant="destructive" onClick={onClose}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="button"
@@ -625,7 +637,7 @@ const CreateBlockPackPayloadEditor = ({
                   onClose();
                 }}
               >
-                Confirm
+                {t("common.confirm")}
               </Button>
             </DialogFooter>
           </>

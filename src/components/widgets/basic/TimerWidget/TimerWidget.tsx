@@ -10,6 +10,7 @@ import {
 } from "@widgets/basic/TimerWidget/setting/timerSetting";
 import { WidgetProps } from "@widgets/widget";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
 import EditTimerWidgetDialog from "./EditTimerWidgetDialog";
@@ -45,6 +46,7 @@ const TimerWidget = ({
   setData: setRawData,
   sync,
 }: WidgetProps) => {
+  const { t } = useTranslation();
   const [setting, setSetting] = useAnyTypeState<TimerSetting>(
     [rawSetting, setRawSetting],
     getDefaultTimerSetting()
@@ -233,14 +235,14 @@ const TimerWidget = ({
               className="px-4 py-1 bg-primary text-primary-foreground rounded-md hover:opacity-90"
               style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
             >
-              Save
+              {t("workspace.widgets.save")}
             </button>
             <button
               onClick={() => setIsEditingDuration(false)}
               className="px-4 py-1 bg-muted text-foreground border border-foreground/20 rounded-md hover:opacity-90"
               style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
             >
-              Cancel
+              {t("workspace.widgets.cancel")}
             </button>
           </div>
         ) : (
@@ -252,7 +254,7 @@ const TimerWidget = ({
                   className="px-4 py-1 bg-primary text-primary-foreground rounded-md hover:opacity-90"
                   style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
                 >
-                  Start
+                  {t("workspace.widgets.start")}
                 </button>
                 <button
                   onClick={() => {
@@ -262,7 +264,7 @@ const TimerWidget = ({
                   className="px-4 py-1 bg-secondary text-secondary-foreground rounded-md hover:opacity-90"
                   style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
                 >
-                  Edit
+                  {t("workspace.widgets.edit")}
                 </button>
               </>
             )}
@@ -272,7 +274,7 @@ const TimerWidget = ({
                 className="px-4 py-1 bg-yellow-500 text-white rounded-md hover:opacity-90"
                 style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
               >
-                Pause
+                {t("workspace.widgets.pause")}
               </button>
             )}
             {status === "paused" && (
@@ -281,7 +283,7 @@ const TimerWidget = ({
                 className="px-4 py-1 bg-green-500 text-white rounded-md hover:opacity-90"
                 style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
               >
-                Resume
+                {t("workspace.widgets.resume")}
               </button>
             )}
             {(status === "running" ||
@@ -292,7 +294,7 @@ const TimerWidget = ({
                 className="px-4 py-1 bg-gray-500 text-white rounded-md hover:opacity-90"
                 style={{ fontSize: `${setting.buttonSize ?? 16}px` }}
               >
-                Reset
+                {t("workspace.widgets.reset")}
               </button>
             )}
           </div>

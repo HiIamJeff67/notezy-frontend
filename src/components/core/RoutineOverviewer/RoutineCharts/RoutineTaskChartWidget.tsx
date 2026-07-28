@@ -8,16 +8,9 @@ import {
 import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { IntChart } from "@shared/charts/components";
 import { hasPositiveChartValue } from "@shared/charts/util";
+import { useTranslation } from "react-i18next";
 import { ChartWidgetFrame } from "./ChartWidgetFrame";
 import type { RoutineTaskChartType } from "./RoutineCharts";
-
-const options = [
-  { value: "statusCount", label: "Status counts" },
-  { value: "purposeCount", label: "Purpose counts" },
-  { value: "scheduledAtCount", label: "Scheduled times" },
-  { value: "actualStartedAtCount", label: "Actual starts" },
-  { value: "actualEndedAtCount", label: "Actual ends" },
-] satisfies { value: RoutineTaskChartType; label: string }[];
 
 interface RoutineTaskChartWidgetProps {
   chartType: RoutineTaskChartType;
@@ -34,6 +27,23 @@ const RoutineTaskChartWidget = ({
   queryRange,
   timeHourUnit,
 }: RoutineTaskChartWidgetProps) => {
+  const { t } = useTranslation();
+  const options = [
+    { value: "statusCount", label: t("workspace.charts.statusCounts") },
+    { value: "purposeCount", label: t("workspace.charts.purposeCounts") },
+    {
+      value: "scheduledAtCount",
+      label: t("workspace.charts.scheduledTimes"),
+    },
+    {
+      value: "actualStartedAtCount",
+      label: t("workspace.charts.actualStarts"),
+    },
+    {
+      value: "actualEndedAtCount",
+      label: t("workspace.charts.actualEnds"),
+    },
+  ] satisfies { value: RoutineTaskChartType; label: string }[];
   const permission = AccessControlPermission.Owner;
   const timeParam = {
     permission,
@@ -78,7 +88,7 @@ const RoutineTaskChartWidget = ({
   const data = { data: displayPoints };
   const series = {
     id: "routineTaskCount",
-    label: "Routine tasks",
+    label: t("workspace.scope.routineTasks"),
     color: "var(--chart-3)",
   };
   const chartKind =
@@ -89,24 +99,26 @@ const RoutineTaskChartWidget = ({
         : "line";
   const errorText =
     chartType === "statusCount"
-      ? "Unable to load task status"
+      ? t("workspace.charts.unableToLoadTaskStatus")
       : chartType === "purposeCount"
-        ? "Unable to load task purposes"
-        : "Unable to load routine tasks";
+        ? t("workspace.charts.unableToLoadTaskPurposes")
+        : t("workspace.charts.unableToLoadRoutineTasks");
 
   return (
     <ChartWidgetFrame
-      title="Routine Task"
+      title={t("workspace.charts.routineTask")}
       value={chartType}
       options={options}
       onValueChange={onChartTypeChange}
       onRemove={onRemove}
     >
       <IntChart
-        ariaLabel={`Routine task ${chartType}`}
+        ariaLabel={t("workspace.charts.chartLabel", {
+          title: t("workspace.charts.routineTask"),
+        })}
         chartType={chartKind}
         data={data}
-        emptyMessage={query.isError ? errorText : "No data"}
+        emptyMessage={query.isError ? errorText : t("workspace.charts.noData")}
         height={280}
         loading={query.isPending}
         series={series}

@@ -2,8 +2,6 @@ import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
 import {
-  MoveMySubShelvesByRootShelfIdsRequest,
-  MoveMySubShelvesByRootShelfIdsResponse,
   CreateSubShelfByRootShelfIdRequest,
   CreateSubShelfByRootShelfIdResponse,
   CreateSubShelvesByRootShelfIdsRequest,
@@ -24,6 +22,8 @@ import {
   MoveMySubShelfResponse,
   MoveMySubShelvesByRootShelfIdRequest,
   MoveMySubShelvesByRootShelfIdResponse,
+  MoveMySubShelvesByRootShelfIdsRequest,
+  MoveMySubShelvesByRootShelfIdsResponse,
   RestoreMySubShelfByIdRequest,
   RestoreMySubShelfByIdResponse,
   RestoreMySubShelvesByIdsRequest,
@@ -34,7 +34,6 @@ import {
   UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
 import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -65,7 +64,7 @@ export const GetMySubShelfById = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -115,7 +114,7 @@ export const GetMySubShelvesByPrevSubShelfId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -166,7 +165,7 @@ export const GetAllMySubShelvesByRootShelfId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -219,7 +218,7 @@ export const GetMySubShelvesAndItemsByPrevSubShelfId = createServerFn({
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -266,7 +265,7 @@ export const CreateSubShelfByRootShelfId = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -315,7 +314,7 @@ export const CreateSubShelvesByRootShelfIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -357,7 +356,7 @@ export const UpdateMySubShelfById = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -403,7 +402,7 @@ export const UpdateMySubShelvesByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -445,7 +444,7 @@ export const MoveMySubShelf = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse = (await response.json()) as MoveMySubShelfResponse;
@@ -463,49 +462,57 @@ export const MoveMySubShelf = createServerFn({ method: "POST" })
 
 export const MoveMySubShelvesByRootShelfId = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMySubShelvesByRootShelfIdRequest) => data)
-  .handler(async ({ data: request }): Promise<MoveMySubShelvesByRootShelfIdResponse> => {
-    const inboundCookie = getRequestHeader("cookie");
-    const userAgent =
-      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
-    const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelvesByRootShelfId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": userAgent,
-          ...(request.header?.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-        },
-        body: JSON.stringify(request.body),
-        credentials: "include",
-      }
-    );
-
-    if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
-    }
-    forwardUpstreamSetCookies(response);
-    const formattedResponse =
-      (await response.json()) as MoveMySubShelvesByRootShelfIdResponse;
-    if (formattedResponse.exception != null) {
-      throw new NotezyAPIError(
-        new NotezyException(formattedResponse.exception)
+  .handler(
+    async ({
+      data: request,
+    }): Promise<MoveMySubShelvesByRootShelfIdResponse> => {
+      const inboundCookie = getRequestHeader("cookie");
+      const userAgent =
+        request.header?.userAgent ??
+        getRequestHeader("User-Agent") ??
+        "unknown";
+      const response = await fetch(
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelvesByRootShelfId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": userAgent,
+            ...(request.header?.authorization
+              ? { Authorization: request.header.authorization }
+              : {}),
+            ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+          },
+          body: JSON.stringify(request.body),
+          credentials: "include",
+        }
       );
-    }
-    AccessTokenCookieHandler.ensure(
-      formattedResponse.refreshableTokens?.newAccessToken
-    );
 
-    return formattedResponse;
-  });
+      if (!isJsonResponse(response)) {
+        throw new Error("error.encounterUnknownError");
+      }
+      forwardUpstreamSetCookies(response);
+      const formattedResponse =
+        (await response.json()) as MoveMySubShelvesByRootShelfIdResponse;
+      if (formattedResponse.exception != null) {
+        throw new NotezyAPIError(
+          new NotezyException(formattedResponse.exception)
+        );
+      }
+      AccessTokenCookieHandler.ensure(
+        formattedResponse.refreshableTokens?.newAccessToken
+      );
+
+      return formattedResponse;
+    }
+  );
 
 export const MoveMySubShelvesByRootShelfIds = createServerFn({ method: "POST" })
   .inputValidator((data: MoveMySubShelvesByRootShelfIdsRequest) => data)
   .handler(
-    async ({ data: request }): Promise<MoveMySubShelvesByRootShelfIdsResponse> => {
+    async ({
+      data: request,
+    }): Promise<MoveMySubShelvesByRootShelfIdsResponse> => {
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -529,7 +536,7 @@ export const MoveMySubShelvesByRootShelfIds = createServerFn({ method: "POST" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -574,7 +581,7 @@ export const RestoreMySubShelfById = createServerFn({ method: "POST" })
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -621,7 +628,7 @@ export const RestoreMySubShelvesByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -663,7 +670,7 @@ export const DeleteMySubShelfById = createServerFn({ method: "POST" })
     );
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -709,7 +716,7 @@ export const DeleteMySubShelvesByIds = createServerFn({
       );
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =

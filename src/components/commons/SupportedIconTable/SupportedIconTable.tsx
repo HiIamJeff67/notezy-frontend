@@ -2,6 +2,7 @@ import { SupportedIcon } from "@shared/api/interfaces/enums";
 import { cn } from "@shared/util/utils";
 import { CheckIcon, SearchIcon, SmilePlusIcon, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +29,7 @@ const SupportedIconTable = ({
   disabled = false,
   className,
 }: SupportedIconTableProps) => {
+  const { t } = useTranslation();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
@@ -70,7 +72,11 @@ const SupportedIconTable = ({
           size="icon"
           disabled={disabled}
           className="size-10 shrink-0 cursor-pointer rounded-sm text-lg"
-          aria-label={value ? "Change icon" : "Select icon"}
+          aria-label={
+            value
+              ? t("workspace.accessibility.changeIcon")
+              : t("workspace.accessibility.selectIcon")
+          }
         >
           {value ?? <SmilePlusIcon className="text-muted-foreground" />}
         </Button>
@@ -91,7 +97,7 @@ const SupportedIconTable = ({
             <Input
               value={searchQuery}
               onChange={event => setSearchQuery(event.currentTarget.value)}
-              placeholder="Search icons"
+              placeholder={t("workspace.accessibility.searchIcons")}
               className="h-9 rounded-sm pl-8"
               autoFocus
             />
@@ -104,7 +110,7 @@ const SupportedIconTable = ({
               size="icon"
               className="size-9 shrink-0 rounded-sm"
               disabled={value === null}
-              aria-label="Clear icon"
+              aria-label={t("workspace.accessibility.clearIcon")}
               onClick={() => {
                 onValueChange(null);
                 setSearchQuery("");
@@ -154,7 +160,7 @@ const SupportedIconTable = ({
           </div>
         ) : (
           <div className="flex h-20 items-center justify-center text-xs text-muted-foreground">
-            No matching icons
+            {t("workspace.accessibility.noMatchingIcons")}
           </div>
         )}
       </PopoverContent>

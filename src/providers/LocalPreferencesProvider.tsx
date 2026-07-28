@@ -1,6 +1,6 @@
+import { WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
-import { WebURLPathDictionary } from "@shared/constants";
 import React, { createContext, useEffect, useState } from "react";
 
 export type PreferencePage =

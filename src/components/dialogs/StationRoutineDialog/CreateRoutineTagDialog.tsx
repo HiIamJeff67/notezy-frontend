@@ -2,6 +2,7 @@ import type { SupportedIcon } from "@shared/api/interfaces/enums";
 import toast from "@shared/lib/toast";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ColorSelector from "@/components/commons/ColorSelector/ColorSelector";
 import SupportedIconTable from "@/components/commons/SupportedIconTable/SupportedIconTable";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 import type { ModalProps } from "@/providers/ModalProvider";
 import CreateRoutineTagDialogSkeleton from "./CreateRoutineTagDialogSkeleton";
 
@@ -29,7 +31,7 @@ const CreateRoutineTagDialog = ({
   onClose,
   onCreated,
 }: CreateRoutineTagDialogProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
 
   const [name, setName] = useState<string>("");
@@ -62,10 +64,10 @@ const CreateRoutineTagDialog = ({
         icon
       );
       await onCreated?.(routineTagNode.id);
-      toast.success("Routine tag created");
+      toast.success(t("workspace.routineTag.created"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -78,9 +80,9 @@ const CreateRoutineTagDialog = ({
     >
       <DialogContent className="rounded-sm sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create routine tag</DialogTitle>
+          <DialogTitle>{t("workspace.routineTag.createTitle")}</DialogTitle>
           <DialogDescription>
-            Add a personal classification that can span multiple stations.
+            {t("workspace.routineTag.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +99,9 @@ const CreateRoutineTagDialog = ({
           ) : (
             <>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-tag-name">Name</Label>
+                <Label htmlFor="routine-tag-name">
+                  {t("workspace.routineTag.name")}
+                </Label>
                 <Input
                   id="routine-tag-name"
                   value={name}
@@ -105,13 +109,13 @@ const CreateRoutineTagDialog = ({
                   maxLength={128}
                   autoFocus
                   onChange={event => setName(event.currentTarget.value)}
-                  placeholder="High priority"
+                  placeholder={t("workspace.routineTag.namePlaceholder")}
                 />
               </div>
 
               <div className="flex items-end gap-3">
                 <div className="flex shrink-0 flex-col gap-2">
-                  <Label>Icon</Label>
+                  <Label>{t("workspace.routineTag.icon")}</Label>
                   <SupportedIconTable
                     value={icon}
                     onValueChange={setIcon}
@@ -120,7 +124,7 @@ const CreateRoutineTagDialog = ({
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-2">
-                  <Label>Color</Label>
+                  <Label>{t("workspace.routineTag.color")}</Label>
                   <ColorSelector
                     value={color}
                     onValueChange={setColor}
@@ -138,7 +142,7 @@ const CreateRoutineTagDialog = ({
               disabled={stationRoutineManager.isCreatingRoutineTag}
               onClick={onClose}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -149,7 +153,7 @@ const CreateRoutineTagDialog = ({
               }
             >
               {stationRoutineManager.isCreatingRoutineTag && <Spinner />}
-              Create
+              {t("common.create")}
             </Button>
           </DialogFooter>
         </form>

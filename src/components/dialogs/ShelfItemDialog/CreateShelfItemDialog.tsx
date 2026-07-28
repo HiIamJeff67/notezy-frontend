@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,10 +30,11 @@ const CreateShelfItemDialog = ({
   dialogDescription,
   disableInput = false,
   inputPlaceholder,
-  submitLabel = "Create",
+  submitLabel,
   onCreate,
   onCancel,
 }: CreateShelfItemDialogProps) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>("");
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
@@ -74,7 +76,7 @@ const CreateShelfItemDialog = ({
               onClose();
             }}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -83,7 +85,7 @@ const CreateShelfItemDialog = ({
             onClick={createShelfItem}
           >
             {isCreating && <Spinner />}
-            {submitLabel}
+            {submitLabel ?? t("common.create")}
           </Button>
         </DialogFooter>
       </DialogContent>

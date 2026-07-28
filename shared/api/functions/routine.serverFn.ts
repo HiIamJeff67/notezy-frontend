@@ -12,12 +12,6 @@ import type {
   VisualizeMyRoutineStatusCountResponse,
 } from "@shared/api/interfaces/routine.interface";
 import {
-  LinkRoutineItemsByIdsRequest,
-  LinkRoutineItemsByIdsResponse,
-  LinkRoutineTagsByIdsRequest,
-  LinkRoutineTagsByIdsResponse,
-  LinkRoutineTasksByIdsRequest,
-  LinkRoutineTasksByIdsResponse,
   CreateRoutineByStationIdRequest,
   CreateRoutineByStationIdResponse,
   CreateRoutinesByStationIdsRequest,
@@ -38,10 +32,16 @@ import {
   HardDeleteMyRoutinesByIdsResponse,
   LinkRoutineItemByIdRequest,
   LinkRoutineItemByIdResponse,
+  LinkRoutineItemsByIdsRequest,
+  LinkRoutineItemsByIdsResponse,
   LinkRoutineTagByIdRequest,
   LinkRoutineTagByIdResponse,
+  LinkRoutineTagsByIdsRequest,
+  LinkRoutineTagsByIdsResponse,
   LinkRoutineTaskByIdRequest,
   LinkRoutineTaskByIdResponse,
+  LinkRoutineTasksByIdsRequest,
+  LinkRoutineTasksByIdsResponse,
   RestoreMyRoutineByIdRequest,
   RestoreMyRoutineByIdResponse,
   RestoreMyRoutinesByIdsRequest,
@@ -55,7 +55,6 @@ import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
 } from "@shared/constants/url.constant";
-import { tKey } from "@shared/translations";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -152,7 +151,7 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -212,7 +211,7 @@ export const GetMyRoutinesByStationId = createServerFn({ method: "GET" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -274,7 +273,7 @@ export const GetAllMyRoutinesByTimeRange = createServerFn({ method: "GET" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -322,7 +321,7 @@ export const CreateRoutineByStationId = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -370,7 +369,7 @@ export const CreateRoutinesByStationIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -415,7 +414,7 @@ export const UpdateMyRoutineById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -462,7 +461,7 @@ export const UpdateMyRoutinesByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -507,7 +506,7 @@ export const LinkRoutineTagById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -526,51 +525,47 @@ export const LinkRoutineTagById = createServerFn({ method: "POST" })
 
 export const LinkRoutineTagsByIds = createServerFn({ method: "POST" })
   .inputValidator((data: LinkRoutineTagsByIdsRequest) => data)
-  .handler(
-    async ({ data: request }): Promise<LinkRoutineTagsByIdsResponse> => {
-      const url =
-        import.meta.env.VITE_API_DOMAIN_URL +
-        "/" +
-        CurrentAPIBaseURL +
-        "/" +
-        APIURLPathDictionary.routine.linkRoutineTagsByIds;
-      const inboundCookie = getRequestHeader("cookie");
-      const userAgent =
-        request.header?.userAgent ??
-        getRequestHeader("User-Agent") ??
-        "unknown";
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": userAgent,
-          ...(request.header?.authorization
-            ? { Authorization: request.header.authorization }
-            : {}),
-          ...(inboundCookie ? { Cookie: inboundCookie } : {}),
-        },
-        body: JSON.stringify(request.body),
-        credentials: "include",
-      });
+  .handler(async ({ data: request }): Promise<LinkRoutineTagsByIdsResponse> => {
+    const url =
+      import.meta.env.VITE_API_DOMAIN_URL +
+      "/" +
+      CurrentAPIBaseURL +
+      "/" +
+      APIURLPathDictionary.routine.linkRoutineTagsByIds;
+    const inboundCookie = getRequestHeader("cookie");
+    const userAgent =
+      request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": userAgent,
+        ...(request.header?.authorization
+          ? { Authorization: request.header.authorization }
+          : {}),
+        ...(inboundCookie ? { Cookie: inboundCookie } : {}),
+      },
+      body: JSON.stringify(request.body),
+      credentials: "include",
+    });
 
-      if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
-      }
-      forwardUpstreamSetCookies(response);
-      const formattedResponse =
-        (await response.json()) as LinkRoutineTagsByIdsResponse;
-      if (formattedResponse.exception != null) {
-        throw new NotezyAPIError(
-          new NotezyException(formattedResponse.exception)
-        );
-      }
-      AccessTokenCookieHandler.ensure(
-        formattedResponse.refreshableTokens?.newAccessToken
-      );
-
-      return formattedResponse;
+    if (!isJsonResponse(response)) {
+      throw new Error("error.encounterUnknownError");
     }
-  );
+    forwardUpstreamSetCookies(response);
+    const formattedResponse =
+      (await response.json()) as LinkRoutineTagsByIdsResponse;
+    if (formattedResponse.exception != null) {
+      throw new NotezyAPIError(
+        new NotezyException(formattedResponse.exception)
+      );
+    }
+    AccessTokenCookieHandler.ensure(
+      formattedResponse.refreshableTokens?.newAccessToken
+    );
+
+    return formattedResponse;
+  });
 
 export const LinkRoutineTaskById = createServerFn({ method: "POST" })
   .inputValidator((data: LinkRoutineTaskByIdRequest) => data)
@@ -599,7 +594,7 @@ export const LinkRoutineTaskById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -646,7 +641,7 @@ export const LinkRoutineTasksByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -691,7 +686,7 @@ export const LinkRoutineItemById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -738,7 +733,7 @@ export const LinkRoutineItemsByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -783,7 +778,7 @@ export const RestoreMyRoutineById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -830,7 +825,7 @@ export const RestoreMyRoutinesByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -875,7 +870,7 @@ export const DeleteMyRoutineById = createServerFn({ method: "POST" })
     });
 
     if (!isJsonResponse(response)) {
-      throw new Error(tKey.error.encounterUnknownError);
+      throw new Error("error.encounterUnknownError");
     }
     forwardUpstreamSetCookies(response);
     const formattedResponse =
@@ -922,7 +917,7 @@ export const DeleteMyRoutinesByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -970,7 +965,7 @@ export const HardDeleteMyRoutineById = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =
@@ -1018,7 +1013,7 @@ export const HardDeleteMyRoutinesByIds = createServerFn({ method: "POST" })
       });
 
       if (!isJsonResponse(response)) {
-        throw new Error(tKey.error.encounterUnknownError);
+        throw new Error("error.encounterUnknownError");
       }
       forwardUpstreamSetCookies(response);
       const formattedResponse =

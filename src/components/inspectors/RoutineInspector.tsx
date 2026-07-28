@@ -8,6 +8,7 @@ import type { RoutineTaskNode } from "@shared/types/routineTaskNode.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import type { UUID } from "crypto";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ContainableSelect from "@/components/commons/ContainableSelect/ContainableSelect";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import MonthlyDayPicker from "@/components/commons/MonthlyDayPicker/MonthlyDayPicker";
@@ -30,7 +31,12 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage, useStationRoutine } from "@/hooks";
+import { useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import {
+  translateRoutinePeriod,
+  translateRoutineStatus,
+} from "@/i18n/workspace";
 import InspectorLoadingCover from "./InspectorLoadingCover";
 
 interface RoutineInspectorProps {
@@ -44,7 +50,7 @@ const RoutineInspector = ({
   isOpen,
   onClose,
 }: RoutineInspectorProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const getRoutineQuerier = useGetMyRoutineById();
 
@@ -186,7 +192,7 @@ const RoutineInspector = ({
         });
       })
       .catch(error => {
-        if (!cancelled) toast.error(languageManager.tError(error));
+        if (!cancelled) toast.error(translateError(error, t));
       })
       .finally(() => {
         if (!cancelled) setIsLoadingRoutineDetail(false);
@@ -245,11 +251,11 @@ const RoutineInspector = ({
             : values.scheduledEndAt;
 
     if (hasInvalidSchedule) {
-      toast.error("End time must be later than start time");
+      toast.error(t("workspace.validation.invalidSchedule"));
       return;
     }
     if (!SupportedTimezones.includes(values.timezone)) {
-      toast.error("Select a supported timezone");
+      toast.error(t("workspace.validation.unsupportedTimezone"));
       return;
     }
 
@@ -270,10 +276,10 @@ const RoutineInspector = ({
           period: values.period === null,
         }
       );
-      toast.success("Routine updated");
+      toast.success(t("workspace.routine.updated"));
       onClose();
     } catch (error) {
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
     }
   };
 
@@ -291,13 +297,15 @@ const RoutineInspector = ({
         <div className="relative flex h-full min-h-0 w-full flex-col">
           <SheetHeader className="min-w-0 shrink-0 border-b border-border px-6 py-5 pr-12">
             <SheetTitle className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0">Edit routine of</span>
+              <span className="shrink-0">
+                {t("workspace.inspector.editRoutineOf")}
+              </span>
               <span className="min-w-0 truncate text-foreground">
-                "{values.title || "Routine"}"
+                "{values.title || t("workspace.trash.routine")}"
               </span>
             </SheetTitle>
             <SheetDescription>
-              Adjust this routine&apos;s schedule and working state.
+              {t("workspace.inspector.routineDescription")}
             </SheetDescription>
           </SheetHeader>
           <form
@@ -310,7 +318,9 @@ const RoutineInspector = ({
           >
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="routine-inspector-title">Title</Label>
+                <Label htmlFor="routine-inspector-title">
+                  {t("workspace.fields.title")}
+                </Label>
                 <Input
                   id="routine-inspector-title"
                   value={values.title}
@@ -329,7 +339,7 @@ const RoutineInspector = ({
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="routine-inspector-description">
-                  Description
+                  {t("workspace.fields.description")}
                 </Label>
                 <Textarea
                   id="routine-inspector-description"
@@ -347,7 +357,7 @@ const RoutineInspector = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Status</Label>
+                <Label>{t("workspace.table.status")}</Label>
                 <ContainableSelect
                   value={values.status}
                   onValueChange={status =>
@@ -359,19 +369,22 @@ const RoutineInspector = ({
                   options={[
                     {
                       value: RoutineStatus.Scheduled,
-                      label: "Scheduled",
+                      label: translateRoutineStatus(RoutineStatus.Scheduled, t),
                     },
                     {
                       value: RoutineStatus.InProgress,
-                      label: "In progress",
+                      label: translateRoutineStatus(
+                        RoutineStatus.InProgress,
+                        t
+                      ),
                     },
                     {
                       value: RoutineStatus.Completed,
-                      label: "Completed",
+                      label: translateRoutineStatus(RoutineStatus.Completed, t),
                     },
                     {
                       value: RoutineStatus.OverDue,
-                      label: "Overdue",
+                      label: translateRoutineStatus(RoutineStatus.OverDue, t),
                     },
                   ]}
                 />
@@ -379,9 +392,11 @@ const RoutineInspector = ({
 
               <div className="flex items-center justify-between gap-4 rounded-sm border border-border px-3 py-3">
                 <div className="flex min-w-0 flex-col gap-1">
-                  <Label htmlFor="routine-inspector-pinned">Pinned</Label>
+                  <Label htmlFor="routine-inspector-pinned">
+                    {t("workspace.inspector.pinned")}
+                  </Label>
                   <span className="text-xs text-muted-foreground">
-                    Keep this routine prominent in routine views.
+                    {t("workspace.inspector.pinnedDescription")}
                   </span>
                 </div>
                 <Switch
@@ -396,7 +411,7 @@ const RoutineInspector = ({
               <div className="flex flex-col gap-2">
                 {values.period === RoutinePeriod.Weekly ? (
                   <>
-                    <Label>Weekdays</Label>
+                    <Label>{t("workspace.fields.weekdays")}</Label>
                     <WeekdayPicker
                       value={weekdayRange}
                       onValueChange={setWeekdayRange}
@@ -404,18 +419,18 @@ const RoutineInspector = ({
                   </>
                 ) : values.period === RoutinePeriod.Monthly ? (
                   <>
-                    <Label>Month days</Label>
+                    <Label>{t("workspace.fields.monthDays")}</Label>
                     <MonthlyDayPicker
                       value={monthlyDayRange}
                       onValueChange={setMonthlyDayRange}
                     />
                     <span className="text-xs text-muted-foreground">
-                      Limited to day 1 - 28 to keep every month valid.
+                      {t("workspace.fields.monthDaysDescription")}
                     </span>
                   </>
                 ) : (
                   <>
-                    <Label>Start</Label>
+                    <Label>{t("workspace.inspector.start")}</Label>
                     {values.period === RoutinePeriod.Daily ? (
                       <TimePicker
                         value={values.scheduledStartAt}
@@ -426,7 +441,7 @@ const RoutineInspector = ({
                             scheduledStartAt,
                           }));
                         }}
-                        placeholder="Select start time"
+                        placeholder={t("workspace.fields.selectStartTime")}
                       />
                     ) : (
                       <DatePicker
@@ -438,11 +453,11 @@ const RoutineInspector = ({
                             scheduledStartAt,
                           }));
                         }}
-                        placeholder="Select start date and time"
+                        placeholder={t("workspace.fields.selectStartDateTime")}
                       />
                     )}
 
-                    <Label>End</Label>
+                    <Label>{t("workspace.inspector.end")}</Label>
                     {values.period === RoutinePeriod.Daily ? (
                       <TimePicker
                         value={values.scheduledEndAt}
@@ -454,7 +469,7 @@ const RoutineInspector = ({
                           }));
                         }}
                         isInvalid={hasInvalidSchedule}
-                        placeholder="Select end time"
+                        placeholder={t("workspace.fields.selectEndTime")}
                       />
                     ) : (
                       <DatePicker
@@ -468,7 +483,7 @@ const RoutineInspector = ({
                         }}
                         disabled={{ before: values.scheduledStartAt }}
                         isInvalid={hasInvalidSchedule}
-                        placeholder="Select end date and time"
+                        placeholder={t("workspace.fields.selectEndDateTime")}
                       />
                     )}
                   </>
@@ -476,7 +491,7 @@ const RoutineInspector = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Repeat</Label>
+                <Label>{t("workspace.fields.repeat")}</Label>
                 <ContainableSelect
                   value={values.period ?? "None"}
                   onValueChange={period =>
@@ -489,26 +504,26 @@ const RoutineInspector = ({
                   options={[
                     {
                       value: "None",
-                      label: "None",
+                      label: translateRoutinePeriod(null, t),
                     },
                     {
                       value: RoutinePeriod.Daily,
-                      label: "Daily",
+                      label: translateRoutinePeriod(RoutinePeriod.Daily, t),
                     },
                     {
                       value: RoutinePeriod.Weekly,
-                      label: "Weekly",
+                      label: translateRoutinePeriod(RoutinePeriod.Weekly, t),
                     },
                     {
                       value: RoutinePeriod.Monthly,
-                      label: "Monthly",
+                      label: translateRoutinePeriod(RoutinePeriod.Monthly, t),
                     },
                   ]}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Timezone</Label>
+                <Label>{t("workspace.inspector.timezone")}</Label>
                 <TimezoneSelector
                   value={values.timezone}
                   onValueChange={timezone =>
@@ -534,7 +549,7 @@ const RoutineInspector = ({
                 }
               >
                 {stationRoutineManager.isUpdatingRoutine && <Spinner />}
-                Save
+                {t("common.save")}
               </Button>
               <Button
                 type="button"
@@ -543,12 +558,12 @@ const RoutineInspector = ({
                 disabled={stationRoutineManager.isUpdatingRoutine}
                 onClick={onClose}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
             </SheetFooter>
           </form>
           <InspectorLoadingCover
-            label="Loading"
+            label={t("common.loading")}
             show={isLoadingRoutineDetail}
           />
         </div>

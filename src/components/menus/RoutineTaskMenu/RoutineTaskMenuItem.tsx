@@ -9,6 +9,7 @@ import {
   SquarePen,
   Trash2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   ContextMenu,
@@ -28,14 +29,19 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, useModal, useStationRoutine } from "@/hooks";
+import { useModal, useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
+import {
+  translateRoutineTaskPurpose,
+  translateRoutineTaskStatus,
+} from "@/i18n/workspace";
 
 interface RoutineTaskMenuItemProps {
   routineTask: RoutineTaskNode;
 }
 
 const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const modalManager = useModal();
   const stationRoutineManager = useStationRoutine();
   const statusDotClassName =
@@ -77,30 +83,43 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
           >
             <HoverDetailCard
               title={routineTask.title}
-              subtitle="Routine Task"
+              subtitle={t("workspace.scope.routineTasks")}
               id={routineTask.id}
               rows={[
-                { field: "Status", value: routineTask.status },
-                { field: "Purpose", value: routineTask.purpose },
-                { field: "Priority", value: routineTask.priority },
                 {
-                  field: "Attempts",
+                  field: t("workspace.table.status"),
+                  value: translateRoutineTaskStatus(routineTask.status, t),
+                },
+                {
+                  field: t("workspace.table.purpose"),
+                  value: translateRoutineTaskPurpose(routineTask.purpose, t),
+                },
+                {
+                  field: t("workspace.fields.priority"),
+                  value: routineTask.priority,
+                },
+                {
+                  field: t("workspace.table.attempts"),
                   value: `${routineTask.attempts} / ${routineTask.maxAttempts}`,
                 },
                 {
-                  field: "Next",
-                  value: new Date(routineTask.nextScheduledAt).toLocaleString(),
+                  field: t("workspace.table.next"),
+                  value: new Date(routineTask.nextScheduledAt).toLocaleString(
+                    i18n.resolvedLanguage
+                  ),
                 },
                 {
-                  field: "System",
-                  value: new Date(routineTask.scheduledAt).toLocaleString(),
+                  field: t("workspace.menu.system"),
+                  value: new Date(routineTask.scheduledAt).toLocaleString(
+                    i18n.resolvedLanguage
+                  ),
                 },
               ]}
             />
           </HoverCardContent>
         </HoverCard>
         <ContextMenuContent className="min-w-36">
-          <ContextMenuLabel>View</ContextMenuLabel>
+          <ContextMenuLabel>{t("workspace.menu.view")}</ContextMenuLabel>
           <ContextMenuGroup>
             <ContextMenuItem
               onClick={() =>
@@ -111,7 +130,7 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
               }
             >
               <HistoryIcon className="mr-2 size-4" />
-              View all records
+              {t("workspace.menu.viewAllRecords")}
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() => {
@@ -123,36 +142,36 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
               }}
             >
               <SquarePen className="mr-2 size-4" />
-              Open in Inspector
+              {t("workspace.menu.openInspector")}
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />
-          <ContextMenuLabel>Add</ContextMenuLabel>
+          <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
           <ContextMenuGroup>
             <ContextMenuItem
               onClick={() => {
                 void stationRoutineManager
                   .duplicateRoutineTask(routineTask.id)
-                  .catch(error => toast.error(languageManager.tError(error)));
+                  .catch(error => toast.error(translateError(error, t)));
               }}
             >
               <Copy className="mr-2 size-4" />
-              Duplicate
+              {t("workspace.menu.duplicate")}
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />
-          <ContextMenuLabel>Edit</ContextMenuLabel>
+          <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
           <ContextMenuGroup>
             {routineTask.status === RoutineTaskStatus.Idle ? (
               <ContextMenuItem
                 onClick={() => {
                   void stationRoutineManager
                     .pauseRoutineTask(routineTask.id)
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <Pause className="mr-2 size-4" />
-                Pause
+                {t("workspace.menu.pause")}
               </ContextMenuItem>
             ) : null}
             {routineTask.status === RoutineTaskStatus.Pause ? (
@@ -160,11 +179,11 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
                 onClick={() => {
                   void stationRoutineManager
                     .resumeRoutineTask(routineTask.id)
-                    .catch(error => toast.error(languageManager.tError(error)));
+                    .catch(error => toast.error(translateError(error, t)));
                 }}
               >
                 <Play className="mr-2 size-4" />
-                Resume
+                {t("workspace.menu.resume")}
               </ContextMenuItem>
             ) : null}
             <ContextMenuItem
@@ -178,7 +197,7 @@ const RoutineTaskMenuItem = ({ routineTask }: RoutineTaskMenuItemProps) => {
               }
             >
               <Trash2 className="mr-2 size-4" />
-              Delete
+              {t("workspace.menu.delete")}
             </ContextMenuItem>
           </ContextMenuGroup>
         </ContextMenuContent>

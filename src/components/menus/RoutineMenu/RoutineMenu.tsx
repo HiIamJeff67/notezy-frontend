@@ -5,7 +5,6 @@ import RoutineMenuItemSkeleton from "@/components/menus/RoutineMenu/RoutineMenuI
 import { useStationRoutine } from "@/hooks";
 import RoutineMenuItem from "./RoutineMenuItem";
 
-
 interface RoutineMenuProps {
   routines: RoutineNode[];
   station?: StationNode;

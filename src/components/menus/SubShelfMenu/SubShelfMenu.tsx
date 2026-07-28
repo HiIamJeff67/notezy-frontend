@@ -3,10 +3,12 @@ import { RootShelfNode } from "@shared/types/shelfNodes.type";
 import { ShelfTreeSummary } from "@shared/types/shelfTreeSummary.type";
 import { CheckIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import SubShelfMenuItem from "@/components/menus/SubShelfMenu/SubShelfMenuItem";
 import SubShelfMenuItemSkeleton from "@/components/menus/SubShelfMenu/SubShelfMenuItemSkeleton";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
-import { useLanguage, useLoading, useShelfItem } from "@/hooks";
+import { useLoading, useShelfItem } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface SubShelfMenuProps {
   summary: ShelfTreeSummary;
@@ -16,7 +18,7 @@ interface SubShelfMenuProps {
 // handle the translation and some loading states here
 const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const shelfItemManager = useShelfItem();
 
   const handleRenameSubShelfOnSubmit = useCallback(
@@ -25,9 +27,9 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
         async () =>
           await shelfItemManager
             .renameEditingSubShelf()
-            .catch(error => toast.error(languageManager.tError(error)))
+            .catch(error => toast.error(translateError(error, t)))
       ),
-    [loadingManager, languageManager, shelfItemManager]
+    [loadingManager, t, shelfItemManager]
   );
 
   return (
@@ -72,7 +74,7 @@ const SubShelfMenu = ({ summary, root }: SubShelfMenuProps) => {
                         e.stopPropagation();
                         await handleRenameSubShelfOnSubmit();
                       }}
-                      aria-label="Save sub shelf name"
+                      aria-label={t("workspace.menu.saveSubShelfName")}
                     >
                       <CheckIcon className="size-4" />
                     </button>

@@ -12,19 +12,21 @@ import { RedirectState } from "@shared/types/redirectState.type";
 import { getAuthorization } from "@shared/util/getAuthorization";
 import { useLocation } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
-import { useAppRouter, useLanguage, useLoading, useUser } from "@/hooks";
+import { useAppRouter, useLoading, useUser } from "@/hooks";
 import {
   getPreferredStartPath,
   useLocalPreferences,
 } from "@/hooks/localPreferences";
+import { translateError } from "@/i18n/error";
 
 function GoogleRedirectPage() {
   const location = useLocation();
 
   const router = useAppRouter();
   const loadingManager = useLoading();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const { preferences } = useLocalPreferences();
   const userManager = useUser();
 
@@ -71,11 +73,7 @@ function GoogleRedirectPage() {
         }
       }
     },
-    [
-      bindGoogleAccountMutator,
-      loginViaGoogleMutator,
-      registerViaGoogleMutator,
-    ]
+    [bindGoogleAccountMutator, loginViaGoogleMutator, registerViaGoogleMutator]
   );
 
   const handleOAuthOnRedirect = useCallback(async () => {
@@ -85,11 +83,15 @@ function GoogleRedirectPage() {
     const state = searchParams.get("state");
 
     if (code === null || error !== null) {
-      toast.error(`Google Auth Error: ${error}`);
+      toast.error(
+        t("workspace.notifications.googleAuthError", {
+          error: error ?? t("error.encounterUnknownError"),
+        })
+      );
       router.push(
         WebURLPathDictionary.auth.redirect.error(
-          "Google oauth error",
-          languageManager.tError(error)
+          t("workspace.pages.googleAuthFailed"),
+          translateError(error, t)
         )
       );
       return;
@@ -121,11 +123,11 @@ function GoogleRedirectPage() {
       });
     } catch (error) {
       console.debug(error);
-      toast.error(languageManager.tError(error));
+      toast.error(translateError(error, t));
       router.push(
         WebURLPathDictionary.auth.redirect.error(
-          "Redirect to backend error",
-          languageManager.tError(error)
+          t("workspace.pages.googleRedirectFailed"),
+          translateError(error, t)
         )
       );
     }
@@ -133,7 +135,7 @@ function GoogleRedirectPage() {
     location.search,
     router,
     preferences,
-    languageManager,
+    t,
     userManager,
     performGoogleOAuthAction,
   ]);
@@ -148,7 +150,7 @@ function GoogleRedirectPage() {
   return (
     <Suspense fallback={<StrictLoadingCover />}>
       <div className="flex h-screen w-full items-center justify-center">
-        <p>Validating Google Authentication...</p>
+        <p>{t("workspace.pages.validatingGoogle")}</p>
       </div>
     </Suspense>
   );

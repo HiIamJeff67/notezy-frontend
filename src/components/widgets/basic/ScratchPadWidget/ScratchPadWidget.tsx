@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { CheckIcon } from "lucide-react";
 import { marked } from "marked";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { WidgetProps } from "@/components/widgets/widget";
 import { useAnyTypeState } from "@/hooks/useAnyTypeState";
@@ -22,6 +23,7 @@ const ScratchPadWidget = ({
   setData: setRawData,
   sync,
 }: WidgetProps) => {
+  const { t } = useTranslation();
   const [setting, setSetting] = useAnyTypeState(
     [rawSetting, setRawSetting],
     getDefaultScratchPadSetting()
@@ -102,7 +104,7 @@ const ScratchPadWidget = ({
           "
           style={{ fontSize: setting.fontSize }}
         >
-          Click to edit
+          {t("workspace.widgets.clickToEdit")}
         </div>
       )}
 
@@ -118,7 +120,7 @@ const ScratchPadWidget = ({
             onBlur={() => setIsEditing(false)}
             className="w-full flex-1 bg-transparent resize-none outline-none text-foreground font-mono leading-relaxed whitespace-pre-wrap"
             style={{ fontSize: setting.fontSize }}
-            placeholder="write some memo here..."
+            placeholder={t("workspace.widgets.memoPlaceholder")}
           />
 
           {hasChanged && (
@@ -141,7 +143,9 @@ const ScratchPadWidget = ({
                 }}
               >
                 <CheckIcon className="mr-1 shrink-0" size={16} />
-                <span className="lg:text-sm sm:text-xs">Save changes</span>
+                <span className="lg:text-sm sm:text-xs">
+                  {t("workspace.widgets.saveChanges")}
+                </span>
               </Button>
             </div>
           )}

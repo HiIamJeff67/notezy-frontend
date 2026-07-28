@@ -1,7 +1,9 @@
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Article,
   ArticleContent,
+  type ArticleNavigationItem,
   ArticleNavigationSidebar,
   ArticleParagraph,
   ArticleParagraphContent,
@@ -10,100 +12,11 @@ import {
   ArticleSubParagraph,
   ArticleSubParagraphContent,
   ArticleSubParagraphHeader,
-  type ArticleNavigationItem,
 } from "@/components/commons/Article/Article";
 
 type PlaygroundArticle = ArticleNavigationItem & {
   eyebrow: string;
 };
-
-const articleItems: PlaygroundArticle[] = [
-  {
-    id: "profile",
-    title: "Profile",
-    eyebrow: "Account settings",
-    description:
-      "Manage the identity details that appear wherever you collaborate.",
-    weight: 2,
-    children: [
-      {
-        id: "profile-avatar",
-        title: "Avatar",
-        description: "Your visual identifier in shared spaces.",
-        weight: 1,
-      },
-      {
-        id: "profile-display-name",
-        title: "Display name",
-        description: "The name shown to collaborators.",
-        weight: 2,
-      },
-    ],
-  },
-  {
-    id: "security",
-    title: "Security",
-    eyebrow: "Account settings",
-    description:
-      "Sign-in safeguards and the recovery options for your account.",
-    weight: 4,
-    children: [
-      {
-        id: "security-password",
-        title: "Password",
-        description: "Update the credential used to sign in.",
-        weight: 2,
-      },
-      {
-        id: "security-two-factor",
-        title: "Two-factor authentication",
-        description: "Add a second verification step.",
-        weight: 3,
-      },
-      {
-        id: "security-recovery",
-        title: "Recovery methods",
-        description: "Keep a fallback path to your account.",
-        weight: 2,
-      },
-    ],
-  },
-  {
-    id: "appearance",
-    title: "Appearance",
-    eyebrow: "Preferences",
-    description: "The visual defaults that shape your everyday workspace.",
-    weight: 5,
-    children: [
-      {
-        id: "appearance-theme",
-        title: "Theme",
-        description: "Set the overall light or dark presentation.",
-        weight: 2,
-      },
-      {
-        id: "appearance-density",
-        title: "Display density",
-        description: "Control the spacing between interface elements.",
-        weight: 3,
-      },
-      {
-        id: "appearance-editor",
-        title: "Editor preferences",
-        description: "Tune the writing surface to your workflow.",
-        weight: 3,
-        children: [
-          {
-            id: "appearance-editor-motion",
-            title: "Reduced motion",
-            description: "Limit non-essential interface animation.",
-            weight: 1,
-          },
-        ],
-      },
-    ],
-  },
-];
 
 const ArticleSubsections = ({ items }: { items: ArticleNavigationItem[] }) => (
   <>
@@ -143,6 +56,101 @@ const PlaygroundArticleParagraph = ({ item }: { item: PlaygroundArticle }) => (
 );
 
 const PlaygroundPage = () => {
+  const { t } = useTranslation();
+  const articleItems: PlaygroundArticle[] = [
+    {
+      id: "profile",
+      title: t("navigation.profile"),
+      eyebrow: t("settings.accountSettings"),
+      description: t("workspace.playground.profileDescription"),
+      weight: 2,
+      children: [
+        {
+          id: "profile-avatar",
+          title: t("settingsPage.account.personal.avatar"),
+          description: t("workspace.playground.avatarDescription"),
+          weight: 1,
+        },
+        {
+          id: "profile-display-name",
+          title: t("settingsPage.account.fields.displayName"),
+          description: t("workspace.playground.displayNameDescription"),
+          weight: 2,
+        },
+      ],
+    },
+    {
+      id: "security",
+      title: t("settingsPage.account.security.title"),
+      eyebrow: t("settings.accountSettings"),
+      description: t("settingsPage.account.security.description"),
+      weight: 4,
+      children: [
+        {
+          id: "security-password",
+          title: t("auth.password"),
+          description: t(
+            "settingsPage.account.modification.changePasswordDescription"
+          ),
+          weight: 2,
+        },
+        {
+          id: "security-two-factor",
+          title: t("workspace.playground.twoFactor"),
+          description: t("workspace.playground.twoFactorDescription"),
+          weight: 3,
+        },
+        {
+          id: "security-recovery",
+          title: t("settingsPage.account.binding.title"),
+          description: t("settingsPage.account.binding.description"),
+          weight: 2,
+        },
+      ],
+    },
+    {
+      id: "appearance",
+      title: t("settingsPage.preferences.appearance.title"),
+      eyebrow: t("settings.preferences"),
+      description: t("settingsPage.preferences.appearance.description"),
+      weight: 5,
+      children: [
+        {
+          id: "appearance-theme",
+          title: t("settingsPage.preferences.appearance.theme"),
+          description: t(
+            "settingsPage.preferences.appearance.themeDescription"
+          ),
+          weight: 2,
+        },
+        {
+          id: "appearance-density",
+          title: t("settingsPage.preferences.appearance.density"),
+          description: t(
+            "settingsPage.preferences.appearance.densityDescription"
+          ),
+          weight: 3,
+        },
+        {
+          id: "appearance-editor",
+          title: t("settingsPage.preferences.editor.title"),
+          description: t("settingsPage.preferences.editor.description"),
+          weight: 3,
+          children: [
+            {
+              id: "appearance-editor-motion",
+              title: t("settingsPage.preferences.appearance.reduceMotion"),
+              description: t(
+                "settingsPage.preferences.appearance.reduceMotionDescription"
+              ),
+              weight: 1,
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="h-full min-h-0 bg-canvas px-4 py-6 sm:px-6 lg:px-3">
       <Article>

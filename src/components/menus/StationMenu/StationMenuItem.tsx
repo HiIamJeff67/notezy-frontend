@@ -1,6 +1,7 @@
 import { WebURLPathDictionary } from "@shared/constants";
 import toast from "@shared/lib/toast";
 import type { StationNode } from "@shared/types/stationNode.type";
+import type { UUID } from "crypto";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -8,13 +9,13 @@ import {
   ClipboardList,
   Crown,
   ExternalLink,
-  Pencil,
   LogOut,
+  Pencil,
   SquarePen,
   Trash2,
 } from "lucide-react";
 import { useCallback } from "react";
-import type { UUID } from "crypto";
+import { useTranslation } from "react-i18next";
 import HoverDetailCard from "@/components/commons/HoverDetailCard/HoverDetailCard";
 import {
   RoutineIcon,
@@ -47,20 +48,15 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import {
-  useAppRouter,
-  useLanguage,
-  useLoading,
-  useModal,
-  useStationRoutine,
-} from "@/hooks";
+import { useAppRouter, useLoading, useModal, useStationRoutine } from "@/hooks";
+import { translateError } from "@/i18n/error";
 
 interface StationMenuItemProps {
   station: StationNode;
 }
 
 const StationMenuItem = ({ station }: StationMenuItemProps) => {
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const loadingManager = useLoading();
   const modalManager = useModal();
   const router = useAppRouter();
@@ -72,9 +68,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
       await loadingManager.startAsyncTransactionLoading(async () => {
         await stationRoutineManager
           .renameEditingStation()
-          .catch(error => toast.error(languageManager.tError(error)));
+          .catch(error => toast.error(translateError(error, t)));
       }),
-    [languageManager, loadingManager, stationRoutineManager]
+    [t, loadingManager, stationRoutineManager]
   );
 
   return (
@@ -118,7 +114,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                     event.stopPropagation();
                     await handleRenameStationOnSubmit();
                   }}
-                  aria-label="Save station name"
+                  aria-label={t("workspace.menu.saveStationName")}
                 >
                   <CheckIcon className="size-4" />
                 </button>
@@ -135,7 +131,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                         void stationRoutineManager
                           .toggleStation(station.id)
                           .catch(error =>
-                            toast.error(languageManager.tError(error))
+                            toast.error(translateError(error, t))
                           );
                       }}
                     >
@@ -164,23 +160,32 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
               >
                 <HoverDetailCard
                   title={station.name}
-                  subtitle="Station"
+                  subtitle={t("workspace.table.station")}
                   id={station.id}
                   rows={[
                     {
-                      field: "Description",
-                      value: station.description || "None",
+                      field: t("workspace.fields.description"),
+                      value: station.description || t("workspace.period.none"),
                     },
-                    { field: "Routines", value: station.routineCount },
-                    { field: "Tasks", value: routineTaskCount },
-                    { field: "Permission", value: station.permission },
+                    {
+                      field: t("workspace.scope.routines"),
+                      value: station.routineCount,
+                    },
+                    {
+                      field: t("workspace.table.tasks"),
+                      value: routineTaskCount,
+                    },
+                    {
+                      field: t("workspace.menu.permission"),
+                      value: station.permission,
+                    },
                   ]}
                 />
               </HoverCardContent>
             </HoverCard>
           )}
           <ContextMenuContent className="min-w-40">
-            <ContextMenuLabel>View</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.view")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -190,7 +195,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <ExternalLink className="mr-2 size-4" />
-                Overview Detail
+                {t("workspace.menu.overviewDetail")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() =>
@@ -201,11 +206,11 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <SquarePen className="mr-2 size-4" />
-                Open in Inspector
+                {t("workspace.menu.openInspector")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Add</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.add")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onSelect={() => {
@@ -223,11 +228,11 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }}
               >
                 <RoutineIcon className="mr-2 size-4" />
-                Routine
+                {t("workspace.table.routine")}
               </ContextMenuItem>
             </ContextMenuGroup>
             <ContextMenuSeparator />
-            <ContextMenuLabel>Edit</ContextMenuLabel>
+            <ContextMenuLabel>{t("workspace.menu.edit")}</ContextMenuLabel>
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() =>
@@ -235,7 +240,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <Pencil className="mr-2 size-4" />
-                Rename
+                {t("workspace.menu.rename")}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
@@ -248,7 +253,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <Trash2 className="mr-2 size-4" />
-                Delete
+                {t("workspace.menu.delete")}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
@@ -260,18 +265,15 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                     void loadingManager.startAsyncTransactionLoading(async () =>
                       stationRoutineManager
                         .leaveStation(station.id)
-                        .catch(error =>
-                          toast.error(languageManager.tError(error))
-                        )
+                        .catch(error => toast.error(translateError(error, t)))
                     );
                     return;
                   }
                   modalManager.open("CreateShelfItemDialog", {
-                    dialogHeader: "Leave station",
-                    dialogDescription:
-                      "Owners must choose an existing member to receive ownership before leaving.",
-                    inputPlaceholder: "Member public UUID",
-                    submitLabel: "Leave",
+                    dialogHeader: t("workspace.menu.leaveStation"),
+                    dialogDescription: t("workspace.menu.ownerMustChoose"),
+                    inputPlaceholder: t("workspace.menu.memberPublicId"),
+                    submitLabel: t("workspace.menu.leave"),
                     onCreate: async value =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () =>
@@ -285,7 +287,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }}
               >
                 <LogOut className="mr-2 size-4" />
-                Leave
+                {t("workspace.menu.leave")}
               </ContextMenuItem>
               <ContextMenuItem
                 disabled={
@@ -293,11 +295,10 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
                 onClick={() =>
                   modalManager.open("CreateShelfItemDialog", {
-                    dialogHeader: "Transfer station ownership",
-                    dialogDescription:
-                      "Enter the public UUID of an existing station member.",
-                    inputPlaceholder: "Member public UUID",
-                    submitLabel: "Transfer",
+                    dialogHeader: t("workspace.menu.transferStationOwnership"),
+                    dialogDescription: t("workspace.menu.enterStationMember"),
+                    inputPlaceholder: t("workspace.menu.memberPublicId"),
+                    submitLabel: t("workspace.menu.transfer"),
                     onCreate: async value =>
                       await loadingManager.startAsyncTransactionLoading(
                         async () =>
@@ -311,7 +312,7 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                 }
               >
                 <Crown className="mr-2 size-4" />
-                Transfer ownership
+                {t("workspace.menu.transferOwnership")}
               </ContextMenuItem>
             </ContextMenuGroup>
           </ContextMenuContent>
@@ -333,7 +334,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   >
                     <RoutineIcon className="size-4 text-muted-foreground" />
                     <span className="text-xs">
-                      {station.routineCount} total routines
+                      {t("workspace.menu.totalRoutines", {
+                        count: station.routineCount,
+                      })}
                     </span>
                   </HoverCardContent>
                 </HoverCard>
@@ -357,7 +360,9 @@ const StationMenuItem = ({ station }: StationMenuItemProps) => {
                   >
                     <ClipboardList className="size-4 text-muted-foreground" />
                     <span className="text-xs">
-                      {routineTaskCount} total routine tasks
+                      {t("workspace.menu.totalRoutineTasks", {
+                        count: routineTaskCount,
+                      })}
                     </span>
                   </HoverCardContent>
                 </HoverCard>

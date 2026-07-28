@@ -1,9 +1,11 @@
 import type { UUID } from "crypto";
+import { useTranslation } from "react-i18next";
 
 const MaterialViewerNotFoundPage = ({ id }: { id?: UUID }) => {
+  const { t } = useTranslation();
   const notFoundMessage = id
-    ? `Material with id of ${id} Not Found`
-    : "Material not found";
+    ? t("workspace.pages.materialIdNotFound", { id })
+    : t("workspace.pages.materialNotFound");
   return (
     <div className="w-full h-full flex justify-center items-center">
       {notFoundMessage}

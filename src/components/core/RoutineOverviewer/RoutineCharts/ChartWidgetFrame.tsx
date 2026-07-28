@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -26,6 +27,8 @@ export function ChartWidgetFrame<TValue extends string>({
   onRemove,
   children,
 }: ChartWidgetFrameProps<TValue>) {
+  const { t } = useTranslation();
+
   return (
     <article className="flex min-h-[360px] min-w-0 flex-col overflow-hidden rounded-md border border-border/60 bg-secondary p-4">
       <header className="mb-3 flex min-w-0 items-center justify-between gap-3 border-b border-border/50 pb-3">
@@ -35,17 +38,17 @@ export function ChartWidgetFrame<TValue extends string>({
         <div className="flex shrink-0 items-center gap-1.5">
           <Select
             value={value}
-            onValueChange={(nextValue) => onValueChange(nextValue as TValue)}
+            onValueChange={nextValue => onValueChange(nextValue as TValue)}
           >
             <SelectTrigger
-              aria-label={`Select ${title} chart`}
+              aria-label={t("workspace.charts.selectChart", { title })}
               className="h-8 max-w-[220px] min-w-0 rounded-sm text-xs"
               size="sm"
             >
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
-              {options.map((option) => (
+              {options.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -53,7 +56,7 @@ export function ChartWidgetFrame<TValue extends string>({
             </SelectContent>
           </Select>
           <Button
-            aria-label={`Remove ${title} chart`}
+            aria-label={t("workspace.charts.removeChart", { title })}
             className="size-8 rounded-sm"
             onClick={onRemove}
             size="icon"

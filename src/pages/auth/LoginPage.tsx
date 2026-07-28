@@ -4,21 +4,22 @@ import { WebURLPathDictionary } from "@shared/constants";
 import { getOAuthGoogleSearchParamsString } from "@shared/lib/getURL";
 import toast from "@shared/lib/toast";
 import { CSRFTokenGenerator } from "@shared/lib/tokenGenerator";
-import { tKey } from "@shared/translations";
 import { Suspense, useCallback, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import AuthPanel from "@/components/panels/AuthPanel/AuthPanel";
-import { useAppRouter, useLanguage, useUser } from "@/hooks";
+import { useAppRouter, useUser } from "@/hooks";
 import {
   getPreferredStartPath,
   useLocalPreferences,
 } from "@/hooks/localPreferences";
 import { useRegisterLoadingDependencies } from "@/hooks/useLoading";
+import { translateError } from "@/i18n/error";
 
 const LoginPage = () => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { t } = useTranslation();
   const { preferences } = useLocalPreferences();
   const userManager = useUser();
 
@@ -58,19 +59,11 @@ const LoginPage = () => {
           router.push(getPreferredStartPath(preferences));
         } catch (error) {
           setPassword("");
-          toast.error(languageManager.tError(error));
+          toast.error(translateError(error, t));
         }
       });
     },
-    [
-      account,
-      password,
-      languageManager,
-      preferences,
-      userManager,
-      loginMutator,
-      router,
-    ]
+    [account, password, t, preferences, userManager, loginMutator, router]
   );
 
   return (
@@ -78,43 +71,41 @@ const LoginPage = () => {
       <Suspense fallback={<StrictLoadingCover />}>
         <StrictLoadingCover condition={loginMutator.isPending} />
         <AuthPanel
-          title={languageManager.t(tKey.auth.login)}
-          subtitle={`${languageManager.t(
-            tKey.auth.authenticationPanelSubtitle
-          )} ${languageManager.t(tKey.auth.login)}`}
+          title={t("auth.login")}
+          subtitle={`${t(
+            "auth.authenticationPanelSubtitle"
+          )} ${t("auth.login")}`}
           inputs={[
             {
-              title: languageManager.t(tKey.auth.account),
-              placeholder: "ex. example123@email.com or myName123",
+              title: t("auth.account"),
+              placeholder: t("auth.accountExample"),
               type: "text",
               value: account,
               onChange: setAccount,
               required: true,
             },
             {
-              title: languageManager.t(tKey.auth.password),
-              placeholder: "ex. example-password123(&@#$",
+              title: t("auth.password"),
+              placeholder: t("auth.passwordExample"),
               type: "password",
               value: password,
               onChange: setPassword,
               required: true,
             },
           ]}
-          submitButtonText={languageManager.t(tKey.auth.login)}
+          submitButtonText={t("auth.login")}
           onSubmit={handleLoginOnSubmit}
           switchButtons={[
             {
-              description: languageManager.t(
-                tKey.auth.haveNotRegisterAnAccount
-              ),
-              title: languageManager.t(tKey.auth.register),
+              description: t("auth.haveNotRegisterAnAccount"),
+              title: t("auth.register"),
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.register);
               },
             },
             {
-              description: languageManager.t(tKey.auth.oopsIForgotMyAccount),
-              title: languageManager.t(tKey.auth.resetPassword),
+              description: t("auth.oopsIForgotMyAccount"),
+              title: t("auth.resetPassword"),
               onClick: () => {
                 router.push(WebURLPathDictionary.auth.forgetPassword);
               },
@@ -123,7 +114,7 @@ const LoginPage = () => {
           oauthButtons={[
             {
               provider: "google",
-              label: "Login via Google",
+              label: t("workspace.pages.googleLogin"),
               onClick: () =>
                 router.forceNavigate(
                   WebURLPathDictionary.oauth.google(
@@ -136,7 +127,7 @@ const LoginPage = () => {
                 ),
             },
           ]}
-          statusDetail={"System Ready"}
+          statusDetail={t("workspace.pages.systemReady")}
           isLoading={isLoginPending}
         />
       </Suspense>

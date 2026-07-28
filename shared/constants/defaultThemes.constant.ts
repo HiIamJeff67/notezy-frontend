@@ -1,10 +1,9 @@
-import { tKey } from "@shared/translations";
 import { ThemeData } from "@shared/types/theme.type";
 
 // export const DefaultDarkTheme: Theme = {
 //   id: "ae29bb37-d4ba-4826-bf56-9074e23ea65b",
 //   name: "Default Dark",
-//   translationKey: tKey.themes.defaultDark,
+//   translationKey: "themes.defaultDark",
 //   authorName: "Notezy Team",
 //   authorAvatarURL: "", // place Notezy brand Icon here
 //   version: "v1",
@@ -18,7 +17,7 @@ import { ThemeData } from "@shared/types/theme.type";
 // export const DefaultLightTheme: Theme = {
 //   id: "9663dc5f-1980-4ca4-b1e5-54c63dcd3ff8",
 //   name: "Default Light",
-//   translationKey: tKey.themes.defaultLight,
+//   translationKey: "themes.defaultLight",
 //   authorName: "Notezy Team",
 //   authorAvatarURL: "", // place Notezy brand Icon here
 //   version: "v1",
@@ -33,7 +32,7 @@ export const DefaultStandardTheme: ThemeData = {
   id: "2a377bf8-6101-4237-9293-e23594529cdd",
   name: "Default Standard",
   isDark: true,
-  translationKey: tKey.themes.defaultStandard,
+  translationKey: "themes.defaultStandard",
   authorName: "Notezy Team",
   authorAvatarURL: "", // place Notezy brand Icon here
   version: "v1",
@@ -48,7 +47,7 @@ export const DefaultNeonTheme: ThemeData = {
   id: "a9fc704e-f3c8-47ad-b761-967def87d2db",
   name: "Default Neon",
   isDark: true,
-  translationKey: tKey.themes.defaultNeon,
+  translationKey: "themes.defaultNeon",
   authorName: "Notezy Team",
   authorAvatarURL: "", // place Notezy brand Icon here
   version: "v1",
@@ -63,7 +62,7 @@ export const DefaultOceanTheme: ThemeData = {
   id: "d8aa6503-8449-46fb-8528-9a18782a630a",
   name: "Default Ocean",
   isDark: false,
-  translationKey: tKey.themes.defaultOcean,
+  translationKey: "themes.defaultOcean",
   authorName: "Notezy Team",
   authorAvatarURL: "", // place Notezy brand Icon here
   version: "v1",
@@ -78,7 +77,7 @@ export const DefaultForestTheme: ThemeData = {
   id: "786b96b1-c9e7-4e6e-a07a-8396d9f0740d",
   name: "Default Forest",
   isDark: true,
-  translationKey: tKey.themes.defaultForest,
+  translationKey: "themes.defaultForest",
   authorName: "Notezy Team",
   authorAvatarURL: "",
   version: "v1",
@@ -93,7 +92,7 @@ export const DefaultPhoenixTheme: ThemeData = {
   id: "1f1c7c86-8f88-42d4-822f-b99d3374910b",
   name: "Default Phoenix",
   isDark: true,
-  translationKey: tKey.themes.defaultPhoenix,
+  translationKey: "themes.defaultPhoenix",
   authorName: "Notezy Team",
   authorAvatarURL: "",
   version: "v1",
@@ -108,7 +107,7 @@ export const DefaultPearlTheme: ThemeData = {
   id: "f9b79d87-5b85-42b7-9a7a-86d1a425933d",
   name: "Default Pearl",
   isDark: false,
-  translationKey: tKey.themes.defaultPearl,
+  translationKey: "themes.defaultPearl",
   authorName: "Notezy Team",
   authorAvatarURL: "",
   version: "v1",
@@ -123,7 +122,7 @@ export const DefaultSakuraTheme: ThemeData = {
   id: "728ba94b-734e-427d-aaf8-6b9c982944ee",
   name: "Default Sakura",
   isDark: false,
-  translationKey: tKey.themes.defaultSakura,
+  translationKey: "themes.defaultSakura",
   authorName: "Notezy Team",
   authorAvatarURL: "",
   version: "v1",
@@ -138,7 +137,7 @@ export const DefaultCitrusTheme: ThemeData = {
   id: "a694c8c4-a036-439c-82e8-0ea7f3292c7d",
   name: "Default Citrus",
   isDark: false,
-  translationKey: tKey.themes.defaultCitrus,
+  translationKey: "themes.defaultCitrus",
   authorName: "Notezy Team",
   authorAvatarURL: "",
   version: "v1",

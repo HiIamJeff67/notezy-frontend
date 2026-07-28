@@ -14,9 +14,9 @@ import {
   useUpdateMyRootShelfById,
 } from "@shared/api/hooks/rootShelf.hook";
 import { useGetAllMySubShelvesByRootShelfId } from "@shared/api/hooks/subShelf.hook";
+import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { MaxSearchLimit } from "@shared/constants";
 import { AnalysisStatus } from "@shared/enums";
-import { AccessControlPermission } from "@shared/api/interfaces/enums";
 import { LRUCache } from "@shared/lib/LRUCache";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { RootShelfManipulator } from "@shared/lib/rootShelfManipulator";
@@ -35,6 +35,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 
 interface UseRootShelfLogicProps {
   expandedShelvesRef: RefObject<LRUCache<string, ShelfTreeSummary>>;
@@ -53,6 +54,7 @@ export const useRootShelfLogic = ({
   setFocusedNode,
   forceUpdate,
 }: UseRootShelfLogicProps) => {
+  const { t } = useTranslation();
   const apolloClient = useApolloClient();
   const getAllSubShelvesQuerier = useGetAllMySubShelvesByRootShelfId();
   const createRootShelfMutator = useCreateRootShelf();
@@ -269,7 +271,7 @@ export const useRootShelfLogic = ({
   const renameEditingRootShelf = useCallback(async (): Promise<void> => {
     try {
       if (!isNewRootShelfName() || !editingRootShelfNode) {
-        toast.error("the name of the given root shelf node is invalid");
+        toast.error(t("workspace.notifications.invalidRootShelfName"));
         return;
       }
 

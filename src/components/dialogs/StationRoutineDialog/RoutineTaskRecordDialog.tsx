@@ -11,6 +11,7 @@ import {
 } from "@shared/api/interfaces/enums";
 import type { UUID } from "crypto";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "@/components/commons/DatePicker/DatePicker";
 import {
   Dialog,
@@ -35,6 +36,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStationRoutine } from "@/hooks";
+import {
+  translateRoutineTaskPurpose,
+  translateRoutineTaskRecordStatus,
+} from "@/i18n/workspace";
 import type { ModalProps } from "@/providers/ModalProvider";
 
 interface RoutineTaskRecordDialogProps extends ModalProps {
@@ -48,6 +53,7 @@ const RoutineTaskRecordDialog = ({
   routineTitle,
   routineTaskIds,
 }: RoutineTaskRecordDialogProps) => {
+  const { i18n, t } = useTranslation();
   const stationRoutineManager = useStationRoutine();
   const [executeSearch, recordSearch] = useSearchRoutineTaskRecordsLazyQuery({
     fetchPolicy: "cache-and-network",
@@ -187,7 +193,7 @@ const RoutineTaskRecordDialog = ({
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="flex max-h-[82vh] w-[min(94vw,48rem)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-md bg-card p-0 sm:max-w-[min(88vw,48rem)]">
         <DialogHeader className="shrink-0 border-b border-border bg-secondary px-6 py-5 pr-12">
-          <DialogTitle>Routine task records</DialogTitle>
+          <DialogTitle>{t("workspace.records.title")}</DialogTitle>
           <DialogDescription className="truncate">
             {routineTitle}
           </DialogDescription>
@@ -203,10 +209,12 @@ const RoutineTaskRecordDialog = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All status</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allStatus")}
+              </SelectItem>
               {AllRoutineTaskRecordStatuses.map(recordStatus => (
                 <SelectItem key={recordStatus} value={recordStatus}>
-                  {recordStatus}
+                  {translateRoutineTaskRecordStatus(recordStatus, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -221,10 +229,12 @@ const RoutineTaskRecordDialog = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              <SelectItem value="All">All purpose</SelectItem>
+              <SelectItem value="All">
+                {t("workspace.table.allPurpose")}
+              </SelectItem>
               {AllRoutineTaskPurposes.map(taskPurpose => (
                 <SelectItem key={taskPurpose} value={taskPurpose}>
-                  {taskPurpose}
+                  {translateRoutineTaskPurpose(taskPurpose, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -232,13 +242,13 @@ const RoutineTaskRecordDialog = ({
           <DatePicker
             value={scheduledAfter}
             onValueChange={setScheduledAfter}
-            placeholder="Scheduled after"
+            placeholder={t("workspace.table.scheduledAfter")}
             className="h-8 w-40 text-xs"
           />
           <DatePicker
             value={scheduledBefore}
             onValueChange={setScheduledBefore}
-            placeholder="Scheduled before"
+            placeholder={t("workspace.table.scheduledBefore")}
             className="h-8 w-40 text-xs"
           />
         </div>
@@ -255,13 +265,27 @@ const RoutineTaskRecordDialog = ({
           <Table className="table-fixed text-xs">
             <TableHeader className="select-none [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:whitespace-normal [&_th]:border-b [&_th]:border-border/80 [&_th]:bg-secondary [&_th]:leading-tight">
               <TableRow>
-                <TableHead className="h-9 w-[20%] px-2">Task</TableHead>
-                <TableHead className="h-9 w-[12%] px-2">Status</TableHead>
-                <TableHead className="h-9 w-[18%] px-2">Purpose</TableHead>
-                <TableHead className="h-9 w-[18%] px-2">Scheduled</TableHead>
-                <TableHead className="h-9 w-[18%] px-2">Ended</TableHead>
-                <TableHead className="h-9 w-[7%] px-2">Cost</TableHead>
-                <TableHead className="h-9 w-[7%] px-2">Attempts</TableHead>
+                <TableHead className="h-9 w-[20%] px-2">
+                  {t("workspace.table.task")}
+                </TableHead>
+                <TableHead className="h-9 w-[12%] px-2">
+                  {t("workspace.table.status")}
+                </TableHead>
+                <TableHead className="h-9 w-[18%] px-2">
+                  {t("workspace.table.purpose")}
+                </TableHead>
+                <TableHead className="h-9 w-[18%] px-2">
+                  {t("workspace.table.scheduled")}
+                </TableHead>
+                <TableHead className="h-9 w-[18%] px-2">
+                  {t("workspace.table.ended")}
+                </TableHead>
+                <TableHead className="h-9 w-[7%] px-2">
+                  {t("workspace.table.cost")}
+                </TableHead>
+                <TableHead className="h-9 w-[7%] px-2">
+                  {t("workspace.table.attempts")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -277,16 +301,20 @@ const RoutineTaskRecordDialog = ({
                       </span>
                     </TableCell>
                     <TableCell className="px-2 py-2.5">
-                      {record.status}
+                      {translateRoutineTaskRecordStatus(record.status, t)}
                     </TableCell>
                     <TableCell className="px-2 py-2.5">
-                      <span className="line-clamp-2">{record.purpose}</span>
+                      <span className="line-clamp-2">
+                        {translateRoutineTaskPurpose(record.purpose, t)}
+                      </span>
                     </TableCell>
                     <TableCell className="px-2 py-2.5">
-                      {record.scheduledAt.toLocaleString()}
+                      {record.scheduledAt.toLocaleString(i18n.resolvedLanguage)}
                     </TableCell>
                     <TableCell className="px-2 py-2.5">
-                      {record.actualEndedAt?.toLocaleString() ?? "None"}
+                      {record.actualEndedAt?.toLocaleString(
+                        i18n.resolvedLanguage
+                      ) ?? t("workspace.period.none")}
                     </TableCell>
                     <TableCell className="px-2 py-2.5 tabular-nums">
                       {record.costUnit}
@@ -304,10 +332,10 @@ const RoutineTaskRecordDialog = ({
                     className="h-28 text-center text-sm text-muted-foreground"
                   >
                     {routineTaskIds.length === 0
-                      ? "This routine has no linked routine tasks."
+                      ? t("workspace.records.noLinkedTasks")
                       : isSearching
-                        ? "Loading routine task records..."
-                        : "No routine task records match the current filters."}
+                        ? t("workspace.records.loading")
+                        : t("workspace.records.noMatches")}
                   </TableCell>
                 </TableRow>
               )}

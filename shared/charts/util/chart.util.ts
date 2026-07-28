@@ -17,34 +17,34 @@ export function isFiniteChartValue(value: number): value is number {
 }
 
 export function hasPositiveChartValue(points: TwoDimensionalDatum[]) {
-  return points.some((point) => point.value > 0);
+  return points.some(point => point.value > 0);
 }
 
 export function toCartesianChartData<TMeta = unknown>(
   data: TwoDimensionalData<TMeta> | TwoDimensionalDatum<TMeta>[],
-  series: ChartSeries,
+  series: ChartSeries
 ) {
   const points = Array.isArray(data) ? data : data.data;
 
   return createSingleSeriesCartesianData(
     series,
-    points.map((point) => ({
+    points.map(point => ({
       id: point.id,
       x: point.x,
       y: point.value,
       label: point.x,
       meta: point.meta,
-    })),
+    }))
   );
 }
 
 export function toPieChartData<TMeta = unknown>(
-  data: TwoDimensionalData<TMeta> | TwoDimensionalDatum<TMeta>[],
+  data: TwoDimensionalData<TMeta> | TwoDimensionalDatum<TMeta>[]
 ): PieChartData<TMeta> {
   const points = Array.isArray(data) ? data : data.data;
 
   return {
-    slices: points.map((point) => ({
+    slices: points.map(point => ({
       id: point.id,
       label: point.x,
       value: point.value,
@@ -56,7 +56,7 @@ export function toPieChartData<TMeta = unknown>(
 export function splitSvgTextLines(
   text: string,
   maxCharsPerLine: number,
-  maxLines = 2,
+  maxLines = 2
 ) {
   const safeText = text.trim();
   const safeMaxChars = Math.max(1, Math.floor(maxCharsPerLine));
@@ -98,7 +98,7 @@ export function createLinearDomain(
     includeZero?: boolean;
     paddingRatio?: number;
     fallback?: [number, number];
-  } = {},
+  } = {}
 ): [number, number] {
   const {
     includeZero = true,
@@ -142,7 +142,7 @@ export function createIntegerDomain(values: number[]): [number, number] {
 
 export function createLinearScale(
   domain: [number, number],
-  range: [number, number],
+  range: [number, number]
 ) {
   const domainSpan = domain[1] - domain[0];
 
@@ -157,7 +157,7 @@ export function createLinearScale(
 export function createBandScale(
   ids: string[],
   range: [number, number],
-  padding = 0.2,
+  padding = 0.2
 ): BandScale {
   const [start, end] = range;
   const count = ids.length;
@@ -199,7 +199,7 @@ export function buildLinearTicks(domain: [number, number], count = 5) {
   const step = span / (safeCount - 1);
   return Array.from(
     { length: safeCount },
-    (_, index) => domain[0] + step * index,
+    (_, index) => domain[0] + step * index
   );
 }
 

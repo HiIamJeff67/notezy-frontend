@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import GridBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import { ProgressiveBackground } from "@/components/backgrounds/ProgressiveBackground/ProgressiveBackground";
 import ModifyImageHover from "@/components/hovers/ModifyImageHover/ModifyImageHover";
@@ -74,6 +75,7 @@ type RoutineOverviewerContentProps = {
 const RoutineOverviewerContent = ({
   showStationScope = true,
 }: RoutineOverviewerContentProps) => {
+  const { t } = useTranslation();
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
   const sidebarManager = useSidebar();
@@ -400,13 +402,13 @@ const RoutineOverviewerContent = ({
                 <ModifyImageHover
                   className="absolute"
                   imageSrc=""
-                  imageAlt="Dashboard background image"
+                  imageAlt={t("workspace.navigation.dashboardBackgroundImage")}
                   onClick={() =>
                     modalManager.open("SelectBackgroundImageDialog", {
                       cropperAspectRatio: cropperAspectRatio,
                     })
                   }
-                  hoverText="點擊以變更背景圖片"
+                  hoverText={t("workspace.navigation.changeBackgroundImage")}
                 />
               )}
             </GridBackground>
@@ -418,13 +420,13 @@ const RoutineOverviewerContent = ({
               {isHeaderBackgroundImageEditing && (
                 <ModifyImageHover
                   className="absolute inset-0"
-                  imageAlt="Dashboard background image"
+                  imageAlt={t("workspace.navigation.dashboardBackgroundImage")}
                   onClick={() =>
                     modalManager.open("SelectBackgroundImageDialog", {
                       cropperAspectRatio: cropperAspectRatio,
                     })
                   }
-                  hoverText="點擊以變更背景圖片"
+                  hoverText={t("workspace.navigation.changeBackgroundImage")}
                 />
               )}
             </ProgressiveBackground>

@@ -1,5 +1,6 @@
 import { RoutineTaskPurpose } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +24,7 @@ const UpdateBlockPackPayloadEditor = ({
   onClose,
   onConfirm,
 }: PayloadEditorProps) => {
+  const { t } = useTranslation();
   const [blockPackId, setBlockPackId] = useState("");
   const [updatedBlocks, setUpdatedBlocks] = useState("[]");
   const [pattern, setPattern] = useState<RoutineTaskTemplatePattern>({});
@@ -66,8 +68,8 @@ const UpdateBlockPackPayloadEditor = ({
     <FormPayloadEditor
       isOpen={isOpen}
       purpose={purpose}
-      title="Update Block Pack Payload"
-      description="Batch update blocks inside a block pack."
+      title={t("workspace.payloadEditor.updateBlockPackTitle")}
+      description={t("workspace.payloadEditor.updateBlockPackDescription")}
       payloadPreview={payloadPreview}
       error={error}
       onClose={onClose}
@@ -76,19 +78,19 @@ const UpdateBlockPackPayloadEditor = ({
           JSON.parse(updatedBlocks);
           onConfirm(payload);
         } catch {
-          setError("Updated blocks must be valid JSON.");
+          setError(t("workspace.payloadEditor.invalidUpdatedBlocks"));
         }
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label>Block pack ID</Label>
+        <Label>{t("workspace.payloadEditor.blockPackId")}</Label>
         <Input
           value={blockPackId}
           onChange={event => setBlockPackId(event.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label>Updated blocks</Label>
+        <Label>{t("workspace.payloadEditor.updatedBlocks")}</Label>
         <Textarea
           value={updatedBlocks}
           onChange={event => {
@@ -98,12 +100,11 @@ const UpdateBlockPackPayloadEditor = ({
           className="min-h-72 font-mono text-xs"
         />
         <p className="text-muted-foreground text-xs">
-          Each entry needs a blockId and an arborizedEditableBlock. Use the
-          block-specific editor for one block.
+          {t("workspace.payloadEditor.updatedBlocksHint")}
         </p>
       </div>
       <TemplatePatternEditor
-        label="Pattern Table"
+        label={t("workspace.payloadEditor.patternTable")}
         pattern={pattern}
         onPatternChange={setPattern}
       />

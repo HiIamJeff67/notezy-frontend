@@ -1,5 +1,6 @@
 import { MaterialContentType } from "@shared/api/interfaces/enums";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MaterialMeta } from "@/reducers/materialMeta.reducer";
 import MaterialViewerFrame from "./MaterialViewerFrame";
 
@@ -12,6 +13,7 @@ const MaterialTextViewerContent = ({
   meta,
   materialContentType,
 }: MaterialTextViewerContentProps) => {
+  const { t } = useTranslation();
   const [text, setText] = useState<string>("");
   const [isLoadingText, setIsLoadingText] = useState<boolean>(false);
   const [isTextAvailable, setIsTextAvailable] = useState<boolean>(true);
@@ -68,11 +70,13 @@ const MaterialTextViewerContent = ({
       contentClassName="p-8 overflow-auto"
     >
       {isLoadingText && (
-        <div className="text-muted-foreground text-sm">Loading file...</div>
+        <div className="text-muted-foreground text-sm">
+          {t("workspace.viewer.loadingFile")}
+        </div>
       )}
       {!isLoadingText && !isTextAvailable && (
         <div className="text-muted-foreground text-sm">
-          Failed to load text preview.
+          {t("workspace.viewer.failedTextPreview")}
         </div>
       )}
       {!isLoadingText && isTextAvailable && (

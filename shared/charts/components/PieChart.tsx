@@ -41,7 +41,7 @@ export function PieChart<TMeta = unknown>({
   style,
   height,
   width,
-  ariaLabel = "Pie chart",
+  ariaLabel,
   loading,
   emptyMessage,
   showLegend = true,

@@ -1,10 +1,10 @@
 import { localDB } from "@shared/api/local/db";
-import { WebURLPathDictionary } from "@shared/constants";
+import { AllLanguageData, WebURLPathDictionary } from "@shared/constants";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
-import { tKey } from "@shared/translations";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { BookTextIcon, CheckIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import GridBlackBackground from "@/components/backgrounds/GridBackground/GridBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
@@ -19,7 +19,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { useAppRouter, useLanguage, useTheme } from "@/hooks";
+import { useAppRouter, useTheme } from "@/hooks";
 
 const DisplayTitle = {
   mainTitle: "Notezy",
@@ -28,7 +28,7 @@ const DisplayTitle = {
 
 export const HomePage = () => {
   const router = useAppRouter();
-  const languageManager = useLanguage();
+  const { i18n, t } = useTranslation();
   const themeManager = useTheme();
 
   const [displayTitle, setDisplayTitle] = useState<boolean>(true);
@@ -112,24 +112,24 @@ export const HomePage = () => {
               >
                 <LanguageIcon size={16} className="mr-2" />
                 <span className="text-sm font-medium">
-                  {languageManager.t(tKey.languages.language)}
+                  {t("languages.language")}
                 </span>
               </MenubarTrigger>
               <MenubarContent className="w-56 bg-popover border-border">
                 <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  {`${languageManager.t(tKey.common.choose)}${languageManager.t(
-                    tKey.syntax.separator
-                  )}${languageManager.t(tKey.languages.language)}`}
+                  {`${t("common.choose")}${t(
+                    "syntax.separator"
+                  )}${t("languages.language")}`}
                 </div>
                 <MenubarSeparator />
-                {languageManager.availableLanguages.map(language => (
+                {AllLanguageData.map(language => (
                   <MenubarItem
-                    key={language.key}
-                    onClick={() => languageManager.setCurrentLanguage(language)}
+                    key={language.code}
+                    onClick={() => void i18n.changeLanguage(language.code)}
                     className="flex items-center justify-between cursor-pointer"
                   >
-                    <span>{languageManager.t(language.translationKey)}</span>
-                    {languageManager.currentLanguage === language && (
+                    <span>{language.nativeName}</span>
+                    {i18n.resolvedLanguage === language.code && (
                       <span className="text-accent text-sm">✓</span>
                     )}
                   </MenubarItem>
@@ -143,15 +143,13 @@ export const HomePage = () => {
                 className="h-full px-3 py-2 flex items-center justify-center hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground active:bg-accent active:text-accent-foreground"
               >
                 <ColorPaletteIcon size={16} className="mr-2" />
-                <span className="text-sm font-medium">
-                  {languageManager.t(tKey.themes.theme)}
-                </span>
+                <span className="text-sm font-medium">{t("themes.theme")}</span>
               </MenubarTrigger>
               <MenubarContent className="w-56 bg-popover border-border">
                 <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  {`${languageManager.t(tKey.common.choose)}${languageManager.t(
-                    tKey.syntax.separator
-                  )}${languageManager.t(tKey.themes.theme)}`}
+                  {`${t("common.choose")}${t(
+                    "syntax.separator"
+                  )}${t("themes.theme")}`}
                 </div>
                 <MenubarSeparator />
                 {themeManager.availableThemes.map(theme => (
@@ -161,7 +159,7 @@ export const HomePage = () => {
                     className="flex items-center justify-between cursor-pointer"
                     defaultChecked={themeManager.currentTheme.id === theme.id}
                   >
-                    <span>{languageManager.t(theme.translationKey)}</span>
+                    <span>{t(theme.translationKey)}</span>
                     {themeManager.currentTheme.id === theme.id && <CheckIcon />}
                   </MenubarItem>
                 ))}
@@ -186,9 +184,7 @@ export const HomePage = () => {
                 {currentText}
                 <span className="animate-pulse text-white">|</span>
               </div>
-              <p className="text-lg opacity-80">
-                {languageManager.t(tKey.homePage.subtitle)}
-              </p>
+              <p className="text-lg opacity-80">{t("homePage.subtitle")}</p>
             </div>
             <div className="flex items-center justify-center gap-6 mt-4">
               <Button
@@ -199,7 +195,7 @@ export const HomePage = () => {
                 }}
               >
                 <BookTextIcon size={18} />
-                {languageManager.t(tKey.homePage.viewDocs)}
+                {t("homePage.viewDocs")}
               </Button>
               <Button
                 variant="default"
@@ -212,7 +208,7 @@ export const HomePage = () => {
                 }}
               >
                 <NoteIcon size={18} />
-                {languageManager.t(tKey.homePage.getStarted)}
+                {t("homePage.getStarted")}
               </Button>
               {/* <Button disabled variant="secondary" onClick={localDB.download}>
                 Download Local DB File
