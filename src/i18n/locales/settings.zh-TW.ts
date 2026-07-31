@@ -230,6 +230,15 @@ export const TraditionalChineseSettingsTranslation = {
         dragHandleDescription:
           "顯示每個區塊左側的六點拖曳把手，用來移動或操作區塊。",
       },
+      dashboard: {
+        title: "儀表板",
+        description: "調整這台裝置上顯示的小工具欄位數量。",
+        manualWidth: "手動調整儀表板寬度",
+        manualWidthDescription: "關閉後，儀表板會依螢幕大小自動調整。",
+        widthDescription: "此數值代表儀表板的小工具總欄位數。",
+        expandWidth: "拓寬儀表板",
+        reduceWidth: "縮減儀表板",
+      },
       offline: {
         title: "離線資料",
         description: "管理本機快取、Yjs 文件與瀏覽器儲存空間。",

@@ -1,7 +1,7 @@
 import { AccessTokenCookieHandler } from "@shared/api/cookies/accessToken.cookie";
 import { forwardUpstreamSetCookies } from "@shared/api/cookies/bridge";
 import { NotezyAPIError, NotezyException } from "@shared/api/exceptions";
-import { CurrentAPIBaseURL } from "@shared/constants/url.constant";
+import { CurrentAPIBaseURL } from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { getRequestHeader } from "@tanstack/react-start/server";
 

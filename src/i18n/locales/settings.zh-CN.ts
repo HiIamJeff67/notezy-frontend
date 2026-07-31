@@ -230,6 +230,15 @@ export const SimpleChineseSettingsTranslation: SettingsTranslation = {
         dragHandle: "区块拖动手柄",
         dragHandleDescription: "在每个区块旁显示六点手柄，用于移动和管理区块。",
       },
+      dashboard: {
+        title: "仪表板",
+        description: "调整此设备上显示的小组件列数。",
+        manualWidth: "手动调整仪表板宽度",
+        manualWidthDescription: "关闭后，仪表板会根据屏幕大小自动调整。",
+        widthDescription: "此数值代表仪表板中的小组件总列数。",
+        expandWidth: "拓宽仪表板",
+        reduceWidth: "缩减仪表板",
+      },
       offline: {
         title: "离线数据",
         description: "管理本地缓存、Yjs 文档和浏览器存储。",

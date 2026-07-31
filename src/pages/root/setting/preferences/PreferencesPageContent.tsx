@@ -1,5 +1,10 @@
 import { LocalYjsDocumentStore } from "@shared/blockpack/core";
 import { AllLanguageData } from "@shared/constants";
+import {
+  DashboardWidthFrameCountStep,
+  MaxDashboardWidthFrameCount,
+  MinDashboardWidthFrameCount,
+} from "@shared/constants/widgetLayout.constant";
 import toast from "@shared/lib/toast";
 import { HardDriveIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -220,6 +225,53 @@ const EditorSettings = () => {
         }
         hideSeparator
       />
+    </Section>
+  );
+};
+
+const DashboardSettings = () => {
+  const { preferences, updatePreference } = useLocalPreferences();
+  const { t } = useTranslation();
+
+  return (
+    <Section>
+      <SwitchRow
+        title={t("settingsPage.preferences.dashboard.manualWidth")}
+        description={t(
+          "settingsPage.preferences.dashboard.manualWidthDescription"
+        )}
+        checked={preferences.manualDashboardWidth}
+        onCheckedChange={checked =>
+          updatePreference("manualDashboardWidth", checked)
+        }
+        hideSeparator={!preferences.manualDashboardWidth}
+      />
+      {preferences.manualDashboardWidth && (
+        <div className="border-b border-border/50 pb-[calc(var(--density-content-padding)*0.75)]">
+          <div className="rounded-lg bg-muted/50 p-4">
+            <div className="flex items-center gap-3">
+              <Slider
+                value={[preferences.dashboardWidthFrameCount]}
+                min={MinDashboardWidthFrameCount}
+                max={MaxDashboardWidthFrameCount}
+                step={DashboardWidthFrameCountStep}
+                onValueChange={value =>
+                  updatePreference(
+                    "dashboardWidthFrameCount",
+                    value[0] ?? MinDashboardWidthFrameCount
+                  )
+                }
+              />
+              <span className="w-10 text-right text-sm font-semibold">
+                {preferences.dashboardWidthFrameCount}
+              </span>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {t("settingsPage.preferences.dashboard.widthDescription")}
+            </p>
+          </div>
+        </div>
+      )}
     </Section>
   );
 };
@@ -445,4 +497,9 @@ const OfflineSettings = () => {
   );
 };
 
-export { AppearanceSettings, EditorSettings, OfflineSettings };
+export {
+  AppearanceSettings,
+  DashboardSettings,
+  EditorSettings,
+  OfflineSettings,
+};

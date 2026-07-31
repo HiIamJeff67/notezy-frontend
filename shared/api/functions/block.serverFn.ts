@@ -12,7 +12,7 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -21,8 +21,7 @@ export const GetMyBlockById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockByIdResponse> => {
     const { blockId } = request.param;
-    const params = new URLSearchParams({ blockId }).toString();
-    const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById}?${params}`;
+    const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlockById(blockId)}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -111,8 +110,7 @@ export const GetMyBlocksByBlockPackId = createServerFn({
   .handler(
     async ({ data: request }): Promise<GetMyBlocksByBlockPackIdResponse> => {
       const { blockPackId } = request.param;
-      const params = new URLSearchParams({ blockPackId }).toString();
-      const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId}?${params}`;
+      const url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.block.getMyBlocksByBlockPackId(blockPackId)}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??

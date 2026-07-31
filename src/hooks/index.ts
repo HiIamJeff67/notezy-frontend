@@ -9,6 +9,7 @@ export * from "./useLoading";
 export * from "./useMobile";
 export * from "./useModal";
 export * from "./useNetwork";
+export * from "./usePerformance";
 export * from "./useRealtime";
 export * from "./useResizeSidebar";
 export * from "./useScreen";

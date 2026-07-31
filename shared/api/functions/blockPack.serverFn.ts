@@ -36,7 +36,8 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -45,11 +46,8 @@ export const GetMyBlockPackById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyBlockPackByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyBlockPackByIdResponse> => {
     const { blockPackId, isDeleted = false } = request.param;
-    const params = new URLSearchParams({
-      blockPackId: blockPackId,
-      isDeleted: String(isDeleted),
-    }).toString();
-    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackById}?${params}`;
+    const params = new URLSearchParams({ isDeleted: String(isDeleted) });
+    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackById(blockPackId)}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -93,11 +91,8 @@ export const GetMyBlockPackAndItsParentById = createServerFn({
       data: request,
     }): Promise<GetMyBlockPackAndItsParentByIdResponse> => {
       const { blockPackId, isDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        blockPackId: blockPackId,
-        isDeleted: String(isDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackAndItsParentById}?${params}`;
+      const params = new URLSearchParams({ isDeleted: String(isDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPackAndItsParentById(blockPackId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -144,11 +139,8 @@ export const GetMyBlockPacksByParentSubShelfId = createServerFn({
       data: request,
     }): Promise<GetMyBlockPacksByParentSubShelfIdResponse> => {
       const { parentSubShelfId, areDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        parentSubShelfId: parentSubShelfId,
-        areDeleted: String(areDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPacksByParentSubShelfId}?${params}`;
+      const params = new URLSearchParams({ areDeleted: String(areDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getMyBlockPacksByParentSubShelfId(parentSubShelfId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -195,11 +187,8 @@ export const GetAllMyBlockPacksByRootShelfId = createServerFn({
       data: request,
     }): Promise<GetAllMyBlockPacksByRootShelfIdResponse> => {
       const { rootShelfId, areDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        rootShelfId: rootShelfId,
-        areDeleted: String(areDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getAllMyBlockPacksByRootShelfId}?${params}`;
+      const params = new URLSearchParams({ areDeleted: String(areDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.getAllMyBlockPacksByRootShelfId(rootShelfId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -244,7 +233,7 @@ export const CreateBlockPack = createServerFn({ method: "POST" })
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.createBlockPack}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.createBlockPack(request.body.parentSubShelfId)}`,
       {
         method: "POST",
         headers: {
@@ -255,7 +244,9 @@ export const CreateBlockPack = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(
+          withoutPathParams(request.body, "parentSubShelfId")
+        ),
         credentials: "include",
       }
     );
@@ -329,7 +320,7 @@ export const UpdateMyBlockPackById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.updateMyBlockPackById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.updateMyBlockPackById(request.body.blockPackId)}`,
         {
           method: "PUT",
           headers: {
@@ -340,7 +331,7 @@ export const UpdateMyBlockPackById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "blockPackId")),
           credentials: "include",
         }
       );
@@ -418,7 +409,7 @@ export const MoveMyBlockPackById = createServerFn({ method: "POST" })
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPackById}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.moveMyBlockPackById(request.body.blockPackId)}`,
       {
         method: "PUT",
         headers: {
@@ -429,7 +420,7 @@ export const MoveMyBlockPackById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "blockPackId")),
         credentials: "include",
       }
     );
@@ -560,7 +551,7 @@ export const RestoreMyBlockPackById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.restoreMyBlockPackById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.restoreMyBlockPackById(request.body.blockPackId)}`,
         {
           method: "PATCH",
           headers: {
@@ -571,7 +562,7 @@ export const RestoreMyBlockPackById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "blockPackId")),
           credentials: "include",
         }
       );
@@ -652,7 +643,7 @@ export const DeleteMyBlockPackById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.deleteMyBlockPackById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.blockPack.deleteMyBlockPackById(request.body.blockPackId)}`,
         {
           method: "DELETE",
           headers: {
@@ -663,7 +654,7 @@ export const DeleteMyBlockPackById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "blockPackId")),
           credentials: "include",
         }
       );

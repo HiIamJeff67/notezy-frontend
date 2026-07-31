@@ -2,7 +2,7 @@ import {
   RealtimePermission,
   RealtimePermissionSchema,
 } from "@shared/api/interfaces/enums";
-import { getRealtimeWebSocketURL } from "@shared/lib/getURL";
+import { getRealtimeWebSocketURL } from "@shared/api/url";
 import {
   encodeRealtimeBinaryFrame,
   encodeRealtimePingFrame,

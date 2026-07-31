@@ -18,7 +18,7 @@ import type {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -120,7 +120,6 @@ export const GetAllMyRoutineTaskRecordsByRoutineTaskId = createServerFn({
       data: request,
     }): Promise<GetAllMyRoutineTaskRecordsByRoutineTaskIdResponse> => {
       const params = new URLSearchParams();
-      params.set("routineTaskId", request.param.routineTaskId);
       if (request.param.limit !== undefined) {
         params.set("limit", String(request.param.limit));
       }
@@ -129,8 +128,9 @@ export const GetAllMyRoutineTaskRecordsByRoutineTaskId = createServerFn({
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTaskRecord
-          .getAllMyRoutineTaskRecordsByRoutineTaskId +
+        APIURLPathDictionary.routineTaskRecord.getAllMyRoutineTaskRecordsByRoutineTaskId(
+          request.param.routineTaskId
+        ) +
         "?" +
         params.toString();
       const inboundCookie = getRequestHeader("cookie");

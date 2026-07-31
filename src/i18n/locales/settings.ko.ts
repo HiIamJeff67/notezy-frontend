@@ -245,6 +245,16 @@ export const KoreanSettingsTranslation: SettingsTranslation = {
         dragHandleDescription:
           "각 블록 옆에 여섯 점 핸들을 표시하여 이동 및 관리에 사용합니다.",
       },
+      dashboard: {
+        title: "대시보드",
+        description: "이 기기에 표시할 위젯 열 수를 조정합니다.",
+        manualWidth: "대시보드 너비 직접 조절",
+        manualWidthDescription:
+          "끄면 화면 크기에 맞춰 대시보드가 자동으로 조절됩니다.",
+        widthDescription: "이 수치는 대시보드의 전체 위젯 열 수입니다.",
+        expandWidth: "대시보드 너비 넓히기",
+        reduceWidth: "대시보드 너비 줄이기",
+      },
       offline: {
         title: "오프라인 데이터",
         description: "로컬 캐시, Yjs 문서, 브라우저 저장 공간을 관리합니다.",

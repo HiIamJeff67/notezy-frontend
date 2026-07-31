@@ -250,6 +250,18 @@ export const EnglishSettingsTranslation = {
         dragHandleDescription:
           "Show the six-dot handle beside each block for moving and managing it.",
       },
+      dashboard: {
+        title: "Dashboard",
+        description:
+          "Control how many widget columns are shown on this device.",
+        manualWidth: "Manually adjust Dashboard width",
+        manualWidthDescription:
+          "Turn this off to automatically fit the Dashboard to your screen.",
+        widthDescription:
+          "This number is the total number of widget columns on the Dashboard.",
+        expandWidth: "Expand Dashboard width",
+        reduceWidth: "Reduce Dashboard width",
+      },
       offline: {
         title: "Offline data",
         description: "Manage local caches, Yjs documents, and browser storage.",

@@ -4,7 +4,7 @@ import {
   ApolloClient,
   InMemoryCache,
 } from "@apollo/client-integration-tanstack-start";
-import { CurrentAPIBaseURL } from "@shared/constants";
+import { CurrentAPIBaseURL } from "@shared/api/url";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { getAuthorization } from "@shared/util/getAuthorization";

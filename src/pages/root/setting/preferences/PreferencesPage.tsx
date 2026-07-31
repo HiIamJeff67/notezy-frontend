@@ -19,6 +19,7 @@ import { useAppRouterActions, useSettingsDisplay } from "@/hooks";
 import { useLocalPreferences } from "@/hooks/localPreferences";
 import {
   AppearanceSettings,
+  DashboardSettings,
   EditorSettings,
   OfflineSettings,
 } from "./PreferencesPageContent";
@@ -38,6 +39,7 @@ const PreferencesPage = ({
   const { t } = useTranslation();
   const navigationConfig = [
     ["appearance", "settingsPage.preferences.appearance", 5],
+    ["dashboard", "settingsPage.preferences.dashboard", 3],
     ["editor", "settingsPage.preferences.editor", 4],
     ["offline", "settingsPage.preferences.offline", 3],
     ["privacy", "settingsPage.preferences.privacy", 2],
@@ -118,6 +120,16 @@ const PreferencesPage = ({
             primary
           >
             {isReady && <AppearanceSettings />}
+          </PreferenceTab>
+
+          <ArticleParagraphSeparator />
+
+          <PreferenceTab
+            id="dashboard"
+            title={t("settingsPage.preferences.dashboard.title")}
+            description={t("settingsPage.preferences.dashboard.description")}
+          >
+            {isReady && <DashboardSettings />}
           </PreferenceTab>
 
           <ArticleParagraphSeparator />

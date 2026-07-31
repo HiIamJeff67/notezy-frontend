@@ -33,7 +33,11 @@ import {
   UpdateMySubShelvesByIdsRequest,
   UpdateMySubShelvesByIdsResponse,
 } from "@shared/api/interfaces/subShelf.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import {
+  APIURLPathDictionary,
+  CurrentAPIBaseURL,
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -42,11 +46,8 @@ export const GetMySubShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMySubShelfByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMySubShelfByIdResponse> => {
     const { subShelfId, isDeleted = false } = request.param;
-    const params = new URLSearchParams({
-      subShelfId: subShelfId,
-      isDeleted: String(isDeleted),
-    }).toString();
-    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById}?${params}`;
+    const params = new URLSearchParams({ isDeleted: String(isDeleted) });
+    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelfById(subShelfId)}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -90,11 +91,8 @@ export const GetMySubShelvesByPrevSubShelfId = createServerFn({
       data: request,
     }): Promise<GetMySubShelvesByPrevSubShelfIdResponse> => {
       const { prevSubShelfId, areDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        prevSubShelfId: prevSubShelfId,
-        areDeleted: String(areDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId}?${params}`;
+      const params = new URLSearchParams({ areDeleted: String(areDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesByPrevSubShelfId(prevSubShelfId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -141,11 +139,8 @@ export const GetAllMySubShelvesByRootShelfId = createServerFn({
       data: request,
     }): Promise<GetAllMySubShelvesByRootShelfIdResponse> => {
       const { rootShelfId, areDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        rootShelfId: rootShelfId,
-        areDeleted: String(areDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId}?${params}`;
+      const params = new URLSearchParams({ areDeleted: String(areDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getAllMySubShelvesByRootShelfId(rootShelfId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -194,11 +189,8 @@ export const GetMySubShelvesAndItemsByPrevSubShelfId = createServerFn({
       data: request,
     }): Promise<GetMySubShelvesAndItemsByPrevSubShelfIdResponse> => {
       const { prevSubShelfId, areDeleted = false } = request.param;
-      const params = new URLSearchParams({
-        prevSubShelfId: prevSubShelfId,
-        areDeleted: String(areDeleted),
-      }).toString();
-      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId}?${params}`;
+      const params = new URLSearchParams({ areDeleted: String(areDeleted) });
+      let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.getMySubShelvesAndItemsByPrevSubShelfId(prevSubShelfId)}?${params}`;
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -248,7 +240,7 @@ export const CreateSubShelfByRootShelfId = createServerFn({
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.createSubShelfByRootShelfId(request.body.rootShelfId)}`,
         {
           method: "POST",
           headers: {
@@ -259,7 +251,7 @@ export const CreateSubShelfByRootShelfId = createServerFn({
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "rootShelfId")),
           credentials: "include",
         }
       );
@@ -339,7 +331,7 @@ export const UpdateMySubShelfById = createServerFn({ method: "POST" })
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.updateMySubShelfById(request.body.subShelfId)}`,
       {
         method: "PUT",
         headers: {
@@ -350,7 +342,7 @@ export const UpdateMySubShelfById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "subShelfId")),
         credentials: "include",
       }
     );
@@ -427,7 +419,7 @@ export const MoveMySubShelf = createServerFn({ method: "POST" })
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.moveMySubShelf(request.body.sourceSubShelfId)}`,
       {
         method: "PUT",
         headers: {
@@ -438,7 +430,9 @@ export const MoveMySubShelf = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(
+          withoutPathParams(request.body, "sourceSubShelfId")
+        ),
         credentials: "include",
       }
     );
@@ -564,7 +558,7 @@ export const RestoreMySubShelfById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.restoreMySubShelfById(request.body.subShelfId)}`,
         {
           method: "PATCH",
           headers: {
@@ -575,7 +569,7 @@ export const RestoreMySubShelfById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "subShelfId")),
           credentials: "include",
         }
       );
@@ -653,7 +647,7 @@ export const DeleteMySubShelfById = createServerFn({ method: "POST" })
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById}`,
+      `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.subShelf.deleteMySubShelfById(request.body.subShelfId)}`,
       {
         method: "DELETE",
         headers: {
@@ -664,7 +658,7 @@ export const DeleteMySubShelfById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "subShelfId")),
         credentials: "include",
       }
     );

@@ -1,4 +1,9 @@
 import { WebURLPathDictionary } from "@shared/constants";
+import {
+  DashboardWidthFrameCountStep,
+  MaxDashboardWidthFrameCount,
+  MinDashboardWidthFrameCount,
+} from "@shared/constants/widgetLayout.constant";
 import { LocalStorageManipulator } from "@shared/lib/localStorageManipulator";
 import { LocalStorageKey } from "@shared/types/localStorage.type";
 import React, { createContext, useEffect, useState } from "react";
@@ -21,12 +26,19 @@ export type NotificationPermissionState =
   | "denied"
   | "unknown";
 
+export type StorageEstimate = {
+  quota: number;
+  usage: number;
+};
+
 export type LocalPreferences = {
   density: Density;
   reduceMotion: boolean;
   tactileFeedback: boolean;
   startSurface: StartSurface;
   editorWidth: EditorWidth;
+  manualDashboardWidth: boolean;
+  dashboardWidthFrameCount: number;
   editorFontSize: number;
   lineWrap: boolean;
   spellcheck: boolean;
@@ -47,28 +59,10 @@ export type LocalPreferences = {
   quietModeEnd: string;
 };
 
-export type StorageEstimate = {
-  quota: number;
-  usage: number;
-};
-
 export type UpdatePreference = <Key extends keyof LocalPreferences>(
   key: Key,
   value: LocalPreferences[Key]
 ) => void;
-
-export type LocalPreferencesContextValue = {
-  preferences: LocalPreferences;
-  updatePreference: UpdatePreference;
-  resetPreferences: () => void;
-  copyPreferences: () => Promise<void>;
-  clipboardState: "idle" | "copied" | "failed";
-  storageEstimate: StorageEstimate | null;
-  storageUsagePercent: number;
-  notificationPermission: NotificationPermissionState;
-  requestNotificationPermission: () => Promise<void>;
-  isReady: boolean;
-};
 
 export const defaultLocalPreferences: LocalPreferences = {
   density: "balanced",
@@ -76,6 +70,8 @@ export const defaultLocalPreferences: LocalPreferences = {
   tactileFeedback: true,
   startSurface: "dashboard",
   editorWidth: "standard",
+  manualDashboardWidth: false,
+  dashboardWidthFrameCount: MinDashboardWidthFrameCount,
   editorFontSize: 15,
   lineWrap: true,
   spellcheck: true,
@@ -110,12 +106,35 @@ const normalizeLocalPreferences = (
   preferences: Partial<LocalPreferences>
 ): Partial<LocalPreferences> => ({
   ...preferences,
+  manualDashboardWidth: preferences.manualDashboardWidth === true,
   startSurface:
     preferences.startSurface === "routines" ||
     preferences.startSurface === "dashboard"
       ? preferences.startSurface
       : defaultLocalPreferences.startSurface,
+  dashboardWidthFrameCount:
+    typeof preferences.dashboardWidthFrameCount === "number" &&
+    preferences.dashboardWidthFrameCount >= MinDashboardWidthFrameCount &&
+    preferences.dashboardWidthFrameCount <= MaxDashboardWidthFrameCount &&
+    (preferences.dashboardWidthFrameCount - MinDashboardWidthFrameCount) %
+      DashboardWidthFrameCountStep ===
+      0
+      ? preferences.dashboardWidthFrameCount
+      : defaultLocalPreferences.dashboardWidthFrameCount,
 });
+
+export type LocalPreferencesContextValue = {
+  preferences: LocalPreferences;
+  updatePreference: UpdatePreference;
+  resetPreferences: () => void;
+  copyPreferences: () => Promise<void>;
+  clipboardState: "idle" | "copied" | "failed";
+  storageEstimate: StorageEstimate | null;
+  storageUsagePercent: number;
+  notificationPermission: NotificationPermissionState;
+  requestNotificationPermission: () => Promise<void>;
+  isReady: boolean;
+};
 
 export const LocalPreferencesContext = createContext<
   LocalPreferencesContextValue | undefined

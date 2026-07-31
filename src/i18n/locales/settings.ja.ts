@@ -252,6 +252,16 @@ export const JapaneseSettingsTranslation: SettingsTranslation = {
         dragHandleDescription:
           "各ブロックの横に六点ハンドルを表示し、移動や管理に使います。",
       },
+      dashboard: {
+        title: "ダッシュボード",
+        description: "このデバイスに表示するウィジェット列数を調整します。",
+        manualWidth: "ダッシュボード幅を手動で調整",
+        manualWidthDescription:
+          "オフにすると、ダッシュボードは画面サイズに合わせて自動調整されます。",
+        widthDescription: "この数値はダッシュボードのウィジェット総列数です。",
+        expandWidth: "ダッシュボード幅を広げる",
+        reduceWidth: "ダッシュボード幅を狭める",
+      },
       offline: {
         title: "オフラインデータ",
         description:

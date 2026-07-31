@@ -38,7 +38,8 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -132,7 +133,8 @@ export const GetMyStationById = createServerFn({ method: "GET" })
     const params = new URLSearchParams(
       Object.entries(request.param || {}).reduce<Record<string, string>>(
         (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value);
+          if (key !== "stationId" && value !== undefined && value !== null)
+            acc[key] = String(value);
           return acc;
         },
         {}
@@ -147,7 +149,7 @@ export const GetMyStationById = createServerFn({ method: "GET" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.station.getMyStationById +
+      APIURLPathDictionary.station.getMyStationById(request.param.stationId) +
       "?" +
       query;
     const inboundCookie = getRequestHeader("cookie");
@@ -324,7 +326,7 @@ export const UpdateMyStationById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.station.updateMyStationById;
+      APIURLPathDictionary.station.updateMyStationById(request.body.stationId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -338,7 +340,7 @@ export const UpdateMyStationById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "stationId")),
       credentials: "include",
     });
 
@@ -416,7 +418,7 @@ export const RestoreMyStationById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.station.restoreMyStationById;
+      APIURLPathDictionary.station.restoreMyStationById(request.body.stationId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -430,7 +432,7 @@ export const RestoreMyStationById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "stationId")),
       credentials: "include",
     });
 
@@ -508,7 +510,7 @@ export const DeleteMyStationById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.station.deleteMyStationById;
+      APIURLPathDictionary.station.deleteMyStationById(request.body.stationId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -522,7 +524,7 @@ export const DeleteMyStationById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "stationId")),
       credentials: "include",
     });
 
@@ -601,7 +603,7 @@ export const HardDeleteMyStationById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.station.hardDeleteMyStationById;
+        APIURLPathDictionary.station.hardDeleteMyStationById(request.body.stationId);
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -617,7 +619,7 @@ export const HardDeleteMyStationById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "stationId")),
         credentials: "include",
       });
 

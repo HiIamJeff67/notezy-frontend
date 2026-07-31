@@ -22,7 +22,8 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -33,7 +34,8 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
     const params = new URLSearchParams(
       Object.entries(request.param || {}).reduce<Record<string, string>>(
         (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value);
+          if (key !== "routineTagId" && value !== undefined && value !== null)
+            acc[key] = String(value);
           return acc;
         },
         {}
@@ -48,7 +50,9 @@ export const GetMyRoutineTagById = createServerFn({ method: "GET" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routineTag.getMyRoutineTagById +
+      APIURLPathDictionary.routineTag.getMyRoutineTagById(
+        request.param.routineTagId
+      ) +
       "?" +
       query;
     const inboundCookie = getRequestHeader("cookie");
@@ -230,7 +234,9 @@ export const UpdateMyRoutineTagById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTag.updateMyRoutineTagById;
+        APIURLPathDictionary.routineTag.updateMyRoutineTagById(
+          request.body.routineTagId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -246,7 +252,7 @@ export const UpdateMyRoutineTagById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTagId")),
         credentials: "include",
       });
 
@@ -326,7 +332,9 @@ export const HardDeleteMyRoutineTagById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTag.hardDeleteMyRoutineTagById;
+        APIURLPathDictionary.routineTag.hardDeleteMyRoutineTagById(
+          request.body.routineTagId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -342,7 +350,7 @@ export const HardDeleteMyRoutineTagById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTagId")),
         credentials: "include",
       });
 

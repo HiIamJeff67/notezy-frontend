@@ -9,7 +9,7 @@ import type {
   GetBlockPackParticipantsRequest,
   GetBlockPackParticipantsResponse,
 } from "@shared/api/interfaces/realtime.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";

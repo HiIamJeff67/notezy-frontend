@@ -54,7 +54,8 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -116,7 +117,8 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
     const params = new URLSearchParams(
       Object.entries(request.param || {}).reduce<Record<string, string>>(
         (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value);
+          if (key !== "routineId" && value !== undefined && value !== null)
+            acc[key] = String(value);
           return acc;
         },
         {}
@@ -131,7 +133,7 @@ export const GetMyRoutineById = createServerFn({ method: "GET" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.getMyRoutineById +
+      APIURLPathDictionary.routine.getMyRoutineById(request.param.routineId) +
       "?" +
       query;
     const inboundCookie = getRequestHeader("cookie");
@@ -175,7 +177,8 @@ export const GetMyRoutinesByStationId = createServerFn({ method: "GET" })
       const params = new URLSearchParams(
         Object.entries(request.param || {}).reduce<Record<string, string>>(
           (acc, [key, value]) => {
-            if (value !== undefined && value !== null) acc[key] = String(value);
+            if (key !== "stationId" && value !== undefined && value !== null)
+              acc[key] = String(value);
             return acc;
           },
           {}
@@ -189,7 +192,9 @@ export const GetMyRoutinesByStationId = createServerFn({ method: "GET" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.getMyRoutinesByStationId +
+        APIURLPathDictionary.routine.getMyRoutinesByStationId(
+          request.param.stationId
+        ) +
         "?" +
         params.toString();
       const inboundCookie = getRequestHeader("cookie");
@@ -300,7 +305,9 @@ export const CreateRoutineByStationId = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.createRoutineByStationId;
+        APIURLPathDictionary.routine.createRoutineByStationId(
+          request.body.stationId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -316,7 +323,7 @@ export const CreateRoutineByStationId = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "stationId")),
         credentials: "include",
       });
 
@@ -395,7 +402,7 @@ export const UpdateMyRoutineById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.updateMyRoutineById;
+      APIURLPathDictionary.routine.updateMyRoutineById(request.body.routineId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -409,7 +416,7 @@ export const UpdateMyRoutineById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "routineId")),
       credentials: "include",
     });
 
@@ -487,7 +494,10 @@ export const LinkRoutineTagById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.linkRoutineTagById;
+      APIURLPathDictionary.routine.linkRoutineTagById(
+        request.body.routineId,
+        request.body.routineTagId
+      );
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -501,7 +511,9 @@ export const LinkRoutineTagById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(
+        withoutPathParams(request.body, "routineId", "routineTagId")
+      ),
       credentials: "include",
     });
 
@@ -575,7 +587,10 @@ export const LinkRoutineTaskById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.linkRoutineTaskById;
+      APIURLPathDictionary.routine.linkRoutineTaskById(
+        request.body.routineId,
+        request.body.routineTaskId
+      );
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -589,7 +604,9 @@ export const LinkRoutineTaskById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(
+        withoutPathParams(request.body, "routineId", "routineTaskId")
+      ),
       credentials: "include",
     });
 
@@ -667,7 +684,10 @@ export const LinkRoutineItemById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.linkRoutineItemById;
+      APIURLPathDictionary.routine.linkRoutineItemById(
+        request.body.routineId,
+        request.body.itemId
+      );
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -681,7 +701,9 @@ export const LinkRoutineItemById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(
+        withoutPathParams(request.body, "routineId", "itemId")
+      ),
       credentials: "include",
     });
 
@@ -759,7 +781,7 @@ export const RestoreMyRoutineById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.restoreMyRoutineById;
+      APIURLPathDictionary.routine.restoreMyRoutineById(request.body.routineId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -773,7 +795,7 @@ export const RestoreMyRoutineById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "routineId")),
       credentials: "include",
     });
 
@@ -851,7 +873,7 @@ export const DeleteMyRoutineById = createServerFn({ method: "POST" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routine.deleteMyRoutineById;
+      APIURLPathDictionary.routine.deleteMyRoutineById(request.body.routineId);
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -865,7 +887,7 @@ export const DeleteMyRoutineById = createServerFn({ method: "POST" })
           : {}),
         ...(inboundCookie ? { Cookie: inboundCookie } : {}),
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(withoutPathParams(request.body, "routineId")),
       credentials: "include",
     });
 
@@ -944,7 +966,9 @@ export const HardDeleteMyRoutineById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routine.hardDeleteMyRoutineById;
+        APIURLPathDictionary.routine.hardDeleteMyRoutineById(
+          request.body.routineId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -960,7 +984,7 @@ export const HardDeleteMyRoutineById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineId")),
         credentials: "include",
       });
 

@@ -5,7 +5,7 @@ import { LocalStorageKey } from "@shared/types/localStorage.type";
 import { BookTextIcon, CheckIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import GridBlackBackground from "@/components/backgrounds/GridBackground/GridBackground";
+import { TerrainBackground } from "@/components/backgrounds/TerrainBackground/TerrainBackground";
 import StrictLoadingCover from "@/components/covers/LoadingCover/StrictLoadingCover";
 import ColorPaletteIcon from "@/components/icons/ColorPaletteIcon";
 import LanguageIcon from "@/components/icons/LanguageIcon";
@@ -101,7 +101,7 @@ export const HomePage = () => {
   }, []);
 
   return (
-    <GridBlackBackground>
+    <TerrainBackground isDark={themeManager.currentTheme.isDark}>
       <Suspense fallback={<StrictLoadingCover />}>
         <div className="fixed top-2 right-2 z-50">
           <Menubar className="bg-secondary border-border border shadow-lg h-10">
@@ -182,7 +182,7 @@ export const HomePage = () => {
               `}
               >
                 {currentText}
-                <span className="animate-pulse text-white">|</span>
+                <span className="animate-pulse text-foreground">|</span>
               </div>
               <p className="text-lg opacity-80">{t("homePage.subtitle")}</p>
             </div>
@@ -217,6 +217,6 @@ export const HomePage = () => {
           </div>
         </div>
       </Suspense>
-    </GridBlackBackground>
+    </TerrainBackground>
   );
 };

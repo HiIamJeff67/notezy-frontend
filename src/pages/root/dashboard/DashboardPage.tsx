@@ -1,7 +1,17 @@
+import {
+  DashboardWidthFrameCountStep,
+  MaxDashboardWidthFrameCount,
+  MinDashboardWidthFrameCount,
+} from "@shared/constants/widgetLayout.constant";
 import { DNDType } from "@shared/enums";
 import { FrameCountPosition, FrameCountSize } from "@shared/types/cord";
 import type { UUID } from "crypto";
-import { CheckIcon, PlusIcon, WrenchIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronsRightLeftIcon,
+  PlusIcon,
+  WrenchIcon,
+} from "lucide-react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -23,7 +33,13 @@ import {
   toWidget,
   Widget,
 } from "@/components/widgets/widget";
-import { useBackgroundImages, useModal, useScreen, useWidget } from "@/hooks";
+import {
+  useBackgroundImages,
+  useLocalPreferences,
+  useModal,
+  useScreen,
+  useWidget,
+} from "@/hooks";
 
 const DashboardElementZIndexes = {
   headerBackgroundImage: 50,
@@ -42,6 +58,7 @@ const DashboardPage = () => {
   const { t } = useTranslation();
   const screenManager = useScreen();
   const widgetManager = useWidget();
+  const { preferences, updatePreference } = useLocalPreferences();
   const modalManager = useModal();
   const backgroundImagesManager = useBackgroundImages();
 
@@ -67,27 +84,29 @@ const DashboardPage = () => {
 
   const { widthTotalFrameCount, heightTotalFrameCount, frameGap } =
     useMemo(() => {
-      let widthTotalFrameCount = 4;
-      let frameGap = 4;
-      switch (screenManager.breakpoint) {
-        case "base":
-        case "sm":
-          widthTotalFrameCount = 4;
-          break;
-        case "md":
-        case "lg":
-          widthTotalFrameCount = 6;
-          break;
-        case "xl":
-          widthTotalFrameCount = 8;
-          frameGap = 6;
-          break;
-        case "2xl":
-          widthTotalFrameCount = 12;
-          break;
-        case "3xl":
-          widthTotalFrameCount = 16;
-          break;
+      let widthTotalFrameCount = MinDashboardWidthFrameCount;
+      const frameGap = screenManager.breakpoint === "xl" ? 6 : 4;
+      if (preferences.manualDashboardWidth) {
+        widthTotalFrameCount = preferences.dashboardWidthFrameCount;
+      } else {
+        switch (screenManager.breakpoint) {
+          case "base":
+          case "sm":
+            break;
+          case "md":
+          case "lg":
+            widthTotalFrameCount = 6;
+            break;
+          case "xl":
+            widthTotalFrameCount = 8;
+            break;
+          case "2xl":
+            widthTotalFrameCount = 12;
+            break;
+          case "3xl":
+            widthTotalFrameCount = 16;
+            break;
+        }
       }
 
       let heightTotalFrameCount = 0;
@@ -102,7 +121,24 @@ const DashboardPage = () => {
         heightTotalFrameCount: heightTotalFrameCount,
         frameGap: frameGap,
       };
-    }, [screenManager.breakpoint, widgetManager]);
+    }, [preferences, screenManager.breakpoint, widgetManager]);
+
+  const updateDashboardWidth = useCallback(
+    (direction: 1 | -1) => {
+      updatePreference("manualDashboardWidth", true);
+      updatePreference(
+        "dashboardWidthFrameCount",
+        Math.min(
+          MaxDashboardWidthFrameCount,
+          Math.max(
+            MinDashboardWidthFrameCount,
+            widthTotalFrameCount + direction * DashboardWidthFrameCountStep
+          )
+        )
+      );
+    },
+    [updatePreference, widthTotalFrameCount]
+  );
 
   const hasSomeWidgetsOutOfBoundary = useMemo(
     () =>
@@ -732,6 +768,38 @@ const DashboardPage = () => {
                 }}
               >
                 <PlusIcon />
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex justify-center items-center border border-foreground/30 rounded-full shadow-lg w-10 h-10 transition"
+                onClick={() => updateDashboardWidth(-1)}
+                disabled={widthTotalFrameCount <= MinDashboardWidthFrameCount}
+                aria-label={t("settingsPage.preferences.dashboard.reduceWidth")}
+                title={t("settingsPage.preferences.dashboard.reduceWidth")}
+              >
+                <ChevronsRightLeftIcon size={18} />
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex justify-center items-center border border-foreground/30 rounded-full shadow-lg w-10 h-10 transition"
+                onClick={() => updateDashboardWidth(1)}
+                disabled={widthTotalFrameCount >= MaxDashboardWidthFrameCount}
+                aria-label={t("settingsPage.preferences.dashboard.expandWidth")}
+                title={t("settingsPage.preferences.dashboard.expandWidth")}
+              >
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m7 7-5 5 5 5M17 7l5 5-5 5M8 12h8" />
+                </svg>
               </Button>
               <Button
                 variant="secondary"

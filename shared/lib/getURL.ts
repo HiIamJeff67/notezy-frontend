@@ -1,6 +1,3 @@
-import { NotezyAPIError } from "@shared/api/exceptions";
-import { RealtimeError } from "@shared/api/exceptions/client/realtime.exception";
-import { CurrentRealtimeBaseURL } from "@shared/constants";
 import { RedirectState } from "@shared/types/redirectState.type";
 
 /* ============================== Search Params ============================== */
@@ -41,13 +38,4 @@ export const getOAuthXSearchParamsString = (
   };
 
   return new URLSearchParams(config as Record<string, string>).toString();
-};
-
-/* ============================== URL ============================== */
-
-export const getRealtimeWebSocketURL = (endpoint?: string): string => {
-  const url = import.meta.env.VITE_REALTIME_WEBSOCKET_URL;
-  if (!url) throw new NotezyAPIError(RealtimeError.MissingWebSocketURL());
-  const basePath = endpoint ?? CurrentRealtimeBaseURL;
-  return `${url.replace(/\/+$/, "")}/${basePath.replace(/^\/+/, "")}`;
 };

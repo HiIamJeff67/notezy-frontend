@@ -30,7 +30,11 @@ import {
   UpsertRootShelfPermissionRequest,
   UpsertRootShelfPermissionResponse,
 } from "@shared/api/interfaces/rootShelf.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import {
+  APIURLPathDictionary,
+  CurrentAPIBaseURL,
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -39,11 +43,8 @@ export const GetMyRootShelfById = createServerFn({ method: "GET" })
   .inputValidator((data: GetMyRootShelfByIdRequest) => data)
   .handler(async ({ data: request }): Promise<GetMyRootShelfByIdResponse> => {
     const { rootShelfId, isDeleted = false } = request.param;
-    const params = new URLSearchParams({
-      rootShelfId: rootShelfId,
-      isDeleted: String(isDeleted),
-    }).toString();
-    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById}?${params}`;
+    const params = new URLSearchParams({ isDeleted: String(isDeleted) });
+    let url = `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.getMyRootShelfById(rootShelfId)}?${params}`;
     const inboundCookie = getRequestHeader("cookie");
     const userAgent =
       request.header?.userAgent ?? getRequestHeader("User-Agent") ?? "unknown";
@@ -346,7 +347,7 @@ export const UpdateMyRootShelfById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.updateMyRootShelfById(request.body.rootShelfId)}`,
         {
           method: "PUT",
           headers: {
@@ -357,7 +358,7 @@ export const UpdateMyRootShelfById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "rootShelfId")),
           credentials: "include",
         }
       );
@@ -438,7 +439,7 @@ export const RestoreMyRootShelfById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.restoreMyRootShelfById(request.body.rootShelfId)}`,
         {
           method: "PATCH",
           headers: {
@@ -449,7 +450,7 @@ export const RestoreMyRootShelfById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "rootShelfId")),
           credentials: "include",
         }
       );
@@ -530,7 +531,7 @@ export const DeleteMyRootShelfById = createServerFn({ method: "POST" })
         getRequestHeader("User-Agent") ??
         "unknown";
       const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById}`,
+        `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.rootShelf.deleteMyRootShelfById(request.body.rootShelfId)}`,
         {
           method: "DELETE",
           headers: {
@@ -541,7 +542,7 @@ export const DeleteMyRootShelfById = createServerFn({ method: "POST" })
               : {}),
             ...(inboundCookie ? { Cookie: inboundCookie } : {}),
           },
-          body: JSON.stringify(request.body),
+          body: JSON.stringify(withoutPathParams(request.body, "rootShelfId")),
           credentials: "include",
         }
       );

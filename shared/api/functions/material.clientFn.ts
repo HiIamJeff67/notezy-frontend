@@ -3,21 +3,20 @@ import {
   SaveMyMaterialByIdRequest,
   SaveMyMaterialByIdResponse,
 } from "@shared/api/interfaces/material.interface";
-import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/constants";
+import { APIURLPathDictionary, CurrentAPIBaseURL } from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 
 export async function SaveMyMaterialById(
   request: SaveMyMaterialByIdRequest
 ): Promise<SaveMyMaterialByIdResponse> {
   const formData = new FormData();
-  formData.append("materialId", request.body.materialId);
   formData.append("contentFile", request.body.contentFile);
 
   const clientCookies =
     typeof document !== "undefined" ? document.cookie : undefined;
   const userAgent = request.header?.userAgent ?? "unknown";
   const response = await fetch(
-    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyMaterialById}`,
+    `${import.meta.env.VITE_API_DOMAIN_URL}/${CurrentAPIBaseURL}/${APIURLPathDictionary.material.saveMyMaterialById(request.body.materialId)}`,
     {
       method: "PUT",
       headers: {

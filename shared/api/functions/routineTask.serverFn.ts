@@ -36,7 +36,8 @@ import {
 import {
   APIURLPathDictionary,
   CurrentAPIBaseURL,
-} from "@shared/constants/url.constant";
+  withoutPathParams,
+} from "@shared/api/url";
 import { isJsonResponse } from "@shared/util/isJsonContext";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
@@ -124,7 +125,8 @@ export const GetMyRoutineTaskById = createServerFn({ method: "GET" })
     const params = new URLSearchParams(
       Object.entries(request.param || {}).reduce<Record<string, string>>(
         (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value);
+          if (key !== "routineTaskId" && value !== undefined && value !== null)
+            acc[key] = String(value);
           return acc;
         },
         {}
@@ -139,7 +141,9 @@ export const GetMyRoutineTaskById = createServerFn({ method: "GET" })
       "/" +
       CurrentAPIBaseURL +
       "/" +
-      APIURLPathDictionary.routineTask.getMyRoutineTaskById +
+      APIURLPathDictionary.routineTask.getMyRoutineTaskById(
+        request.param.routineTaskId
+      ) +
       "?" +
       query;
     const inboundCookie = getRequestHeader("cookie");
@@ -295,7 +299,9 @@ export const CreateRoutineTaskByRoutineId = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.createRoutineTaskByRoutineId;
+        APIURLPathDictionary.routineTask.createRoutineTaskByRoutineId(
+          request.body.routineId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -311,7 +317,7 @@ export const CreateRoutineTaskByRoutineId = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineId")),
         credentials: "include",
       });
 
@@ -343,7 +349,9 @@ export const UpdateMyRoutineTaskById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.updateMyRoutineTaskById;
+        APIURLPathDictionary.routineTask.updateMyRoutineTaskById(
+          request.body.routineTaskId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -359,7 +367,7 @@ export const UpdateMyRoutineTaskById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTaskId")),
         credentials: "include",
       });
 
@@ -391,7 +399,9 @@ export const PauseMyRoutineTaskById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.pauseMyRoutineTaskById;
+        APIURLPathDictionary.routineTask.pauseMyRoutineTaskById(
+          request.body.routineTaskId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -407,7 +417,7 @@ export const PauseMyRoutineTaskById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTaskId")),
         credentials: "include",
       });
 
@@ -439,7 +449,9 @@ export const ResumeMyRoutineTaskById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.resumeMyRoutineTaskById;
+        APIURLPathDictionary.routineTask.resumeMyRoutineTaskById(
+          request.body.routineTaskId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -455,7 +467,7 @@ export const ResumeMyRoutineTaskById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTaskId")),
         credentials: "include",
       });
 
@@ -487,7 +499,9 @@ export const HardDeleteMyRoutineTaskById = createServerFn({ method: "POST" })
         "/" +
         CurrentAPIBaseURL +
         "/" +
-        APIURLPathDictionary.routineTask.hardDeleteMyRoutineTaskById;
+        APIURLPathDictionary.routineTask.hardDeleteMyRoutineTaskById(
+          request.body.routineTaskId
+        );
       const inboundCookie = getRequestHeader("cookie");
       const userAgent =
         request.header?.userAgent ??
@@ -503,7 +517,7 @@ export const HardDeleteMyRoutineTaskById = createServerFn({ method: "POST" })
             : {}),
           ...(inboundCookie ? { Cookie: inboundCookie } : {}),
         },
-        body: JSON.stringify(request.body),
+        body: JSON.stringify(withoutPathParams(request.body, "routineTaskId")),
         credentials: "include",
       });
 
